@@ -1,0 +1,9 @@
+[Unit]
+Description=Atena zona lab (ambientes descartaveis): baixa prioridade, com teto
+
+[Slice]
+CPUWeight=50
+CPUQuota=600%
+IOWeight=50
+MemoryMax=4G
+MemorySwapMax=1G
