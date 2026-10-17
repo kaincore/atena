@@ -1,0 +1,7 @@
+[Unit]
+Description=Atena zona core (infra da plataforma)
+
+[Slice]
+CPUWeight=500
+IOWeight=500
+MemoryLow=512M
