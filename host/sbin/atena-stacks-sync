@@ -1,0 +1,23 @@
+#!/bin/sh
+# Atena: mantém /opt/atena/dockge com um atalho para cada stack das zonas.
+# O Dockge só lê stacks direto dentro de uma pasta; as stacks ficam em /opt/atena/stacks/<zona>/<stack>.
+# Roda sozinho (atena-stacks-sync.path) quando uma pasta de stack é criada ou removida.
+set -eu
+VIEW=/opt/atena/dockge
+mkdir -p "$VIEW"
+# remove atalhos de stacks que não existem mais
+find "$VIEW" -maxdepth 1 -xtype l -delete
+for dir in /opt/atena/stacks/*/*/; do
+  [ -d "$dir" ] || continue
+  name=$(basename "$dir")
+  zone=$(basename "$(dirname "$dir")")
+  target="../stacks/$zone/$name"
+  link="$VIEW/$name"
+  if [ -L "$link" ]; then
+    [ "$(readlink "$link")" = "$target" ] || echo "aviso: já existe uma stack chamada $name em $(readlink "$link"); nomes de stack precisam ser únicos entre as zonas" >&2
+  elif [ -e "$link" ]; then
+    echo "aviso: $link não é um atalho (stack criada pelo Dockge?); mova-a para a pasta da zona" >&2
+  else
+    ln -s "$target" "$link"
+  fi
+done
