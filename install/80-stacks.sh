@@ -31,7 +31,7 @@ done
 # pastas de dados usadas pelos composes
 for d in core/dockge core/beszel/data core/beszel/agent core/beszel/socket core/beszel/disco-srv \
          ai/models/ollama ai/models/huggingface ai/ollama ai/litellm/db ai/litellm/redis \
-         apps/arca/uploads apps/arca/data; do
+         apps/arca/uploads apps/arca/data apps/open-webui; do
   install -d -m 750 -o "$ADMIN" -g "$ADMIN" "/srv/$d"
 done
 
@@ -47,6 +47,17 @@ if [ -d "$L" ] && [ ! -f "$L/.env" ]; then
       "REDIS_PASSWORD=$(segredo)" > "$L/.env" )
   chown "$ADMIN:$ADMIN" "$L/.env"
   ok "segredos do LiteLLM gerados em $L/.env"
+fi
+
+# segredo do Open WebUI (a chave do LiteLLM para ele é criada depois, com teto próprio)
+W=/opt/atena/stacks/apps/open-webui
+if [ -d "$W" ] && [ ! -f "$W/.env" ]; then
+  ( umask 077
+    printf '%s\n' "# Segredos do Open WebUI. Não compartilhe este arquivo." \
+      "WEBUI_SECRET_KEY=$(segredo)" \
+      "OPENAI_API_KEYS=" > "$W/.env" )
+  chown "$ADMIN:$ADMIN" "$W/.env"
+  ok "segredo do Open WebUI gerado em $W/.env"
 fi
 
 # núcleo: Dockge e Beszel
