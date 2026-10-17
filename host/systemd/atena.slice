@@ -1,0 +1,6 @@
+[Unit]
+Description=Atena: todas as zonas
+
+[Slice]
+# necessário para a proteção de memória da prod valer
+MemoryLow=5G
