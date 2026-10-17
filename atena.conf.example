@@ -1,0 +1,25 @@
+# Configuração do servidor Atena.
+# Copie para atena.conf, ajuste os valores e rode: sudo ./install.sh
+# Os valores de exemplo abaixo NÃO funcionam sem ajuste.
+
+# --- Rede de casa -----------------------------------------------------------
+# Interface de rede do servidor (veja com: ip -br link)
+ATENA_LAN_IF=enp3s0
+# IP fixo do servidor na rede de casa
+ATENA_LAN_IP=192.168.0.10
+# Faixa da rede de casa: todos os aparelhos dela acessam os serviços
+ATENA_LAN_CIDR=192.168.0.0/24
+# Roteador: o único endereço da rede de casa que os containers alcançam (DNS)
+ATENA_ROUTER_IP=192.168.0.1
+
+# --- Administração ----------------------------------------------------------
+# Usuário que entra por SSH e administra o servidor (precisa ter chave SSH configurada)
+ATENA_ADMIN_USER=atena
+
+# --- Opcionais --------------------------------------------------------------
+# GPU NVIDIA: "nvidia" instala driver + Container Toolkit; "none" pula
+ATENA_GPU=none
+# Série do driver NVIDIA. 580 é a última que suporta placas Pascal (GTX 10xx).
+ATENA_NVIDIA_SERIES=580
+# Tailscale para acesso fora de casa: "sim" ou "nao"
+ATENA_TAILSCALE=sim
