@@ -1,0 +1,9 @@
+[Unit]
+Description=Atena zona agents (Hermes e workers): baixa prioridade, com teto
+
+[Slice]
+CPUWeight=50
+CPUQuota=600%
+IOWeight=50
+MemoryMax=6G
+MemorySwapMax=1G
