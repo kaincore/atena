@@ -1,0 +1,87 @@
+# LiteLLM do servidor atena: um ponto único para os modelos, com tetos de gasto.
+# Níveis do documento de arquitetura:
+#   haiku  = cérebro padrão     sonnet = escalação     opus = casos raros     local = Ollama na GTX 1060
+# Preços conferidos em 17/10/2026 (por token; cache: leitura 0,1x da entrada, escrita 1,25x).
+# Os preços ficam aqui porque, sem eles, o LiteLLM não sabe o custo e os tetos não funcionam.
+
+model_list:
+  - model_name: haiku
+    litellm_params:
+      model: anthropic/claude-haiku-5-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+      max_budget: 50            # teto do documento: US$ 50 por mês
+      budget_duration: 31d            # o atena-litellm-virada-mes zera todo dia 1º às 00:00 UTC; 31d só garante que não zere antes
+      # Haiku/Sonnet/Opus 5.5 recusam (erro 400) temperature/top_p/top_k fora do padrão
+      additional_drop_params: ["temperature", "top_p", "top_k"]
+      cache_control_injection_points:
+        - location: message
+          role: system
+    model_info:
+      id: dep-haiku-5-5              # obrigatório para o teto; NÃO pode ser igual ao model_name (senão o LiteLLM pula o teto)
+      # até 100 mil tokens de entrada; acima disso a Anthropic cobra 5x (manter o contexto do Haiku abaixo de 100 mil)
+      input_cost_per_token: 0.0000001
+      output_cost_per_token: 0.0000005
+      cache_read_input_token_cost: 0.00000001
+      cache_creation_input_token_cost: 0.000000125
+
+  - model_name: sonnet
+    litellm_params:
+      model: anthropic/claude-sonnet-5-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+      max_budget: 30            # teto do documento: US$ 30 por mês
+      budget_duration: 31d            # o atena-litellm-virada-mes zera todo dia 1º às 00:00 UTC; 31d só garante que não zere antes
+      additional_drop_params: ["temperature", "top_p", "top_k"]
+      cache_control_injection_points:
+        - location: message
+          role: system
+    model_info:
+      id: dep-sonnet-5-5              # obrigatório para o teto; NÃO pode ser igual ao model_name (senão o LiteLLM pula o teto)
+      input_cost_per_token: 0.000002
+      output_cost_per_token: 0.00001
+      cache_read_input_token_cost: 0.0000002
+      cache_creation_input_token_cost: 0.0000025
+
+  - model_name: opus
+    litellm_params:
+      model: anthropic/claude-opus-5-5
+      api_key: os.environ/ANTHROPIC_API_KEY
+      max_budget: 20            # teto do documento: US$ 20 por mês
+      budget_duration: 31d            # o atena-litellm-virada-mes zera todo dia 1º às 00:00 UTC; 31d só garante que não zere antes
+      additional_drop_params: ["temperature", "top_p", "top_k"]
+      cache_control_injection_points:
+        - location: message
+          role: system
+    model_info:
+      id: dep-opus-5-5              # obrigatório para o teto; NÃO pode ser igual ao model_name (senão o LiteLLM pula o teto)
+      input_cost_per_token: 0.000004
+      output_cost_per_token: 0.00002
+      cache_read_input_token_cost: 0.0000002
+      cache_creation_input_token_cost: 0.000005
+
+  - model_name: local
+    litellm_params:
+      model: ollama_chat/qwen3:4b
+      api_base: http://ollama:11434
+    model_info:
+      input_cost_per_token: 0
+      output_cost_per_token: 0
+
+
+litellm_settings:
+  drop_params: true
+  num_retries: 2
+  request_timeout: 600
+  # documento: Haiku -> Groq -> local. O Groq ainda não está configurado e, quando estiver,
+  # não pode receber dados da empresa nem do cliente externo.
+  fallbacks:
+    - haiku: ["local"]
+
+router_settings:
+  # gasto por modelo guardado no Redis: sobrevive a reinícios
+  redis_host: litellm-redis
+  redis_port: 6379
+  redis_password: os.environ/REDIS_PASSWORD
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  database_url: os.environ/DATABASE_URL
