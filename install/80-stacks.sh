@@ -28,6 +28,10 @@ for compose in "$RAIZ"/stacks/*/*/compose.yaml; do
   ok "$zona/$nome"
 done
 
+# atalhos do Dockge: o .path perde mudanças feitas enquanto a sincronização roda,
+# e aqui várias stacks são criadas de uma vez
+systemctl start atena-stacks-sync.service
+
 # pastas de dados usadas pelos composes
 for d in core/dockge core/beszel/data core/beszel/agent core/beszel/socket core/beszel/disco-srv \
          ai/models/ollama ai/models/huggingface ai/ollama ai/litellm/db ai/litellm/redis \
