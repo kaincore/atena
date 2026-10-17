@@ -1,0 +1,13 @@
+[Unit]
+Description=Atena: impede containers de alcancar a LAN e o Tailscale
+After=ufw.service
+Before=docker.service
+PartOf=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/atena-docker-firewall
+
+[Install]
+WantedBy=docker.service
