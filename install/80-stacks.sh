@@ -20,7 +20,7 @@ for compose in "$RAIZ"/stacks/*/*/compose.yaml; do
   if [ "$ATENA_GPU" = none ]; then
     # sem GPU: tira o pedido de GPU e usa as imagens que rodam só na CPU
     sed -i '/^ *gpus: all/d' "$destino/compose.yaml"
-    sed -i -e 's|speaches:0.8.3-cuda-12.6.3|speaches:0.8.3-cpu|' \
+    sed -i -e 's|speaches:0.8.3-cuda-12.6.3 .*|speaches:0.8.3-cpu|' \
            -e 's|WHISPER__INFERENCE_DEVICE: cuda|WHISPER__INFERENCE_DEVICE: cpu|' \
            -e 's|henrygd/beszel-agent-nvidia:|henrygd/beszel-agent:|' "$destino/compose.yaml"
   fi
