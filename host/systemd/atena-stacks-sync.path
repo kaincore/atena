@@ -1,0 +1,13 @@
+[Unit]
+Description=Atena: observa as pastas das zonas e atualiza os atalhos do Dockge
+
+[Path]
+PathChanged=/opt/atena/stacks/prod
+PathChanged=/opt/atena/stacks/core
+PathChanged=/opt/atena/stacks/apps
+PathChanged=/opt/atena/stacks/ai
+PathChanged=/opt/atena/stacks/agents
+PathChanged=/opt/atena/stacks/lab
+
+[Install]
+WantedBy=multi-user.target
