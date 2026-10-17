@@ -1,0 +1,9 @@
+[Unit]
+Description=Atena: virada do mês dos tetos do LiteLLM (dia 1º, 00:00 UTC, igual à Anthropic)
+
+[Timer]
+OnCalendar=*-*-01 00:00:00 UTC
+Persistent=true
+
+[Install]
+WantedBy=timers.target
