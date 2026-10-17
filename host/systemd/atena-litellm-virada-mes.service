@@ -1,0 +1,8 @@
+[Unit]
+Description=Atena: zera os tetos por modelo do LiteLLM (virada do mês)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/atena-litellm-virada-mes
