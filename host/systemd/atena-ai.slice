@@ -1,0 +1,6 @@
+[Unit]
+Description=Atena zona ai (IA local, GPU, gateway de LLM)
+
+[Slice]
+CPUWeight=100
+MemoryMax=6G
