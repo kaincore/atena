@@ -1,0 +1,27 @@
+# Segredos: nunca vão para o repositório (use os arquivos .env.example)
+.env
+*.env
+!*.env.example
+*.key
+*.pem
+id_*
+!id_*.pub
+
+# Configuração local do servidor (gerada a partir de atena.conf.example)
+atena.conf
+
+# Dados, bancos e modelos ficam em /srv, fora do repositório
+data/
+uploads/
+models/
+*.db
+*.sqlite*
+
+# Dependências e builds
+node_modules/
+dist/
+
+# Sistema e editores
+.DS_Store
+*.swp
+*~
