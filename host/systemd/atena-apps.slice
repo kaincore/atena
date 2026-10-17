@@ -1,0 +1,6 @@
+[Unit]
+Description=Atena zona apps (apps pessoais)
+
+[Slice]
+CPUWeight=100
+MemoryMax=4G
