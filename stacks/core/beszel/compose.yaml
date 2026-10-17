@@ -1,0 +1,39 @@
+# Beszel: monitoramento de CPU, RAM, disco, GPU e containers.
+# Painel (hub) e agente conversam por um arquivo de socket: o agente não abre porta de rede.
+services:
+  beszel:
+    image: henrygd/beszel:0.21.0
+    container_name: beszel
+    cgroup_parent: atena-core.slice
+    restart: unless-stopped
+    environment:
+      APP_URL: http://{{ATENA_LAN_IP}}:8090
+    volumes:
+      - /srv/core/beszel/data:/beszel_data
+      - /srv/core/beszel/socket:/beszel_socket
+    networks: [zone]
+    ports:
+      - "{{ATENA_LAN_IP}}:8090:8090"   # rede de casa
+      - "127.0.0.1:8090:8090"      # para o tailscale serve (fora de casa)
+
+  beszel-agent:
+    image: henrygd/beszel-agent-nvidia:0.21.0
+    container_name: beszel-agent
+    cgroup_parent: atena-core.slice
+    restart: unless-stopped
+    network_mode: host               # precisa ver a rede do servidor; não abre porta (usa o socket)
+    gpus: all
+    volumes:
+      - /srv/core/beszel/agent:/var/lib/beszel-agent
+      - /srv/core/beszel/socket:/beszel_socket
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /srv/core/beszel/disco-srv:/extra-filesystems/sda1:ro   # mostra o SSD (/srv) também
+    environment:
+      LISTEN: /beszel_socket/beszel.sock
+      KEY: "${BESZEL_KEY}"           # chave pública do painel, em .env
+      SYSTEM_NAME: atena
+
+networks:
+  zone:
+    name: zone-core
+    external: true
