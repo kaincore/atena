@@ -1,0 +1,26 @@
+# Dockge: painel web para ver, subir, parar e editar as stacks.
+# Tem acesso ao Docker (equivale a root no servidor): a senha dele protege o servidor inteiro.
+# As stacks aparecem por meio dos atalhos em /opt/atena/dockge (atena-stacks-sync).
+services:
+  dockge:
+    image: louislam/dockge:1.5.0
+    container_name: dockge
+    cgroup_parent: atena-core.slice
+    restart: unless-stopped
+    environment:
+      DOCKGE_STACKS_DIR: /opt/atena/dockge
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /srv/core/dockge:/app/data
+      # mesmos caminhos dentro e fora do container (exigência do Dockge)
+      - /opt/atena/dockge:/opt/atena/dockge
+      - /opt/atena/stacks:/opt/atena/stacks
+    networks: [zone]
+    ports:
+      - "{{ATENA_LAN_IP}}:5001:5001"   # rede de casa
+      - "127.0.0.1:5001:5001"      # para o tailscale serve (fora de casa)
+
+networks:
+  zone:
+    name: zone-core
+    external: true
