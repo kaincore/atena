@@ -1,0 +1,12 @@
+#!/bin/sh
+# Atena: zera os tetos por modelo do LiteLLM no dia 1º (o LiteLLM só sabe contar a partir do primeiro gasto).
+# O teto total das chaves (budget_duration 1mo) já renova sozinho no dia 1º.
+set -eu
+docker exec litellm-redis sh -c '
+  for k in $(redis-cli -a "$REDIS_PASSWORD" --no-auth-warning --scan --pattern "deployment_spend:*") \
+           $(redis-cli -a "$REDIS_PASSWORD" --no-auth-warning --scan --pattern "deployment_budget_start_time:*"); do
+    redis-cli -a "$REDIS_PASSWORD" --no-auth-warning del "$k" >/dev/null
+  done'
+# reinicia para limpar a cópia em memória dos contadores
+docker restart litellm >/dev/null
+echo "tetos por modelo do LiteLLM zerados em $(date -u +%Y-%m-%dT%H:%MZ)"
