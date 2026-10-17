@@ -1,0 +1,7 @@
+[Unit]
+Description=Atena zona prod (clientes externos): prioridade maxima, memoria protegida
+
+[Slice]
+CPUWeight=1000
+IOWeight=1000
+MemoryLow=4G
