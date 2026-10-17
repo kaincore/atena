@@ -1,0 +1,34 @@
+#!/bin/sh
+# Atena: grava a chave da API da Anthropic no LiteLLM sem mostrar na tela.
+# Uso: rode "atena-chave-anthropic" como o usuário atena (sem sudo), no seu terminal SSH.
+set -eu
+DIR=/opt/atena/stacks/ai/litellm
+ENV=$DIR/.env
+[ -w "$ENV" ] || { echo "Rode como o usuário atena, sem sudo."; exit 1; }
+trap 'stty echo 2>/dev/null || true' EXIT INT TERM
+printf "Cole a chave da API da Anthropic (ela não aparece na tela) e aperte Enter: "
+stty -echo 2>/dev/null || true
+IFS= read -r KEY || true
+stty echo 2>/dev/null || true
+echo
+KEY=$(printf %s "$KEY" | tr -d '[:space:]')
+case "$KEY" in
+  sk-ant-*) ;;
+  *) echo "Isso não parece uma chave da Anthropic (deveria começar com sk-ant-). Nada foi alterado."; exit 1 ;;
+esac
+# confere a chave pedindo a lista de modelos: não consome tokens nem gera custo
+CODE=$(printf 'header = "x-api-key: %s"\nheader = "anthropic-version: 2023-06-01"\n' "$KEY" \
+  | curl -s -o /dev/null -w '%{http_code}' --max-time 20 -K - https://api.anthropic.com/v1/models) || CODE=000
+case "$CODE" in
+  200) echo "A Anthropic aceitou a chave." ;;
+  401|403) echo "A Anthropic recusou a chave (HTTP $CODE). Confira se copiou inteira. Nada foi alterado."; exit 1 ;;
+  *) echo "Não consegui falar com a Anthropic para conferir a chave (HTTP $CODE). Nada foi alterado."; exit 1 ;;
+esac
+TMP=$(mktemp "$ENV.XXXXXX")
+chmod 600 "$TMP"
+grep -v '^ANTHROPIC_API_KEY=' "$ENV" > "$TMP"
+printf 'ANTHROPIC_API_KEY=%s\n' "$KEY" >> "$TMP"
+mv "$TMP" "$ENV"
+KEY=
+cd "$DIR" && docker compose up -d --force-recreate litellm >/dev/null 2>&1
+echo "Chave gravada e LiteLLM reiniciado. Pode avisar o Claude."
