@@ -1,0 +1,4 @@
+#!/bin/sh
+# Trava de commit: não deixa entrar segredo nem dado pessoal.
+# Ative uma vez no seu clone com: git config core.hooksPath tools/hooks
+exec "$(git rev-parse --show-toplevel)/tools/verificar-vazamentos.sh"
