@@ -17,7 +17,7 @@ ENDURECER_SSH=nao
 for arg in "$@"; do
   case "$arg" in
     --ssh) ENDURECER_SSH=sim ;;
-    -h|--help) sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) erro "opção desconhecida: $arg (veja: ./install.sh --help)" ;;
   esac
 done
