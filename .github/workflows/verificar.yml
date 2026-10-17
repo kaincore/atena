@@ -1,0 +1,46 @@
+# Verificações automáticas a cada envio: scripts, composes e segredos.
+name: verificar
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scripts:
+    name: shellcheck
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: instalador e ferramentas (bash)
+        run: docker run --rm -v "$PWD:/mnt:ro" -w /mnt koalaman/shellcheck:v0.10.0 -x -s bash install.sh install/*.sh tools/verificar-vazamentos.sh
+      - name: scripts do servidor (sh)
+        run: docker run --rm -v "$PWD:/mnt:ro" -w /mnt koalaman/shellcheck:v0.10.0 -s sh host/sbin/* tools/hooks/pre-commit
+
+  composes:
+    name: composes válidos
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: valida cada compose com os valores de exemplo
+        run: |
+          set -a; . ./atena.conf.example; set +a
+          for f in stacks/*/*/compose.yaml; do
+            d=$(mktemp -d); cp -r "$(dirname "$f")/." "$d/"
+            sed -e "s|{{ATENA_LAN_IP}}|$ATENA_LAN_IP|g" "$f" > "$d/compose.yaml"
+            if [ -f "$d/.env.example" ]; then cp "$d/.env.example" "$d/.env"; fi
+            docker compose -f "$d/compose.yaml" config --quiet
+            echo "ok $f"
+          done
+
+  segredos:
+    name: gitleaks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: procura segredos em todo o histórico
+        run: docker run --rm -v "$PWD:/repo:ro" zricethezav/gitleaks:v8.21.2 git /repo --redact -v
