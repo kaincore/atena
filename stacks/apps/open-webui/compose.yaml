@@ -1,0 +1,32 @@
+# Open WebUI: chat no navegador com os modelos do servidor.
+# Fala só com o LiteLLM (rede svc-llm), nunca direto com o Ollama. Chave própria no LiteLLM: teto de US$ 10/mês.
+# Segredos em .env (600). A primeira conta criada vira administradora.
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:v0.11.4   # >= 0.11.4: correções de segurança de 27/09/2026
+    container_name: open-webui
+    cgroup_parent: atena-apps.slice
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      ENABLE_OLLAMA_API: "false"
+      OPENAI_API_BASE_URLS: http://litellm:4000/v1
+      ENABLE_COMMUNITY_SHARING: "false"     # não publica conversas no site da comunidade
+      ENABLE_VERSION_UPDATE_CHECK: "false"  # versões novas: avisadas pelo Diun
+      SCARF_NO_ANALYTICS: "true"
+      DO_NOT_TRACK: "true"
+      ANONYMIZED_TELEMETRY: "false"
+    volumes:
+      - /srv/apps/open-webui:/app/backend/data
+    networks: [zone, llm]
+    ports:
+      - "{{ATENA_LAN_IP}}:3000:8080"   # rede de casa
+      - "127.0.0.1:3000:8080"      # para o tailscale serve (fora de casa)
+
+networks:
+  zone:
+    name: zone-apps
+    external: true
+  llm:
+    name: svc-llm
+    external: true
