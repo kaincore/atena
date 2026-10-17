@@ -1,0 +1,7 @@
+{
+  "ip": "127.0.0.1",
+  "log-driver": "json-file",
+  "log-opts": { "max-size": "10m", "max-file": "3" },
+  "live-restore": true,
+  "default-address-pools": [{ "base": "10.20.0.0/16", "size": 24 }]
+}
