@@ -1,0 +1,56 @@
+#!/bin/sh
+# Atena: firewall dos containers (cadeia DOCKER-USER, consultada antes das regras do Docker).
+#  - Saída (ATENA-EGRESS): containers alcançam a internet, mas nunca a rede de casa
+#    nem os aparelhos do Tailscale.
+#  - Entrada: qualquer aparelho da rede de casa acessa os serviços publicados no IP do servidor,
+#    de todas as zonas. Internet e Tailscale não abrem conexão direto com containers
+#    (fora de casa, o acesso é via tailscale serve).
+# Os valores da rede vêm de /etc/atena/atena.conf.
+# Para liberar algo, adicione uma linha "RETURN" na seção de exceções e rode:
+#   sudo systemctl restart atena-docker-firewall
+set -e
+. /etc/atena/atena.conf
+C=ATENA-EGRESS
+
+# roda antes do Docker: cria a DOCKER-USER se ainda não existir (o Docker mantém o conteúdo)
+iptables -N DOCKER-USER 2>/dev/null || true
+iptables -N $C 2>/dev/null || iptables -F $C
+
+# respostas de conexões já aceitas
+iptables -A $C -m conntrack --ctstate RELATED,ESTABLISHED -j RETURN
+# tráfego entre containers: o próprio Docker já isola as redes
+iptables -A $C -o br-+ -j RETURN
+iptables -A $C -o docker0 -j RETURN
+# DNS do roteador (o DNS interno do Docker encaminha para ele)
+iptables -A $C -d "$ATENA_ROUTER_IP" -p udp --dport 53 -j RETURN
+iptables -A $C -d "$ATENA_ROUTER_IP" -p tcp --dport 53 -j RETURN
+
+# --- exceções (ex.: zona core monitorando uma impressora da rede de casa) ---
+# iptables -A $C -s 10.10.0.0/24 -d 192.168.0.50 -j RETURN
+
+# bloqueios: Tailscale e redes privadas/locais
+iptables -A $C -o tailscale0 -j DROP
+for net in 192.168.0.0/16 172.16.0.0/12 10.0.0.0/8 100.64.0.0/10 169.254.0.0/16; do
+  iptables -A $C -d $net -j DROP
+done
+iptables -A $C -j RETURN
+
+# DOCKER-USER reconstruída do zero (o Docker não coloca nada nela; o conteúdo é todo nosso)
+iptables -F DOCKER-USER
+# tráfego que sai de containers: passa pelas regras de saída
+for i in br-+ docker0; do
+  iptables -A DOCKER-USER -i $i -j $C
+  iptables -A DOCKER-USER -i $i -j RETURN
+done
+# tráfego que chega de fora: só respostas; conexão nova direto para container é descartada
+iptables -A DOCKER-USER -m conntrack --ctstate RELATED,ESTABLISHED -j RETURN
+# --- entrada pela rede de casa ---
+# qualquer aparelho da rede de casa acessa o que estiver publicado no IP do servidor
+iptables -A DOCKER-USER -i "$ATENA_LAN_IF" -s "$ATENA_LAN_CIDR" -m conntrack --ctstate NEW --ctorigdst "$ATENA_LAN_IP" -j RETURN
+iptables -A DOCKER-USER -j DROP
+
+# derruba conexões que containers já tinham aberto para a rede de casa e o Tailscale
+for dst in 192.168.0.0/16 100.64.0.0/10; do
+  conntrack -D -s 10.0.0.0/8 -d $dst >/dev/null 2>&1 || true
+  conntrack -D -s 172.16.0.0/12 -d $dst >/dev/null 2>&1 || true
+done
