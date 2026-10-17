@@ -1,0 +1,22 @@
+# Whisper (Speaches/faster-whisper): transcrição das mensagens de voz, API compatível com a OpenAI
+services:
+  whisper:
+    image: ghcr.io/speaches-ai/speaches:0.8.3-cuda-12.6.3   # CUDA 12: a GTX 1060 não roda CUDA 13
+    container_name: whisper
+    cgroup_parent: atena-ai.slice
+    restart: unless-stopped
+    gpus: all
+    environment:
+      WHISPER__INFERENCE_DEVICE: cuda
+      WHISPER__COMPUTE_TYPE: int8     # Pascal é lento em float16; int8 usa DP4A
+      WHISPER__TTL: "600"             # libera a VRAM depois de 10 min sem uso
+      ENABLE_UI: "false"
+    volumes:
+      - /srv/ai/models/huggingface:/home/ubuntu/.cache/huggingface/hub
+    networks: [zone]
+    ports: ["127.0.0.1:8000:8000"]    # sempre com 127.0.0.1 explícito
+
+networks:
+  zone:
+    name: zone-ai
+    external: true
