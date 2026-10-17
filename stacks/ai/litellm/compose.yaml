@@ -1,0 +1,70 @@
+# LiteLLM: gateway único para Claude (Haiku, Sonnet, Opus) e modelos locais, com tetos de gasto.
+# Segredos em .env (600). A chave da Anthropic é gravada pelo comando atena-chave-anthropic.
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:v1.101.6   # >= 1.100.4: correção da falha crítica de 30/09/2026
+    container_name: litellm
+    cgroup_parent: atena-ai.slice
+    restart: unless-stopped
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://litellm:${POSTGRES_PASSWORD}@litellm-db:5432/litellm
+      STORE_MODEL_IN_DB: "False"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+    networks: [zone, llm, backend]
+    ports:
+      - "{{ATENA_LAN_IP}}:4000:4000"   # rede de casa (exige chave para usar)
+      - "127.0.0.1:4000:4000"
+    depends_on:
+      litellm-db:
+        condition: service_healthy
+      litellm-redis:
+        condition: service_healthy
+
+  # guarda o gasto de cada modelo; sem ele os tetos por modelo zeram a cada reinício do LiteLLM
+  litellm-redis:
+    image: redis:8.10.2-alpine3.23
+    container_name: litellm-redis
+    cgroup_parent: atena-ai.slice
+    restart: unless-stopped
+    command: ["sh", "-c", "exec redis-server --requirepass \"$$REDIS_PASSWORD\" --appendonly yes --save 60 1"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+      - /srv/ai/litellm/redis:/data
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$$REDIS_PASSWORD\" --no-auth-warning ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  litellm-db:
+    image: postgres:17.11-alpine3.24
+    container_name: litellm-db
+    cgroup_parent: atena-ai.slice
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: litellm
+      POSTGRES_USER: litellm
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - /srv/ai/litellm/db:/var/lib/postgresql/data
+    networks: [backend]              # sem internet e sem acesso a outras zonas
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U litellm -d litellm"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+networks:
+  zone:
+    name: zone-ai
+    external: true
+  llm:
+    name: svc-llm
+    external: true
+  backend:
+    internal: true
