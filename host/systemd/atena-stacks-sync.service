@@ -1,0 +1,6 @@
+[Unit]
+Description=Atena: atualiza os atalhos das stacks para o Dockge
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/atena-stacks-sync
