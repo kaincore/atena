@@ -1,0 +1,4 @@
+# Variáveis compartilhadas entre install.sh e as etapas, que são carregadas com "."
+disable=SC2034
+# Arquivos do sistema (/etc/os-release, /etc/atena/atena.conf) não existem na verificação
+disable=SC1091
