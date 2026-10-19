@@ -34,13 +34,20 @@ O Docker já isola redes diferentes: um container da zona `agents` não alcança
 
 O executor (`/usr/local/sbin/atena-executor`) é o **único caminho** dos clientes (a Atena e, no futuro, um painel) até o servidor. Ele roda no próprio servidor, como o usuário `atena-exec`, e ouve o socket `/run/atena-executor/executor.sock` (grupo `atena-acoes`).
 
-```
+<p align="center"><img src="../assets/fluxo.svg" width="100%" alt="Caminho de um pedido: você fala no Telegram com o Hermes, que usa o LiteLLM para chegar ao Claude ou aos modelos de casa. Pelo socket, o Hermes pede ao executor, que age no servidor (Docker, systemd, arquivos, PC). Para aprovar, o executor avisa o celular pelo ntfy, e o toque em Aprovar volta pelo ntfy até o executor."></p>
+
+<details>
+<summary>Diagrama em texto</summary>
+
+```text
 Você (Telegram) ──> Hermes (zona agents) ──> LiteLLM (svc-llm) ──> Anthropic ou modelos de casa
                        │
                        └─ socket ──> executor (servidor) ──> Docker, systemd, arquivos, PC
 Celular (app ntfy) <── alertas e pedidos de aprovação ── executor
        └─ toque em Aprovar ──> ntfy (tópico respostas) ──> executor
 ```
+
+</details>
 
 - **Lista fechada.** Cada ação é uma função com comando fixo e parâmetros validados contra o que existe (nome da stack, unidade, caminho). Não há shell.
 - **Um token por cliente.** O token diz quais ações e quais zonas o cliente pode pedir. Só o hash fica guardado (`/etc/atena/executor/tokens.json`).
