@@ -1,0 +1,37 @@
+#!/bin/sh
+# Atena: cria a chave do LiteLLM da Atena (Hermes), com teto por mês, e grava no Hermes sem mostrar
+# na tela. Rodar de novo troca a chave (a antiga deixa de valer).
+# Uso: sudo atena-hermes-chave [teto em dólares por mês; padrão 10]
+set -eu
+[ "$(id -u)" = 0 ] || { echo "Rode com sudo: sudo atena-hermes-chave"; exit 1; }
+TETO=${1:-10}
+printf %s "$TETO" | grep -Eq '^[0-9]+([.][0-9]+)?$' || { echo "O teto é um número em dólares (ex.: 10)."; exit 1; }
+L=/opt/atena/stacks/ai/litellm/.env
+H=/srv/agents/hermes/.env
+[ -f "$H" ] || { echo "O Hermes ainda não foi instalado (sudo ./install.sh --hermes)."; exit 1; }
+MASTER=$(grep '^LITELLM_MASTER_KEY=' "$L" | cut -d= -f2-)
+[ -n "$MASTER" ] || { echo "Não achei a LITELLM_MASTER_KEY em $L."; exit 1; }
+curl -fsS -m 5 -o /dev/null http://127.0.0.1:4000/health/liveliness \
+  || { echo "O LiteLLM não está no ar: suba a stack ai/litellm (e grave a chave com atena-chave-anthropic)."; exit 1; }
+
+api() {   # api <rota> <json>: a chave mestra vai pela entrada do curl, não pela linha de comando
+  printf 'header = "Authorization: Bearer %s"\n' "$MASTER" \
+    | curl -fsS -m 20 -K - -H 'Content-Type: application/json' -d "$2" "http://127.0.0.1:4000$1"
+}
+api /key/delete '{"key_aliases": ["hermes"]}' >/dev/null 2>&1 || true   # sem chave antiga: tudo bem
+RESPOSTA=$(api /key/generate "{\"key_alias\": \"hermes\", \"models\": [\"haiku\", \"sonnet\", \"opus\", \"local\", \"whisper\"],
+  \"max_budget\": $TETO, \"budget_duration\": \"1mo\"}") || { echo "O LiteLLM recusou criar a chave."; exit 1; }
+MASTER=
+KEY=$(printf %s "$RESPOSTA" | python3 -c 'import json, sys; print(json.load(sys.stdin)["key"])')
+RESPOSTA=
+
+# a mesma chave serve para conversar e para transcrever a voz (Whisper pelo LiteLLM)
+TMP=$(mktemp "$H.XXXXXX")
+grep -v -e '^ATENA_LITELLM_KEY=' -e '^VOICE_TOOLS_OPENAI_KEY=' "$H" > "$TMP" || true
+printf 'ATENA_LITELLM_KEY=%s\nVOICE_TOOLS_OPENAI_KEY=%s\n' "$KEY" "$KEY" >> "$TMP"
+KEY=
+chown --reference="$H" "$TMP"
+chmod 600 "$TMP"
+mv "$TMP" "$H"
+docker restart hermes >/dev/null
+echo "Chave da Atena criada (teto de US\$ $TETO por mês, renova todo mês) e gravada no Hermes."
