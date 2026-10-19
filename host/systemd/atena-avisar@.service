@@ -1,0 +1,6 @@
+[Unit]
+Description=Atena: avisa no celular que %i falhou
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/atena-avisar --falha %i
