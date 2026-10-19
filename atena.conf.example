@@ -23,3 +23,11 @@ ATENA_GPU=none
 ATENA_NVIDIA_SERIES=580
 # Tailscale para acesso fora de casa: "sim" ou "nao"
 ATENA_TAILSCALE=sim
+
+# --- Avisos e agenda --------------------------------------------------------
+# Fuso horário dos agendamentos (Hermes) e dos registros
+ATENA_TZ=America/Sao_Paulo
+# Endereço do ntfy que o celular usa. Os botões de aprovação chamam este endereço.
+#   Só em casa:    http://<ATENA_LAN_IP>:2586
+#   Com Tailscale: https://<nome-do-servidor>.<sua-tailnet>.ts.net:2586 (com tailscale serve)
+ATENA_NTFY_URL=http://192.168.0.10:2586
