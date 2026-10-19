@@ -1,0 +1,324 @@
+#!/usr/bin/env python3
+"""Atena: executor de ações do servidor.
+
+O único caminho para os clientes (o Hermes e, no futuro, um painel) mexerem no servidor. Ouve um
+socket unix e só conhece uma lista fechada de ações. Nunca usa shell: cada ação é um comando fixo,
+com parâmetros validados contra o que existe de verdade. Cada cliente tem um token próprio, e cada
+token só pode pedir as ações e as zonas dele.
+
+Protocolo: HTTP no socket /run/atena-executor/executor.sock (permissão 660, grupo atena-acoes)
+  GET  /acoes                     ações que o token pode pedir
+  POST /acao/<nome>               corpo JSON {"params": {...}, "origem": "manual|agendamento|..."}
+  Cabeçalho: Authorization: Bearer <token>
+
+Administração (como root):
+  atena-executor token-novo <cliente> <acoes> <zonas>
+      listas separadas por vírgula; imprime o token uma única vez; só o hash fica guardado
+  atena-executor token-remover <cliente>   revoga o token do cliente
+  atena-executor tokens   lista os clientes cadastrados
+"""
+import hashlib
+import http.server
+import json
+import os
+import re
+import secrets
+import shutil
+import socketserver
+import subprocess
+import sys
+import time
+import urllib.parse
+
+SOCKET = "/run/atena-executor/executor.sock"
+TOKENS = "/etc/atena/executor/tokens.json"
+CONF = "/etc/atena/atena.conf"
+GRUPO_CLIENTES = "atena-acoes"
+LIMITE_SAIDA = 10 * 1024
+ZONAS = {"prod", "core", "apps", "ai", "agents", "lab"}
+
+
+def log(**campos):
+    print(json.dumps(campos, ensure_ascii=False), flush=True)  # vai para o journal
+
+
+def ler_conf():
+    conf = {}
+    with open(CONF) as f:
+        for linha in f:
+            linha = linha.split("#", 1)[0].strip()
+            if "=" in linha:
+                chave, valor = linha.split("=", 1)
+                conf[chave.strip()] = valor.strip().strip('"')
+    return conf
+
+
+def rodar(argv, tempo=30):
+    r = subprocess.run(argv, capture_output=True, text=True, timeout=tempo)
+    return r.returncode, (r.stdout + r.stderr)[-LIMITE_SAIDA:]
+
+
+class Erro(Exception):
+    def __init__(self, status, mensagem):
+        super().__init__(mensagem)
+        self.status = status
+
+
+# --- o que existe no servidor ------------------------------------------------------------------
+
+# na dúvida, vale a zona mais restrita
+PRIORIDADE_ZONAS = ["prod", "core", "agents", "ai", "apps", "lab"]
+
+
+def containers():
+    """Containers do Docker com stack e zona.
+
+    A zona vem da pasta do compose (/opt/atena/stacks/<zona>/<stack>). Se a stack foi iniciada pelo
+    Dockge, a pasta aparece como o atalho /opt/atena/dockge/<stack>; aí a zona vem das redes zone-*.
+    """
+    formato = "\t".join([
+        '{{.Label "com.docker.compose.project"}}',
+        '{{.Label "com.docker.compose.project.working_dir"}}',
+        "{{.Names}}", "{{.State}}", "{{.Status}}", "{{.Networks}}",
+    ])
+    codigo, saida = rodar(["docker", "ps", "-a", "--format", formato])
+    if codigo != 0:
+        raise Erro(500, "não consegui consultar o Docker")
+    lista, zonas_da_stack = [], {}
+    for linha in saida.splitlines():
+        partes = linha.split("\t")
+        if len(partes) != 6 or not partes[0]:
+            continue
+        stack, pasta, nome, estado, status, redes = partes
+        candidatas = set()
+        m = re.fullmatch(r"/opt/atena/stacks/([a-z]+)/[^/]+", pasta)
+        if m and m.group(1) in ZONAS:
+            candidatas.add(m.group(1))
+        for rede in redes.split(","):
+            r = re.fullmatch(r"zone-([a-z]+)(-.+)?", rede)
+            if r and r.group(1) in ZONAS:
+                candidatas.add(r.group(1))
+        zonas_da_stack.setdefault(stack, set()).update(candidatas)
+        lista.append({"stack": stack, "container": nome, "estado": estado, "status": status})
+    for c in lista:
+        candidatas = zonas_da_stack[c["stack"]]
+        c["zona"] = next((z for z in PRIORIDADE_ZONAS if z in candidatas), "?")
+    return lista
+
+
+def stack_permitida(cliente, stack):
+    if not isinstance(stack, str) or not re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,63}", stack):
+        raise Erro(400, "nome de stack inválido")
+    doks = [c for c in containers() if c["stack"] == stack]
+    if not doks:
+        raise Erro(404, f"a stack {stack} não existe")
+    if doks[0]["zona"] not in cliente["zonas"]:
+        raise Erro(403, f"a stack {stack} está fora das zonas deste cliente")
+    return [c["container"] for c in doks]
+
+
+# --- ações -------------------------------------------------------------------------------------
+
+def acao_status_servicos(cliente, params):
+    return [c for c in containers() if c["zona"] in cliente["zonas"]]
+
+
+def acao_status_recursos(cliente, params):
+    with open("/proc/loadavg") as f:
+        carga = [float(x) for x in f.read().split()[:3]]
+    mem = {}
+    with open("/proc/meminfo") as f:
+        for linha in f:
+            chave, valor = linha.split(":", 1)
+            mem[chave] = int(valor.split()[0]) // 1024
+    discos = {}
+    for ponto in ("/", "/srv"):
+        st = os.statvfs(ponto)
+        discos[ponto] = {"total_gb": round(st.f_blocks * st.f_frsize / 1e9, 1),
+                         "livre_gb": round(st.f_bavail * st.f_frsize / 1e9, 1)}
+    gpu = None
+    try:
+        codigo, saida = rodar(["nvidia-smi", "--query-gpu=name,memory.used,memory.total,temperature.gpu,utilization.gpu",
+                               "--format=csv,noheader,nounits"], 10)
+        if codigo == 0:
+            nome, usada, total, temp, uso = [x.strip() for x in saida.strip().split(",")]
+            gpu = {"nome": nome, "vram_usada_mb": int(usada), "vram_total_mb": int(total),
+                   "temperatura_c": int(temp), "uso_pct": int(uso)}
+    except (FileNotFoundError, subprocess.TimeoutExpired, ValueError):
+        pass
+    return {"carga": carga, "nucleos": os.cpu_count(),
+            "ram_total_mb": mem["MemTotal"], "ram_disponivel_mb": mem["MemAvailable"],
+            "discos": discos, "gpu": gpu}
+
+
+def acao_servico_logs(cliente, params):
+    nomes = stack_permitida(cliente, params.get("stack"))
+    linhas = params.get("linhas", 100)
+    if not isinstance(linhas, int) or not 1 <= linhas <= 500:
+        raise Erro(400, "linhas deve ser um número de 1 a 500")
+    saida = {}
+    for nome in nomes:
+        _, texto = rodar(["docker", "logs", "--tail", str(linhas), nome])
+        saida[nome] = texto
+    return saida
+
+
+# nome: (função, descrição, preparar). Sem preparar, a ação roda na hora: função(cliente, params).
+ACOES = {
+    "status.servicos":   (acao_status_servicos, "estado dos containers das zonas do cliente", None),
+    "status.recursos":   (acao_status_recursos, "CPU, RAM, discos e GPU agora", None),
+    "servico.logs":      (acao_servico_logs, "últimas linhas do log de uma stack (stack, linhas<=500)", None),
+}
+
+
+# --- tokens ------------------------------------------------------------------------------------
+
+def hash_token(token):
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+def carregar_tokens():
+    try:
+        with open(TOKENS) as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+
+def cliente_do_token(cabecalho):
+    if not cabecalho or not cabecalho.startswith("Bearer "):
+        raise Erro(401, "falta o token")
+    cliente = carregar_tokens().get(hash_token(cabecalho[7:].strip()))
+    if not cliente:
+        raise Erro(401, "token inválido")
+    return cliente
+
+
+# --- servidor ----------------------------------------------------------------------------------
+
+class Pedido(http.server.BaseHTTPRequestHandler):
+    server_version = "atena-executor"
+
+    def address_string(self):
+        return "socket"
+
+    def log_message(self, *args):
+        pass  # o registro útil é o log() de cada ação
+
+    def responder(self, status, corpo):
+        dados = json.dumps(corpo, ensure_ascii=False).encode()
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Content-Length", str(len(dados)))
+        self.end_headers()
+        self.wfile.write(dados)
+
+    def do_GET(self):
+        try:
+            cliente = cliente_do_token(self.headers.get("Authorization"))
+            url = urllib.parse.urlsplit(self.path)
+            if url.path == "/acoes":
+                self.responder(200, {"cliente": cliente["cliente"], "zonas": cliente["zonas"], "acoes": {
+                    n: ACOES[n][1] for n in cliente["acoes"] if n in ACOES}})
+            else:
+                raise Erro(404, "rota desconhecida")
+        except Erro as e:
+            self.responder(e.status, {"ok": False, "erro": str(e)})
+
+    def do_POST(self):
+        inicio = time.monotonic()
+        nome, cliente, origem, params = None, None, None, {}
+        try:
+            cliente = cliente_do_token(self.headers.get("Authorization"))
+            m = re.fullmatch(r"/acao/([a-z.]+)", self.path)
+            if not m or m.group(1) not in ACOES:
+                raise Erro(404, "ação desconhecida")
+            nome = m.group(1)
+            if nome not in cliente["acoes"]:
+                raise Erro(403, f"o cliente {cliente['cliente']} não pode pedir {nome}")
+            tamanho = int(self.headers.get("Content-Length") or 0)
+            if tamanho > 16384:
+                raise Erro(413, "pedido grande demais")
+            corpo = json.loads(self.rfile.read(tamanho) or b"{}")
+            params = corpo.get("params") or {}
+            origem = str(corpo.get("origem", "manual"))[:32]
+            if not isinstance(params, dict):
+                raise Erro(400, "params deve ser um objeto")
+            funcao = ACOES[nome][0]
+            resultado = funcao(cliente, params)
+            log(cliente=cliente["cliente"], origem=origem, acao=nome, params=params, ok=True,
+                segundos=round(time.monotonic() - inicio, 2))
+            self.responder(200, {"ok": True, "acao": nome, "resultado": resultado})
+        except subprocess.TimeoutExpired:
+            log(cliente=cliente and cliente["cliente"], origem=origem, acao=nome, params=params, ok=False, erro="tempo esgotado")
+            self.responder(504, {"ok": False, "erro": "a ação passou do tempo máximo"})
+        except (Erro, json.JSONDecodeError, ValueError) as e:
+            status = e.status if isinstance(e, Erro) else 400
+            log(cliente=cliente and cliente["cliente"], origem=origem, acao=nome, params=params, ok=False, erro=str(e))
+            self.responder(status, {"ok": False, "erro": str(e)})
+        except Exception as e:   # erro inesperado: responde em vez de derrubar a conexão
+            log(cliente=cliente and cliente["cliente"], origem=origem, acao=nome, params=params, ok=False, erro=repr(e))
+            self.responder(500, {"ok": False, "erro": "erro interno; veja journalctl -u atena-executor"})
+
+
+class Servidor(socketserver.ThreadingMixIn, socketserver.UnixStreamServer):
+    daemon_threads = True
+
+
+def servir():
+    if os.path.exists(SOCKET):
+        os.unlink(SOCKET)
+    servidor = Servidor(SOCKET, Pedido)
+    import grp
+    os.chown(SOCKET, -1, grp.getgrnam(GRUPO_CLIENTES).gr_gid)
+    os.chmod(SOCKET, 0o660)
+    log(evento="executor no ar", socket=SOCKET, acoes=sorted(ACOES))
+    servidor.serve_forever()
+
+
+def gravar_tokens(tokens):
+    os.makedirs(os.path.dirname(TOKENS), exist_ok=True)
+    temporario = TOKENS + ".novo"
+    with open(temporario, "w") as f:
+        json.dump(tokens, f, indent=2, ensure_ascii=False)
+    os.chmod(temporario, 0o640)
+    shutil.chown(temporario, group="atena-exec")  # só o executor lê; os clientes não
+    os.replace(temporario, TOKENS)
+
+
+def token_novo(cliente, acoes, zonas):
+    acoes = [a for a in acoes.split(",") if a]
+    zonas = [z for z in zonas.split(",") if z]
+    desconhecidas = [a for a in acoes if a not in ACOES] + [z for z in zonas if z not in ZONAS]
+    if desconhecidas:
+        sys.exit(f"desconhecido: {', '.join(desconhecidas)}")
+    # um token por cliente: criar de novo revoga o anterior
+    tokens = {h: c for h, c in carregar_tokens().items() if c["cliente"] != cliente}
+    token = "atx-" + secrets.token_urlsafe(32)
+    tokens[hash_token(token)] = {"cliente": cliente, "acoes": acoes, "zonas": zonas}
+    gravar_tokens(tokens)
+    print(token)
+
+
+def token_remover(cliente):
+    tokens = carregar_tokens()
+    restantes = {h: c for h, c in tokens.items() if c["cliente"] != cliente}
+    if len(restantes) == len(tokens):
+        sys.exit(f"o cliente {cliente} não tem token")
+    gravar_tokens(restantes)
+    print(f"token de {cliente} revogado")
+
+
+if __name__ == "__main__":
+    comando = sys.argv[1] if len(sys.argv) > 1 else ""
+    if comando == "servir":
+        servir()
+    elif comando == "token-novo" and len(sys.argv) == 5:
+        token_novo(*sys.argv[2:])
+    elif comando == "token-remover" and len(sys.argv) == 3:
+        token_remover(sys.argv[2])
+    elif comando == "tokens":
+        for c in carregar_tokens().values():
+            print(f"{c['cliente']:12} zonas: {','.join(c['zonas']):28} ações: {','.join(c['acoes'])}")
+    else:
+        sys.exit(__doc__)
