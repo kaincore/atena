@@ -49,6 +49,11 @@ atena@server:~$ █
 
 ## ▌02 // Zone map
 
+<p align="center"><img src="docs/assets/zonas.en.svg" width="100%" alt="Zone map: the internet can't get in; the home network and Tailscale reach the Atena server, drawn as a Greek temple. Inside are the prod, core, apps, agents, ai and lab zones, plus the executor on the host. Allowed links: agents to core (svc-ntfy), apps and agents to ai (svc-llm), agents to the executor (socket) and to lab (workers)."></p>
+
+<details>
+<summary>Text version of the map</summary>
+
 ```text
    INTERNET  ×  ── nothing exposed, nothing gets in ──
 
@@ -72,6 +77,8 @@ atena@server:~$ █
  ║  └─────────────────┘  └─────────────────┘                     ║
  ╚═══════════════════════════════════════════════════════════════╝
 ```
+
+</details>
 
 Different zones can't see each other. The links in the map are the only ones allowed, and each one is deliberate; agent workers also reach the `apps` zone (see [architecture](docs/en/architecture.md)).
 
