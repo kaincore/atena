@@ -58,6 +58,35 @@ After editing a file mounted on its own (such as `config.yaml`), use `docker com
 
 **The first person to open Dockge, Beszel or Open WebUI becomes the admin.** Create the accounts right after starting them.
 
+## Executor, ntfy and Hermes
+
+**Mount the socket's folder, not the socket file.**
+The executor socket is recreated on every restart. With the file mounted, the Hermes container kept looking at the old socket. Mount the `/run/atena-executor` folder and set `RuntimeDirectoryPreserve=yes` on the unit, or systemd recreates the folder and the container loses the path.
+
+**Hermes needs `command: ["gateway", "run"]`.**
+Without it, the container opens the interactive chat, exits and restarts forever.
+
+**The Hermes docs on GitHub describe the development version.**
+Some keys didn't exist yet in the installed version. Check the `config.yaml` it generates, and configure it with `hermes config set`, which validates every key.
+
+**ntfy: lowercase topics, and the phone must subscribe to all of them.**
+Phone keyboards capitalize on their own (`Aprovacoes` is a different topic). And whoever subscribes only to `atena` never sees the approval requests, which go to `aprovacoes`.
+
+**The approval button calls the address the phone can reach.**
+The executor publishes to ntfy over `127.0.0.1`, but the button travels to the phone: it needs the home network or Tailscale address (`ATENA_NTFY_URL`).
+
+**An accepted action is not a finished action.**
+Atena used to say "restarted" while the request was still waiting for the phone. `SOUL.md` now tells her to check the result before stating it, and the executor answers 202 while the request waits.
+
+**Private text doesn't go through LiteLLM.**
+LiteLLM can fall back to a cloud model when the home model doesn't answer. `local.processar` talks straight to Ollama or LM Studio.
+
+**The "thinking" qwen3 4B writes its reasoning before the answer and burns the output limit.**
+Use the instruct version (`qwen3:4b-instruct-2507`) and send `/no_think`.
+
+**After shutting down, the PC still looks "on" in the neighbor table for a few minutes.**
+The executor treats "no route to host" over SSH as "off" instead of an error.
+
 ## Apps
 
 **File uploads with Express (`express-fileupload`):**
