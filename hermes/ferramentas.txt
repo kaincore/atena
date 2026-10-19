@@ -1,0 +1,9 @@
+# Ferramentas Python da Atena (venv em /opt/data/ferramentas/py, dentro do container do Hermes):
+# ler PDF, Word e Excel das notas e das entregas, e gerar PDF. Versões fixas; atualize de propósito.
+pypdf==6.21.1
+pdfplumber==0.11.10
+pypdfium2==5.14.0
+python-docx==1.2.0
+openpyxl==3.1.5
+pillow==13.0.0
+reportlab==5.0.1
