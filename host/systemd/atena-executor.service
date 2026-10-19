@@ -1,0 +1,38 @@
+[Unit]
+Description=Atena: executor de ações (Hermes e painel; lista fechada, sem shell)
+After=docker.service
+Requires=docker.service
+
+[Service]
+User=atena-exec
+Group=atena-exec
+SupplementaryGroups=docker atena-acoes systemd-journal
+ExecStart=/usr/local/sbin/atena-executor servir
+Restart=on-failure
+RuntimeDirectory=atena-executor
+RuntimeDirectoryMode=0755
+# o Hermes monta esta pasta: recriá-la a cada reinício deixaria o container olhando a pasta antiga
+RuntimeDirectoryPreserve=yes
+StateDirectory=atena-executor
+StateDirectoryMode=0700
+Environment=HOME=/run/atena-executor
+# o executor lê qualquer arquivo (só leitura; não escreve nada fora das pastas abaixo).
+# Quem filtra os segredos é o próprio executor (NUNCA_LER, SEGREDO, ocultar).
+AmbientCapabilities=CAP_DAC_READ_SEARCH
+CapabilityBoundingSet=CAP_DAC_READ_SEARCH
+# arquivo.entregar copia arquivos para o Hermes aqui (e só aqui); "-": o Hermes pode não estar instalado
+ReadWritePaths=-/srv/agents/hermes/entregas
+# isolamento: acesso ao Docker já equivale a root, então a lista fechada é a proteção
+# e o resto do sistema fica fechado para ele
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+LockPersonality=yes
+
+[Install]
+WantedBy=multi-user.target
