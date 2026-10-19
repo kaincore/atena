@@ -12,6 +12,7 @@ O executor de ações e a Atena (Hermes), extraídos do primeiro servidor Atena.
 - LiteLLM com o modelo `whisper`, para quem só alcança o LiteLLM.
 - `atena.conf`: `ATENA_TZ`, `ATENA_NTFY_URL`, modelo local e o PC opcional (`ATENA_PC_*`). Um `atena.conf` antigo continua valendo.
 - Testes do executor e da ronda, rodando a cada envio ao GitHub. O verificador de vazamentos reconhece tokens do Telegram, do ntfy e do executor.
+- Instalador testado de ponta a ponta numa VM Ubuntu 26.04 sem GPU, com `--hermes`: executor pela Atena, segredos recusados, aprovação pelo ntfy de verdade, avisos de falha, chave do LiteLLM e três execuções seguidas sem duplicar nada.
 
 ## 0.1.0 (2026-10-17)
 
