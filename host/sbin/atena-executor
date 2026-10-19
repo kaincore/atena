@@ -6,6 +6,10 @@ socket unix e só conhece uma lista fechada de ações. Nunca usa shell: cada a�
 com parâmetros validados contra o que existe de verdade. Cada cliente tem um token próprio, e cada
 token só pode pedir as ações e as zonas dele.
 
+Leitura: as consultas enxergam o servidor inteiro (o serviço tem só CAP_DAC_READ_SEARCH, que lê
+qualquer arquivo e não escreve nada), menos segredos: áreas do sistema e arquivos de chave, token e
+senha são recusados, e linhas com senha, token ou chave saem ocultas (***).
+
 Protocolo: HTTP no socket /run/atena-executor/executor.sock (permissão 660, grupo atena-acoes)
   GET  /acoes                     ações que o token pode pedir
   POST /acao/<nome>               corpo JSON {"params": {...}, "origem": "manual|agendamento|..."}
@@ -185,6 +189,33 @@ def acao_status_sistema(cliente, params):
         raise Erro(500, "não consegui ler o systemd")
 
 
+PRIORIDADES = {"emerg", "alert", "crit", "err", "warning", "notice", "info", "debug"}
+
+
+def acao_servico_journal(cliente, params):
+    """Registro do systemd de uma unidade qualquer, ou do sistema todo (sem unidade)."""
+    unidade, linhas = params.get("unidade"), params.get("linhas", 50)
+    prioridade, desde = params.get("prioridade"), params.get("desde")
+    argv = ["journalctl", "--no-pager", "-o", "short-iso"]
+    if unidade is not None:
+        if not isinstance(unidade, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9@._:\\-]{0,119}", unidade):
+            raise Erro(400, "unidade inválida")
+        argv += ["-u", unidade]
+    if not isinstance(linhas, int) or not 1 <= linhas <= 200:
+        raise Erro(400, "linhas deve ser um número de 1 a 200")
+    argv += ["-n", str(linhas)]
+    if prioridade is not None:
+        if prioridade not in PRIORIDADES:
+            raise Erro(400, "prioridade deve ser uma de: " + ", ".join(sorted(PRIORIDADES)))
+        argv += ["-p", prioridade]
+    if desde is not None:
+        if not isinstance(desde, str) or not re.fullmatch(r"\d{1,3}(min|h|d)", desde):
+            raise Erro(400, 'desde deve ser como "30min", "6h" ou "2d"')
+        argv.append("--since=-" + desde)
+    _, texto = rodar(argv)
+    return ocultar(texto)
+
+
 def acao_servico_logs(cliente, params):
     nomes = stack_permitida(cliente, params.get("stack"))
     linhas = params.get("linhas", 100)
@@ -195,6 +226,141 @@ def acao_servico_logs(cliente, params):
         _, texto = rodar(["docker", "logs", "--tail", str(linhas), nome])
         saida[nome] = texto
     return saida
+
+
+# --- leitura: o servidor inteiro, menos segredos -------------------------------------------------
+
+# Áreas que nunca saem do executor, nem como lista de nomes (prefixos do caminho real).
+NUNCA_LER = ("/proc", "/sys", "/dev", "/run", "/var/lib/docker", "/var/lib/containerd",
+             "/var/lib/tailscale", "/var/lib/atena-executor",
+             "/etc/atena/executor", "/etc/ssl/private", "/etc/letsencrypt")
+# Pastas (em qualquer lugar) e nomes de arquivo que guardam segredos.
+PASTA_SEGREDO = re.compile(r"(^|/)(\.ssh|\.gnupg|\.claude|\.docker|\.aws|\.kube|\.password-store|"
+                           r"\.vscode-server|\.config/atena|keys|secrets?)(/|$)", re.I)
+SEGREDO = re.compile(r"(^|/)(\.env[^/]*|[^/]*\.(key|token|pem|p12|pfx|kdbx)|id_(?![^/]*\.pub$)[^/]+|[^/]*_key|"
+                     r"g?shadow-?|tokens\.json|auth\.json|\.netrc|\.git-credentials|\.npmrc|\.pgpass|"
+                     r"tailscaled\.state|\.[a-z]*_?history|\.viminfo|[^/]*permitidos[^/]*|[^/]*(secret|senha|password|credential)[^/]*)$", re.I)
+# Dentro do texto: o valor de linhas com senha, token ou chave, e formatos conhecidos de token.
+_SENSIVEL = (r"(?:(?:api|access|master|secret|private)[_-]?key|secret|token|senha|password|passwd|"
+             r"bearer|authorization|credential|cookie|salt|webhook|dsn)")
+OCULTAR = [
+    (re.compile(r"(?im)^([\s-]*(?:export\s+)?[\"']?[\w.-]*" + _SENSIVEL + r"[\w.-]*[\"']?\s*[:=]\s*)(\S.*)$"), r"\1***"),
+    (re.compile(r'(?i)("[\w.-]*' + _SENSIVEL + r'[\w.-]*"\s*:\s*)"[^"]*"'), r'\1"***"'),
+    # no meio da linha (registros: "... login ok, password=abc")
+    (re.compile(r"(?i)(\b[\w.-]*" + _SENSIVEL + r"[\w.-]*\s*[:=]\s*)(?!\*\*\*)[^\s,;&]+"), r"\1***"),
+    (re.compile(r"(?i)(\w+://[^:/\s@]+:)[^@\s]+@"), r"\1***@"),
+    (re.compile(r"\b(sk-[\w-]{16,}|gh[pousr]_\w{20,}|github_pat_\w{20,}|xox[abpr]-[\w-]{10,}|AKIA[0-9A-Z]{16}|"
+                r"tskey-[\w-]{10,}|\d{8,10}:[\w-]{35}|eyJ[\w-]{10,}\.[\w-]{10,}\.[\w-]{10,})"), "***"),
+    (re.compile(r"(?i)\b(bearer\s+)[\w.~+/-]{8,}=*"), r"\1***"),
+]
+
+
+def ocultar(texto):
+    for regra, troca in OCULTAR:
+        texto = regra.sub(troca, texto)
+    return texto
+
+
+def caminho_legivel(caminho):
+    if not isinstance(caminho, str) or not caminho.startswith("/") or len(caminho) > 4096:
+        raise Erro(400, "caminho deve ser absoluto")
+    real = os.path.realpath(caminho)
+    if any(real == p or real.startswith(p + "/") for p in NUNCA_LER):
+        raise Erro(403, "essa área do sistema não sai do executor")
+    if PASTA_SEGREDO.search(real) or SEGREDO.search(real):
+        raise Erro(403, "esse arquivo guarda segredos e não sai do servidor")
+    return real
+
+
+def permitido(caminho):
+    try:
+        caminho_legivel(caminho)
+        return True
+    except Erro:
+        return False
+
+
+def ler_texto(real, limite):
+    """(texto com segredos ocultos, cortado?); texto None se o arquivo for binário."""
+    with open(real, "rb") as f:
+        bruto = f.read(limite + 1)
+    if b"\0" in bruto[:8192]:
+        return None, False
+    texto = bruto[:limite].decode("utf-8", errors="replace")
+    if "PRIVATE KEY-----" in texto:
+        raise Erro(403, "esse arquivo guarda uma chave privada e não sai do servidor")
+    return ocultar(texto), len(bruto) > limite
+
+
+def acao_arquivo_ler(cliente, params):
+    """Lê qualquer arquivo ou pasta do servidor, menos segredos."""
+    real = caminho_legivel(params.get("caminho"))
+    try:
+        if os.path.isdir(real):
+            nomes = sorted(os.listdir(real))
+            return {"pasta": real, "total": len(nomes), "itens": [
+                n + "/" if os.path.isdir(os.path.join(real, n)) and not os.path.islink(os.path.join(real, n)) else n
+                for n in nomes[:1000]]}
+        if not os.path.lexists(real):
+            raise Erro(404, "não existe")
+        if not os.path.isfile(real):
+            raise Erro(400, "não é arquivo nem pasta comum")
+        texto, cortado = ler_texto(real, 64 * 1024)
+    except FileNotFoundError:
+        raise Erro(404, "não existe")
+    except PermissionError:
+        raise Erro(403, "sem permissão de leitura")
+    if texto is None:
+        return {"arquivo": real, "binario": True, "tamanho": os.path.getsize(real)}
+    return {"arquivo": real, "texto": texto, "cortado": cortado}
+
+
+def acao_arquivo_buscar(cliente, params):
+    """Procura um texto (sem diferenciar maiúsculas) nos arquivos de uma pasta, menos segredos."""
+    raiz, texto = caminho_legivel(params.get("pasta")), params.get("texto")
+    if not isinstance(texto, str) or not 2 <= len(texto) <= 200:
+        raise Erro(400, "texto deve ter de 2 a 200 caracteres")
+    if not os.path.isdir(raiz):
+        raise Erro(400, "a pasta não existe")
+    alvo, achados, vistos, prazo = texto.lower(), [], 0, time.time() + 20
+    for pasta, subpastas, arquivos in os.walk(raiz):
+        subpastas[:] = sorted(p for p in subpastas if permitido(os.path.join(pasta, p)))
+        for nome in sorted(arquivos):
+            vistos += 1
+            if vistos > 20000 or time.time() > prazo or len(achados) >= 100:
+                return {"achados": achados, "incompleta": True}
+            caminho = os.path.join(pasta, nome)
+            if (not permitido(caminho) or os.path.islink(caminho) or not os.path.isfile(caminho)
+                    or os.path.getsize(caminho) > 2 * 1024 * 1024):
+                continue
+            try:
+                conteudo, _ = ler_texto(caminho, 2 * 1024 * 1024)
+            except (OSError, Erro):
+                continue
+            for n, linha in enumerate((conteudo or "").splitlines(), 1):
+                if alvo in linha.lower() and len(achados) < 100:
+                    achados.append({"arquivo": caminho, "linha": n, "trecho": linha.strip()[:200]})
+    return {"achados": achados, "incompleta": False}
+
+
+def acao_sistema_processos(cliente, params):
+    """Processos do servidor que mais usam CPU (ou RAM)."""
+    ordem, quantos = params.get("ordem", "cpu"), params.get("quantos", 25)
+    if ordem not in ("cpu", "ram"):
+        raise Erro(400, 'ordem deve ser "cpu" ou "ram"')
+    if not isinstance(quantos, int) or not 1 <= quantos <= 100:
+        raise Erro(400, "quantos deve ser um número de 1 a 100")
+    r = subprocess.run(["ps", "-ww", "-eo", "pid,user:14,pcpu,pmem,rss,etime,args",
+                        "--sort", "-pcpu" if ordem == "cpu" else "-rss"],
+                       capture_output=True, text=True, timeout=30)
+    return ocultar("\n".join(linha[:250] for linha in r.stdout.splitlines()[:quantos + 1]))
+
+
+def acao_sistema_rede(cliente, params):
+    """Endereços e portas abertas do servidor."""
+    _, enderecos = rodar(["ip", "-br", "addr"])
+    _, portas = rodar(["ss", "-H", "-tuln"])
+    return {"enderecos": enderecos, "portas": portas}
 
 
 def acao_gasto_api(cliente, params):
@@ -234,6 +400,13 @@ ACOES = {
     "status.sistema":    (acao_status_sistema, "serviços e timers atena-*, e unidades com falha no sistema todo", None),
     "gasto.api":         (acao_gasto_api, "gasto de API do mês por modelo e por chave, com os tetos", None),
     "servico.logs":      (acao_servico_logs, "últimas linhas do log de uma stack (stack, linhas<=500)", None),
+    "servico.journal":   (acao_servico_journal,
+                          "registro do systemd de qualquer unidade ou do sistema todo (unidade?, linhas<=200, prioridade?, desde?)",
+                          None),
+    "arquivo.ler":       (acao_arquivo_ler, "lê qualquer arquivo ou pasta do servidor, menos segredos (caminho)", None),
+    "arquivo.buscar":    (acao_arquivo_buscar, "procura um texto nos arquivos de uma pasta, menos segredos (pasta, texto)", None),
+    "sistema.processos": (acao_sistema_processos, "processos que mais usam CPU ou RAM (ordem?, quantos?)", None),
+    "sistema.rede":      (acao_sistema_rede, "endereços e portas abertas do servidor", None),
 }
 
 
