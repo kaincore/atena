@@ -14,10 +14,10 @@ O servidor é dividido em **zonas por nível de confiança**. Cada zona tem quat
 | Zona | Rede | O que roda | Quem mexe |
 |---|---|---|---|
 | `prod` | `zone-prod-<cliente>` (10.10.101.0/24 em diante) | Sistemas de clientes, uma rede por cliente | Só o administrador |
-| `core` | `zone-core` (10.10.0.0/24) | Dockge, Beszel, monitoramento e backup | Só o administrador |
+| `core` | `zone-core` (10.10.0.0/24) | Dockge, Beszel, ntfy, monitoramento e backup | Só o administrador |
 | `apps` | `zone-apps` (10.10.10.0/24) | Apps pessoais (Arca, Open WebUI) | Administrador |
 | `ai` | `zone-ai` (10.10.20.0/24) | Ollama, Whisper, LiteLLM | Administrador |
-| `agents` | `zone-agents` (10.10.30.0/24) | Agentes de IA e workers | Administrador e agentes, por scripts |
+| `agents` | `zone-agents` (10.10.30.0/24) | A Atena (Hermes), agentes de IA e workers | Administrador e agentes, por scripts |
 | `lab` | `zone-lab` (10.10.40.0/24) | Ambientes de teste descartáveis | Administrador e agentes, por scripts |
 
 As redes que o Compose cria sozinho (por exemplo, a rede interna do banco de uma stack) usam a faixa `10.20.0.0/16`, longe da rede de casa e do Tailscale (`100.64.0.0/10`).
@@ -26,9 +26,50 @@ As redes que o Compose cria sozinho (por exemplo, a rede interna do banco de uma
 
 O Docker já isola redes diferentes: um container da zona `agents` não alcança um da zona `prod`. As exceções são feitas de propósito:
 
-- **Redes de serviço (`svc-*`).** Contêm só um serviço e quem pode usá-lo, e não têm saída para a internet. A `svc-llm` (10.10.250.0/24) liga o LiteLLM aos seus consumidores. Assim o Open WebUI e os agentes usam o LiteLLM, mas não alcançam o Ollama nem o resto da zona `ai`.
-- **Workers dos agentes.** Entram em `zone-agents`, `zone-lab` e `zone-apps`, e alcançam esses serviços pelo nome. O orquestrador dos agentes fica só em `zone-agents` + `svc-llm`, para que nada de teste no lab consiga falar com quem executa comandos.
+- **Redes de serviço (`svc-*`).** Contêm só um serviço e quem pode usá-lo, e não têm saída para a internet. A `svc-llm` (10.10.250.0/24) liga o LiteLLM aos seus consumidores. Assim o Open WebUI e os agentes usam o LiteLLM, mas não alcançam o Ollama nem o resto da zona `ai`. A `svc-ntfy` (10.10.251.0/24) liga o ntfy a quem publica avisos (o Hermes), sem abrir a zona `core`.
+- **Workers dos agentes.** Entram em `zone-agents`, `zone-lab` e `zone-apps`, e alcançam esses serviços pelo nome. O orquestrador dos agentes (o Hermes) fica só em `zone-agents`, `svc-llm` e `svc-ntfy`, para que nada de teste no lab consiga falar com quem executa comandos.
 - **Nenhum agente** entra em `zone-core` nem em `zone-prod-*`.
+
+## Executor de ações
+
+O executor (`/usr/local/sbin/atena-executor`) é o **único caminho** dos clientes (a Atena e, no futuro, um painel) até o servidor. Ele roda no próprio servidor, como o usuário `atena-exec`, e ouve o socket `/run/atena-executor/executor.sock` (grupo `atena-acoes`).
+
+```
+Você (Telegram) ──> Hermes (zona agents) ──> LiteLLM (svc-llm) ──> Anthropic ou modelos de casa
+                       │
+                       └─ socket ──> executor (servidor) ──> Docker, systemd, arquivos, PC
+Celular (app ntfy) <── alertas e pedidos de aprovação ── executor
+       └─ toque em Aprovar ──> ntfy (tópico respostas) ──> executor
+```
+
+- **Lista fechada.** Cada ação é uma função com comando fixo e parâmetros validados contra o que existe (nome da stack, unidade, caminho). Não há shell.
+- **Um token por cliente.** O token diz quais ações e quais zonas o cliente pode pedir. Só o hash fica guardado (`/etc/atena/executor/tokens.json`).
+- **Zona da stack.** Vem da pasta do compose (`/opt/atena/stacks/<zona>/...`) ou das redes `zone-*`. Na dúvida, vale a mais restrita.
+- **Aprovação no celular.** Uma ação que muda algo pode virar um pedido: o executor manda uma notificação com Aprovar e Recusar, e só roda depois do toque. O código do pedido só existe na notificação, então o cliente não consegue se aprovar. Cada token diz quais ações pedem o celular.
+- **Leitura sem segredos.** O serviço tem só a capacidade `CAP_DAC_READ_SEARCH`: lê qualquer arquivo e não escreve nada fora das pastas dele. Áreas do sistema e arquivos de chave, token e senha são recusados, e linhas com senha, token ou chave saem com `***`.
+- **Registro.** Cada pedido vai para o journal (`journalctl -u atena-executor`), com cliente, ação, parâmetros e resultado.
+
+| Grupo | Ações |
+|---|---|
+| Ver o servidor | `status.servicos`, `status.recursos`, `status.containers`, `status.sistema`, `gasto.api`, `servico.logs`, `servico.journal`, `sistema.processos`, `sistema.rede` |
+| Arquivos | `arquivo.ler`, `arquivo.buscar`, `arquivo.procurar`, `arquivo.entregar` |
+| Texto privado | `local.processar` (Ollama do servidor ou LM Studio do PC, sem nuvem) |
+| Agir | `servico.reiniciar` (pode pedir o celular) |
+| PC da rede de casa (opcional) | `pc.estado`, `pc.ligar`, `pc.desligar`, `pc.reiniciar`, `pc.cancelar` |
+
+Os avisos do próprio servidor também vão ao celular: o `atena-avisar` avisa quando uma unidade `atena-*` falha e, de 5 em 5 minutos, quando um container para ou fica doente.
+
+## A Atena (Hermes)
+
+A Atena é uma assistente pessoal feita com o [Hermes Agent](https://github.com/NousResearch/hermes-agent). Ela conversa com você pelo Telegram e cuida do servidor.
+
+- **Onde roda.** Container `hermes` na zona `agents`, como o usuário `hermes` do servidor: sem Docker, sem sudo e sem rede até a sua casa. Os dados dela (configuração, memória, notas) ficam em `/srv/agents/hermes`.
+- **Como pensa.** Pelo LiteLLM, com uma chave própria e teto mensal. Haiku por padrão; mensagens de voz são transcritas pelo Whisper da casa.
+- **Como age.** Só pelo executor, com um token sem a zona `prod`. Comandos no próprio container passam pela aprovação "smart": um modelo auxiliar libera o que é seguro e manda o destrutivo para você decidir.
+- **Personalidade e regras** em `SOUL.md`: confere antes de afirmar e pede o seu ok para qualquer medida destrutiva.
+- **Habilidades.** `servidor-atena` (como usar o executor) e `notas` (guardar e consultar o que você manda).
+- **Ronda.** De 3 em 3 minutos, um script barato lista o que está fora do normal. O Hermes compara com a lista anterior e só acorda a IA (e gasta API) quando ela muda.
+- **Dados privados.** Documento de cliente ou dado que não pode ir para a nuvem vai para `local.processar`: o executor extrai o texto e pergunta a um modelo de casa, e só a resposta volta para a Atena.
 
 ## Limites de CPU e RAM
 
