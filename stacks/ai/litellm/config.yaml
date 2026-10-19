@@ -66,6 +66,18 @@ model_list:
       input_cost_per_token: 0
       output_cost_per_token: 0
 
+  # Whisper (Speaches): transcrição de áudio para quem só alcança o LiteLLM (ex.: o Hermes)
+  - model_name: whisper
+    litellm_params:
+      model: openai/deepdml/faster-whisper-large-v3-turbo-ct2
+      api_base: http://whisper:8000/v1
+      api_key: sem-chave            # o Speaches não confere, mas o campo é obrigatório
+    model_info:
+      id: dep-whisper
+      mode: audio_transcription
+      input_cost_per_second: 0
+      output_cost_per_second: 0
+
 
 litellm_settings:
   drop_params: true
