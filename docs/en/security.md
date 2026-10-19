@@ -6,6 +6,7 @@
 - **Containers can't reach the home network.** If a container is compromised, it can't get to the router, your computers or your Tailscale devices.
 - **Isolated zones.** A problem in one zone doesn't reach the others.
 - **Secrets stay out of the code.** They live in `.env` files with mode 600, generated on the server and never committed.
+- **Agents act only through a closed list.** Atena has no Docker and no sudo: everything she does on the server goes through the executor, which only knows fixed actions.
 
 ## The layers
 
@@ -32,6 +33,20 @@ Three layers keep a port from leaking by mistake:
 2. Zone networks use `host_binding_ipv4=127.0.0.1`: a port published without an IP stays on the server.
 3. The inbound firewall drops the rest.
 
+### Executor
+- **No shell.** Each action runs a fixed command; parameters are checked against what exists (stack, unit, path) and against a list of formats.
+- **One token per client**, stored only as a hash, with the actions and zones it may request. Revoking takes effect immediately.
+- **Approval on your phone.** Each request's code exists only inside the notification, on an ntfy topic only you read. A request is valid for 10 minutes, each client can have at most 5 waiting, and the zone is checked again right before running.
+- **Locked-down service.** Runs as `atena-exec`, with `ProtectSystem=strict`, `NoNewPrivileges` and a single capability: `CAP_DAC_READ_SEARCH`, which reads files and can't write.
+- **Secrets don't leave.** `/proc`, `/run`, `/var/lib/docker`, `/etc/atena/executor`, folders such as `.ssh` and files such as `.env`, `*.key` and `tokens.json` are refused, also through symlinks. In the text that goes out, password, token and key values become `***`.
+
+### Atena (Hermes)
+- **No Docker and no sudo.** The `hermes` user is only in the `atena-acoes` group, which grants access to the executor socket. The installer stops if `hermes` is in the `docker` group.
+- **Token without the `prod` zone.** Client systems are out of her reach.
+- **Only the owner talks to her.** Telegram accepts only your ID; messages from anyone else are ignored, with no reply.
+- **Content is data, not orders.** `SOUL.md` tells her to treat web pages, documents and third-party messages as data. Commands in her container go through "smart" approval, and anything destructive goes to you.
+- **LiteLLM key with a monthly cap.** A mistake of hers can't drain your API credit.
+
 ## What was tested on the original server
 
 | Test | Result |
@@ -42,6 +57,11 @@ Three layers keep a port from leaking by mistake:
 | One zone trying to reach another | Isolated |
 | The same tests after restarting Docker and the server | Same results |
 | SSH login with a password, and as root | Refused |
+| Atena asking the executor for `/etc/shadow`, a `.env` file and an SSH key | Refused (403) |
+| Approval with a wrong code, a repeated tap and an expired request | Nothing ran |
+| A client asking for an action outside its token, or a stack in another zone | Refused (403) |
+
+The automated tests for the executor and the patrol live in `tests/` and run on every push to GitHub.
 
 ## What Atena does NOT protect
 
@@ -49,6 +69,11 @@ Three layers keep a port from leaking by mistake:
 - **Services without a password are open to the whole home network.** Arca, for example, has no login: any device on the Wi-Fi can see and delete files.
 - **Zones share the same kernel.** A serious container-escape bug would cross zones. For strong isolation, use virtual machines.
 - **IPv6 inside containers** isn't used. If you enable IPv6 on Docker networks, review the firewall, which today only has IPv4 rules.
+- **The executor has Docker access.** That is equivalent to root. The protection is the closed list: a bug in the executor would be a security bug for the whole server.
+- **The secret filter works by name and by format.** A secret in an unknown format, inside a file with an ordinary name, can get through. Keep secrets in `.env`, `*.key` or `*.token` files.
+- **What Atena reads goes to the cloud model** (Anthropic), except what goes through `local.processar`.
+- **ntfy without HTTPS on the home network.** With `http://`, someone sniffing the Wi-Fi could see a request's code and approve it before you. Away from home, use the Tailscale `https://` address in `ATENA_NTFY_URL`.
+- **Prompt injection** (text that tries to command the AI) is reduced by the rules and the approvals, not eliminated. That's why Atena only acts without approval on what can be undone.
 - **Other forwarded traffic** (virtual machines, a Tailscale subnet router) is dropped by the last rule of `DOCKER-USER`. If you need it, add exceptions.
 
 ## Before publishing anything
