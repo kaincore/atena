@@ -1,6 +1,6 @@
 # Atena
 
-**Um servidor caseiro pronto para usar, organizado em zonas isoladas.** Ubuntu + Docker, com firewall para containers, limites de CPU e RAM por zona, IA local na GPU e um gateway de LLM com tetos de gasto.
+**Um servidor caseiro pronto para usar, organizado em zonas isoladas.** Ubuntu + Docker, com firewall para containers, limites de CPU e RAM por zona, IA local na GPU, um gateway de LLM com tetos de gasto e uma assistente pelo Telegram que cuida de tudo isso.
 
 [English](README.en.md)
 
@@ -12,6 +12,9 @@
 - **IA local:** Ollama (modelos de linguagem) e Whisper (transcrição de voz) na GPU, inclusive em placas antigas como a GTX 1060.
 - **LiteLLM** como porta única para Claude (Haiku, Sonnet, Opus) e para os modelos locais, com teto de gasto por modelo e por chave, renovado todo dia 1º.
 - **Painéis:** Dockge (gerenciar as stacks), Beszel (monitoramento, inclusive da GPU) e Open WebUI (chat no navegador).
+- **A Atena** (opcional): assistente pessoal pelo Telegram, feita com o [Hermes Agent](https://github.com/NousResearch/hermes-agent). Vigia o servidor, responde sobre ele, guarda as suas notas e age só por uma lista fechada de ações, pedindo o seu ok para o que é destrutivo.
+- **Executor de ações** com aprovação no celular: o único caminho dos agentes até o servidor, sem shell, com um token por cliente.
+- **Avisos no celular** (ntfy): serviço que falhou, container parado e pedidos de aprovação com botões.
 - **Instalador** que monta tudo numa máquina nova e pode rodar de novo sem estragar o que já existe.
 
 ## Como as zonas se encaixam
@@ -24,15 +27,18 @@ flowchart TB
   subgraph srv["Servidor"]
     direction TB
     prod["prod<br/>clientes · prioridade máxima"]
-    core["core<br/>Dockge · Beszel"]
+    core["core<br/>Dockge · Beszel · ntfy"]
     apps["apps<br/>Arca · Open WebUI"]
     ai["ai<br/>Ollama · Whisper · LiteLLM"]
-    agents["agents<br/>agentes de IA"]
+    agents["agents<br/>Atena (Hermes) · agentes"]
+    exec["executor<br/>lista fechada de ações"]
     lab["lab<br/>testes descartáveis"]
     apps -->|"svc-llm"| ai
     agents -->|"svc-llm"| ai
     agents -->|"workers"| lab
     agents -->|"workers"| apps
+    agents -->|"svc-ntfy"| core
+    agents -->|"socket"| exec
   end
 ```
 
@@ -63,7 +69,7 @@ git clone https://github.com/kaincore/atena.git
 cd atena
 cp atena.conf.example atena.conf
 nano atena.conf          # interface de rede, IP, faixa da rede, roteador, usuário, GPU
-sudo ./install.sh        # use --ssh para também deixar o SSH só com chave
+sudo ./install.sh        # --ssh: SSH só com chave · --hermes: instala a Atena
 ```
 
 Depois:
@@ -72,6 +78,8 @@ Depois:
 2. No Beszel, adicione o sistema com o host `/beszel_socket/beszel.sock`.
 3. Para usar o Claude, rode `atena-chave-anthropic` e cole a chave da API (ela não aparece na tela).
 4. Suba as outras stacks pelo Dockge.
+5. Avisos no celular: instale o app ntfy e crie o seu usuário com `sudo atena-ntfy-celular <nome>`.
+6. Com `--hermes`: `sudo atena-hermes-chave` (chave da Atena no LiteLLM, com teto) e `sudo atena-telegram` (o bot). Detalhes em [operação](docs/pt/operacao.md#atena-hermes).
 
 ## Serviços incluídos
 
@@ -84,6 +92,8 @@ Depois:
 | LiteLLM 1.101.6 | ai | 4000 | Exige chave. Tetos de gasto por modelo e por chave |
 | Open WebUI 0.11.4 | apps | 3000 | Fala só com o LiteLLM |
 | Arca | apps | 3002 | Envio de arquivos pelo navegador, sem senha |
+| ntfy 2.28.0 | core | 2586 | Avisos e aprovações no celular. Só com usuário |
+| Hermes Agent 0.22.2 | agents | nenhuma | A Atena (com `--hermes`). Conversa pelo Telegram |
 
 As versões são fixas de propósito. Antes de atualizar, leia os avisos de segurança e as notas da versão.
 
@@ -98,8 +108,11 @@ As versões são fixas de propósito. Antes de atualizar, leia os avisos de segu
 
 ```
 install.sh, install/   instalador (uma etapa por arquivo)
-host/                  arquivos do sistema: Docker, systemd, firewall, SSH
+host/                  arquivos do sistema: Docker, systemd, firewall, SSH, executor, avisos
+host/windows/          script e passo a passo do PC da rede de casa (opcional)
 stacks/<zona>/<nome>/  composes das stacks
+hermes/                a Atena: personalidade, habilidades, ronda e configuração
+tests/                 testes do executor e da ronda
 tools/                 verificador de vazamentos e trava de commit
 docs/                  documentação em português e inglês
 ```
