@@ -100,7 +100,7 @@ journalctl -u atena-executor -f                               # cada pedido, com
   docker exec -u hermes hermes hermes cron create "every 3m" "Ronda do servidor. Siga a seção Ronda da habilidade servidor-atena." \
     --name ronda --monitor-script ronda.py --skill servidor-atena --deliver telegram
   ```
-- Gasto: pergunte a ela ("quanto gastamos este mês?") ou veja `gasto.api`.
+- Gasto: pergunte a ela ("quanto gastamos este mês?").
 - Atualizar o Hermes: leia as notas da versão, troque a imagem no compose e confira o `config.yaml` gerado. A documentação no GitHub é da versão em desenvolvimento, que pode ser mais nova que a sua.
 
 ## PC da rede de casa
