@@ -31,3 +31,10 @@ ATENA_TZ=America/Sao_Paulo
 #   Só em casa:    http://<ATENA_LAN_IP>:2586
 #   Com Tailscale: https://<nome-do-servidor>.<sua-tailnet>.ts.net:2586 (com tailscale serve)
 ATENA_NTFY_URL=http://192.168.0.10:2586
+
+# --- Modelos de casa (texto privado sem nuvem) --------------------------------
+# Modelo do Ollama no servidor para o executor (local.processar). Baixe uma vez com:
+#   docker exec ollama ollama pull qwen3:4b-instruct-2507-q4_K_M
+ATENA_LOCAL_MODELO=qwen3:4b-instruct-2507-q4_K_M
+# Contexto (tokens) do modelo do servidor: mais contexto, mais memória de vídeo
+ATENA_LOCAL_CONTEXTO=8192
