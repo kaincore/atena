@@ -16,7 +16,10 @@ for compose in "$RAIZ"/stacks/*/*/compose.yaml; do
   fi
   install -d "$destino"
   cp -a "$origem/." "$destino/"
-  renderizar "$compose" "$destino/compose.yaml"
+  # preenche os {{ATENA_*}} do compose e de qualquer outro arquivo da stack (ex.: server.yml do ntfy)
+  { grep -rlF '{{ATENA_' "$origem" || true; } | while read -r f; do
+    renderizar "$f" "$destino/${f#"$origem"/}"
+  done
   if [ "$ATENA_GPU" = none ]; then
     # sem GPU: tira o pedido de GPU e usa as imagens que rodam só na CPU
     sed -i '/^ *gpus: all/d' "$destino/compose.yaml"
