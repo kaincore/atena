@@ -49,6 +49,64 @@ sudo systemctl restart atena-docker-firewall
 - **Monthly reset:** key caps (`1mo`) reset on their own on the 1st at 00:00 UTC. Per-model caps are reset at the same time by `atena-litellm-virada-mes.timer`.
 - **After editing `config.yaml`:** `docker compose up -d --force-recreate litellm`.
 
+## Phone notifications (ntfy)
+
+1. Install the **ntfy** app on your phone (Android).
+2. Create your read-only user: `sudo atena-ntfy-celular <your-name>`.
+3. In the app, add the server from `ATENA_NTFY_URL` with that user and subscribe to the topics `alertas`, `aprovacoes` and `atena`, in lowercase and without accents.
+4. Test: `sudo atena-avisar "Test" "Did it arrive?"`.
+
+To get notifications away from home, publish ntfy through Tailscale (as in [Add a stack](#add-a-stack), port 2586) and change the address:
+
+1. In `/etc/atena/atena.conf`, `ATENA_NTFY_URL=https://<server>.<your-tailnet>.ts.net:2586`. The executor reads the file on every request.
+2. In `/opt/atena/stacks/core/ntfy/server.yml`, the same address in `base-url`, then `docker compose up -d --force-recreate` in the ntfy folder.
+3. In the app, switch the server to the new address.
+
+## Executor: clients and tokens
+
+```bash
+sudo atena-executor tokens                                    # who may request what
+sudo atena-executor token-novo <client> <actions> <zones> [approve]
+sudo atena-executor token-remover <client>
+journalctl -u atena-executor -f                               # every request, with its result
+```
+
+- Lists are comma-separated. `approve` says which actions need the phone: `nenhuma` (none), or a list. Without that field, every action that can ask for approval does.
+- The token is shown only once. Creating it again for the same client revokes the old one.
+- Example: Atena starts asking your phone before restarting anything (her token lives in `/srv/agents/hermes/executor.token`):
+  ```bash
+  sudo atena-executor tokens | grep hermes      # copy her list of actions and zones
+  sudo atena-executor token-novo hermes <actions> <zones> servico.reiniciar \
+    | sudo install -m 600 -o hermes -g hermes /dev/stdin /srv/agents/hermes/executor.token
+  ```
+
+## Atena (Hermes)
+
+**Install.** `sudo ./install.sh --hermes`. Then:
+
+1. Start LiteLLM (stack `ai/litellm`) and save the Anthropic key with `atena-chave-anthropic`. To understand voice messages, also start Whisper (`ai/whisper`).
+2. `sudo atena-hermes-chave [cap]`: creates Atena's LiteLLM key with a monthly cap in dollars (default 10) and saves it in Hermes without showing it.
+3. Create a bot with **@BotFather** on Telegram and run `sudo atena-telegram`. The script asks for the token without echoing it, waits for you to send "hi" to the bot and confirms your ID. Only you can talk to her.
+4. For private text (`local.processar`), pull the server model: `docker exec ollama ollama pull qwen3:4b-instruct-2507-q4_K_M` (or the one in `ATENA_LOCAL_MODELO`).
+
+**Day to day.**
+
+- `/new` on Telegram starts a new conversation (use it after changing the personality or the skills).
+- Terminal: `docker exec -it -u hermes hermes hermes`.
+- Personality and skills: `/srv/agents/hermes/SOUL.md` and `/srv/agents/hermes/skills/atena/`. The installer keeps a copy before overwriting a file you changed.
+- Configuration: `docker exec -u hermes hermes hermes config set <key> <value>`. To go back to the template defaults: `sudo sh hermes/configurar.sh` and `docker restart hermes`.
+- Scheduled tasks: `docker exec -u hermes hermes hermes cron list`. If the patrol is gone, create it again:
+  ```bash
+  docker exec -u hermes hermes hermes cron create "every 3m" "Ronda do servidor. Siga a seção Ronda da habilidade servidor-atena." \
+    --name ronda --monitor-script ronda.py --skill servidor-atena --deliver telegram
+  ```
+- Spending: ask her ("how much did we spend this month?").
+- Upgrading Hermes: read the release notes, change the image in the compose file and check the generated `config.yaml`. The docs on GitHub describe the development version, which may be newer than yours.
+
+## Home PC
+
+Optional: Atena wakes the PC over the network, uses its model for longer texts and shuts it down when you ask. The step-by-step guide (in Portuguese) is in [`host/windows/LEIAME.md`](../../host/windows/LEIAME.md).
+
 ## Upgrade versions
 
 Images are pinned. To upgrade:
