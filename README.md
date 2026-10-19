@@ -49,6 +49,11 @@ atena@servidor:~$ █
 
 ## ▌02 // Mapa das zonas
 
+<p align="center"><img src="docs/assets/zonas.svg" width="100%" alt="Mapa das zonas: a internet não entra; a rede de casa e o Tailscale chegam ao servidor Atena, desenhado como um templo grego. Dentro dele ficam as zonas prod, core, apps, agents, ai e lab, e o executor no host. Ligações permitidas: agents para core (svc-ntfy), apps e agents para ai (svc-llm), agents para o executor (socket) e para lab (workers)."></p>
+
+<details>
+<summary>Mapa em texto</summary>
+
 ```text
    INTERNET  ×  ── nada exposto, nada entra ──
 
@@ -72,6 +77,8 @@ atena@servidor:~$ █
  ║  └─────────────────┘  └─────────────────┘                     ║
  ╚═══════════════════════════════════════════════════════════════╝
 ```
+
+</details>
 
 Zonas diferentes não se enxergam. As ligações do desenho são as únicas permitidas, e cada uma é feita de propósito; os workers dos agentes também alcançam a zona `apps` (veja [arquitetura](docs/pt/arquitetura.md)).
 
