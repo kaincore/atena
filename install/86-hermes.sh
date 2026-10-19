@@ -93,7 +93,13 @@ docker exec -u hermes hermes /opt/data/ferramentas/py/bin/pip install -q --disab
 
 docker restart hermes >/dev/null
 sleep 10
-if ! docker exec -u hermes hermes hermes cron list 2>/dev/null | grep -qw ronda; then
+# confere no arquivo, e não pelo "hermes cron list": logo depois do restart ele ainda não responde
+tem_ronda() {
+  python3 -c 'import json, sys
+sys.exit(0 if any(j.get("name") == "ronda" for j in json.load(open(sys.argv[1])).get("jobs", [])) else 1)' \
+    "$D/cron/jobs.json" 2>/dev/null
+}
+if ! tem_ronda; then
   docker exec -u hermes hermes hermes cron create "every 3m" \
     "Ronda do servidor. O bloco MONITOR CHANGE DETECTED mostra o que mudou na lista de problemas (\"tudo normal\" quando não há nenhum). Siga a seção Ronda da habilidade servidor-atena: investigue, resolva o que for reversível (reiniciar uma vez o que caiu) e mande ao dono um resumo curto, no seu tom. Se agora está tudo normal, avise em uma linha. Nada destrutivo." \
     --name ronda --monitor-script ronda.py --skill servidor-atena --deliver telegram >/dev/null \
