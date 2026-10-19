@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+"""Liga a Atena (Hermes) ao Telegram sem o token passar pelo chat nem pela linha de comando.
+
+Uso: sudo atena-telegram
+
+1. Pede o token do @BotFather (entrada oculta) e confere com o Telegram.
+2. Espera você mandar uma mensagem ao bot e mostra quem mandou, para confirmar o seu ID.
+3. Grava TELEGRAM_BOT_TOKEN, TELEGRAM_ALLOWED_USERS e TELEGRAM_HOME_CHANNEL no .env do Hermes
+   (com backup) e reinicia o container. Só o ID confirmado conversa com a Atena.
+"""
+import getpass
+import json
+import os
+import re
+import shutil
+import subprocess
+import sys
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+
+ENV = "/srv/agents/hermes/.env"
+CONTAINER = "hermes"
+ESPERA_MAX = 180  # segundos esperando a sua mensagem
+
+
+def sair(msg):
+    print(f"\n✗ {msg}")
+    sys.exit(1)
+
+
+def api(token, metodo, **params):
+    # parâmetros no corpo do POST; o token só existe na URL da requisição (nunca em argv ou log)
+    corpo = {k: json.dumps(v) if isinstance(v, list) else v for k, v in params.items()}
+    req = urllib.request.Request(f"https://api.telegram.org/bot{token}/{metodo}",
+                                 data=urllib.parse.urlencode(corpo).encode())
+    try:
+        with urllib.request.urlopen(req, timeout=params.get("timeout", 0) + 15) as r:
+            return json.load(r)["result"]
+    except urllib.error.HTTPError as e:
+        if e.code == 401:
+            sair("O Telegram recusou o token (copiou inteiro?). Confira no @BotFather com /mybots.")
+        if e.code == 409:
+            sair("Outro programa já está lendo esse bot (o Hermes já ligado ou um webhook).\n"
+                 "  Pare o Hermes com 'docker stop hermes' e rode de novo.")
+        try:
+            desc = json.load(e).get("description", "")
+        except ValueError:
+            desc = ""
+        sair(f"Erro do Telegram ({e.code}): {desc}")
+    except urllib.error.URLError as e:
+        sair(f"Sem conexão com o Telegram: {e.reason}")
+
+
+def esperar_dono(token, usuario_bot):
+    # descarta mensagens antigas: só vale o que você mandar agora
+    antigas = api(token, "getUpdates", offset=-1, timeout=0)
+    offset = antigas[-1]["update_id"] + 1 if antigas else 0
+    print(f"\nAgora, no celular, abra https://t.me/{usuario_bot}, toque em Iniciar e mande um 'oi'.")
+    print(f"Esperando até {ESPERA_MAX // 60} minutos...")
+    fim = time.monotonic() + ESPERA_MAX
+    while time.monotonic() < fim:
+        for u in api(token, "getUpdates", offset=offset, timeout=20, allowed_updates=["message"]):
+            offset = u["update_id"] + 1
+            msg = u.get("message") or {}
+            de, chat = msg.get("from") or {}, msg.get("chat") or {}
+            if chat.get("type") != "private" or de.get("is_bot"):
+                continue
+            nome = " ".join(filter(None, [de.get("first_name"), de.get("last_name")]))
+            arroba = f" (@{de['username']})" if de.get("username") else ""
+            print(f"\nMensagem recebida de: {nome}{arroba}, ID {de['id']}")
+            if input("É você? [s/N] ").strip().lower() in ("s", "sim"):
+                api(token, "getUpdates", offset=offset, timeout=0)  # marca como lida: o Hermes não recebe de novo
+                return de
+            print("Ignorado. Continuo esperando...")
+    sair("Não chegou nenhuma mensagem sua. Nada foi gravado; é só rodar de novo.")
+
+
+def gravar_env(valores):
+    st = os.stat(ENV)
+    backup = f"{ENV}.antes-telegram-{time.strftime('%Y%m%d-%H%M%S')}"
+    shutil.copy2(ENV, backup)  # mantém o modo 600
+    os.chown(backup, st.st_uid, st.st_gid)
+
+    with open(ENV) as f:
+        linhas = f.read().splitlines()
+    faltam = dict(valores)
+    for i, linha in enumerate(linhas):
+        chave = linha.split("=", 1)[0].strip()  # linhas comentadas ("# TELEGRAM_...") ficam como estão
+        if chave in faltam:
+            linhas[i] = f"{chave}={faltam.pop(chave)}"
+    if faltam:
+        linhas += ["", "# Telegram (gravado por atena-telegram)"] + [f"{k}={v}" for k, v in faltam.items()]
+
+    tmp = ENV + ".tmp"
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        f.write("\n".join(linhas) + "\n")
+    os.chown(tmp, st.st_uid, st.st_gid)
+    os.replace(tmp, ENV)
+    return backup
+
+
+def main():
+    if os.geteuid() != 0:
+        sair("Rode com sudo: sudo atena-telegram")
+    if not os.path.isfile(ENV):
+        sair(f"Não achei {ENV}.")
+
+    print("Cole o token que o @BotFather te deu (ele não aparece enquanto você cola) e tecle Enter.")
+    token = getpass.getpass("Token: ").strip()
+    if not re.fullmatch(r"\d{5,}:[A-Za-z0-9_-]{30,}", token):
+        sair("Isso não parece um token de bot (formato 123456789:AAH...). Nada foi gravado.")
+
+    bot = api(token, "getMe")
+    print(f"✓ Bot encontrado: {bot.get('first_name')} (@{bot['username']})")
+    if bot.get("can_join_groups"):
+        print("  Aviso: o bot ainda pode ser posto em grupos. No @BotFather: /setjoingroups → Disable.")
+
+    dono = esperar_dono(token, bot["username"])
+    backup = gravar_env({
+        "TELEGRAM_BOT_TOKEN": token,
+        "TELEGRAM_ALLOWED_USERS": str(dono["id"]),
+        "TELEGRAM_HOME_CHANNEL": str(dono["id"]),  # avisos e agendamentos chegam no seu privado
+    })
+    print(f"✓ Gravado no .env do Hermes (backup do anterior: {backup})")
+
+    api(token, "sendMessage", chat_id=dono["id"],
+        text="Servidor conectado. Em alguns segundos a Atena passa a responder por aqui.")
+
+    print("Reiniciando o Hermes...")
+    desde = str(int(time.time()))
+    subprocess.run(["docker", "restart", CONTAINER], check=True, stdout=subprocess.DEVNULL)
+    time.sleep(25)
+    logs = subprocess.run(["docker", "logs", "--since", desde, CONTAINER], capture_output=True, text=True)
+    linhas = [l.replace(token, "<token>") for l in (logs.stdout + logs.stderr).splitlines()
+              if "telegram" in l.lower()]
+    print("\n".join(linhas[-10:]) or "(ainda sem linhas do Telegram no log)")
+    print(f"\nPronto. Mande uma mensagem para @{bot['username']} e veja se a Atena responde.")
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sair("Cancelado.")
