@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="docs/assets/banner.svg" width="100%" alt="ATENA: servidor caseiro em zonas isoladas, com IA local e uma assistente no Telegram">
+  <img src="docs/assets/banner.svg" width="100%" alt="ATENA: logotipo em néon entre colunas gregas, com as mãos da Criação de Adão em arte ASCII quase se tocando">
 </h1>
 
 <p align="center">
@@ -161,4 +161,5 @@ git config core.hooksPath tools/hooks
 
 [MIT](LICENSE)
 
-<p align="center"><sub>░▒▓ feito em casa · zonas isoladas · nada exposto ▓▒░</sub></p>
+<p align="center"><sub>░▒▓ feito em casa · zonas isoladas · nada exposto ▓▒░</sub><br>
+<sub>Banner: as mãos de <i>A Criação de Adão</i> (Michelangelo, c. 1512, domínio público) em arte ASCII.</sub></p>
