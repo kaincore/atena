@@ -16,6 +16,12 @@ for v in ATENA_LAN_IF ATENA_LAN_IP ATENA_LAN_CIDR ATENA_ROUTER_IP ATENA_ADMIN_US
   [ -n "$valor" ] || erro "$v está vazio no atena.conf"
 done
 
+# chaves que chegaram na versão 0.2: um atena.conf mais antigo fica com o padrão
+: "${ATENA_TZ:=America/Sao_Paulo}"
+: "${ATENA_NTFY_URL:=http://$ATENA_LAN_IP:2586}"
+[ -f "/usr/share/zoneinfo/$ATENA_TZ" ] || erro "ATENA_TZ=$ATENA_TZ não é um fuso horário válido (ex.: America/Sao_Paulo)"
+case "$ATENA_NTFY_URL" in http://*|https://*) ;; *) erro "ATENA_NTFY_URL deve começar com http:// ou https://" ;; esac
+
 ip link show "$ATENA_LAN_IF" >/dev/null 2>&1 \
   || erro "a interface $ATENA_LAN_IF não existe (veja as interfaces com: ip -br link)"
 ip -4 addr show "$ATENA_LAN_IF" | grep -q "inet $ATENA_LAN_IP/" \
