@@ -14,6 +14,10 @@ então o cliente não consegue se aprovar sozinho.
 arquivo.entregar copia um arquivo do servidor para /srv/agents/hermes/entregas (o Hermes vê em
 /opt/data/entregas), com segredos ocultos se for texto; a cópia some em 24 h.
 
+PC da rede de casa (opcional, ATENA_PC_* no atena.conf): pc.ligar manda o Wake-on-LAN; pc.desligar,
+pc.reiniciar e pc.cancelar usam uma chave SSH que, no Windows, só roda o atena-pc.ps1 (aceita só
+esses três pedidos).
+
 Leitura: as consultas enxergam o servidor inteiro (o serviço tem só CAP_DAC_READ_SEARCH, que lê
 qualquer arquivo e não escreve nada), menos segredos: áreas do sistema e arquivos de chave, token e
 senha são recusados, e linhas com senha, token ou chave saem ocultas (***).
@@ -37,11 +41,13 @@ import fnmatch
 import glob
 import hashlib
 import http.server
+import ipaddress
 import json
 import os
 import re
 import secrets
 import shutil
+import socket
 import socketserver
 import subprocess
 import sys
@@ -64,6 +70,8 @@ NTFY = "http://127.0.0.1:2586"
 NTFY_TOKEN = "/etc/atena/executor/ntfy-servidor.token"         # publica pedidos, lê as respostas
 NTFY_TOKEN_BOTAO = "/etc/atena/executor/ntfy-aprovador.token"  # vai dentro dos botões do celular
 PEDIDOS = "/var/lib/atena-executor/pedidos.json"
+PC_CHAVE = "/etc/atena/executor/pc-chave"     # no Windows, essa chave só desliga, reinicia ou cancela
+PC_HOSTS = "/etc/atena/executor/pc-known-hosts"
 VALIDADE = 10 * 60          # um pedido espera a aprovação por 10 min
 MAX_AGUARDANDO = 5          # por cliente: um cliente enganado não enche o celular de pedidos
 ESPERA_MAXIMA = 170         # GET /pedido?esperar: abaixo do limite de 180 s do terminal do Hermes
@@ -742,6 +750,79 @@ def acao_servico_reiniciar(p):
     return {"reiniciados": nomes}
 
 
+def pc_conf():
+    conf = ler_conf()
+    if not conf.get("ATENA_PC_IP") or not conf.get("ATENA_PC_MAC"):
+        raise Erro(404, "PC não configurado no atena.conf (ATENA_PC_IP e ATENA_PC_MAC)")
+    return conf
+
+
+def acao_pc_estado(cliente, params):
+    conf = pc_conf()
+    ip, porta = conf["ATENA_PC_IP"], int(conf.get("ATENA_PC_PORTA") or "1234")
+    api = False
+    try:
+        with socket.create_connection((ip, porta), timeout=2):
+            api = True
+    except OSError:
+        pass
+    # a tentativa acima força o ARP; se a placa de rede respondeu, o PC está ligado
+    _, vizinho = rodar(["ip", "neigh", "show", ip], 5)
+    ligado = api or bool(re.search(r"\b(REACHABLE|DELAY|PROBE|STALE)\b", vizinho))
+    return {"ligado": ligado, "lm_studio": api}
+
+
+def acao_pc_ligar(cliente, params):
+    conf = pc_conf()
+    mac = bytes.fromhex(conf["ATENA_PC_MAC"].replace(":", "").replace("-", ""))
+    if len(mac) != 6:
+        raise Erro(500, "MAC do PC inválido no atena.conf")
+    broadcast = str(ipaddress.ip_network(conf["ATENA_LAN_CIDR"], strict=False).broadcast_address)
+    pacote = b"\xff" * 6 + mac * 16
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        for porta in (7, 9, 7, 9):
+            s.sendto(pacote, (broadcast, porta))
+    return {"enviado": True, "dica": "o PC costuma ligar em ~25 s; consulte pc.estado"}
+
+
+def pc_comando(cliente, params, comando):
+    """Manda um pedido ao PC pela chave restrita. No Windows, a chave só roda o atena-pc.ps1, que
+    aceita desligar, reiniciar e cancelar e responde "atena-pc: <pedido>". False: o PC está desligado."""
+    conf = pc_conf()
+    if not conf.get("ATENA_PC_USUARIO") or not os.path.exists(PC_HOSTS):
+        raise Erro(404, "o controle do PC ainda não foi configurado no Windows (veja host/windows/LEIAME.md)")
+    if not acao_pc_estado(cliente, params)["ligado"]:
+        return False
+    codigo, texto = rodar(["ssh", "-i", PC_CHAVE, "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=yes",
+                           "-o", f"UserKnownHostsFile={PC_HOSTS}", "-o", "ConnectTimeout=5",
+                           f"{conf['ATENA_PC_USUARIO']}@{conf['ATENA_PC_IP']}", comando], 20)
+    # logo depois de desligar, a memória de rede ainda diz "ligado" por alguns minutos
+    if codigo == 255 and re.search(r"No route to host|timed out|Connection refused|Network is unreachable|Host is down", texto):
+        return False
+    if codigo != 0 or f"atena-pc: {comando}" not in texto:
+        raise Erro(502, f"o PC não aceitou o pedido ({comando}): " + texto.strip()[-200:])
+    return True
+
+
+def acao_pc_desligar(cliente, params):
+    if not pc_comando(cliente, params, "desligar"):
+        return {"desligando": False, "motivo": "o PC já está desligado"}
+    return {"desligando": True, "em_segundos": 60, "dica": "dá para cancelar com pc.cancelar (ou, no PC, shutdown /a)"}
+
+
+def acao_pc_reiniciar(cliente, params):
+    if not pc_comando(cliente, params, "reiniciar"):
+        return {"reiniciando": False, "motivo": "o PC está desligado; para ligar, use pc.ligar"}
+    return {"reiniciando": True, "em_segundos": 60, "dica": "dá para cancelar com pc.cancelar (ou, no PC, shutdown /a)"}
+
+
+def acao_pc_cancelar(cliente, params):
+    if not pc_comando(cliente, params, "cancelar"):
+        return {"cancelado": False, "motivo": "o PC já está desligado"}
+    return {"cancelado": True, "dica": "se não havia desligamento ou reinício marcado, nada mudou"}
+
+
 # nome: (função, descrição, preparar). Sem preparar, a ação roda na hora: função(cliente, params).
 # Com preparar, vira um pedido: preparar(cliente, params) valida e descreve, e função(pedido) roda
 # depois da aprovação no celular (se o token do cliente exigir) ou na hora.
@@ -765,6 +846,11 @@ ACOES = {
     "sistema.rede":      (acao_sistema_rede, "endereços e portas abertas do servidor", None),
     "servico.reiniciar": (acao_servico_reiniciar, "reinicia os containers de uma stack (stack)",
                           preparar_servico_reiniciar),
+    "pc.estado":         (acao_pc_estado, "PC da rede de casa ligado? LM Studio respondendo?", None),
+    "pc.ligar":          (acao_pc_ligar, "liga o PC pela rede (Wake-on-LAN)", None),
+    "pc.desligar":       (acao_pc_desligar, "desliga o PC em 60 s (pc.cancelar desiste)", None),
+    "pc.reiniciar":      (acao_pc_reiniciar, "reinicia o PC em 60 s (pc.cancelar desiste)", None),
+    "pc.cancelar":       (acao_pc_cancelar, "cancela um desligamento ou reinício do PC ainda na contagem", None),
 }
 
 
