@@ -22,6 +22,8 @@ D=/srv/agents/hermes
 S=/opt/atena/stacks/agents/hermes
 install -d -m 700 -o hermes -g atena-acoes "$D"
 install -d -m 2750 -o atena-exec -g atena-acoes "$D/entregas"   # o executor escreve; a Atena só lê
+# o executor só ganha escrita em entregas se a pasta já existir quando ele sobe (ReadWritePaths=-...)
+systemctl restart atena-executor
 for p in skills skills/atena skills/atena/servidor-atena skills/atena/notas scripts ferramentas; do
   install -d -m 755 -o hermes -g atena-acoes "$D/$p"
 done
