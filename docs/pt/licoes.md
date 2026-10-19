@@ -58,6 +58,35 @@ Depois de editar um arquivo montado sozinho (como o `config.yaml`), use `docker 
 
 **A primeira pessoa que abre o Dockge, o Beszel ou o Open WebUI vira administradora.** Crie as contas logo depois de subir.
 
+## Executor, ntfy e Hermes
+
+**Monte a pasta do socket, não o arquivo.**
+O socket do executor é recriado a cada reinício. Com o arquivo montado, o container do Hermes ficava olhando o socket antigo. Monte a pasta `/run/atena-executor` e use `RuntimeDirectoryPreserve=yes` na unidade, senão o systemd recria a pasta e o container perde o caminho.
+
+**O Hermes precisa de `command: ["gateway", "run"]`.**
+Sem isso, o container abre o chat interativo, sai e reinicia sem parar.
+
+**A documentação do Hermes no GitHub é da versão em desenvolvimento.**
+Algumas chaves ainda não existiam na versão instalada. Confira no `config.yaml` que ela gera, e configure com `hermes config set`, que valida cada chave.
+
+**ntfy: tópicos em minúsculas, e o celular precisa assinar todos.**
+O teclado do celular põe maiúscula sozinho (`Aprovacoes` é outro tópico). E quem assina só `atena` não vê os pedidos de aprovação, que vão para `aprovacoes`.
+
+**O botão de aprovação chama o endereço que o celular alcança.**
+O executor publica no ntfy por `127.0.0.1`, mas o botão vai para o celular: ele precisa do endereço da rede de casa ou do Tailscale (`ATENA_NTFY_URL`).
+
+**Uma ação aceita não é uma ação concluída.**
+A Atena dizia "reiniciei" quando o pedido ainda esperava o celular. A `SOUL.md` agora manda conferir o resultado antes de afirmar, e o executor responde 202 enquanto o pedido espera.
+
+**Texto privado não passa pelo LiteLLM.**
+O LiteLLM pode cair para um modelo da nuvem quando o modelo de casa não responde. O `local.processar` fala direto com o Ollama ou o LM Studio.
+
+**O qwen3 4B "thinking" escreve o raciocínio antes da resposta e gasta o limite de saída.**
+Use a versão instruct (`qwen3:4b-instruct-2507`) e mande `/no_think`.
+
+**Depois de desligar, o PC continua "ligado" na tabela de vizinhos por alguns minutos.**
+O executor trata o SSH sem rota como "desligado", em vez de dar erro.
+
 ## Aplicativos
 
 **Envio de arquivos com Express (`express-fileupload`):**
