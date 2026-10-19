@@ -6,6 +6,11 @@ socket unix e só conhece uma lista fechada de ações. Nunca usa shell: cada a�
 com parâmetros validados contra o que existe de verdade. Cada cliente tem um token próprio, e cada
 token só pode pedir as ações e as zonas dele.
 
+Aprovação no celular: as ações que mudam algo (reiniciar) podem exigir que o dono toque em Aprovar
+no celular (ntfy) antes de rodar. Quem exige é o token de cada cliente (campo "aprovar"); sem o
+campo, todas exigem. O código de cada pedido só existe na notificação (tópico que só o dono lê),
+então o cliente não consegue se aprovar sozinho.
+
 Leitura: as consultas enxergam o servidor inteiro (o serviço tem só CAP_DAC_READ_SEARCH, que lê
 qualquer arquivo e não escreve nada), menos segredos: áreas do sistema e arquivos de chave, token e
 senha são recusados, e linhas com senha, token ou chave saem ocultas (***).
@@ -13,11 +18,15 @@ senha são recusados, e linhas com senha, token ou chave saem ocultas (***).
 Protocolo: HTTP no socket /run/atena-executor/executor.sock (permissão 660, grupo atena-acoes)
   GET  /acoes                     ações que o token pode pedir
   POST /acao/<nome>               corpo JSON {"params": {...}, "origem": "manual|agendamento|..."}
+                                  responde 202 {"pedido": id} quando a ação espera a aprovação
+  GET  /pedido/<id>[?esperar=s]   estado de um pedido (só do cliente que pediu); com esperar, segura
+                                  a resposta até o pedido terminar ou passar s segundos (até 170)
   Cabeçalho: Authorization: Bearer <token>
 
 Administração (como root):
-  atena-executor token-novo <cliente> <acoes> <zonas>
-      listas separadas por vírgula; imprime o token uma única vez; só o hash fica guardado
+  atena-executor token-novo <cliente> <acoes> <zonas> [aprovar]
+      listas separadas por vírgula; aprovar = ações que pedem o celular ("nenhuma" para nenhuma)
+      imprime o token uma única vez; só o hash fica guardado
   atena-executor token-remover <cliente>   revoga o token do cliente
   atena-executor tokens   lista os clientes cadastrados
 """
@@ -31,8 +40,11 @@ import shutil
 import socketserver
 import subprocess
 import sys
+import threading
 import time
+import urllib.error
 import urllib.parse
+import urllib.request
 
 import yaml
 
@@ -42,6 +54,15 @@ CONF = "/etc/atena/atena.conf"
 GRUPO_CLIENTES = "atena-acoes"
 LIMITE_SAIDA = 10 * 1024
 ZONAS = {"prod", "core", "apps", "ai", "agents", "lab"}
+
+NTFY = "http://127.0.0.1:2586"
+NTFY_TOKEN = "/etc/atena/executor/ntfy-servidor.token"         # publica pedidos, lê as respostas
+NTFY_TOKEN_BOTAO = "/etc/atena/executor/ntfy-aprovador.token"  # vai dentro dos botões do celular
+PEDIDOS = "/var/lib/atena-executor/pedidos.json"
+VALIDADE = 10 * 60          # um pedido espera a aprovação por 10 min
+MAX_AGUARDANDO = 5          # por cliente: um cliente enganado não enche o celular de pedidos
+ESPERA_MAXIMA = 170         # GET /pedido?esperar: abaixo do limite de 180 s do terminal do Hermes
+TERMINADOS = {"concluido", "falhou", "recusado", "expirado"}
 
 
 def log(**campos):
@@ -57,6 +78,11 @@ def ler_conf():
                 chave, valor = linha.split("=", 1)
                 conf[chave.strip()] = valor.strip().strip('"')
     return conf
+
+
+def ler(caminho):
+    with open(caminho) as f:
+        return f.read().strip()
 
 
 def rodar(argv, tempo=30):
@@ -121,6 +147,201 @@ def stack_permitida(cliente, stack):
     if doks[0]["zona"] not in cliente["zonas"]:
         raise Erro(403, f"a stack {stack} está fora das zonas deste cliente")
     return [c["container"] for c in doks]
+
+
+# --- ntfy: avisos e aprovações no celular ------------------------------------------------------
+
+def ntfy(topico, titulo, texto, prioridade=3, tags=(), acoes=()):
+    corpo = {"topic": topico, "title": titulo, "message": texto[:3800], "priority": prioridade,
+             "tags": list(tags)}
+    if acoes:
+        corpo["actions"] = list(acoes)
+    pedido = urllib.request.Request(NTFY + "/", data=json.dumps(corpo).encode(), method="POST",
+                                    headers={"Authorization": "Bearer " + ler(NTFY_TOKEN),
+                                             "Content-Type": "application/json"})
+    with urllib.request.urlopen(pedido, timeout=10) as r:
+        r.read()
+
+
+def avisar(titulo, texto, tags=(), acoes=()):
+    """Aviso para o dono; falha do ntfy não derruba o resto."""
+    try:
+        ntfy("aprovacoes", titulo, texto, tags=tags, acoes=acoes)
+    except (OSError, urllib.error.URLError) as e:
+        log(evento="ntfy fora do ar", erro=str(e))
+
+
+def endereco_ntfy():
+    """O endereço do ntfy que o celular alcança (os botões chamam esse endereço)."""
+    conf = ler_conf()
+    return (conf.get("ATENA_NTFY_URL") or f"http://{conf.get('ATENA_LAN_IP')}:2586").rstrip("/")
+
+
+def botao(rotulo, decisao, p, segredo):
+    """Botão de notificação: o celular publica a decisão no tópico respostas."""
+    return {"action": "http", "label": rotulo, "method": "POST", "clear": True,
+            "url": endereco_ntfy() + "/respostas",
+            "headers": {"Authorization": "Bearer " + ler(NTFY_TOKEN_BOTAO)},
+            "body": f"{decisao} {p['id']} {segredo}"}
+
+
+def legivel(resultado):
+    if isinstance(resultado, dict):
+        return "\n".join(f"{k}: {', '.join(map(str, v)) if isinstance(v, list) else v}"
+                         for k, v in resultado.items())
+    return str(resultado)
+
+
+# --- pedidos (ações que esperam a aprovação do dono) ---------------------------------------------
+
+TRAVA = threading.RLock()
+MUDOU = threading.Condition(TRAVA)   # acorda quem espera em GET /pedido?esperar
+ESTADO = {"pedidos": {}, "ultima_resposta": None}
+
+
+def carregar_estado():
+    try:
+        with open(PEDIDOS) as f:
+            ESTADO.update(json.load(f))
+    except (FileNotFoundError, ValueError):
+        pass
+
+
+def salvar_estado():
+    with TRAVA:
+        limite = time.time() - 7 * 86400   # guarda uma semana de histórico
+        ESTADO["pedidos"] = {i: p for i, p in ESTADO["pedidos"].items() if p["criado"] > limite}
+        temporario = PEDIDOS + ".novo"
+        with open(os.open(temporario, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), "w") as f:
+            json.dump(ESTADO, f, ensure_ascii=False)
+        os.replace(temporario, PEDIDOS)
+
+
+def mudar(p, **campos):
+    with TRAVA:
+        p.update(campos, atualizado=time.time())
+        salvar_estado()
+        MUDOU.notify_all()
+
+
+def precisa_aprovacao(cliente, nome):
+    padrao = [n for n, acao in ACOES.items() if acao[2]]   # sem o campo, tudo que pode pedir
+    return nome in cliente.get("aprovar", padrao)
+
+
+def criar_pedido(cliente, nome, params, origem, titulo):
+    with TRAVA:
+        aguardando = [p for p in ESTADO["pedidos"].values()
+                      if p["cliente"] == cliente["cliente"] and p["estado"] == "aguardando"
+                      and p["expira"] > time.time()]
+        if len(aguardando) >= MAX_AGUARDANDO:
+            raise Erro(429, "já há pedidos demais esperando aprovação")
+        p = {"id": secrets.token_hex(4), "cliente": cliente["cliente"], "zonas": cliente["zonas"],
+             "acao": nome, "params": params, "origem": origem, "titulo": titulo, "estado": "novo",
+             "criado": time.time()}
+        ESTADO["pedidos"][p["id"]] = p
+    return p
+
+
+def pedir_aprovacao(p, titulo, texto):
+    segredo = secrets.token_urlsafe(18)
+    mudar(p, estado="aguardando", segredo=segredo, expira=time.time() + VALIDADE)
+    try:
+        ntfy("aprovacoes", titulo,
+             f"{texto}\n\nPedido {p['id']} de {p['cliente']} · vale por {VALIDADE // 60} min",
+             prioridade=4, tags=["warning"],
+             acoes=[botao("Aprovar", "aprovar", p, segredo), botao("Recusar", "recusar", p, segredo)])
+    except (OSError, urllib.error.URLError) as e:
+        mudar(p, estado="falhou", segredo=None, erro="não consegui mandar o pedido para o celular")
+        log(evento="ntfy fora do ar", erro=str(e))
+        raise Erro(503, "não consegui mandar o pedido para o celular (ntfy fora do ar)")
+
+
+def publico(p):
+    """O pedido como o cliente vê: sem o código dos botões."""
+    return {k: v for k, v in p.items() if k not in ("segredo", "zonas")}
+
+
+def tratar_resposta(texto):
+    m = re.fullmatch(r"(aprovar|recusar) ([0-9a-f]{8}) ([A-Za-z0-9_-]{24})", texto.strip())
+    if not m:
+        return
+    decisao, id_, segredo = m.groups()
+    with TRAVA:
+        p = ESTADO["pedidos"].get(id_)
+        if not p or not p.get("segredo") or not secrets.compare_digest(p["segredo"], segredo):
+            if not p or p["estado"] == "aguardando":
+                log(evento="resposta inválida", pedido=id_)   # toque repetido num decidido é normal
+            return
+        log(evento="decisão do dono", pedido=id_, acao=p["acao"], decisao=decisao)
+        if p["estado"] != "aguardando":
+            return
+        if time.time() > p["expira"]:
+            mudar(p, estado="expirado", segredo=None)
+            avisar(f"Pedido {id_} expirou", "Nada foi feito. Peça de novo à Atena se ainda quiser.",
+                   tags=["hourglass"])
+            return
+        if decisao == "recusar":
+            mudar(p, estado="recusado", segredo=None)
+            avisar(f"Recusado: {p['titulo']}", "Nada foi feito.", tags=["no_entry"])
+            return
+        mudar(p, estado="executando", segredo=None)
+    threading.Thread(target=executar_aprovado, args=(p,), daemon=True).start()
+
+
+def executar(p):
+    """Roda a ação de um pedido (aprovado, ou de um cliente que não precisa de aprovação)."""
+    try:
+        resultado = ACOES[p["acao"]][0](p)
+        mudar(p, estado="concluido", resultado=resultado)
+        return resultado
+    except Erro as e:
+        mudar(p, estado="falhou", erro=str(e))
+        raise
+    except Exception as e:
+        mudar(p, estado="falhou", erro=f"erro interno: {e}")
+        log(evento="erro ao executar", pedido=p["id"], erro=repr(e))
+        raise Erro(500, "erro interno; veja journalctl -u atena-executor")
+
+
+def executar_aprovado(p):
+    try:
+        resultado = executar(p)
+        avisar(f"Feito: {p['titulo']}", legivel(resultado)[:1000], tags=["white_check_mark"])
+    except Erro as e:
+        avisar(f"Falhou: {p['titulo']}", str(e), tags=["x"])
+
+
+def ouvir_respostas():
+    """Fica ligado no tópico de respostas: é por ali que chegam os toques nos botões."""
+    while True:
+        desde = ESTADO.get("ultima_resposta") or str(int(time.time()))
+        try:
+            pedido = urllib.request.Request(f"{NTFY}/respostas/json?since={desde}",
+                                            headers={"Authorization": "Bearer " + ler(NTFY_TOKEN)})
+            with urllib.request.urlopen(pedido, timeout=120) as r:   # o ntfy dá sinal a cada 45 s
+                for linha in r:
+                    evento = json.loads(linha)
+                    if evento.get("event") != "message":
+                        continue
+                    with TRAVA:
+                        ESTADO["ultima_resposta"] = evento["id"]
+                        tratar_resposta(evento.get("message", ""))
+                        salvar_estado()
+        except Exception as e:
+            log(evento="respostas: reconectando", erro=str(e))
+            time.sleep(10)
+
+
+def acompanhar():
+    """De 3 em 3 s: vence os pedidos que o dono não respondeu a tempo."""
+    while True:
+        time.sleep(3)
+        with TRAVA:
+            pedidos = list(ESTADO["pedidos"].values())
+        for p in pedidos:
+            if p["estado"] == "aguardando" and time.time() > p["expira"]:
+                mudar(p, estado="expirado", segredo=None)
 
 
 # --- ações -------------------------------------------------------------------------------------
@@ -392,7 +613,23 @@ def acao_gasto_api(cliente, params):
             "obs": "renova todo dia 1º; modelos locais (local, whisper) não custam nada"}
 
 
+def preparar_servico_reiniciar(cliente, params):
+    nomes = stack_permitida(cliente, params.get("stack"))
+    return f"reiniciar {params['stack']}", "Containers: " + ", ".join(nomes)
+
+
+def acao_servico_reiniciar(p):
+    # confere de novo: a stack pode ter mudado de zona enquanto o pedido esperava
+    nomes = stack_permitida({"zonas": p["zonas"]}, p["params"].get("stack"))
+    codigo, texto = rodar(["docker", "restart", *nomes], 120)
+    if codigo != 0:
+        raise Erro(500, texto.strip() or "falha ao reiniciar")
+    return {"reiniciados": nomes}
+
+
 # nome: (função, descrição, preparar). Sem preparar, a ação roda na hora: função(cliente, params).
+# Com preparar, vira um pedido: preparar(cliente, params) valida e descreve, e função(pedido) roda
+# depois da aprovação no celular (se o token do cliente exigir) ou na hora.
 ACOES = {
     "status.servicos":   (acao_status_servicos, "estado dos containers das zonas do cliente", None),
     "status.recursos":   (acao_status_recursos, "CPU, RAM, discos e GPU agora", None),
@@ -407,6 +644,8 @@ ACOES = {
     "arquivo.buscar":    (acao_arquivo_buscar, "procura um texto nos arquivos de uma pasta, menos segredos (pasta, texto)", None),
     "sistema.processos": (acao_sistema_processos, "processos que mais usam CPU ou RAM (ordem?, quantos?)", None),
     "sistema.rede":      (acao_sistema_rede, "endereços e portas abertas do servidor", None),
+    "servico.reiniciar": (acao_servico_reiniciar, "reinicia os containers de uma stack (stack)",
+                          preparar_servico_reiniciar),
 }
 
 
@@ -456,9 +695,22 @@ class Pedido(http.server.BaseHTTPRequestHandler):
         try:
             cliente = cliente_do_token(self.headers.get("Authorization"))
             url = urllib.parse.urlsplit(self.path)
+            m = re.fullmatch(r"/pedido/([0-9a-f]{8})", url.path)
             if url.path == "/acoes":
                 self.responder(200, {"cliente": cliente["cliente"], "zonas": cliente["zonas"], "acoes": {
-                    n: ACOES[n][1] for n in cliente["acoes"] if n in ACOES}})
+                    n: ACOES[n][1] + (" [precisa de aprovação no celular]" if precisa_aprovacao(cliente, n) else "")
+                    for n in cliente["acoes"] if n in ACOES}})
+            elif m:
+                esperar = urllib.parse.parse_qs(url.query).get("esperar", ["0"])[0]
+                limite = time.monotonic() + min(int(esperar) if esperar.isdigit() else 0, ESPERA_MAXIMA)
+                with MUDOU:
+                    p = ESTADO["pedidos"].get(m.group(1))
+                    if not p or p["cliente"] != cliente["cliente"]:
+                        raise Erro(404, "pedido não encontrado")
+                    while p["estado"] not in TERMINADOS and time.monotonic() < limite:
+                        MUDOU.wait(limite - time.monotonic())
+                    corpo = {"ok": True, "pedido": publico(p)}
+                self.responder(200, corpo)
             else:
                 raise Erro(404, "rota desconhecida")
         except Erro as e:
@@ -483,11 +735,27 @@ class Pedido(http.server.BaseHTTPRequestHandler):
             origem = str(corpo.get("origem", "manual"))[:32]
             if not isinstance(params, dict):
                 raise Erro(400, "params deve ser um objeto")
-            funcao = ACOES[nome][0]
-            resultado = funcao(cliente, params)
-            log(cliente=cliente["cliente"], origem=origem, acao=nome, params=params, ok=True,
+            funcao, _, preparar = ACOES[nome]
+            if not preparar:
+                resultado = funcao(cliente, params)
+                log(cliente=cliente["cliente"], origem=origem, acao=nome, params=params, ok=True,
+                    segundos=round(time.monotonic() - inicio, 2))
+                self.responder(200, {"ok": True, "acao": nome, "resultado": resultado})
+                return
+            titulo, texto = preparar(cliente, params)
+            p = criar_pedido(cliente, nome, params, origem, titulo)
+            if precisa_aprovacao(cliente, nome):
+                pedir_aprovacao(p, f"{cliente['cliente']} pede: {titulo}", texto)
+                log(cliente=cliente["cliente"], origem=origem, acao=nome, params=params, pedido=p["id"],
+                    ok=True, aprovacao="pedida")
+                self.responder(202, {"ok": True, "acao": nome, "pedido": p["id"], "estado": "aguardando",
+                                     "mensagem": "pedido enviado ao celular do dono; consulte GET /pedido/<id>"})
+                return
+            mudar(p, estado="executando")
+            resultado = executar(p)
+            log(cliente=cliente["cliente"], origem=origem, acao=nome, params=params, pedido=p["id"], ok=True,
                 segundos=round(time.monotonic() - inicio, 2))
-            self.responder(200, {"ok": True, "acao": nome, "resultado": resultado})
+            self.responder(200, {"ok": True, "acao": nome, "pedido": p["id"], "resultado": resultado})
         except subprocess.TimeoutExpired:
             log(cliente=cliente and cliente["cliente"], origem=origem, acao=nome, params=params, ok=False, erro="tempo esgotado")
             self.responder(504, {"ok": False, "erro": "a ação passou do tempo máximo"})
@@ -505,12 +773,15 @@ class Servidor(socketserver.ThreadingMixIn, socketserver.UnixStreamServer):
 
 
 def servir():
+    carregar_estado()
     if os.path.exists(SOCKET):
         os.unlink(SOCKET)
     servidor = Servidor(SOCKET, Pedido)
     import grp
     os.chown(SOCKET, -1, grp.getgrnam(GRUPO_CLIENTES).gr_gid)
     os.chmod(SOCKET, 0o660)
+    threading.Thread(target=ouvir_respostas, daemon=True).start()
+    threading.Thread(target=acompanhar, daemon=True).start()
     log(evento="executor no ar", socket=SOCKET, acoes=sorted(ACOES))
     servidor.serve_forever()
 
@@ -525,16 +796,21 @@ def gravar_tokens(tokens):
     os.replace(temporario, TOKENS)
 
 
-def token_novo(cliente, acoes, zonas):
+def token_novo(cliente, acoes, zonas, aprovar=None):
     acoes = [a for a in acoes.split(",") if a]
     zonas = [z for z in zonas.split(",") if z]
-    desconhecidas = [a for a in acoes if a not in ACOES] + [z for z in zonas if z not in ZONAS]
+    lista_aprovar = None if aprovar is None else [a for a in aprovar.split(",") if a and a != "nenhuma"]
+    desconhecidas = ([a for a in acoes + (lista_aprovar or []) if a not in ACOES]
+                     + [z for z in zonas if z not in ZONAS])
     if desconhecidas:
         sys.exit(f"desconhecido: {', '.join(desconhecidas)}")
     # um token por cliente: criar de novo revoga o anterior
     tokens = {h: c for h, c in carregar_tokens().items() if c["cliente"] != cliente}
     token = "atx-" + secrets.token_urlsafe(32)
-    tokens[hash_token(token)] = {"cliente": cliente, "acoes": acoes, "zonas": zonas}
+    dados = {"cliente": cliente, "acoes": acoes, "zonas": zonas}
+    if lista_aprovar is not None:
+        dados["aprovar"] = lista_aprovar
+    tokens[hash_token(token)] = dados
     gravar_tokens(tokens)
     print(token)
 
@@ -552,12 +828,13 @@ if __name__ == "__main__":
     comando = sys.argv[1] if len(sys.argv) > 1 else ""
     if comando == "servir":
         servir()
-    elif comando == "token-novo" and len(sys.argv) == 5:
+    elif comando == "token-novo" and len(sys.argv) in (5, 6):
         token_novo(*sys.argv[2:])
     elif comando == "token-remover" and len(sys.argv) == 3:
         token_remover(sys.argv[2])
     elif comando == "tokens":
         for c in carregar_tokens().values():
-            print(f"{c['cliente']:12} zonas: {','.join(c['zonas']):28} ações: {','.join(c['acoes'])}")
+            aprovar = ",".join(c["aprovar"]) or "nenhuma" if "aprovar" in c else "todas que podem"
+            print(f"{c['cliente']:12} zonas: {','.join(c['zonas']):28} aprovação: {aprovar:16} ações: {','.join(c['acoes'])}")
     else:
         sys.exit(__doc__)
