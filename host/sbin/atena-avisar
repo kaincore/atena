@@ -1,0 +1,46 @@
+#!/bin/bash
+# Atena: avisos no celular do dono (tópico "alertas" do ntfy).
+#
+#   atena-avisar "título" "texto" [prioridade 1-5]   aviso avulso
+#   atena-avisar --falha <unidade>                   usado pelo OnFailure= das unidades atena-*
+#   atena-avisar --vigiar                            containers parados ou doentes (timer, 5 em 5 min)
+set -euo pipefail
+NTFY=http://127.0.0.1:2586
+TOKEN=/etc/atena/executor/ntfy-servidor.token
+ESTADO=/var/lib/atena-avisar/containers
+
+publicar() {  # publicar <título> <texto> <prioridade> <tag>
+  python3 -c 'import json, sys; print(json.dumps({"topic": "alertas", "title": sys.argv[1],
+    "message": sys.argv[2][:3800], "priority": int(sys.argv[3]), "tags": [sys.argv[4]]}))' "$@" |
+    curl -fsS -m 10 -o /dev/null -H "Authorization: Bearer $(cat "$TOKEN")" \
+      -H 'Content-Type: application/json' --data-binary @- "$NTFY/"
+}
+
+case "${1:-}" in
+  --falha)
+    unidade="${2:?falta a unidade}"
+    publicar "Falhou: $unidade" "$(journalctl -u "$unidade" -n 15 --no-pager -o cat 2>&1 | tail -c 3000)" 4 rotating_light
+    ;;
+  --vigiar)
+    # problema = parado com erro, reiniciando sem parar, ou healthcheck falhando
+    agora=$(docker ps -a --format '{{.Names}}\t{{.State}}\t{{.Status}}' |
+      awk -F'\t' '$2 == "restarting" || $2 == "dead" || ($2 == "exited" && $3 !~ /\(0\)/) || $3 ~ /unhealthy/ {print $1 "\t" $3}' | sort)
+    antes=$(cat "$ESTADO" 2>/dev/null || true)
+    novos=$(comm -23 <(cut -f1 <<< "$agora" | sed '/^$/d') <(cut -f1 <<< "$antes" | sed '/^$/d'))
+    voltaram=$(comm -13 <(cut -f1 <<< "$agora" | sed '/^$/d') <(cut -f1 <<< "$antes" | sed '/^$/d'))
+    if [ -n "$novos" ]; then
+      publicar "Container com problema: $(paste -sd, <<< "$novos")" "$(grep -F -f <(echo "$novos") <<< "$agora")" 4 warning
+    fi
+    if [ -n "$voltaram" ]; then
+      publicar "Voltou ao normal: $(paste -sd, <<< "$voltaram")" "Sem problemas agora." 2 white_check_mark
+    fi
+    install -d -m 700 "$(dirname "$ESTADO")"
+    printf '%s\n' "$agora" > "$ESTADO"
+    ;;
+  ""|-h|--help)
+    sed -n '2,7p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2
+    ;;
+  *)
+    publicar "$1" "${2:-}" "${3:-3}" bell
+    ;;
+esac
