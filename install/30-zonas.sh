@@ -41,3 +41,5 @@ criar_rede zone-agents 10.10.30.0/24  br-agents
 criar_rede zone-lab    10.10.40.0/24  br-lab
 # rede de serviço: só o LiteLLM e quem pode usá-lo, sem saída para a internet
 criar_rede svc-llm     10.10.250.0/24 br-svc-llm --internal
+# rede de serviço: o ntfy e quem publica avisos nele (Hermes), sem saída para a internet
+criar_rede svc-ntfy    10.10.251.0/24 br-svc-ntfy --internal
