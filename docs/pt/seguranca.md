@@ -6,6 +6,7 @@
 - **Containers não alcançam a rede de casa.** Se um container for comprometido, ele não chega ao roteador, aos seus computadores nem aos aparelhos do Tailscale.
 - **Zonas isoladas.** Um problema numa zona não alcança as outras.
 - **Segredos fora do código.** Ficam em arquivos `.env` com permissão 600, gerados no servidor e nunca versionados.
+- **Agentes só agem por uma lista fechada.** A Atena não tem Docker nem sudo: tudo o que ela faz no servidor passa pelo executor, que só conhece ações fixas.
 
 ## As camadas
 
@@ -32,6 +33,20 @@ São três camadas para nenhuma porta escapar por engano:
 2. As redes das zonas usam `host_binding_ipv4=127.0.0.1`: uma porta publicada sem IP fica só no servidor.
 3. O firewall de entrada descarta o resto.
 
+### Executor
+- **Sem shell.** Cada ação roda um comando fixo; os parâmetros são conferidos contra o que existe (stack, unidade, caminho) e contra uma lista de formatos.
+- **Token por cliente**, guardado só como hash, com as ações e as zonas que ele pode pedir. Revogar vale na hora.
+- **Aprovação no celular.** O código de cada pedido só existe dentro da notificação, num tópico do ntfy que só você lê. O pedido vale 10 minutos, cada cliente tem no máximo 5 esperando, e a zona é conferida de novo na hora de rodar.
+- **Serviço fechado.** Roda como `atena-exec`, com `ProtectSystem=strict`, `NoNewPrivileges` e só uma capacidade: `CAP_DAC_READ_SEARCH`, que lê arquivos e não escreve.
+- **Segredos não saem.** `/proc`, `/run`, `/var/lib/docker`, `/etc/atena/executor`, pastas como `.ssh` e arquivos como `.env`, `*.key` e `tokens.json` são recusados, inclusive por atalho. No texto que sai, valores de senha, token e chave viram `***`.
+
+### Atena (Hermes)
+- **Sem Docker e sem sudo.** O usuário `hermes` só está no grupo `atena-acoes`, que dá acesso ao socket do executor. O instalador para se o `hermes` estiver no grupo `docker`.
+- **Token sem a zona `prod`.** Sistemas de clientes ficam fora do alcance dela.
+- **Só o dono conversa.** O Telegram aceita só o seu ID; mensagens de outras pessoas são ignoradas, sem resposta.
+- **Conteúdo é dado, não ordem.** A `SOUL.md` manda tratar páginas, documentos e mensagens de terceiros como dados. Comandos no container dela passam pela aprovação "smart", e o destrutivo vai para você.
+- **Chave do LiteLLM com teto mensal.** Um erro dela não esvazia o crédito da API.
+
 ## O que foi testado no servidor original
 
 | Teste | Resultado |
@@ -42,6 +57,11 @@ São três camadas para nenhuma porta escapar por engano:
 | Zona diferente tentando alcançar outra | Isolado |
 | Os mesmos testes depois de reiniciar o Docker e o servidor | Mesmo resultado |
 | Login por senha e como root no SSH | Recusado |
+| A Atena pedindo ao executor `/etc/shadow`, um `.env` e uma chave SSH | Recusado (403) |
+| Aprovação com código errado, toque repetido e pedido vencido | Nada rodou |
+| Cliente pedindo ação fora do token ou stack de outra zona | Recusado (403) |
+
+Os testes automáticos do executor e da ronda ficam em `tests/` e rodam a cada envio ao GitHub.
 
 ## O que a Atena NÃO protege
 
@@ -49,6 +69,11 @@ São três camadas para nenhuma porta escapar por engano:
 - **Serviços sem senha ficam abertos para toda a rede de casa.** O Arca, por exemplo, não tem login: qualquer aparelho do Wi-Fi pode ver e apagar arquivos.
 - **As zonas dividem o mesmo kernel.** Uma falha grave de escape de container atravessaria as zonas. Para isolamento forte, use máquinas virtuais.
 - **IPv6 dentro dos containers** não é usado. Se você ativar IPv6 nas redes do Docker, revise o firewall, que hoje só tem regras de IPv4.
+- **O executor tem acesso ao Docker.** Isso equivale a root. A proteção é a lista fechada: um defeito no executor seria um defeito de segurança do servidor inteiro.
+- **O filtro de segredos é por nome e por formato.** Um segredo num formato desconhecido, dentro de um arquivo de nome comum, pode passar. Guarde segredos em `.env`, `*.key` ou `*.token`.
+- **O que a Atena lê vai para o modelo na nuvem** (Anthropic), menos o que passa por `local.processar`.
+- **ntfy sem HTTPS na rede de casa.** Com `http://`, quem escuta o Wi-Fi pode ver o código de um pedido e aprovar antes de você. Fora de casa, use o endereço `https://` do Tailscale em `ATENA_NTFY_URL`.
+- **Injeção de instruções** (um texto que tenta mandar na IA) é reduzida pelas regras e pela aprovação, não eliminada. Por isso a Atena só faz sem aprovação o que tem volta.
 - **Outros encaminhamentos de tráfego** (máquinas virtuais, subnet router do Tailscale) são descartados pela última regra da `DOCKER-USER`. Se precisar deles, crie exceções.
 
 ## Antes de publicar algo
