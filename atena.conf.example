@@ -38,3 +38,18 @@ ATENA_NTFY_URL=http://192.168.0.10:2586
 ATENA_LOCAL_MODELO=qwen3:4b-instruct-2507-q4_K_M
 # Contexto (tokens) do modelo do servidor: mais contexto, mais memória de vídeo
 ATENA_LOCAL_CONTEXTO=8192
+
+# --- PC da rede de casa (opcional) -------------------------------------------
+# Um PC com placa de vídeo e LM Studio que a Atena liga (Wake-on-LAN), usa para textos
+# maiores e desliga quando você pede. Deixe ATENA_PC_IP vazio para não usar.
+ATENA_PC_IP=
+# MAC da placa de rede do PC (Wake-on-LAN ligado na BIOS e no Windows)
+ATENA_PC_MAC=
+# Porta da API do LM Studio no PC (só o servidor deve alcançá-la)
+ATENA_PC_PORTA=1234
+# Modelo carregado no LM Studio e contexto (tokens)
+ATENA_PC_MODELO=qwen3-14b
+ATENA_PC_CONTEXTO=16384
+# Usuário do Windows que aceita a chave restrita da Atena (só desligar, reiniciar e cancelar).
+# Veja host/windows/LEIAME.md. Vazio: a Atena só liga o PC.
+ATENA_PC_USUARIO=
