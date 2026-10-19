@@ -25,3 +25,6 @@ dist/
 .DS_Store
 *.swp
 *~
+
+# Cache do Python (testes)
+__pycache__/
