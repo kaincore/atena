@@ -49,6 +49,64 @@ sudo systemctl restart atena-docker-firewall
 - **Virada do mês:** os tetos das chaves (`1mo`) renovam sozinhos no dia 1º às 00:00 UTC. Os tetos por modelo são zerados no mesmo horário pelo `atena-litellm-virada-mes.timer`.
 - **Depois de editar o `config.yaml`:** `docker compose up -d --force-recreate litellm`.
 
+## Avisos no celular (ntfy)
+
+1. Instale o app **ntfy** no celular (Android).
+2. Crie o seu usuário, só de leitura: `sudo atena-ntfy-celular <seu-nome>`.
+3. No app, adicione o servidor de `ATENA_NTFY_URL` com esse usuário e assine os tópicos `alertas`, `aprovacoes` e `atena`, em minúsculas e sem acento.
+4. Teste: `sudo atena-avisar "Teste" "Chegou?"`.
+
+Para receber fora de casa, publique o ntfy pelo Tailscale (como em [Adicionar uma stack](#adicionar-uma-stack), porta 2586) e troque o endereço:
+
+1. Em `/etc/atena/atena.conf`, `ATENA_NTFY_URL=https://<servidor>.<sua-tailnet>.ts.net:2586`. O executor lê o arquivo a cada pedido.
+2. Em `/opt/atena/stacks/core/ntfy/server.yml`, o mesmo endereço em `base-url`, e `docker compose up -d --force-recreate` na pasta do ntfy.
+3. No app, troque o servidor pelo endereço novo.
+
+## Executor: clientes e tokens
+
+```bash
+sudo atena-executor tokens                                    # quem pode pedir o quê
+sudo atena-executor token-novo <cliente> <ações> <zonas> [aprovar]
+sudo atena-executor token-remover <cliente>
+journalctl -u atena-executor -f                               # cada pedido, com o resultado
+```
+
+- Listas separadas por vírgula. `aprovar` diz quais ações pedem o celular: `nenhuma`, ou uma lista. Sem esse campo, toda ação que pode pedir aprovação pede.
+- O token aparece uma única vez. Criar de novo para o mesmo cliente revoga o anterior.
+- Exemplo: a Atena passa a pedir o celular antes de reiniciar algo (o token dela fica em `/srv/agents/hermes/executor.token`):
+  ```bash
+  sudo atena-executor tokens | grep hermes      # copie a lista de ações e de zonas dela
+  sudo atena-executor token-novo hermes <ações> <zonas> servico.reiniciar \
+    | sudo install -m 600 -o hermes -g hermes /dev/stdin /srv/agents/hermes/executor.token
+  ```
+
+## Atena (Hermes)
+
+**Instalar.** `sudo ./install.sh --hermes`. Depois:
+
+1. Suba o LiteLLM (stack `ai/litellm`) e grave a chave da Anthropic com `atena-chave-anthropic`. Para ouvir mensagens de voz, suba também o Whisper (`ai/whisper`).
+2. `sudo atena-hermes-chave [teto]`: cria a chave da Atena no LiteLLM, com teto em dólares por mês (padrão 10), e grava no Hermes sem mostrar.
+3. Crie um bot com o **@BotFather** no Telegram e rode `sudo atena-telegram`. O script pede o token sem mostrar, espera você mandar "oi" ao bot e confirma o seu ID. Só você conversa com ela.
+4. Para o texto privado (`local.processar`), baixe o modelo do servidor: `docker exec ollama ollama pull qwen3:4b-instruct-2507-q4_K_M` (ou o de `ATENA_LOCAL_MODELO`).
+
+**No dia a dia.**
+
+- `/new` no Telegram começa uma conversa nova (use depois de mudar a personalidade ou as habilidades).
+- Terminal: `docker exec -it -u hermes hermes hermes`.
+- Personalidade e habilidades: `/srv/agents/hermes/SOUL.md` e `/srv/agents/hermes/skills/atena/`. O instalador guarda uma cópia antes de sobrescrever um arquivo que você mudou.
+- Configuração: `docker exec -u hermes hermes hermes config set <chave> <valor>`. Para voltar ao padrão do modelo: `sudo sh hermes/configurar.sh` e `docker restart hermes`.
+- Tarefas agendadas: `docker exec -u hermes hermes hermes cron list`. Se a ronda sumir, crie de novo:
+  ```bash
+  docker exec -u hermes hermes hermes cron create "every 3m" "Ronda do servidor. Siga a seção Ronda da habilidade servidor-atena." \
+    --name ronda --monitor-script ronda.py --skill servidor-atena --deliver telegram
+  ```
+- Gasto: pergunte a ela ("quanto gastamos este mês?") ou veja `gasto.api`.
+- Atualizar o Hermes: leia as notas da versão, troque a imagem no compose e confira o `config.yaml` gerado. A documentação no GitHub é da versão em desenvolvimento, que pode ser mais nova que a sua.
+
+## PC da rede de casa
+
+Opcional: a Atena liga o PC pela rede, usa o modelo dele para textos maiores e desliga quando você pede. O passo a passo está em [`host/windows/LEIAME.md`](../../host/windows/LEIAME.md).
+
 ## Atualizar versões
 
 As imagens têm versão fixa. Para atualizar:
