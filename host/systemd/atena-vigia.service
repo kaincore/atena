@@ -1,0 +1,7 @@
+[Unit]
+Description=Atena: avisa no celular quando um container para ou fica doente
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/atena-avisar --vigiar
