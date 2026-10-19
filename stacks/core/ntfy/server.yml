@@ -1,0 +1,14 @@
+# ntfy do servidor Atena. Referência: https://docs.ntfy.sh/config/
+base-url: "{{ATENA_NTFY_URL}}"   # endereço que o celular usa
+listen-http: ":2586"
+
+cache-file: "/var/lib/ntfy/cache.db"
+cache-duration: "24h"            # o celular recebe o que perdeu nas últimas 24 h
+
+auth-file: "/var/lib/ntfy/user.db"
+auth-default-access: "deny-all"  # sem usuário, nada
+enable-login: true
+enable-signup: false
+
+# Sem upstream: o app Android recebe direto deste servidor (em casa ou pelo Tailscale).
+log-level: info
