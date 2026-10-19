@@ -1,4 +1,4 @@
-# Verificações automáticas a cada envio: scripts, composes e segredos.
+# Verificações automáticas a cada envio: scripts, composes, testes e segredos.
 name: verificar
 
 on:
@@ -14,10 +14,15 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: instalador e ferramentas (bash)
-        run: docker run --rm -v "$PWD:/mnt:ro" -w /mnt koalaman/shellcheck:v0.10.0 -x -s bash install.sh install/*.sh tools/verificar-vazamentos.sh
-      - name: scripts do servidor (sh)
-        run: docker run --rm -v "$PWD:/mnt:ro" -w /mnt koalaman/shellcheck:v0.10.0 -s sh host/sbin/* tools/hooks/pre-commit
+      - name: instalador, ferramentas e scripts do servidor em bash
+        run: |
+          docker run --rm -v "$PWD:/mnt:ro" -w /mnt koalaman/shellcheck:v0.10.0 -x -s bash \
+            install.sh install/*.sh tools/verificar-vazamentos.sh \
+            $(grep -lE '^#!(/bin/bash|/usr/bin/env bash)' host/sbin/*)
+      - name: scripts do servidor em sh (os de Python ficam para o job de testes)
+        run: |
+          docker run --rm -v "$PWD:/mnt:ro" -w /mnt koalaman/shellcheck:v0.10.0 -s sh \
+            $(grep -l '^#!/bin/sh' host/sbin/* tools/hooks/* hermes/*.sh)
 
   composes:
     name: composes válidos
@@ -29,10 +34,30 @@ jobs:
           set -a; . ./atena.conf.example; set +a
           for f in stacks/*/*/compose.yaml; do
             d=$(mktemp -d); cp -r "$(dirname "$f")/." "$d/"
-            sed -e "s|{{ATENA_LAN_IP}}|$ATENA_LAN_IP|g" "$f" > "$d/compose.yaml"
+            sed -e "s|{{ATENA_LAN_IP}}|$ATENA_LAN_IP|g" -e "s|{{ATENA_TZ}}|$ATENA_TZ|g" \
+                -e "s|{{ATENA_NTFY_URL}}|$ATENA_NTFY_URL|g" "$f" > "$d/compose.yaml"
             if [ -f "$d/.env.example" ]; then cp "$d/.env.example" "$d/.env"; fi
             docker compose -f "$d/compose.yaml" config --quiet
             echo "ok $f"
+          done
+
+  testes:
+    name: testes (executor e Hermes)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: dependências (as mesmas do servidor)
+        run: sudo apt-get install -y -qq python3-yaml && sudo mkdir -p /srv
+      - name: os scripts Python compilam
+        run: |
+          for f in host/sbin/atena-executor host/sbin/atena-telegram hermes/scripts/ronda.py; do
+            python3 -c 'import ast, sys; ast.parse(open(sys.argv[1]).read(), sys.argv[1])' "$f"
+          done
+      - name: testes
+        run: |
+          for t in tests/executor/teste_*.py tests/hermes/teste_*.py; do
+            echo "== $t"
+            (cd "$(dirname "$t")" && /usr/bin/python3 "$(basename "$t")")
           done
 
   segredos:
