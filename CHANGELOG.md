@@ -1,6 +1,6 @@
 # Mudanças
 
-## 0.1.0 (não publicada)
+## 0.1.0 (2026-10-17)
 
 Primeira versão do modelo, extraída do primeiro servidor Atena.
 
