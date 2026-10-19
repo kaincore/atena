@@ -1,5 +1,5 @@
 <h1 align="center">
-  <img src="docs/assets/banner.en.svg" width="100%" alt="ATENA: a home server in isolated zones, with local AI and a Telegram assistant">
+  <img src="docs/assets/banner.en.svg" width="100%" alt="ATENA: neon logo between Greek columns, with the hands from The Creation of Adam in ASCII art almost touching">
 </h1>
 
 <p align="center">
@@ -165,4 +165,5 @@ git config core.hooksPath tools/hooks
 
 [MIT](LICENSE)
 
-<p align="center"><sub>░▒▓ home-made · isolated zones · nothing exposed ▓▒░</sub></p>
+<p align="center"><sub>░▒▓ home-made · isolated zones · nothing exposed ▓▒░</sub><br>
+<sub>Banner: the hands from <i>The Creation of Adam</i> (Michelangelo, c. 1512, public domain) in ASCII art.</sub></p>
