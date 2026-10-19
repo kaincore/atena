@@ -1,0 +1,24 @@
+#!/bin/sh
+# Atena: cria o seu usuário do ntfy para o celular. Ele só lê: alertas do servidor, pedidos de
+# aprovação e mensagens da Atena. A senha é pedida pelo próprio ntfy e não aparece na tela.
+# Uso: sudo atena-ntfy-celular <usuario>
+set -eu
+[ "$(id -u)" = 0 ] || { echo "Rode com sudo: sudo atena-ntfy-celular <usuario>"; exit 1; }
+U=${1:-}
+printf %s "$U" | grep -Eq '^[a-z][a-z0-9_-]{1,30}$' \
+  || { echo "Uso: sudo atena-ntfy-celular <usuario> (letras minúsculas, números, - e _)"; exit 1; }
+if ! docker exec ntfy ntfy user list 2>&1 | grep -q "^user $U "; then
+  echo "Escolha a senha do usuário $U (ela não aparece enquanto você digita):"
+  docker exec -it ntfy ntfy user add "$U"
+fi
+for topico in alertas aprovacoes atena; do
+  docker exec ntfy ntfy access "$U" "$topico" read-only >/dev/null
+done
+. /etc/atena/atena.conf
+cat <<FIM
+
+Pronto. No app ntfy do celular (Android):
+  1. Configurações > Usuários: adicione o servidor ${ATENA_NTFY_URL:-http://$ATENA_LAN_IP:2586}
+     com o usuário $U e a senha.
+  2. Assine, nesse servidor, os tópicos alertas, aprovacoes e atena (tudo em minúsculas, sem acento).
+FIM
