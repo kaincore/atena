@@ -14,7 +14,7 @@ cd "$(git rev-parse --show-toplevel)"
 PRIVADOS=${ATENA_PADROES_PRIVADOS:-$HOME/.config/atena/padroes-privados.txt}
 padroes=$(mktemp); trap 'rm -f "$padroes"' EXIT
 
-# segredos genéricos
+# segredos genéricos (o fim da lista: tokens de bot do Telegram, do ntfy e do executor)
 cat >> "$padroes" <<'EOF'
 sk-ant-[A-Za-z0-9_-]{10,}
 sk-atena-[A-Za-z0-9_-]{10,}
@@ -22,6 +22,9 @@ sk-atena-[A-Za-z0-9_-]{10,}
 gh[pousr]_[A-Za-z0-9]{20,}
 AKIA[0-9A-Z]{16}
 tskey-[a-z]+-[A-Za-z0-9]+
+[0-9]{8,10}:AA[A-Za-z0-9_-]{33}
+tk_[a-z0-9]{29}
+atx-[A-Za-z0-9_-]{40,}
 EOF
 # dados pessoais deste servidor
 if [ -f "$PRIVADOS" ]; then
