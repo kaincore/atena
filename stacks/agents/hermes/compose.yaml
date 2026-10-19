@@ -1,0 +1,31 @@
+# Hermes (a Atena): assistente que conversa com você pelo Telegram, pensa pelo LiteLLM e só mexe no
+# servidor pelo executor (lista fechada de ações). Sem Docker, sem sudo, sem rede até a sua casa.
+# Configuração, segredos e memória ficam em /srv/agents/hermes (config.yaml, .env, SOUL.md, skills/).
+services:
+  hermes:
+    image: nousresearch/hermes-agent:v0.22.2   # >= 0.22.1: correções de segurança da ponte do WhatsApp
+    container_name: hermes
+    command: ["gateway", "run"]           # serviço (Telegram); sem isso ele abre o chat interativo e sai
+    cgroup_parent: atena-agents.slice
+    restart: unless-stopped
+    environment:
+      HERMES_UID: "${HERMES_UID}"     # usuário hermes do servidor (sem sudo, sem Docker)
+      HERMES_GID: "${HERMES_GID}"     # grupo atena-acoes: dá acesso ao socket do executor
+      TZ: {{ATENA_TZ}}
+    volumes:
+      - /srv/agents/hermes:/opt/data
+      # a pasta, e não o arquivo: o socket é recriado sempre que o executor reinicia
+      - /run/atena-executor:/run/atena-executor
+    security_opt: ["no-new-privileges:true"]
+    networks: [zone, llm, ntfy]
+
+networks:
+  zone:
+    name: zone-agents
+    external: true
+  llm:
+    name: svc-llm
+    external: true
+  ntfy:
+    name: svc-ntfy        # só publica no tópico atena do ntfy
+    external: true
