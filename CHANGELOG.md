@@ -1,6 +1,6 @@
 # Mudanças
 
-## 0.3.0 (ainda não publicada)
+## 0.3.0 (2026-10-20)
 
 Voz, temperaturas, o Arca e as stacks de apps nas mãos da Atena, extraídos do primeiro servidor Atena.
 
@@ -11,6 +11,8 @@ Voz, temperaturas, o Arca e as stacks de apps nas mãos da Atena, extraídos do 
 - O Ollama sai da GPU depois de 2 minutos sem uso, para caber com o Whisper e a voz numa placa de 6 GB.
 - O executor reconhece chave privada pelo cabeçalho do bloco PEM (antes recusava até o próprio código) e aceita pedidos de até 1 MB.
 - Numa atualização, o token da Atena ganha as ações novas, com as mesmas zonas e a mesma regra de aprovação. Os passos que são seus (LiteLLM, chave da Atena e Ollama) estão em [operação](docs/pt/operacao.md#atualizar-da-02-para-a-03).
+- O token da Atena agora é gravado num arquivo novo e movido para o lugar, e o instalador refaz o token quando o do arquivo não vale mais: no Ubuntu 26.04, o `install` não copia de `/dev/stdin` por cima de um arquivo que já existe.
+- Testado numa VM Ubuntu 26.04 sem GPU, atualizando uma 0.2 em uso: a Atena listou, pegou e guardou arquivos no Arca, editou e aplicou a stack do Arca (com o `docker compose up --build` dentro do sandbox do executor), desfez a edição, teve compose com `privileged` e `.env` recusados, e o instalador rodou mais três vezes sem refazer o token nem duplicar nada.
 
 ## 0.2.0 (2026-10-19)
 
