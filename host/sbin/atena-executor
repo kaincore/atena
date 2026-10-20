@@ -21,6 +21,9 @@ PC da rede de casa (opcional, ATENA_PC_* no atena.conf): pc.ligar manda o Wake-o
 pc.reiniciar e pc.cancelar usam uma chave SSH que, no Windows, só roda o atena-pc.ps1 (aceita só
 esses três pedidos).
 
+Arca: arca.lista lê os metadados, arca.guardar copia um arquivo para os uploads e acrescenta a
+entrada no metadata.json (escrito no lugar, para o Arca continuar dono), arca.pegar traz uma cópia.
+
 Sensores: sistema.sensores lê /sys/class/hwmon (CPU, NVMe e o chip da placa, com as ventoinhas) e a
 GPU pelo nvidia-smi.
 
@@ -49,6 +52,7 @@ import hashlib
 import http.server
 import ipaddress
 import json
+import mimetypes
 import os
 import re
 import secrets
@@ -697,6 +701,7 @@ def acao_arquivo_buscar(cliente, params):
 
 ENTREGAS = "/srv/agents/hermes/entregas"   # o Hermes enxerga como /opt/data/entregas
 ENTREGAS_HERMES = "/opt/data/entregas"
+ESPACO_HERMES = ("/opt/data", "/srv/agents/hermes")   # como a Atena vê o espaço dela → onde ele fica
 LIMITE_ENTREGA = 45 * 1024 * 1024          # o Telegram aceita até 50 MB por arquivo enviado por bot
 VALIDADE_ENTREGA = 24 * 3600
 TIPOS_ARQUIVO = {
@@ -707,6 +712,14 @@ TIPOS_ARQUIVO = {
     "audio": (".mp3", ".ogg", ".oga", ".opus", ".m4a", ".wav"),
 }
 PASTAS_PROD = ("/srv/prod", "/opt/atena/stacks/prod")
+
+
+def caminho_do_cliente(caminho):
+    """A Atena vê o espaço dela como /opt/data; no servidor ele é /srv/agents/hermes."""
+    origem, real = ESPACO_HERMES
+    if isinstance(caminho, str) and (caminho == origem or caminho.startswith(origem + "/")):
+        return real + caminho[len(origem):]
+    return caminho
 
 
 def fora_da_zona(cliente, real):
@@ -897,9 +910,7 @@ def acao_local_processar(cliente, params):
     if (arquivo is None) == (texto is None):
         raise Erro(400, "mande arquivo (caminho; o texto não passa por você) ou texto, um dos dois")
     if arquivo is not None:
-        if isinstance(arquivo, str) and arquivo.startswith("/opt/data/"):   # caminho como o Hermes vê
-            arquivo = "/srv/agents/hermes/" + arquivo[len("/opt/data/"):]
-        real = caminho_legivel(arquivo)
+        real = caminho_legivel(caminho_do_cliente(arquivo))
         if fora_da_zona(cliente, real):
             raise Erro(403, "arquivos de clientes (zona prod) estão fora do seu alcance")
         if not os.path.isfile(real):
@@ -1069,6 +1080,127 @@ def acao_pc_cancelar(cliente, params):
     return {"cancelado": True, "dica": "se não havia desligamento ou reinício marcado, nada mudou"}
 
 
+# --- Arca: os arquivos que o dono sobe pelo navegador -------------------------------------------
+
+ARCA_UPLOADS = "/srv/apps/arca/uploads"
+ARCA_META = "/srv/apps/arca/data/metadata.json"
+LIMITE_ARCA = 50 * 1024 * 1024                   # o mesmo limite do envio pelo navegador
+
+
+def endereco_arca():
+    return f"http://{ler_conf().get('ATENA_LAN_IP')}:3002"
+
+
+def arca_alcance(cliente):
+    if "apps" not in cliente["zonas"]:
+        raise Erro(403, "a zona apps (Arca) está fora do alcance deste cliente")
+
+
+def arca_metadados():
+    try:
+        with open(ARCA_META, encoding="utf-8") as f:
+            lista = json.load(f)
+    except FileNotFoundError:
+        raise Erro(503, "o Arca ainda não tem metadata.json (envie um arquivo pelo navegador uma vez)")
+    except ValueError:
+        raise Erro(500, "o metadata.json do Arca está corrompido")
+    if not isinstance(lista, list):
+        raise Erro(500, "o metadata.json do Arca está num formato inesperado")
+    return lista
+
+
+def arca_gravar(lista):
+    """No lugar (r+ e truncate): o arquivo continua do Arca, que o reescreve a cada envio."""
+    with open(ARCA_META, "r+", encoding="utf-8") as f:
+        f.write(json.dumps(lista, indent=2, ensure_ascii=False))
+        f.truncate()
+
+
+def arca_item(m):
+    return {"id": m.get("id"), "nome": m.get("originalName"), "tamanho_kb": round((m.get("size") or 0) / 1024),
+            "data": m.get("uploadDate"), "tipo": m.get("mimetype"),
+            "caminho": os.path.join(ARCA_UPLOADS, m.get("savedName") or "")}
+
+
+def acao_arca_lista(cliente, params):
+    arca_alcance(cliente)
+    nome = params.get("nome")
+    if nome is not None and (not isinstance(nome, str) or len(nome) > 200):
+        raise Erro(400, "nome deve ser um pedaço do nome do arquivo")
+    lista = arca_metadados()
+    if nome:
+        lista = [m for m in lista if nome.lower() in str(m.get("originalName", "")).lower()]
+    lista.sort(key=lambda m: str(m.get("uploadDate", "")), reverse=True)
+    return {"total": len(lista), "total_mb": round(sum(m.get("size") or 0 for m in lista) / 1e6, 1),
+            "arquivos": [arca_item(m) for m in lista[:100]], "endereco": endereco_arca()}
+
+
+def acao_arca_guardar(cliente, params):
+    """Copia um arquivo do servidor (ou do espaço da Atena) para o Arca; texto vai com segredos ocultos."""
+    arca_alcance(cliente)
+    real = caminho_legivel(caminho_do_cliente(params.get("arquivo")))
+    if fora_da_zona(cliente, real):
+        raise Erro(403, "arquivos de clientes (zona prod) estão fora do seu alcance")
+    if not os.path.lexists(real):
+        raise Erro(404, "não existe")
+    if not os.path.isfile(real):
+        raise Erro(400, "não é um arquivo comum")
+    tamanho = os.path.getsize(real)
+    if tamanho > LIMITE_ARCA:
+        raise Erro(413, f"o arquivo tem {tamanho // (1024 * 1024)} MB; o Arca aceita até 50 MB")
+    nome = params.get("nome") or os.path.basename(real)
+    if not isinstance(nome, str):
+        raise Erro(400, "nome deve ser texto")
+    nome = re.sub(r"[\x00-\x1f/\\]", "_", nome).strip()[:200]
+    if nome in ("", ".", ".."):
+        raise Erro(400, "nome inválido")
+    texto = None
+    if tamanho <= 5 * 1024 * 1024:
+        texto, _ = ler_texto(real, 5 * 1024 * 1024)   # None se for binário; 403 se for chave privada
+    ids = {str(m.get("id")) for m in arca_metadados()}
+    agora = int(time.time() * 1000)
+    while str(agora) in ids:
+        agora += 1
+    salvo = f"{agora}-{nome}"   # como o Arca nomeia os envios
+    destino = os.path.join(ARCA_UPLOADS, salvo)
+    with open(os.open(destino, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644), "wb") as f:
+        if texto is not None:
+            f.write(texto.encode("utf-8"))
+        else:
+            with open(real, "rb") as origem:
+                shutil.copyfileobj(origem, f)
+    item = {"id": str(agora), "originalName": nome, "savedName": salvo, "size": os.path.getsize(destino),
+            "mimetype": mimetypes.guess_type(nome)[0] or "application/octet-stream",
+            "uploadDate": time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime(agora / 1000)) + f".{agora % 1000:03d}Z"}
+    try:
+        lista = arca_metadados()   # lê de novo logo antes de gravar: o dono pode ter enviado algo agora
+        lista.append(item)
+        arca_gravar(lista)
+    except BaseException:
+        os.remove(destino)
+        raise
+    log(evento="guardado no Arca", cliente=cliente["cliente"], arquivo=real, nome=nome, tamanho=item["size"])
+    return {"guardado": nome, "id": item["id"], "tamanho_kb": round(item["size"] / 1024),
+            "segredos_ocultos": texto is not None, "endereco": endereco_arca()}
+
+
+def acao_arca_pegar(cliente, params):
+    """Traz uma cópia de um arquivo do Arca para /opt/data/entregas (como arquivo.entregar)."""
+    arca_alcance(cliente)
+    id_ = params.get("id")
+    if not isinstance(id_, (str, int)) or isinstance(id_, bool):
+        raise Erro(400, "id deve ser o id do arquivo (arca.lista mostra)")
+    m = next((m for m in arca_metadados() if str(m.get("id")) == str(id_)), None)
+    if not m:
+        raise Erro(404, "não há arquivo com esse id no Arca (arca.lista mostra os ids)")
+    salvo = str(m.get("savedName") or "")
+    if "/" in salvo or salvo in ("", ".", ".."):
+        raise Erro(500, "o metadata.json do Arca tem um nome de arquivo inválido")
+    resultado = acao_arquivo_entregar(cliente, {"caminho": os.path.join(ARCA_UPLOADS, salvo)})
+    resultado["nome"] = m.get("originalName")
+    return resultado
+
+
 # nome: (função, descrição, preparar). Sem preparar, a ação roda na hora: função(cliente, params).
 # Com preparar, vira um pedido: preparar(cliente, params) valida e descreve, e função(pedido) roda
 # depois da aprovação no celular (se o token do cliente exigir) ou na hora.
@@ -1093,6 +1225,10 @@ ACOES = {
     "sistema.processos": (acao_sistema_processos, "processos que mais usam CPU ou RAM (ordem?, quantos?)", None),
     "sistema.rede":      (acao_sistema_rede, "endereços e portas abertas do servidor", None),
     "sistema.sensores":  (acao_sistema_sensores, "temperaturas da CPU, NVMe, GPU e placa, e as ventoinhas", None),
+    "arca.lista":        (acao_arca_lista, "arquivos do Arca, os mais novos primeiro (nome? = pedaço do nome)", None),
+    "arca.guardar":      (acao_arca_guardar, "guarda um arquivo no Arca, onde o dono baixa pelo navegador (arquivo, "
+                          "nome?); /opt/data/... vale; texto vai com segredos ocultos; até 50 MB", None),
+    "arca.pegar":        (acao_arca_pegar, "traz uma cópia de um arquivo do Arca para /opt/data/entregas (id)", None),
     "servico.reiniciar": (acao_servico_reiniciar, "reinicia os containers de uma stack (stack)",
                           preparar_servico_reiniciar),
     "pc.estado":         (acao_pc_estado, "PC da rede de casa ligado? LM Studio respondendo?", None),

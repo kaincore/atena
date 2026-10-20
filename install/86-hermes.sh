@@ -49,7 +49,8 @@ ok "personalidade, habilidades servidor-atena e notas, e ronda em $D"
 if [ ! -s "$D/executor.token" ]; then
   acoes=status.servicos,status.recursos,status.containers,status.sistema,gasto.api,servico.logs,servico.journal
   acoes=$acoes,arquivo.ler,arquivo.procurar,arquivo.entregar,arquivo.buscar,local.processar,sistema.processos
-  acoes=$acoes,sistema.rede,sistema.sensores,servico.reiniciar,pc.estado,pc.ligar,pc.desligar,pc.reiniciar,pc.cancelar
+  acoes=$acoes,sistema.rede,sistema.sensores,arca.lista,arca.guardar,arca.pegar
+  acoes=$acoes,servico.reiniciar,pc.estado,pc.ligar,pc.desligar,pc.reiniciar,pc.cancelar
   /usr/local/sbin/atena-executor token-novo hermes "$acoes" apps,ai,agents,lab,core nenhuma \
     | install -m 600 -o hermes -g hermes /dev/stdin "$D/executor.token"
   ok "token do executor para a Atena (sudo atena-executor tokens)"

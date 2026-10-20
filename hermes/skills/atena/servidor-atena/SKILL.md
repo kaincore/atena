@@ -1,6 +1,6 @@
 ---
 name: servidor-atena
-description: "Enxergar e operar o servidor Atena pelo executor de ações: qualquer arquivo, pasta, log ou serviço (menos segredos), busca em arquivos, achar e trazer fotos e arquivos do servidor (para olhar, ler ou mandar ao dono), processos, portas, estado dos containers, CPU/RAM/disco/GPU, temperaturas e ventoinhas, gasto de API do mês, reiniciar serviços, ligar/desligar o PC da rede de casa e processar texto privado num modelo de casa. Use sempre que o dono perguntar do servidor, de temperatura, de gastos, de erros ou pedir algo que mexa no servidor, e na ronda."
+description: "Enxergar e operar o servidor Atena pelo executor de ações: qualquer arquivo, pasta, log ou serviço (menos segredos), busca em arquivos, achar e trazer fotos e arquivos do servidor (para olhar, ler ou mandar ao dono), arquivos do Arca (listar, pegar, guardar), processos, portas, estado dos containers, CPU/RAM/disco/GPU, temperaturas e ventoinhas, gasto de API do mês, reiniciar serviços, ligar/desligar o PC da rede de casa e processar texto privado num modelo de casa. Use sempre que o dono perguntar do servidor, de temperatura, de gastos, de erros, de arquivos ou pedir algo que mexa no servidor, e na ronda."
 version: 1.1.0
 author: Atena
 license: MIT
@@ -75,8 +75,8 @@ conteúdo, traga uma cópia com `arquivo.entregar` e:
 
 ## Fotos e arquivos do servidor, a pedido do dono
 
-- "Me manda as fotos de ontem da Arca": `arquivo.procurar` (`pasta` `/srv/apps/arca/uploads`,
-  `tipo` `foto`, `dias` 1), depois `arquivo.entregar` em cada uma e um `MEDIA:` por foto.
+- "Me manda as fotos de ontem do Arca": `arca.lista` (veja "Arca"), escolha pela `data` e pelo `tipo`
+  (`image/...`), depois `arca.pegar` em cada uma e um `MEDIA:` por foto.
 - "Me manda o contrato": `arquivo.procurar` pelo `nome`, em pastas certeiras primeiro
   (`/srv/apps`, `/opt/atena/docs`, `/opt/data/notas/anexos`). Se achar mais de um, mande a lista
   curta (nome, data, tamanho) e pergunte qual.
@@ -84,6 +84,27 @@ conteúdo, traga uma cópia com `arquivo.entregar` e:
 - Antes de afirmar o que tem num arquivo, leia ou olhe a cópia. Nome de arquivo não é conteúdo.
 - Arquivos das suas notas já estão no seu espaço: mande direto com `MEDIA:` (habilidade notas).
 - Arquivos de clientes (zona prod) e segredos respondem 403: diga que estão fora do seu alcance.
+
+## Arca: os arquivos do dono
+
+O Arca (porta 3002, na rede de casa; o endereço vem em `arca.lista`) é onde o dono sobe e baixa
+arquivos pelo navegador. Nos uploads, os arquivos têm um número na frente do nome; use sempre as ações
+abaixo, que mostram o nome original.
+
+| Ação | Params | O que faz |
+|---|---|---|
+| `arca.lista` | `nome?` (pedaço do nome) | Arquivos do Arca, os mais novos primeiro: `id`, `nome`, `tamanho_kb`, `data` (UTC), `tipo`, `caminho` |
+| `arca.pegar` | `id` | Traz uma cópia para `/opt/data/entregas` (como `arquivo.entregar`): para olhar, ler ou mandar com `MEDIA:` |
+| `arca.guardar` | `arquivo` (caminho; `/opt/data/...` vale), `nome?` | Guarda um arquivo no Arca, e ele aparece na lista do navegador. Até 50 MB; texto vai com segredos ocultos |
+
+- "Te mandei um PDF pelo Arca, lê pra mim": `arca.lista` (o mais novo, ou pelo `nome`), `arca.pegar` e
+  leia a cópia (habilidade notas: pdfplumber). Dado privado: `local.processar` com o `caminho` do item.
+- "Me deixa isso no Arca", "salva no Arca", ou quando você gerar algo que o dono vai baixar no
+  computador (relatório, planilha, PDF, zip): crie o arquivo no seu espaço (`/opt/data/...`) e use
+  `arca.guardar`. Diga o nome e o endereço do Arca. Arquivo para o celular: `MEDIA:` no Telegram basta.
+- Guardar não apaga nem substitui nada (mesmo nome vira outro arquivo): faça direto. Para apagar do
+  Arca, o dono usa o navegador; você não apaga.
+- HTTP 503 em `arca.lista`: o Arca ainda não recebeu nenhum arquivo pelo navegador.
 
 ## Dados privados: modelo de casa
 
@@ -150,8 +171,9 @@ está fora do normal. Você só é acordada quando essa lista muda. Quando for a
 
 ## Limites conhecidos
 
-- O executor só faz o que está em `/acoes`. Mudar configurações, instalar coisas ou mexer em
-  arquivos do servidor não está ao seu alcance: explique ao dono o que precisa ser feito.
+- O executor só faz o que está em `/acoes`. Escrever, você escreve no Arca (`arca.guardar`) e no seu
+  espaço. Mudar configurações, instalar coisas ou mexer em outros arquivos do servidor não está ao
+  seu alcance: explique ao dono o que precisa ser feito.
 - Logs do litellm listam requisições, não gastos: para gastos, use `gasto.api`.
 - Zona prod (sistemas de clientes) fica fora do seu alcance.
 

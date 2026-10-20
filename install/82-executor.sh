@@ -27,6 +27,14 @@ if [ ! -f /etc/atena/executor/pc-chave ]; then
   chmod 640 /etc/atena/executor/pc-chave
 fi
 
+# Arca: o executor cria arquivos nos uploads e reescreve o metadata.json no lugar (tudo continua do
+# dono). O metadata.json nasce no primeiro envio pelo navegador: a regra padrão da pasta vale para ele.
+A=/srv/apps/arca
+setfacl -m u:atena-exec:rwx "$A/uploads" "$A/data"
+setfacl -d -m u:atena-exec:rw "$A/data"
+if [ -f "$A/data/metadata.json" ]; then setfacl -m u:atena-exec:rw "$A/data/metadata.json"; fi
+ok "Arca: o executor guarda arquivos lá (arca.guardar)"
+
 # chip da placa (ventoinhas) para o sistema.sensores: módulo opcional, carregado agora e a cada boot
 M=/etc/modules-load.d/atena-sensores.conf
 if [ -n "$ATENA_SENSORES_MODULO" ]; then
