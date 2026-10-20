@@ -7,6 +7,7 @@
 #   sudo ./install.sh --ssh            # também endurece o SSH (só chave, sem root)
 #   sudo ./install.sh --hermes         # também instala a Atena (Hermes, pelo Telegram)
 #   sudo ./install.sh --hermes --lab   # e o lab: o Claude Code programa para você, pela Atena
+#   sudo ./install.sh --painel         # o painel do servidor no navegador e no celular (Tailscale)
 #
 # Pode rodar de novo quando quiser: o que já existe é mantido ou atualizado.
 set -euo pipefail
@@ -18,12 +19,14 @@ CONF=$RAIZ/atena.conf
 ENDURECER_SSH=nao
 INSTALAR_HERMES=nao
 INSTALAR_LAB=nao
+INSTALAR_PAINEL=nao
 for arg in "$@"; do
   case "$arg" in
     --ssh) ENDURECER_SSH=sim ;;
     --hermes) INSTALAR_HERMES=sim ;;
     --lab) INSTALAR_LAB=sim ;;
-    -h|--help) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    --painel) INSTALAR_PAINEL=sim ;;
+    -h|--help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) erro "opção desconhecida: $arg (veja: ./install.sh --help)" ;;
   esac
 done
@@ -69,6 +72,13 @@ if [ "$INSTALAR_LAB" = sim ]; then
                           ($ATENA_CLAUDE_CONTAS); depois, peça à Atena um app ou script
                           O seu Claude Code no lab: saia e entre de novo no SSH (grupo atena-lab) e
                           rode claude dentro de /srv/lab
+EOF
+fi
+if [ "$INSTALAR_PAINEL" = sim ]; then
+  cat <<EOF
+    Painel:               sudo atena-painel-senha (a senha de entrada); depois, com o Tailscale
+                          ligado no celular ou no PC, abra $PAINEL_ENDERECO
+                          e, no Chrome do celular, menu ⋮ → Instalar app
 EOF
 fi
 if [ "$REINICIAR" = 1 ]; then
