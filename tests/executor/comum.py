@@ -14,8 +14,10 @@ FALHAS = []
 
 
 def carregar():
-    """O executor como módulo, apontando para uma pasta temporária (sem root, sem /etc)."""
-    ex = importlib.machinery.SourceFileLoader("executor", os.path.join(RAIZ, "host", "sbin", "atena-executor")).load_module()
+    """O executor como módulo, apontando para uma pasta temporária (sem root, sem /etc).
+    ATENA_EXECUTOR=<caminho> testa outro arquivo (ex.: o instalado num servidor)."""
+    caminho = os.environ.get("ATENA_EXECUTOR") or os.path.join(RAIZ, "host", "sbin", "atena-executor")
+    ex = importlib.machinery.SourceFileLoader("executor", caminho).load_module()
     tmp = tempfile.mkdtemp(prefix="teste-executor-")
     ex.SOCKET, ex.TOKENS, ex.CONF = f"{tmp}/executor.sock", f"{tmp}/tokens.json", f"{tmp}/atena.conf"
     ex.GRUPO_CLIENTES = grp.getgrgid(os.getgid()).gr_name
