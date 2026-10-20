@@ -55,6 +55,14 @@ Three layers keep a port from leaking by mistake:
 - **Locked-down lab apps.** Read-only disk, no capabilities, `no-new-privileges`, 512 MB, only the `zone-lab` network. Publishing and deleting need your phone by default.
 - **Tailscale only through polkit.** The executor can only start the `atena-lab-tailscale-on@` and `-off@` units, on ports 8000-8999.
 
+### Panel
+- **No network, no root, no Docker.** `network_mode: none`, read-only disk, no capabilities, `no-new-privileges`, 256 MB. The `atena-painel` user is only in the `atena-acoes` group; the installer stops if it's in the `docker` group.
+- **Tailscale-only entry**, through a socket only root and the panel can open (`/srv/core/painel` is 700).
+- **A password that's hard to brute-force:** scrypt (N=2^15, 32 MB per attempt), 5 mistakes in 15 minutes lock the login, and one check at a time.
+- **Cookie** HttpOnly, Secure and SameSite=Strict. Every POST requires JSON and a custom header, which blocks forms from other sites (CSRF).
+- **CSP** that only allows the panel itself, no frames. Screens are built without `innerHTML`, so a container name or a log line never becomes code.
+- **Own token, no phone approval:** 16 actions, none that delete or edit.
+
 ## What was tested on the original server
 
 | Test | Result |
@@ -70,8 +78,11 @@ Three layers keep a port from leaking by mistake:
 | A client asking for an action outside its token, or a stack in another zone | Refused (403) |
 | The lab's Claude Code writing outside the project folder and using `sudo` and the Docker socket | Blocked by the sandbox |
 | A project with `core.fsmonitor` in `.git/config` | Job refused, without starting Claude Code |
+| Panel: an action outside its list, a POST without the custom header, a form from another site | Refused (403, 415), never reaching the executor |
+| Panel: wrong password 5 times, then the right one | Locked for 15 min |
+| Panel: `docker inspect` of the container, and port 3100 from the home network | No network, no Docker socket; nothing answers on the home network |
 
-The automated tests for the executor and the patrol live in `tests/` and run on every push to GitHub.
+The automated tests for the executor, the patrol and the lab live in `tests/`, the panel's in `stacks/core/painel/app/test/`, and all of them run on every push to GitHub.
 
 ## What Atena does NOT protect
 
@@ -79,6 +90,7 @@ The automated tests for the executor and the patrol live in `tests/` and run on 
 - **Services without a password are open to the whole home network.** Arca, for example, has no login: any device on the Wi-Fi can see and delete files.
 - **Zones share the same kernel.** A serious container-escape bug would cross zones. For strong isolation, use virtual machines.
 - **IPv6 inside containers** isn't used. If you enable IPv6 on Docker networks, review the firewall, which today only has IPv4 rules.
+- **Whoever has the panel password** can restart services and shut down the PC, without going through the phone. Use a password you don't use anywhere else.
 - **The executor has Docker access.** That is equivalent to root. The protection is the closed list: a bug in the executor would be a security bug for the whole server.
 - **The secret filter works by name and by format.** A secret in an unknown format, inside a file with an ordinary name, can get through. Keep secrets in `.env`, `*.key` or `*.token` files.
 - **What Atena reads goes to the cloud model** (Anthropic), except what goes through `local.processar`.

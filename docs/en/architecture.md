@@ -14,7 +14,7 @@ The server is split into **zones by trust level**. Each zone has four things of 
 | Zone | Network | What runs there | Who changes it |
 |---|---|---|---|
 | `prod` | `zone-prod-<client>` (10.10.101.0/24 onward) | Client systems, one network per client | Admin only |
-| `core` | `zone-core` (10.10.0.0/24) | Dockge, Beszel, ntfy, monitoring and backup | Admin only |
+| `core` | `zone-core` (10.10.0.0/24) | Dockge, Beszel, ntfy, the panel, monitoring and backup | Admin only |
 | `apps` | `zone-apps` (10.10.10.0/24) | Personal apps (Arca, Open WebUI) | Admin, and Atena through the executor (with a snapshot before each change) |
 | `ai` | `zone-ai` (10.10.20.0/24) | Ollama, Whisper, voice, LiteLLM | Admin |
 | `agents` | `zone-agents` (10.10.30.0/24) | Atena (Hermes), AI agents and workers | Admin, and agents through scripts |
@@ -32,7 +32,7 @@ Docker already isolates different networks: a container in `agents` can't reach 
 
 ## Action executor
 
-The executor (`/usr/local/sbin/atena-executor`) is the **only path** from clients (Atena and, later, a dashboard) to the server. It runs on the server itself as the `atena-exec` user and listens on the socket `/run/atena-executor/executor.sock` (group `atena-acoes`).
+The executor (`/usr/local/sbin/atena-executor`) is the **only path** from clients (Atena and the panel) to the server. It runs on the server itself as the `atena-exec` user and listens on the socket `/run/atena-executor/executor.sock` (group `atena-acoes`).
 
 <p align="center"><img src="../assets/fluxo.en.svg" width="100%" alt="How a request flows: you talk to Hermes on Telegram, and Hermes uses LiteLLM to reach Claude or the home models. Through the socket, Hermes asks the executor, which acts on the server (Docker, systemd, files, PC). For approval, the executor notifies your phone through ntfy, and the tap on Approve comes back through ntfy to the executor."></p>
 
@@ -102,6 +102,23 @@ Finished app ──> app.publicar ──> lab-<project> stack in the lab zone (p
 - **Atena in the lab.** Projects are mounted in her terminal (write access through an ACL), for small fixes with a commit; big programming goes to Claude Code.
 - **Interactive lab.** Your own Claude Code, opened inside `/srv/lab`, gets the same sandbox plus a scope guard that asks before sudo, Docker, paths outside the lab and global installs.
 
+## The panel
+
+Optional (`./install.sh --painel`). The server in your PC and phone browser, installable as an app (PWA): status, services, the home PC, the lab apps, AI spending and a history of what you told it to do.
+
+```text
+Phone or PC (Tailscale) ──HTTPS :3100──> tailscale serve ──socket──> panel (core zone, no network)
+panel ──socket──> executor (own token: 16 actions, none that delete or edit)
+```
+
+- **No network.** The container runs with `network_mode: none`: it can't reach the internet, the home network or other containers, and nothing reaches it over the network. Visits arrive through `tailscale serve`, which delivers to the socket `/srv/core/painel/run/painel.sock`, and requests go to the executor through its socket.
+- **Tailscale only**, at home too. Tailscale's HTTPS is what makes the app installable and keeps the cookie secure.
+- **One account, with a password.** The hash (scrypt) lives in `/srv/core/painel/senha`, written by `atena-painel-senha`. A session lasts 30 days and renews on every use; changing the password signs out every device.
+- **Two closed lists.** The panel only asks for its own actions, and its executor token only accepts those, in the core, apps, ai, agents and lab zones: queries, logs, spending, restart a service, turn the PC on and off, restart and stop lab apps. No deleting, editing stacks, Claude Code or reading files.
+- **Confirmation on screen.** Restart, shut down and stop ask for confirmation in the panel itself, which is why its token doesn't ask the phone.
+- **No dependencies.** Node 22, which already runs TypeScript and ships SQLite: not a single npm package. The code lives in the stack (`stacks/core/painel/app`), and the installer updates it on every run.
+- **Data.** SQLite database at `/srv/core/painel/painel.db`: sessions (only the token hash), login attempts and a 90-day history of the actions that change something.
+
 ## CPU and RAM limits
 
 Each zone is a systemd slice under `atena.slice`. Containers join the slice with `cgroup_parent: atena-<zone>.slice` in the compose file.
@@ -122,6 +139,7 @@ Each zone is a systemd slice under `atena.slice`. Containers join the slice with
 - **Containers going out:** the internet and the router's DNS, yes. The home network, Tailscale devices and the server itself, no.
 - **Coming in from the home network:** any home device reaches whatever is published on the server's IP.
 - **Coming in from away:** only through Tailscale, with `tailscale serve` per service.
+- **The panel:** only through Tailscale, at home and away. It has no port on the home network.
 - **Internet:** nothing is exposed.
 
 Details and tests in [security](security.md).

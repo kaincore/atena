@@ -123,6 +123,27 @@ sudo atena-claude-conta estado            # which accounts are ready
 - Changing the Claude Code version: `ATENA_CLAUDE_VERSAO` in `atena.conf` and run the installer again (it downloads and checks the official checksum). Read the release notes first.
 - Logs: `journalctl -u atena-claude` (the runner) and each job's full conversation in `/var/lib/atena-claude/registros`.
 
+## Panel
+
+**Install.** It needs Tailscale logged in on the server and HTTPS enabled on the tailnet (in the Tailscale admin: DNS → HTTPS Certificates). Run `sudo ./install.sh --painel`, then:
+
+```bash
+sudo atena-painel-senha    # the login password (in a terminal; it isn't shown)
+```
+
+The installer prints the address: `https://<server>.<tailnet>.ts.net:3100`. On the phone, with Tailscale on, open it in Chrome and use the ⋮ menu → **Install app**.
+
+- **Change the password:** run `sudo atena-painel-senha` again. Every device is signed out.
+- **Connected devices:** in the Ajustes (settings) tab, with the Desconectar button.
+- **Logs:** `docker logs painel` (the panel) and `journalctl -u atena-executor` (each of its requests, with the `painel` client).
+- **Take it down:**
+  ```bash
+  sudo tailscale serve --https=3100 off
+  cd /opt/atena/stacks/core/painel && docker compose down
+  sudo atena-executor token-remover painel
+  ```
+  The data stays in `/srv/core/painel` until you delete the folder.
+
 ## Temperatures and fans
 
 `sistema.sensores` (and Atena, when you ask) reads the CPU, the NVMe and the GPU with no setup. Fans come from the motherboard chip, which usually needs a kernel module: find out which one with `sudo apt install lm-sensors && sudo sensors-detect`, put it in `ATENA_SENSORES_MODULO` (e.g. `nct6683`) and run the installer again. The patrol warns about the CPU above 85 °C, the GPU above 85 °C and the NVMe above 70 °C.
@@ -155,5 +176,5 @@ Then send `/new` on Telegram.
 ## Run the installer again
 
 `sudo ./install.sh` can run as many times as you like:
-- **Existing stacks** aren't overwritten.
+- **Existing stacks** aren't overwritten. The panel is the exception: with `--painel`, its code always comes from the repository, and the previous compose is kept if it changed.
 - **System files that differ from the template** are replaced, and a copy of the previous one is kept next to it (`*.antes-atena-<date>`).

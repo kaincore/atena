@@ -132,6 +132,20 @@ The previous account's "limit reached" notice was still in the log; if the new r
 
 **To continue a conversation on another account, copy the session.** `--resume` looks for the conversation in the account's folder (`projects/*/<session>.jsonl`); the runner copies the file, and the subagents folder, before continuing.
 
+## Panel
+
+**`tailscale serve` can deliver to a Unix socket** (`unix:/path/to.sock`). That leaves the panel container with no network at all (`network_mode: none`) and still with HTTPS from away. ufw still has to allow the port on `tailscale0`.
+
+**Ubuntu 26.04's Node doesn't run TypeScript directly.** Since 22.18, official Node runs `.ts` without compiling and ships `node:sqlite`, which left the panel without a single npm package. Ubuntu's `nodejs` package (22.22) answers `ERR_UNKNOWN_FILE_EXTENSION`: use the official Node image.
+
+**On Node 22, `node --test folder/` doesn't work.** It tries to open the folder as a file. Pass the pattern: `node --test 'test/*.test.ts'`.
+
+**The `hidden` attribute loses to a class's `display`.** The login screen showed up below the panel, because `.entrada { display: grid }` beat `hidden`. `[hidden] { display: none !important; }` fixes it.
+
+**A CSP without `'unsafe-inline'` blocks the `style` attribute.** Bar widths have to go through `element.style.width`, which the CSP allows.
+
+**A `grep` with no match in a pipeline with `pipefail` ends the script silently.** The leak checker blocked every commit when a server `.env` only had short values. `{ grep ... || true; }` fixes it.
+
 ## Apps
 
 **File uploads with Express (`express-fileupload`):**
