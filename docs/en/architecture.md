@@ -18,7 +18,7 @@ The server is split into **zones by trust level**. Each zone has four things of 
 | `apps` | `zone-apps` (10.10.10.0/24) | Personal apps (Arca, Open WebUI) | Admin, and Atena through the executor (with a snapshot before each change) |
 | `ai` | `zone-ai` (10.10.20.0/24) | Ollama, Whisper, voice, LiteLLM | Admin |
 | `agents` | `zone-agents` (10.10.30.0/24) | Atena (Hermes), AI agents and workers | Admin, and agents through scripts |
-| `lab` | `zone-lab` (10.10.40.0/24) | Disposable test environments | Admin, and agents through scripts |
+| `lab` | `zone-lab` (10.10.40.0/24) | Claude Code projects and apps (lab module) and disposable tests | Admin, Claude Code and Atena (through the executor and her terminal) |
 
 Networks that Compose creates on its own (for example, a stack's internal database network) use `10.20.0.0/16`, away from the home network and from Tailscale (`100.64.0.0/10`).
 
@@ -64,6 +64,8 @@ Phone (ntfy app) <── alerts and approval requests ── executor
 | Private text | `local.processar` (the server's Ollama or the PC's LM Studio, no cloud) |
 | Arca | `arca.lista`, `arca.pegar`, `arca.guardar` (by the original name; saving never replaces anything) |
 | App stacks | `stack.editar`, `stack.aplicar`, `stack.fotos`, `stack.desfazer` |
+| Claude Code (lab module) | `claude.tarefa`, `claude.trabalhos`, `claude.perguntas`, `claude.responder`, `claude.cancelar` |
+| Lab apps (lab module) | `app.publicar`, `app.parar`, `app.reiniciar`, `app.cancelar`, `app.apagar`, `app.restaurar`, `app.comando`, `app.lista` |
 | Act | `servico.reiniciar` (can require the phone) |
 | Home PC (optional) | `pc.estado`, `pc.ligar`, `pc.desligar`, `pc.reiniciar`, `pc.cancelar` |
 
@@ -81,6 +83,25 @@ Atena is a personal assistant built on [Hermes Agent](https://github.com/NousRes
 - **Patrol (ronda).** Every 3 minutes a cheap script lists what is out of the ordinary. Hermes compares it with the previous list and only wakes the AI (and spends API credit) when it changes.
 - **Private data.** A client document, or anything that can't go to the cloud, goes to `local.processar`: the executor extracts the text and asks a home model, and only the answer goes back to Atena.
 
+## The lab (Claude Code)
+
+Optional (`./install.sh --lab`). Atena sends programming jobs to [Claude Code](https://code.claude.com/), which works on its own, for minutes or hours, in a lab folder, on your Claude subscription (Pro or Max).
+
+```text
+You (Telegram) ──> Atena ──> executor ──> queue ──> runner (atena-claude) ──> Claude Code in /srv/lab/projetos/<project>
+Claude Code asks for permission or a question ──> bridge (dono.py) ──> queue ──> executor ──> phone (ntfy) and Atena
+Finished app ──> app.publicar ──> lab-<project> stack in the lab zone (port 8000-8999 on the home network)
+```
+
+- **Who runs it.** The `atena-claude` user, with no sudo and no Docker, started by `atena-claude.path` when a job lands in the queue. Up to 3 jobs at once, one per project, in `atena-lab.slice`. Claude Code is pinned to a version (`ATENA_CLAUDE_VERSAO`) and doesn't update itself.
+- **Sandbox.** Claude Code only writes to the project folder. The Docker socket, the executor, D-Bus, systemd and the other zones are hidden, internet is only for package registries, and there's no way out of the sandbox. `git push` and web pages need your phone.
+- **The project doesn't get a say.** Claude Code only reads the account settings and `lab.json` (`--setting-sources user`, no hooks), and the runner's git ignores the project's fsmonitor and hooks. A `.git/config` with anything that runs commands makes the job get refused. That's what lets Atena write to projects without opening a path out of the sandbox.
+- **Permissions and questions on your phone.** What Claude Code asks for goes to your phone with Approve and Reject (11 min, then denied). A question from it reaches your phone and Atena; with no answer in 10 min, Atena decides; after 30 min, it moves on alone.
+- **Accounts.** Those in `ATENA_CLAUDE_CONTAS`, each with its own folder and login (`atena-claude-conta`). When the usage limit is hit, the job stops and Atena tells you; with `ATENA_CLAUDE_TROCA=sim`, it moves on its own to the next logged-in account and continues the same conversation.
+- **Apps.** `app.publicar` builds from the project's Dockerfile and runs it in the lab zone: read-only disk (data lives in the `/data` volume), no capabilities, 512 MB, port 8000-8999 on the home network and, with Tailscale, also from outside (Tailscale Serve, only on your tailnet). Deleting the code moves the folder to a trash for 30 days.
+- **Atena in the lab.** Projects are mounted in her terminal (write access through an ACL), for small fixes with a commit; big programming goes to Claude Code.
+- **Interactive lab.** Your own Claude Code, opened inside `/srv/lab`, gets the same sandbox plus a scope guard that asks before sudo, Docker, paths outside the lab and global installs.
+
 ## CPU and RAM limits
 
 Each zone is a systemd slice under `atena.slice`. Containers join the slice with `cgroup_parent: atena-<zone>.slice` in the compose file.
@@ -92,7 +113,7 @@ Each zone is a systemd slice under `atena.slice`. Containers join the slice with
 | `atena-apps` | `MemoryMax=4G` |
 | `atena-ai` | `MemoryMax=6G` |
 | `atena-agents` | `CPUWeight=50`, `CPUQuota=600%`, `MemoryMax=6G` |
-| `atena-lab` | `CPUWeight=50`, `CPUQuota=600%`, `MemoryMax=4G` |
+| `atena-lab` | `CPUWeight=50`, `CPUQuota=600%`, `MemoryMax=4G` (6G with the lab module: 3 Claude Code jobs plus the apps) |
 
 `atena.slice` has `MemoryLow=5G`, because a slice's memory protection only applies if its parent has protection too.
 

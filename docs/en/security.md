@@ -47,6 +47,14 @@ Three layers keep a port from leaking by mistake:
 - **Content is data, not orders.** `SOUL.md` tells her to treat web pages, documents and third-party messages as data. Commands in her container go through "smart" approval, and anything destructive goes to you.
 - **LiteLLM key with a monthly cap.** A mistake of hers can't drain your API credit.
 
+### Lab (Claude Code)
+- **No sudo and no Docker.** `atena-claude` is only in the `atena-fila` and `atena-lab` groups. The installer stops if it's in the `docker` group.
+- **Mandatory sandbox, with no way out.** Writes only to the project folder; Docker, the executor, D-Bus, systemd, the other zones and the accounts' credentials are hidden; internet only for package registries. If the sandbox doesn't start, Claude Code doesn't run.
+- **The project doesn't configure Claude Code or git.** Only the account settings and `lab.json` count; project hooks are off; the runner's git ignores fsmonitor and hooks, and a `.git/config` that runs commands makes the job get refused.
+- **What leaves the server goes through your phone.** `git push`, web pages and edits outside the folder become permission requests; without an answer, they're denied.
+- **Locked-down lab apps.** Read-only disk, no capabilities, `no-new-privileges`, 512 MB, only the `zone-lab` network. Publishing and deleting need your phone by default.
+- **Tailscale only through polkit.** The executor can only start the `atena-lab-tailscale-on@` and `-off@` units, on ports 8000-8999.
+
 ## What was tested on the original server
 
 | Test | Result |
@@ -60,6 +68,8 @@ Three layers keep a port from leaking by mistake:
 | Atena asking the executor for `/etc/shadow`, a `.env` file and an SSH key | Refused (403) |
 | Approval with a wrong code, a repeated tap and an expired request | Nothing ran |
 | A client asking for an action outside its token, or a stack in another zone | Refused (403) |
+| The lab's Claude Code writing outside the project folder and using `sudo` and the Docker socket | Blocked by the sandbox |
+| A project with `core.fsmonitor` in `.git/config` | Job refused, without starting Claude Code |
 
 The automated tests for the executor and the patrol live in `tests/` and run on every push to GitHub.
 
@@ -74,6 +84,8 @@ The automated tests for the executor and the patrol live in `tests/` and run on 
 - **What Atena reads goes to the cloud model** (Anthropic), except what goes through `local.processar`.
 - **ntfy without HTTPS on the home network.** With `http://`, someone sniffing the Wi-Fi could see a request's code and approve it before you. Away from home, use the Tailscale `https://` address in `ATENA_NTFY_URL`.
 - **Prompt injection** (text that tries to command the AI) is reduced by the rules and the approvals, not eliminated. That's why Atena only acts without approval on what can be undone.
+- **The lab's Claude Code downloads packages from the internet** (npm, PyPI, GitHub). A malicious package runs inside the sandbox, only in the project folder, but it can end up in a published app. Look at what it installed before publishing anything important.
+- **Claude Code runs on your subscription.** What it reads in the project goes to Anthropic, like in a chat.
 - **Other forwarded traffic** (virtual machines, a Tailscale subnet router) is dropped by the last rule of `DOCKER-USER`. If you need it, add exceptions.
 
 ## Before publishing anything

@@ -111,6 +111,24 @@ Arca rewrites its `metadata.json` on every upload, and a stack may mount a singl
 **Speaches doesn't produce opus.**
 Hermes asks for the voice in opus (Telegram's voice message format) and Speaches answers 422. A LiteLLM hook switches the request to mp3, and Hermes converts it back with ffmpeg. Hermes sends the voice before the text, so the text waits for the speech to be ready.
 
+## Lab (Claude Code)
+
+**On Ubuntu 26.04, Claude Code's sandbox needs `allowAllUnixSockets`.**
+AppArmor drops the capabilities of everything running inside bubblewrap, and Claude Code's seccomp helper (which blocks local sockets) aborts. Every command failed in the sandbox, was retried outside it and became a permission request. Without the helper, the dangerous sockets (Docker, executor, D-Bus, systemd) are hidden with `denyRead`.
+
+**A test server left running in the background keeps `claude -p` open.**
+The final summary was already out, but the process didn't exit, and the job would only end at the time limit, as an error. The runner closes Claude Code 30 s after the final summary, and the rules say nothing may stay running in the background.
+
+**After switching accounts, read only the new round of the log.**
+The previous account's "limit reached" notice was still in the log; if the new round didn't send a fresh one, the job stopped for nothing.
+
+**If anyone besides Claude Code writes to the projects, the project can't configure anything that runs outside the sandbox.**
+`--setting-sources user` (no project hooks and no `apiKeyHelper`) and git with `core.fsmonitor=false` and `core.hooksPath=/dev/null` in the environment. A `.git/config` with an fsmonitor would run a program from the project in the runner itself.
+
+**Moving to the trash is a rename.** With separate `ReadWritePaths` for the projects and the trash, systemd mounts them apart and the rename fails (`EXDEV`). A single `ReadWritePaths=/srv/lab` fixes it.
+
+**To continue a conversation on another account, copy the session.** `--resume` looks for the conversation in the account's folder (`projects/*/<session>.jsonl`); the runner copies the file, and the subagents folder, before continuing.
+
 ## Apps
 
 **File uploads with Express (`express-fileupload`):**
