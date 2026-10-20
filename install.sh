@@ -52,6 +52,13 @@ if [ "$INSTALAR_HERMES" = sim ]; then
                           2. sudo atena-hermes-chave      (chave da Atena no LiteLLM, com teto)
                           3. sudo atena-telegram          (bot do Telegram; só você conversa)
 EOF
+  if [ "$ATENA_VOZ" = sim ]; then
+    cat <<EOF
+    Voz da Atena:         suba a stack ai/voz, baixe o modelo uma vez com
+                          curl -X POST http://127.0.0.1:8003/v1/models/speaches-ai/Kokoro-82M-v1.0-ONNX
+                          e mande /voice no Telegram
+EOF
+  fi
 fi
 if [ "$REINICIAR" = 1 ]; then
   aviso "reinicie o servidor para terminar (driver da NVIDIA): sudo reboot"

@@ -23,6 +23,9 @@ ATENA_GPU=none
 ATENA_NVIDIA_SERIES=580
 # Tailscale para acesso fora de casa: "sim" ou "nao"
 ATENA_TAILSCALE=sim
+# Voz da Atena (respostas em áudio no Telegram, geradas em casa pelo Kokoro): "sim" ou "nao".
+# Precisa de ATENA_GPU=nvidia e da stack ai/voz no ar.
+ATENA_VOZ=nao
 # Chip da placa-mãe que lê as ventoinhas (sistema.sensores). Vazio: só CPU, NVMe e GPU.
 # Para descobrir: sudo apt install lm-sensors && sudo sensors-detect (sugere o módulo, ex.: nct6683)
 ATENA_SENSORES_MODULO=

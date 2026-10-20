@@ -23,6 +23,10 @@ done
 case "$ATENA_NTFY_URL" in http://*|https://*) ;; *) erro "ATENA_NTFY_URL deve começar com http:// ou https://" ;; esac
 # chaves da versão 0.3
 : "${ATENA_SENSORES_MODULO:=}"
+: "${ATENA_VOZ:=nao}"
+case "$ATENA_VOZ" in sim|nao) ;; *) erro "ATENA_VOZ deve ser sim ou nao" ;; esac
+[ "$ATENA_VOZ" = nao ] || [ "$ATENA_GPU" = nvidia ] \
+  || erro "ATENA_VOZ=sim precisa de ATENA_GPU=nvidia (na CPU a voz fica lenta demais para o Telegram)"
 case "$ATENA_SENSORES_MODULO" in
   *[!a-z0-9_]*) erro "ATENA_SENSORES_MODULO deve ser o nome de um módulo do kernel (ex.: nct6683) ou vazio" ;;
 esac

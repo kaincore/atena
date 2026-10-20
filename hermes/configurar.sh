@@ -24,9 +24,16 @@ cfg providers.atena '{"api": "http://litellm:4000/v1", "key_env": "ATENA_LITELLM
 cfg model.provider atena
 cfg model.default haiku
 
+# Voz da Atena: só com ATENA_VOZ=sim no atena.conf (precisa da GPU e da stack ai/voz no ar)
+VOZ=$(sed -n 's/^ATENA_VOZ=//p' /etc/atena/atena.conf 2>/dev/null | tr -d '"' | tail -n 1)
+
 # Ferramentas: pesquisa na web, Python e subagentes ficam; navegador, controle do computador,
-# imagens, voz sintetizada e conexões externas saem.
-cfg agent.disabled_toolsets '["browser", "computer_use", "image_gen", "tts", "connections"]'
+# imagens e conexões externas saem. A voz sintetizada (tts) só fica com a voz ligada.
+if [ "$VOZ" = sim ]; then
+  cfg agent.disabled_toolsets '["browser", "computer_use", "image_gen", "connections"]'
+else
+  cfg agent.disabled_toolsets '["browser", "computer_use", "image_gen", "tts", "connections"]'
+fi
 cfg delegation.max_concurrent_children 4
 cfg security.allow_lazy_installs false
 
@@ -50,6 +57,17 @@ cfg stt.openai.language pt
 cfg STT_OPENAI_BASE_URL http://litellm:4000/v1
 cfg STT_OPENAI_MODEL whisper
 cfg HERMES_LOCAL_STT_LANGUAGE pt
+
+# Respostas em voz: Kokoro da casa (stack ai/voz), através do LiteLLM, em pedaços de até 150 letras
+# (texto maior, cheio de números, estoura uma GPU de 6 GB). O dono liga e desliga com /voice no Telegram.
+# Outras vozes em português: pm_alex, pm_santa (hermes config set tts.openai.voice <voz>).
+if [ "$VOZ" = sim ]; then
+  cfg tts.provider openai
+  cfg tts.openai.base_url http://litellm:4000/v1
+  cfg tts.openai.model voz
+  cfg tts.openai.voice pf_dora
+  cfg tts.openai.max_text_length 150
+fi
 
 # Quem não é o dono não conversa (nem recebe resposta).
 cfg unauthorized_dm_behavior ignore

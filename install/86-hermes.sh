@@ -107,7 +107,7 @@ if ! grep -q '^NTFY_TOKEN=.' "$D/.env"; then
 fi
 
 sh "$RAIZ/hermes/configurar.sh" >/dev/null
-ok "configuração: LiteLLM (haiku), aprovação smart, voz pelo Whisper, ntfy"
+ok "configuração: LiteLLM (haiku), aprovação smart, ouvir pelo Whisper, ntfy$([ "$ATENA_VOZ" = sim ] && echo ', responder em voz')"
 
 # ferramentas Python da Atena (PDF, Word, Excel), num venv dentro do espaço dela
 docker exec -u hermes hermes sh -c '[ -x /opt/data/ferramentas/py/bin/python ] || /opt/hermes/.venv/bin/python -m venv /opt/data/ferramentas/py'
