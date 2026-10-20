@@ -32,6 +32,20 @@ nada de privileged, cap_add, devices, rede ou PID do host, socket do Docker, pas
 de /srv/<zona>/<stack>, redes de outras zonas, portas sem IP. stack.aplicar confere de novo e roda
 docker compose up -d --build em segundo plano.
 
+Claude Code no lab (módulo lab): claude.tarefa põe um trabalho na fila (/var/lib/atena-claude/fila);
+o atena-claude-runner roda o Claude Code como atena-claude em /srv/lab/projetos/<projeto>, com o
+sandbox do lab. Quando o Claude Code pede permissão, a ponte (dono.py) deixa
+fila/<trabalho>-<n>.permissao; o executor manda para o celular com Aprovar/Recusar e devolve a
+decisão em fila/<trabalho>-<n>.resposta. Perguntas do Claude Code chegam como
+fila/<trabalho>-q<n>.pergunta: o celular é avisado na hora (com botões, se houver opções) e a
+resposta volta por claude.responder (do dono, ou da Atena se ele não responder em 10 min).
+app.publicar constrói o projeto pelo Dockerfile e o põe no ar como a stack
+/opt/atena/stacks/lab/lab-<projeto> (porta 8000-8999 na rede de casa e, com Tailscale, também fora
+de casa, pela unidade atena-lab-tailscale-on@<porta>, que o polkit libera ao executor).
+app.reiniciar, app.cancelar, app.apagar e app.restaurar cuidam do resto da vida do app: apagar o
+código só o move para /srv/lab/lixeira (o atena-lab-lixeira.timer, como root, esvazia depois de 30
+dias); apagar os dados do volume não tem volta. app.comando roda um comando dentro de um app do lab.
+
 Sensores: sistema.sensores lê /sys/class/hwmon (CPU, NVMe e o chip da placa, com as ventoinhas) e a
 GPU pelo nvidia-smi.
 
@@ -42,7 +56,8 @@ senha são recusados, e linhas com senha, token ou chave saem ocultas (***).
 Protocolo: HTTP no socket /run/atena-executor/executor.sock (permissão 660, grupo atena-acoes)
   GET  /acoes                     ações que o token pode pedir
   POST /acao/<nome>               corpo JSON {"params": {...}, "origem": "manual|agendamento|..."}
-                                  responde 202 {"pedido": id} quando a ação espera a aprovação
+                                  responde 202 {"pedido": id} quando a ação fica esperando algo
+                                  (aprovação, o Claude Code ou um trabalho em segundo plano)
   GET  /pedido/<id>[?esperar=s]   estado de um pedido (só do cliente que pediu); com esperar, segura
                                   a resposta até o pedido terminar ou passar s segundos (até 170)
   Cabeçalho: Authorization: Bearer <token>
@@ -89,12 +104,17 @@ NTFY = "http://127.0.0.1:2586"
 NTFY_TOKEN = "/etc/atena/executor/ntfy-servidor.token"         # publica pedidos, lê as respostas
 NTFY_TOKEN_BOTAO = "/etc/atena/executor/ntfy-aprovador.token"  # vai dentro dos botões do celular
 PEDIDOS = "/var/lib/atena-executor/pedidos.json"
+CLAUDE = "/var/lib/atena-claude"              # fila, resultados e contas do Claude Code do lab
 PC_CHAVE = "/etc/atena/executor/pc-chave"     # no Windows, essa chave só desliga, reinicia ou cancela
 PC_HOSTS = "/etc/atena/executor/pc-known-hosts"
 VALIDADE = 10 * 60          # um pedido espera a aprovação por 10 min
 MAX_AGUARDANDO = 5          # por cliente: um cliente enganado não enche o celular de pedidos
+MAX_FILA_CLAUDE = 5         # trabalhos do Claude Code esperando ou rodando (3 rodam juntos)
+MODELOS_CLAUDE = {"fable", "opus", "sonnet", "haiku"}
+ESFORCOS_CLAUDE = ("low", "medium", "high", "xhigh", "max")
+ESPERA_PERGUNTA = 30 * 60   # a ponte espera a resposta de uma pergunta do Claude Code por até 30 min
 ESPERA_MAXIMA = 170         # GET /pedido?esperar: abaixo do limite de 180 s do terminal do Hermes
-TERMINADOS = {"concluido", "falhou", "recusado", "expirado"}
+TERMINADOS = {"concluido", "falhou", "recusado", "expirado", "cancelado"}
 
 
 def log(**campos):
@@ -117,15 +137,36 @@ def ler(caminho):
         return f.read().strip()
 
 
-def rodar(argv, tempo=30):
-    r = subprocess.run(argv, capture_output=True, text=True, timeout=tempo)
-    return r.returncode, (r.stdout + r.stderr)[-LIMITE_SAIDA:]
+PROCESSOS = {}   # projeto → construção em andamento (app.cancelar interrompe)
+
+
+def rodar(argv, tempo=30, cancelavel=None):
+    if cancelavel is None:
+        r = subprocess.run(argv, capture_output=True, text=True, timeout=tempo)
+        return r.returncode, (r.stdout + r.stderr)[-LIMITE_SAIDA:]
+    with subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as proc:
+        PROCESSOS[cancelavel] = proc
+        try:
+            saida, _ = proc.communicate(timeout=tempo)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.communicate()
+            raise
+        finally:
+            PROCESSOS.pop(cancelavel, None)
+    return proc.returncode, saida[-LIMITE_SAIDA:]
 
 
 class Erro(Exception):
     def __init__(self, status, mensagem):
         super().__init__(mensagem)
         self.status = status
+
+
+class Cancelado(Erro):
+    """O dono mandou parar no meio (app.cancelar)."""
+    def __init__(self, mensagem="cancelado pelo dono"):
+        super().__init__(409, mensagem)
 
 
 # --- o que existe no servidor ------------------------------------------------------------------
@@ -291,30 +332,44 @@ def pedir_aprovacao(p, titulo, texto):
 
 def publico(p):
     """O pedido como o cliente vê: sem o código dos botões."""
-    return {k: v for k, v in p.items() if k not in ("segredo", "zonas")}
+    return {k: v for k, v in p.items() if k not in ("segredo", "zonas", "nonce")}
 
 
 def tratar_resposta(texto):
-    m = re.fullmatch(r"(aprovar|recusar) ([0-9a-f]{8}) ([A-Za-z0-9_-]{24})", texto.strip())
+    m = re.fullmatch(r"(aprovar|recusar|cancelar|opcao[0-2]) ([0-9a-f]{8}) ([A-Za-z0-9_-]{24})", texto.strip())
     if not m:
         return
     decisao, id_, segredo = m.groups()
     with TRAVA:
         p = ESTADO["pedidos"].get(id_)
         if not p or not p.get("segredo") or not secrets.compare_digest(p["segredo"], segredo):
-            if not p or p["estado"] == "aguardando":
+            if not p or p["estado"] in ("aguardando", "planejando", "executando", "perguntando"):
                 log(evento="resposta inválida", pedido=id_)   # toque repetido num decidido é normal
             return
         log(evento="decisão do dono", pedido=id_, acao=p["acao"], decisao=decisao)
+        if decisao.startswith("opcao"):   # botão de uma pergunta do Claude Code
+            opcoes = p["params"].get("opcoes") or []
+            i = int(decisao[-1])
+            if p["acao"] == "claude.pergunta" and p["estado"] == "perguntando" and i < len(opcoes):
+                responder_pergunta(p, opcoes[i], "dono (botão no celular)")
+            return
+        if decisao == "cancelar":
+            if p["estado"] in ("planejando", "executando"):
+                cancelar_claude(p)
+            return
         if p["estado"] != "aguardando":
             return
         if time.time() > p["expira"]:
             mudar(p, estado="expirado", segredo=None)
+            negar_permissao(p, "o dono não respondeu a tempo")
             avisar(f"Pedido {id_} expirou", "Nada foi feito. Peça de novo à Atena se ainda quiser.",
                    tags=["hourglass"])
             return
         if decisao == "recusar":
             mudar(p, estado="recusado", segredo=None)
+            if p["acao"] == "claude.permissao":   # o Claude Code fica sabendo; sem aviso extra
+                negar_permissao(p, "o dono recusou")
+                return
             avisar(f"Recusado: {p['titulo']}", "Nada foi feito.", tags=["no_entry"])
             return
         mudar(p, estado="executando", segredo=None)
@@ -324,12 +379,13 @@ def tratar_resposta(texto):
 def executar(p):
     """Roda a ação de um pedido (aprovado, ou de um cliente que não precisa de aprovação)."""
     try:
-        resultado = ACOES[p["acao"]][0](p)
-        if resultado is not None:   # None: a ação segue sozinha em segundo plano (stack.aplicar)
+        funcao = INTERNAS[p["acao"]] if p["acao"] in INTERNAS else ACOES[p["acao"]][0]
+        resultado = funcao(p)
+        if resultado is not None:   # None: a ação segue sozinha (Claude Code)
             mudar(p, estado="concluido", resultado=resultado)
         return resultado
     except Erro as e:
-        mudar(p, estado="falhou", erro=str(e))
+        mudar(p, estado="cancelado" if isinstance(e, Cancelado) else "falhou", erro=str(e))
         raise
     except Exception as e:
         mudar(p, estado="falhou", erro=f"erro interno: {e}")
@@ -342,6 +398,8 @@ def executar_aprovado(p):
         resultado = executar(p)
         if resultado is not None:
             avisar(f"Feito: {p['titulo']}", legivel(resultado)[:1000], tags=["white_check_mark"])
+    except Cancelado as e:
+        avisar(f"Cancelado: {p['titulo']}", str(e), tags=["no_entry"])
     except Erro as e:
         avisar(f"Falhou: {p['titulo']}", str(e), tags=["x"])
 
@@ -367,15 +425,269 @@ def ouvir_respostas():
             time.sleep(10)
 
 
+# --- Claude Code no lab ----------------------------------------------------------------------
+
+def lab_instalado():
+    return os.path.isdir(f"{CLAUDE}/fila")
+
+
+def contas_claude():
+    """As contas do Claude Code no atena.conf (ATENA_CLAUDE_CONTAS), na ordem em que aparecem."""
+    nomes = re.split(r"[\s,]+", ler_conf().get("ATENA_CLAUDE_CONTAS") or "principal")
+    return [n for n in dict.fromkeys(nomes) if re.fullmatch(r"[a-z0-9][a-z0-9-]{0,19}", n)]
+
+
+def contas_prontas():
+    """As contas do atena.conf com login (contas.json, escrito pelo atena-claude-conta)."""
+    try:
+        with open(f"{CLAUDE}/contas.json") as f:
+            prontas = {c for c, pronta in json.load(f).items() if pronta}
+    except (OSError, ValueError, AttributeError):
+        return set()
+    return prontas & set(contas_claude())
+
+
+def enfileirar(p, fase, **extra):
+    dados = {"id": p["id"], "fase": fase, **extra}
+    final = f"{CLAUDE}/fila/{p['id']}.{fase}.json"
+    temporario = f"{CLAUDE}/fila/.{p['id']}.{fase}.novo"   # o runner só pega *.json
+    with open(os.open(temporario, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o640), "w") as f:
+        json.dump(dados, f, ensure_ascii=False)
+    os.replace(temporario, final)
+    mudar(p, fase=fase, estado={"plano": "planejando", "executar": "executando"}[fase])
+
+
+def cancelar_claude(p):
+    with open(os.open(f"{CLAUDE}/fila/{p['id']}.cancelar", os.O_WRONLY | os.O_CREAT, 0o640), "w"):
+        pass   # o runner vê este arquivo e interrompe o Claude Code
+    try:   # se ainda não tinha começado, basta tirar da fila
+        os.unlink(f"{CLAUDE}/fila/{p['id']}.{p['fase']}.json")
+    except FileNotFoundError:
+        mudar(p, cancelando=True)   # já está rodando: o runner interrompe e manda o resultado
+        return
+    os.unlink(f"{CLAUDE}/fila/{p['id']}.cancelar")
+    mudar(p, estado="cancelado", segredo=None)
+    avisar(f"Cancelado: trabalho {p['id']}", "Ele ainda estava na fila; nada rodou.", tags=["no_entry"])
+
+
+def resultado_claude(id_, fase):
+    try:
+        with open(f"{CLAUDE}/resultados/{id_}.{fase}.json") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+
+def responder_permissao(chave, nonce, permitir, motivo=""):
+    """Devolve a decisão à ponte do Claude Code (fila/<chave>.resposta, só o nonce dela vale)."""
+    final = f"{CLAUDE}/fila/{chave}.resposta"
+    temporario = f"{CLAUDE}/fila/.{chave}.resposta.novo"
+    with open(os.open(temporario, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o640), "w") as f:
+        json.dump({"nonce": nonce, "permitir": permitir, "motivo": motivo}, f, ensure_ascii=False)
+    os.replace(temporario, final)
+
+
+def negar_permissao(p, motivo):
+    if p["acao"] == "claude.permissao":
+        responder_permissao(p["params"]["chave"], p.get("nonce"), False, motivo)
+
+
+def levar_permissoes():
+    """Pedidos de permissão do Claude Code (fila/<trabalho>-<n>.permissao) viram pedidos no celular."""
+    for caminho in sorted(glob.glob(f"{CLAUDE}/fila/*.permissao")):
+        chave = os.path.basename(caminho)[:-len(".permissao")]
+        try:
+            with open(caminho) as f:
+                dados = json.load(f)
+        except (OSError, ValueError):
+            dados = None
+        try:
+            os.unlink(caminho)
+        except FileNotFoundError:
+            continue
+        m = re.fullmatch(r"([0-9a-f]{8})-(\d{1,4})", chave)
+        if not m or not isinstance(dados, dict) or not isinstance(dados.get("nonce"), str):
+            log(evento="permissão com defeito ignorada", arquivo=chave)
+            continue
+        with TRAVA:
+            trabalho = ESTADO["pedidos"].get(m.group(1))
+        if (not trabalho or trabalho["acao"] != "claude.tarefa"
+                or trabalho["estado"] not in ("planejando", "executando")):
+            responder_permissao(chave, dados["nonce"], False, "trabalho desconhecido ou já terminado")
+            continue
+        ferramenta = str(dados.get("ferramenta") or "?")[:60]
+        detalhe = ocultar(str(dados.get("detalhe") or ""))[:600]
+        motivo = ocultar(str(dados.get("motivo") or ""))[:300]
+        cliente = {"cliente": trabalho["cliente"], "zonas": trabalho["zonas"]}
+        try:
+            p = criar_pedido(cliente, "claude.permissao",
+                             {"trabalho": trabalho["id"], "chave": chave, "ferramenta": ferramenta,
+                              "detalhe": detalhe}, "claude", f"Claude Code quer usar {ferramenta}")
+            mudar(p, nonce=dados["nonce"])
+            texto = (f"Trabalho {trabalho['id']} (projeto {trabalho['params'].get('projeto')}): "
+                     f"{trabalho['params']['pedido'][:200]}\n\n{ferramenta}: {detalhe}")
+            if motivo:
+                texto += f"\n\nPor quê: {motivo}"
+            pedir_aprovacao(p, f"Claude Code pede: {ferramenta}", texto)
+            log(evento="permissão pedida", pedido=p["id"], trabalho=trabalho["id"], ferramenta=ferramenta)
+        except Erro as e:   # pedidos demais esperando, ou ntfy fora do ar
+            responder_permissao(chave, dados["nonce"], False, str(e))
+
+
+def acao_claude_permissao(p):
+    """Interna: o dono tocou em Aprovar num pedido de permissão do Claude Code."""
+    responder_permissao(p["params"]["chave"], p.get("nonce"), True)
+    mudar(p, estado="concluido", nonce=None)
+    return None   # sem o aviso "Feito": o Claude Code segue sozinho
+
+
+def responder_pergunta(p, resposta, quem):
+    """Devolve a resposta de uma pergunta do Claude Code à ponte (fila/<chave>.resposta, com o nonce)."""
+    chave = p["params"]["chave"]
+    final = f"{CLAUDE}/fila/{chave}.resposta"
+    temporario = f"{CLAUDE}/fila/.{chave}.resposta.novo"
+    with open(os.open(temporario, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o640), "w") as f:
+        json.dump({"nonce": p.get("nonce"), "resposta": resposta, "quem": quem}, f, ensure_ascii=False)
+    os.replace(temporario, final)
+    mudar(p, estado="concluido", resposta=resposta, quem=quem, segredo=None, nonce=None)
+    log(evento="pergunta respondida", pedido=p["id"], trabalho=p["params"]["trabalho"], quem=quem)
+
+
+def levar_perguntas():
+    """Perguntas do Claude Code (fila/<trabalho>-q<n>.pergunta): avisam o celular na hora e ficam
+    esperando o dono responder pela Atena (claude.responder) ou num botão de opção."""
+    for caminho in sorted(glob.glob(f"{CLAUDE}/fila/*.pergunta")):
+        chave = os.path.basename(caminho)[:-len(".pergunta")]
+        try:
+            with open(caminho) as f:
+                dados = json.load(f)
+        except (OSError, ValueError):
+            dados = None
+        try:
+            os.unlink(caminho)
+        except FileNotFoundError:
+            continue
+        m = re.fullmatch(r"([0-9a-f]{8})-q(\d{1,4})", chave)
+        pergunta = dados.get("pergunta") if isinstance(dados, dict) else None
+        if not m or not isinstance(pergunta, str) or not isinstance(dados.get("nonce"), str):
+            log(evento="pergunta com defeito ignorada", arquivo=chave)
+            continue
+        with TRAVA:
+            trabalho = ESTADO["pedidos"].get(m.group(1))
+        falso = {"params": {"chave": chave, "trabalho": m.group(1)}, "nonce": dados["nonce"], "id": "-"}
+        if (not trabalho or trabalho["acao"] != "claude.tarefa"
+                or trabalho["estado"] not in ("planejando", "executando")):
+            responder_pergunta_solta(falso, "o trabalho já terminou; siga sem resposta")
+            continue
+        opcoes = [str(o).strip()[:60] for o in (dados.get("opcoes") or []) if str(o).strip()][:3]
+        params = {"trabalho": trabalho["id"], "chave": chave, "projeto": trabalho["params"].get("projeto"),
+                  "pergunta": ocultar(pergunta.strip())[:1500], "opcoes": opcoes,
+                  "por_que": ocultar(str(dados.get("por_que") or "").strip())[:500]}
+        p = criar_pedido({"cliente": trabalho["cliente"], "zonas": trabalho["zonas"]}, "claude.pergunta",
+                         params, "claude", f"Claude Code pergunta ({params['projeto']})")
+        segredo = secrets.token_urlsafe(18)
+        mudar(p, estado="perguntando", nonce=dados["nonce"], segredo=segredo)
+        texto = params["pergunta"] + (f"\n\nPor quê: {params['por_que']}" if params["por_que"] else "")
+        texto += "\n\nResponda à Atena no Telegram" + (" ou toque numa opção." if opcoes else ".")
+        texto += " Sem resposta em 10 min, a Atena decide."
+        avisar(f"Claude Code pergunta (projeto {params['projeto']})", texto, tags=["question"],
+               acoes=[botao(o[:30], f"opcao{i}", p, segredo) for i, o in enumerate(opcoes)])
+        log(evento="pergunta recebida", pedido=p["id"], trabalho=trabalho["id"])
+
+
+def responder_pergunta_solta(p, resposta):
+    """Resposta para uma pergunta que nem virou pedido (trabalho inexistente ou terminado)."""
+    chave = p["params"]["chave"]
+    with open(os.open(f"{CLAUDE}/fila/.{chave}.resposta.novo", os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o640), "w") as f:
+        json.dump({"nonce": p["nonce"], "resposta": resposta, "quem": "executor"}, f, ensure_ascii=False)
+    os.replace(f"{CLAUDE}/fila/.{chave}.resposta.novo", f"{CLAUDE}/fila/{chave}.resposta")
+
+
 def acompanhar():
-    """De 3 em 3 s: vence os pedidos que o dono não respondeu a tempo."""
+    """De 3 em 3 s: vence pedidos sem resposta e leva o Claude Code adiante (permissões, perguntas e
+    resultados)."""
     while True:
         time.sleep(3)
+        for levar in (levar_permissoes, levar_perguntas):
+            try:
+                levar()
+            except Exception as e:
+                log(evento=f"acompanhar: erro em {levar.__name__}", erro=repr(e))
         with TRAVA:
             pedidos = list(ESTADO["pedidos"].values())
         for p in pedidos:
-            if p["estado"] == "aguardando" and time.time() > p["expira"]:
-                mudar(p, estado="expirado", segredo=None)
+            try:
+                if p["estado"] == "aguardando" and time.time() > p["expira"]:
+                    mudar(p, estado="expirado", segredo=None)
+                    negar_permissao(p, "o dono não respondeu a tempo")
+                elif p["estado"] == "perguntando" and time.time() > p["criado"] + ESPERA_PERGUNTA + 600:
+                    mudar(p, estado="expirado", segredo=None, nonce=None)   # a ponte já desistiu
+                elif p["estado"] in ("planejando", "executando") and p.get("fase"):
+                    r = resultado_claude(p["id"], p["fase"])
+                    if r:
+                        concluir_claude(p, r)
+            except Exception as e:
+                log(evento="acompanhar: erro", pedido=p.get("id"), erro=repr(e))
+
+
+def concluir_claude(p, r):
+    texto = (r.get("texto") or "").strip() or "(sem resumo)"
+    with TRAVA:   # permissões e perguntas ainda esperando o dono perdem o sentido
+        pendentes = [q for q in ESTADO["pedidos"].values()
+                     if q["acao"] in ("claude.permissao", "claude.pergunta")
+                     and q["estado"] in ("aguardando", "perguntando") and q["params"]["trabalho"] == p["id"]]
+    for q in pendentes:
+        mudar(q, estado="expirado", segredo=None, nonce=None)
+        negar_permissao(q, "o trabalho terminou")
+    if r.get("trocas"):   # bateu o limite de uso e passou para outra conta (ATENA_CLAUDE_TROCA=sim)
+        mudar(p, conta_final=r.get("conta"), trocas=r["trocas"])
+    if r.get("cancelado"):
+        # guarda a conversa: dá para continuar (até com outro modelo ou esforço) de onde parou
+        mudar(p, estado="cancelado", segredo=None, resumo=texto, sessao=r.get("sessao") or p.get("sessao"))
+        avisar(f"Cancelado: trabalho {p['id']}", texto[:3000], tags=["no_entry"])
+        return
+    mudar(p, estado="concluido" if r["ok"] else "falhou", segredo=None, resumo=texto,
+          sessao=r.get("sessao") or p.get("sessao"), uso=r.get("uso"), segundos=r.get("segundos"),
+          commits=r.get("commits", []))
+    if p["fase"] == "plano":
+        avisar(f"Plano pronto (trabalho {p['id']})", texto[:3500], tags=["memo"])
+        return
+    if p["params"].get("projeto"):
+        texto += f"\n\nPasta: /srv/lab/projetos/{p['params']['projeto']}"
+        if r.get("commits"):
+            texto += f" ({len(r['commits'])} commits)"
+    for t in r.get("trocas", []):
+        texto += f"\n\nTrocou de conta: {t['de']} → {t['para']} ({t['motivo']})"
+    avisar(f"Claude Code {'terminou' if r['ok'] else 'parou com erro'} (trabalho {p['id']})", texto,
+           tags=["white_check_mark" if r["ok"] else "x"])
+    if r["ok"] and p["params"].get("publicar"):
+        publicar_depois(p)
+
+
+def publicar_depois(trabalho):
+    """claude.tarefa com publicar: o trabalho terminou bem, então publica a versão nova.
+
+    Segue a regra de aprovação do token do cliente, lida de novo agora: um token revogado ou sem
+    app.publicar não publica.
+    """
+    projeto = trabalho["params"]["projeto"]
+    cliente = next((c for c in carregar_tokens().values() if c["cliente"] == trabalho["cliente"]), None)
+    try:
+        if not cliente or "app.publicar" not in cliente["acoes"]:
+            raise Erro(403, f"o cliente {trabalho['cliente']} não pode mais publicar")
+        params = {"projeto": projeto}
+        titulo, texto = preparar_app_publicar(cliente, params)
+        p = criar_pedido(cliente, "app.publicar", params, f"trabalho {trabalho['id']}", titulo)
+        mudar(trabalho, publicacao=p["id"])
+        if precisa_aprovacao(cliente, "app.publicar"):
+            pedir_aprovacao(p, f"{cliente['cliente']} pede: {titulo}",
+                            f"Versão nova do trabalho {trabalho['id']}.\n\n{texto}")
+            return
+        mudar(p, estado="executando")
+        threading.Thread(target=executar_aprovado, args=(p,), daemon=True).start()
+    except Erro as e:
+        mudar(trabalho, publicacao_erro=str(e))
+        avisar(f"Não publiquei {projeto}", str(e), tags=["x"])
 
 
 # --- ações -------------------------------------------------------------------------------------
@@ -597,7 +909,7 @@ def acao_servico_logs(cliente, params):
 
 # Áreas que nunca saem do executor, nem como lista de nomes (prefixos do caminho real).
 NUNCA_LER = ("/proc", "/sys", "/dev", "/run", "/var/lib/docker", "/var/lib/containerd",
-             "/var/lib/tailscale", "/var/lib/atena-executor",
+             "/var/lib/tailscale", "/var/lib/atena-executor", "/var/lib/atena-claude/contas",
              "/etc/atena/executor", "/etc/ssl/private", "/etc/letsencrypt")
 # Pastas (em qualquer lugar) e nomes de arquivo que guardam segredos.
 PASTA_SEGREDO = re.compile(r"(^|/)(\.ssh|\.gnupg|\.claude|\.docker|\.aws|\.kube|\.password-store|"
@@ -1615,6 +1927,591 @@ def aplicar_stack(cliente, params):
     return resultado
 
 
+def preparar_claude_tarefa(cliente, params):
+    if not lab_instalado():
+        raise Erro(503, "o lab não está instalado neste servidor (sudo ./install.sh --lab)")
+    pedido, continuar = params.get("pedido"), params.get("continuar")
+    if not isinstance(pedido, str) or not 3 <= len(pedido.strip()) <= 4000:
+        raise Erro(400, "pedido deve ter de 3 a 4000 caracteres")
+    params["pedido"] = pedido.strip()
+    params["somente_plano"] = bool(params.get("somente_plano"))
+    params["publicar"] = bool(params.get("publicar"))   # publica sozinho quando terminar bem
+    if params["publicar"] and params["somente_plano"]:
+        raise Erro(400, "publicar não combina com somente_plano (um plano não muda o app)")
+    if params["publicar"] and "app.publicar" not in cliente.get("acoes", []):
+        raise Erro(403, f"o cliente {cliente['cliente']} não pode pedir app.publicar")
+    minutos = params.setdefault("minutos", 60)   # trabalhos longos (a noite toda): até 600
+    if not isinstance(minutos, int) or not 5 <= minutos <= 600:
+        raise Erro(400, "minutos deve ser um número de 5 a 600")
+    if continuar is not None:   # continua a conversa de um trabalho anterior
+        with TRAVA:
+            anterior = ESTADO["pedidos"].get(continuar) if isinstance(continuar, str) else None
+        if not anterior or anterior["cliente"] != cliente["cliente"] or not anterior.get("sessao"):
+            raise Erro(404, "não achei um trabalho anterior com esse id para continuar")
+        if anterior["estado"] not in TERMINADOS:
+            raise Erro(409, "o trabalho anterior ainda não terminou")
+        # a conversa fica na conta em que o trabalho terminou (pode ter trocado pelo limite de uso);
+        # com outra conta, a pedido do dono, o runner leva a conversa para ela
+        params["sessao_conta"] = anterior.get("conta_final") or anterior["params"]["conta"]
+        params["conta"] = params.get("conta") or params["sessao_conta"]
+        params["sessao"] = anterior["sessao"]
+        params["projeto"] = anterior["params"].get("projeto")
+        params.setdefault("modelo", anterior["params"].get("modelo"))
+        params.setdefault("esforco", anterior["params"].get("esforco"))
+    projeto = params.get("projeto")
+    if not isinstance(projeto, str) or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,39}", projeto):
+        raise Erro(400, "projeto deve ser um nome curto, com letras minúsculas, números e hífen "
+                        "(ex.: lista-compras); vira a pasta /srv/lab/projetos/<projeto>")
+    if continuar is not None and not os.path.isdir(f"{PROJETOS_LAB}/{projeto}"):
+        raise Erro(409, f"a pasta do projeto {projeto} não existe mais"
+                        + ("; ele está na lixeira: app.restaurar traz de volta" if lixeira(projeto) else ""))
+    if params.get("modelo") is not None and params["modelo"] not in MODELOS_CLAUDE:
+        raise Erro(400, "modelo deve ser fable, opus, sonnet ou haiku (ou ficar de fora)")
+    if params.get("esforco") is not None and params["esforco"] not in ESFORCOS_CLAUDE:
+        raise Erro(400, "esforco deve ser low, medium, high, xhigh ou max (ou ficar de fora)")
+    contas = contas_claude()
+    if not params.get("conta") and len(contas) == 1:
+        params["conta"] = contas[0]
+    if params.get("conta") not in contas:
+        raise Erro(400, "conta deve ser " + " ou ".join(contas) + " (as contas de ATENA_CLAUDE_CONTAS)")
+    if params["conta"] not in contas_prontas():
+        raise Erro(409, f"a conta {params['conta']} ainda não tem login no servidor "
+                        f"(sudo atena-claude-conta entrar {params['conta']})")
+    with TRAVA:
+        na_fila = [p for p in ESTADO["pedidos"].values()
+                   if p["acao"] == "claude.tarefa" and p["estado"] in ("planejando", "executando")]
+        mesmo_projeto = [p for p in na_fila if p["params"].get("projeto") == projeto]
+    if len(na_fila) >= MAX_FILA_CLAUDE:
+        raise Erro(429, f"já há {len(na_fila)} trabalhos do Claude Code na fila; espere um terminar")
+    if mesmo_projeto:
+        raise Erro(409, f"o projeto {projeto} já tem um trabalho em andamento ({mesmo_projeto[0]['id']})")
+    tipo = "plano" if params["somente_plano"] else "trabalho"
+    if params["publicar"]:
+        tipo += " e publicar"
+    return f"Claude Code ({params['conta']}) em {projeto}: {tipo}", f"Pedido: {params['pedido']}"
+
+
+def acao_claude_tarefa(p):
+    params = p["params"]
+    pedido = params["pedido"]
+    if params.get("publicar"):
+        pedido += ("\n\n(Quando você terminar, a Atena publica o app de novo pelo Dockerfile desta pasta: "
+                   "deixe-o pronto para publicar, seguindo as regras do lab.)")
+    enfileirar(p, "plano" if params["somente_plano"] else "executar", conta=params["conta"],
+               pedido=pedido, minutos=params["minutos"], projeto=params["projeto"],
+               **({"modelo": params["modelo"]} if params.get("modelo") else {}),
+               **({"esforco": params["esforco"]} if params.get("esforco") else {}),
+               **({"sessao": params["sessao"], "sessao_conta": params["sessao_conta"]} if params.get("sessao") else {}))
+    segredo = secrets.token_urlsafe(18)
+    mudar(p, segredo=segredo)
+    avisar(f"Claude Code ({params['conta']}) começou: trabalho {p['id']}",
+           f"Projeto: /srv/lab/projetos/{params['projeto']}\n"
+           + f"\n{params['pedido'][:3000]}\n\n"
+           + ("Só vai planejar; nada muda." if params["somente_plano"] else "Toque em Cancelar para interromper."),
+           tags=["robot"], acoes=[botao("Cancelar", "cancelar", p, segredo)])
+    return None   # o acompanhar() leva o resultado ao celular e ao pedido
+
+
+def acao_claude_trabalhos(cliente, params):
+    with TRAVA:
+        meus = sorted((p for p in ESTADO["pedidos"].values()
+                       if p["acao"] == "claude.tarefa" and p["cliente"] == cliente["cliente"]),
+                      key=lambda p: p["criado"], reverse=True)[:10]
+        esperando = {q["params"]["trabalho"] for q in ESTADO["pedidos"].values()
+                     if q["acao"] == "claude.permissao" and q["estado"] == "aguardando"}
+    return {"contas": contas_claude(), "contas_com_login": sorted(contas_prontas()), "trabalhos": [
+        {"id": p["id"], "estado": p["estado"], "projeto": p["params"].get("projeto"),
+         "conta": p.get("conta_final") or p["params"].get("conta"), "modelo": p["params"].get("modelo"),
+         "esforco": p["params"].get("esforco"),
+         "pedido": p["params"]["pedido"][:150],
+         "criado": time.strftime("%Y-%m-%d %H:%M", time.localtime(p["criado"])),
+         "esperando_permissao_no_celular": p["id"] in esperando}
+        for p in meus]}
+
+
+def acao_claude_cancelar(cliente, params):
+    alvo = params.get("pedido")
+    with TRAVA:
+        p = ESTADO["pedidos"].get(alvo) if isinstance(alvo, str) else None
+        if not p or p["cliente"] != cliente["cliente"] or p["acao"] != "claude.tarefa":
+            raise Erro(404, "não achei um trabalho do Claude Code com esse id")
+        if p["estado"] not in ("planejando", "executando"):
+            raise Erro(409, f"o trabalho não está rodando (estado: {p['estado']})")
+        cancelar_claude(p)
+    return {"cancelando": alvo, "dica": "o resultado chega quando ele parar (segundos)"}
+
+
+def acao_claude_perguntas(cliente, params):
+    agora = time.time()
+    with TRAVA:
+        abertas = sorted((p for p in ESTADO["pedidos"].values() if p["acao"] == "claude.pergunta"
+                          and p["estado"] == "perguntando" and p["cliente"] == cliente["cliente"]),
+                         key=lambda p: p["criado"])
+    return [{"id": p["id"], "trabalho": p["params"]["trabalho"], "projeto": p["params"]["projeto"],
+             "pergunta": p["params"]["pergunta"], "opcoes": p["params"]["opcoes"], "por_que": p["params"]["por_que"],
+             "esperando_min": int((agora - p["criado"]) // 60)} for p in abertas]
+
+
+def acao_claude_responder(cliente, params):
+    alvo, resposta, quem = params.get("pergunta"), params.get("resposta"), params.get("quem", "dono")
+    if not isinstance(resposta, str) or not 1 <= len(resposta.strip()) <= 2000:
+        raise Erro(400, "resposta deve ter de 1 a 2000 caracteres")
+    if quem not in ("dono", "atena"):
+        raise Erro(400, "quem deve ser dono (o dono respondeu) ou atena (você decidiu porque ele não respondeu)")
+    with TRAVA:
+        p = ESTADO["pedidos"].get(alvo) if isinstance(alvo, str) else None
+        if not p or p["acao"] != "claude.pergunta" or p["cliente"] != cliente["cliente"]:
+            raise Erro(404, "não achei essa pergunta do Claude Code (veja claude.perguntas)")
+        if p["estado"] != "perguntando":
+            raise Erro(409, f"essa pergunta já foi encerrada (estado: {p['estado']})")
+        responder_pergunta(p, resposta.strip(), quem)
+    return {"respondida": alvo, "quem": quem, "dica": "o Claude Code segue com a resposta"}
+
+
+
+# --- apps do lab: publicar na rede de casa o que o Claude Code fez -------------------------------
+
+STACKS_LAB = "/opt/atena/stacks/lab"
+PROJETOS_LAB = "/srv/lab/projetos"
+LIXEIRA_LAB = "/srv/lab/lixeira"   # app.apagar move o código para cá; o atena-lab-lixeira.timer esvazia
+DIAS_LIXEIRA = 30
+PARTES_APAGAR = ("docker", "dados", "codigo")
+CANCELAR = set()   # projetos cuja publicação o dono mandou parar
+PORTAS_LAB = range(8000, 9000)
+
+# Mesmo padrão das outras stacks: zona lab, sem capacidades, disco só de leitura (escreve em /data).
+COMPOSE_LAB = """\
+# Gerado pelo executor (app.publicar) a partir de {pasta}.
+# Não edite: publicar de novo regrava. Para tirar do ar: app.parar.
+name: {nome}
+services:
+  app:
+    build: {pasta}
+    image: atena-lab/{projeto}:latest
+    container_name: {nome}
+    restart: unless-stopped
+    cgroup_parent: atena-lab.slice
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 256
+    environment:
+      PORT: "{porta}"
+      DATA_DIR: /data
+    ports:
+      - "{ip}:{porta}:{porta}"     # rede de casa
+      - "127.0.0.1:{porta}:{porta}"     # só no servidor (Tailscale Serve, se um dia quiser)
+    volumes:
+      - dados:/data
+    networks: [zone-lab]
+    labels:
+      atena.origem: claude-code
+volumes:
+  dados: {{}}
+networks:
+  zone-lab:
+    external: true
+"""
+
+
+def ip_casa():
+    return ler_conf().get("ATENA_LAN_IP") or "127.0.0.1"
+
+
+def tailscale_ligado():
+    return ler_conf().get("ATENA_TAILSCALE") == "sim"
+
+
+def tailscale_host():
+    """Nome do servidor no Tailscale (ex.: atena.exemplo.ts.net), ou None."""
+    try:
+        r = subprocess.run(["tailscale", "status", "--json", "--peers=false"], capture_output=True, text=True, timeout=10)
+        return json.loads(r.stdout)["Self"]["DNSName"].rstrip(".") or None
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, subprocess.TimeoutExpired):
+        return None
+
+
+def portas_no_tailscale():
+    """Portas que o tailscale serve publica agora."""
+    try:
+        r = subprocess.run(["tailscale", "serve", "status", "--json"], capture_output=True, text=True, timeout=10)
+        return {int(p) for p in (json.loads(r.stdout or "{}").get("TCP") or {}) if str(p).isdigit()}
+    except (OSError, ValueError, AttributeError, subprocess.TimeoutExpired):
+        return set()
+
+
+def link_tailscale(porta, ligar):
+    """Liga ou desliga o acesso de fora de casa (tailscale serve + regra do ufw na tailscale0) pela
+    unidade atena-lab-tailscale-<on|off>@<porta>, a única que o polkit libera ao executor.
+    Devolve (link ou None, erro ou None). Sem Tailscale (ATENA_TAILSCALE=nao), não faz nada."""
+    if not tailscale_ligado():
+        return None, None
+    unidade = f"atena-lab-tailscale-{'on' if ligar else 'off'}@{porta}.service"
+    codigo, texto = rodar(["systemctl", "start", "--no-ask-password", unidade], 60)
+    if codigo != 0:
+        log(evento="tailscale: falhou", unidade=unidade, erro=texto.strip()[-300:])
+        return None, texto.strip()[-300:] or "falhou"
+    host = tailscale_host() if ligar else None
+    return (f"https://{host}:{porta}" if host else None), None
+
+
+def lab_no_ar(cliente):
+    if not os.path.isdir(PROJETOS_LAB):
+        raise Erro(503, "o lab não está instalado neste servidor (sudo ./install.sh --lab)")
+    if "lab" not in cliente["zonas"]:
+        raise Erro(403, "a zona lab está fora do alcance deste cliente")
+
+
+def projeto_lab(cliente, params):
+    lab_no_ar(cliente)
+    projeto = params.get("projeto")
+    if not isinstance(projeto, str) or not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,39}", projeto):
+        raise Erro(400, "projeto deve ser o nome de uma pasta de /srv/lab/projetos (minúsculas, números e hífen)")
+    return projeto, f"lab-{projeto}", f"{PROJETOS_LAB}/{projeto}", f"{STACKS_LAB}/lab-{projeto}/compose.yaml"
+
+
+def porta_do_compose(compose):
+    try:
+        with open(compose) as f:
+            m = re.search(r'"[0-9.]+:(\d+):\d+"', f.read())   # a primeira porta: a da rede de casa
+    except OSError:
+        return None
+    return int(m.group(1)) if m else None
+
+
+def portas_ocupadas():
+    ocupadas = {porta_do_compose(c) for c in glob.glob(f"{STACKS_LAB}/*/compose.yaml")}
+    _, saida = rodar(["ss", "-H", "-tln"])
+    for linha in saida.splitlines():
+        campos = linha.split()
+        if len(campos) >= 4 and campos[3].rsplit(":", 1)[-1].isdigit():
+            ocupadas.add(int(campos[3].rsplit(":", 1)[-1]))
+    return ocupadas - {None}
+
+
+def preparar_app_publicar(cliente, params):
+    projeto, nome, pasta, compose = projeto_lab(cliente, params)
+    if not os.path.isdir(pasta):
+        raise Erro(404, f"não existe {pasta}")
+    if not os.path.isfile(f"{pasta}/Dockerfile"):
+        raise Erro(409, "o projeto ainda não tem Dockerfile: peça ao Claude Code para deixá-lo pronto "
+                        "para publicar (regras do lab: Dockerfile, PORT e DATA_DIR)")
+    with TRAVA:
+        rodando = [p["id"] for p in ESTADO["pedidos"].values() if p["acao"] == "claude.tarefa"
+                   and p["estado"] in ("planejando", "executando") and p["params"].get("projeto") == projeto]
+    if rodando:
+        raise Erro(409, f"o Claude Code ainda está trabalhando nesse projeto ({rodando[0]}); publique quando terminar")
+    atual = porta_do_compose(compose)   # publicar de novo mantém a porta
+    ocupadas = portas_ocupadas() - {atual}
+    porta = params.get("porta", atual)
+    if porta is None:
+        porta = next((n for n in PORTAS_LAB if n not in ocupadas), None)
+        if porta is None:
+            raise Erro(507, "não há porta livre entre 8000 e 8999")
+    elif not isinstance(porta, int) or porta not in PORTAS_LAB:
+        raise Erro(400, "porta deve ser um número de 8000 a 8999")
+    elif porta in ocupadas:
+        raise Erro(409, f"a porta {porta} já está em uso")
+    params["porta"] = porta
+    return (f"publicar {projeto} em http://{ip_casa()}:{porta}",
+            f"Constrói a imagem pelo Dockerfile de {pasta} e deixa o app no ar na rede de casa, na zona lab "
+            "(sem acesso ao resto do servidor). Fica ligado até alguém pedir app.parar.")
+
+
+def atende(porta, projeto, segundos=20):
+    """Espera o app atender na porta; para antes se o dono cancelar."""
+    for _ in range(segundos):
+        time.sleep(1)
+        if projeto in CANCELAR:
+            raise Cancelado("cancelado pelo dono enquanto o app subia; confira com app.lista o que ficou no ar")
+        try:
+            socket.create_connection(("127.0.0.1", porta), timeout=1).close()
+            return True
+        except OSError:
+            pass
+    return False
+
+
+def acao_app_publicar(p):
+    projeto, nome, pasta, compose = projeto_lab({"zonas": p["zonas"]}, p["params"])
+    CANCELAR.discard(projeto)
+    try:
+        return publicar(projeto, nome, pasta, compose, p["params"]["porta"])
+    finally:
+        CANCELAR.discard(projeto)
+
+
+def publicar(projeto, nome, pasta, compose, porta):
+    os.makedirs(os.path.dirname(compose), mode=0o755, exist_ok=True)
+    temporario = os.path.join(os.path.dirname(compose), ".compose.yaml.novo")
+    with open(os.open(temporario, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644), "w") as f:
+        f.write(COMPOSE_LAB.format(pasta=pasta, nome=nome, projeto=projeto, porta=porta, ip=ip_casa()))
+    os.replace(temporario, compose)
+    base = ["docker", "compose", "-f", compose, "-p", nome]
+    codigo, texto = rodar([*base, "up", "-d", "--build", "--remove-orphans"], 900, cancelavel=projeto)
+    if projeto in CANCELAR:   # a construção parou no meio: o que já estava no ar continua como estava
+        raise Cancelado("cancelado pelo dono durante a construção; a versão que estava no ar (se havia) continua")
+    if codigo != 0:
+        raise Erro(502, "a construção ou a subida falhou. Fim do registro:\n" + texto.strip()[-1500:])
+    if atende(porta, projeto):
+        log(evento="app publicado", projeto=projeto, porta=porta)
+        resultado = {"endereco": f"http://{ip_casa()}:{porta}", "stack": nome}
+        if tailscale_ligado():
+            link, erro = link_tailscale(porta, True)
+            resultado["fora_de_casa"] = link or f"não consegui ligar o link do Tailscale: {erro}"
+        return resultado
+    _, registro = rodar(["docker", "logs", "--tail", "40", nome])
+    rodar([*base, "down"], 120)   # não deixa um container quebrado reiniciando sem parar
+    raise Erro(502, f"o container subiu, mas o app não respondeu na porta {porta} em 20 s (ele precisa ouvir "
+                    f"em 0.0.0.0, na porta da variável PORT). Tirei do ar. Fim do log:\n{registro.strip()[-1200:]}")
+
+
+def acao_app_parar(cliente, params):
+    projeto, nome, pasta, compose = projeto_lab(cliente, params)
+    if not os.path.isfile(compose):
+        raise Erro(404, f"{projeto} não está publicado")
+    codigo, texto = rodar(["docker", "compose", "-f", compose, "-p", nome, "down"], 120)
+    if codigo != 0:
+        raise Erro(500, texto.strip()[-500:] or "falha ao parar")
+    porta = porta_do_compose(compose)
+    if porta:
+        link_tailscale(porta, False)   # sem app, o link de fora de casa só daria erro
+    return {"parado": nome, "dica": "dados e imagem ficam; app.reiniciar religa, app.publicar reconstrói"}
+
+
+def acao_app_reiniciar(cliente, params):
+    projeto, nome, pasta, compose = projeto_lab(cliente, params)
+    if not os.path.isfile(compose):
+        raise Erro(404, f"{projeto} não está publicado (app.publicar põe no ar)")
+    base = ["docker", "compose", "-f", compose, "-p", nome]
+    parado = not existe_no_docker("container", nome)   # app.parar remove o container
+    codigo, texto = rodar([*base, "up", "-d", "--no-build"] if parado else [*base, "restart"], 120)
+    if codigo != 0:
+        raise Erro(500, (texto.strip()[-500:] or "falha ao reiniciar")
+                   + ("\nSe a imagem não existe mais, use app.publicar." if parado else ""))
+    porta = porta_do_compose(compose)
+    if porta and not atende(porta, projeto):
+        raise Erro(502, f"reiniciou, mas o app não respondeu na porta {porta} em 20 s; veja servico.logs {nome}")
+    resultado = {"reiniciado": nome, "endereco": f"http://{ip_casa()}:{porta}" if porta else None}
+    if parado:
+        resultado["obs"] = "estava parado: subiu de novo com a imagem que já existia"
+    if not tailscale_ligado():
+        pass
+    elif porta and (parado or porta not in portas_no_tailscale()):
+        link, erro = link_tailscale(porta, True)
+        resultado["fora_de_casa"] = link or f"não consegui ligar o link do Tailscale: {erro}"
+    elif porta:
+        host = tailscale_host()
+        resultado["fora_de_casa"] = f"https://{host}:{porta}" if host else None
+    return resultado
+
+
+def acao_app_comando(cliente, params):
+    """Roda um comando dentro do container de um app do lab, como o usuário do próprio app."""
+    projeto, nome, pasta, compose = projeto_lab(cliente, params)
+    comando = params.get("comando")
+    if isinstance(comando, str) and comando.strip():
+        argv = ["sh", "-c", comando]
+    elif isinstance(comando, list) and comando and all(isinstance(x, str) for x in comando):
+        argv = comando
+    else:
+        raise Erro(400, "comando deve ser um texto (roda com sh -c) ou uma lista de argumentos")
+    if sum(len(x) for x in argv) > 4000:
+        raise Erro(400, "comando grande demais (até 4000 letras)")
+    segundos = params.get("segundos", 30)
+    if not isinstance(segundos, int) or not 1 <= segundos <= 120:
+        raise Erro(400, "segundos deve ser um número de 1 a 120")
+    doks = [c for c in containers() if c["container"] == nome]
+    if not doks or doks[0]["stack"] != nome or doks[0]["zona"] != "lab":
+        raise Erro(404, f"{projeto} não está publicado (app.lista mostra os apps)")
+    if doks[0]["estado"] != "running":
+        raise Erro(409, f"o app {projeto} não está rodando ({doks[0]['estado']}); app.reiniciar sobe de novo")
+    try:
+        codigo, texto = rodar(["docker", "exec", nome, *argv], segundos)
+    except subprocess.TimeoutExpired:
+        raise Erro(504, f"o comando passou de {segundos} s; ele pode continuar rodando dentro do app "
+                        "(app.reiniciar zera)")
+    log(evento="comando no app", projeto=projeto, codigo=codigo)
+    resultado = {"codigo": codigo, "saida": ocultar(texto)}
+    if codigo in (126, 127) and argv[0] == "sh":
+        resultado["dica"] = "o app pode não ter sh; mande o comando como lista, ex.: [\"ls\", \"/data\"]"
+    return resultado
+
+
+def em_andamento():
+    """projeto → id do trabalho do Claude Code ou da publicação que está rodando nele."""
+    with TRAVA:
+        return {p["params"].get("projeto"): p["id"] for p in ESTADO["pedidos"].values()
+                if (p["acao"] == "claude.tarefa" and p["estado"] in ("planejando", "executando"))
+                or (p["acao"] == "app.publicar" and p["estado"] == "executando")}
+
+
+def acao_app_cancelar(cliente, params):
+    """Para o que estiver em andamento num projeto: Claude Code, construção e pedidos no celular."""
+    projeto = projeto_lab(cliente, params)[0]
+    feito = []
+    with TRAVA:
+        for p in list(ESTADO["pedidos"].values()):
+            if p["cliente"] != cliente["cliente"] or p["params"].get("projeto") != projeto:
+                continue
+            if p["acao"] == "claude.tarefa" and p["estado"] in ("planejando", "executando"):
+                cancelar_claude(p)
+                feito.append(f"trabalho do Claude Code {p['id']} (o resumo chega quando ele parar)")
+            elif p["estado"] == "aguardando":
+                mudar(p, estado="cancelado", segredo=None)
+                feito.append(f"pedido {p['id']} que esperava o celular ({p['titulo']})")
+            elif p["acao"] == "app.publicar" and p["estado"] == "executando":
+                CANCELAR.add(projeto)
+                processo = PROCESSOS.get(projeto)
+                if processo:
+                    processo.terminate()
+                feito.append(f"publicação {p['id']} (o celular avisa quando parar)")
+    if not feito:
+        raise Erro(404, f"não há nada em andamento no projeto {projeto}")
+    log(evento="projeto cancelado", projeto=projeto, cancelado=feito)
+    return {"cancelado": feito}
+
+
+def existe_no_docker(tipo, alvo):
+    return rodar(["docker", tipo, "inspect", alvo], 15)[0] == 0
+
+
+def quando(carimbo, dias=0):
+    instante = time.mktime(time.strptime(carimbo, "%Y%m%d-%H%M%S")) + dias * 86400
+    return time.strftime("%Y-%m-%d %H:%M", time.localtime(instante))
+
+
+def lixeira(projeto=None):
+    """Projetos apagados, do mais novo para o mais velho: (projeto, pasta, carimbo)."""
+    itens = []
+    for caminho in glob.glob(f"{LIXEIRA_LAB}/*"):
+        m = re.fullmatch(r"([a-z0-9][a-z0-9-]{0,39})\.(\d{8}-\d{6})", os.path.basename(caminho))
+        if m and projeto in (None, m.group(1)) and os.path.isdir(caminho) and not os.path.islink(caminho):
+            itens.append((m.group(1), caminho, m.group(2)))
+    return sorted(itens, key=lambda i: i[2], reverse=True)
+
+
+def preparar_app_apagar(cliente, params):
+    projeto, nome, pasta, compose = projeto_lab(cliente, params)
+    partes = params.get("partes")
+    if (not isinstance(partes, list) or not partes
+            or any(not isinstance(x, str) or x not in PARTES_APAGAR for x in partes)):
+        raise Erro(400, "partes deve ser uma lista com docker, dados e/ou codigo")
+    if "dados" in partes:
+        partes = [*partes, "docker"]   # o volume só sai depois do container
+    params["partes"] = [x for x in PARTES_APAGAR if x in partes]
+    rodando = em_andamento().get(projeto)
+    if rodando:
+        raise Erro(409, f"há algo em andamento no projeto ({rodando}); use app.cancelar antes")
+    no_docker = (os.path.isfile(compose) or existe_no_docker("container", nome)
+                 or existe_no_docker("image", f"atena-lab/{projeto}:latest"))
+    apaga, fica = [], []
+    if no_docker:
+        if "docker" in partes:
+            apaga.append(f"tira do ar e apaga do Docker o container {nome} e a imagem atena-lab/{projeto}")
+        else:
+            fica.append("o app no Docker")
+    if existe_no_docker("volume", f"{nome}_dados"):
+        if "dados" in partes:
+            apaga.append(f"⚠ apaga os dados do app (volume {nome}_dados): NÃO TEM VOLTA")
+        else:
+            fica.append(f"os dados (volume {nome}_dados; publicar de novo volta com eles)")
+    if os.path.isdir(pasta):
+        if "codigo" in partes:
+            apaga.append(f"manda o código ({pasta}) para a lixeira; dá para restaurar por {DIAS_LIXEIRA} dias")
+        else:
+            fica.append(f"o código ({pasta})")
+    if not apaga:
+        raise Erro(404, f"não há nada para apagar em {projeto} com essas partes")
+    texto = "\n".join(f"• {a}" for a in apaga)
+    if fica:
+        texto += "\n\nFica: " + "; ".join(fica)
+    return f"apagar {projeto} ({', '.join(params['partes'])})", texto
+
+
+def acao_app_apagar(p):
+    projeto, nome, pasta, compose = projeto_lab({"zonas": p["zonas"]}, p["params"])
+    partes = p["params"]["partes"]
+    rodando = em_andamento().get(projeto)   # pode ter começado algo enquanto o pedido esperava o celular
+    if rodando:
+        raise Erro(409, f"começou algo no projeto enquanto o pedido esperava ({rodando}); nada foi apagado")
+    feito = []
+    if "docker" in partes:
+        if os.path.isfile(compose):
+            porta = porta_do_compose(compose)
+            codigo, texto = rodar(["docker", "compose", "-f", compose, "-p", nome, "down", "--rmi", "all",
+                                   "--remove-orphans"], 180)
+            if codigo != 0:
+                raise Erro(500, "não consegui tirar do Docker: " + texto.strip()[-500:])
+            if porta:
+                link_tailscale(porta, False)
+            shutil.rmtree(os.path.dirname(compose))
+            feito.append(f"container {nome} e imagem atena-lab/{projeto}")
+        elif existe_no_docker("image", f"atena-lab/{projeto}:latest"):
+            codigo, texto = rodar(["docker", "image", "rm", f"atena-lab/{projeto}:latest"], 60)
+            if codigo != 0:
+                raise Erro(500, "não consegui apagar a imagem: " + texto.strip()[-500:])
+            feito.append(f"imagem atena-lab/{projeto}")
+    if "dados" in partes and existe_no_docker("volume", f"{nome}_dados"):
+        codigo, texto = rodar(["docker", "volume", "rm", f"{nome}_dados"], 60)
+        if codigo != 0:
+            raise Erro(500, f"{'; '.join(feito) or 'nada'} saiu, mas os dados não: " + texto.strip()[-500:])
+        feito.append(f"dados (volume {nome}_dados)")
+    if "codigo" in partes and os.path.isdir(pasta):
+        carimbo = time.strftime("%Y%m%d-%H%M%S")
+        try:
+            os.rename(pasta, f"{LIXEIRA_LAB}/{projeto}.{carimbo}")
+        except OSError as e:
+            raise Erro(500, f"{'; '.join(feito) or 'nada'} saiu, mas o código não foi para a lixeira: {e}")
+        feito.append(f"código (na lixeira até {quando(carimbo, DIAS_LIXEIRA)}; app.restaurar traz de volta)")
+    log(evento="app apagado", projeto=projeto, partes=partes, feito=feito)
+    return {"apagado": feito or ["nada: já não existia"]}
+
+
+def acao_app_restaurar(cliente, params):
+    projeto, nome, pasta, compose = projeto_lab(cliente, params)
+    itens = lixeira(projeto)
+    if not itens:
+        raise Erro(404, f"{projeto} não está na lixeira")
+    if os.path.lexists(pasta):
+        raise Erro(409, f"já existe {pasta}; apague ou escolha outro nome antes de restaurar")
+    _, caminho, carimbo = itens[0]   # o mais novo, se foi apagado mais de uma vez
+    os.rename(caminho, pasta)
+    log(evento="projeto restaurado", projeto=projeto, de=caminho)
+    return {"restaurado": pasta, "apagado_em": quando(carimbo),
+            "dica": "app.publicar põe no ar de novo (com os dados, se eles ficaram)"}
+
+
+def acao_app_lista(cliente, params):
+    lab_no_ar(cliente)
+    estados = {c["container"]: c["status"] for c in containers()}
+    _, saida = rodar(["docker", "volume", "ls", "-q", "--filter", "name=lab-"])
+    com_dados = {m.group(1) for m in re.finditer(r"^lab-([a-z0-9-]+)_dados$", saida, re.M)}
+    portas = {os.path.basename(os.path.dirname(c))[4:]: porta_do_compose(c)
+              for c in glob.glob(f"{STACKS_LAB}/lab-*/compose.yaml")}
+    pastas = {os.path.basename(d) for d in glob.glob(f"{PROJETOS_LAB}/*") if os.path.isdir(d)}
+    andamento = em_andamento()
+    servidas = portas_no_tailscale() if tailscale_ligado() else set()
+    host = tailscale_host() if servidas else None
+    projetos = []
+    for projeto in sorted(pastas | set(portas) | com_dados):
+        porta = portas.get(projeto)
+        item = {"projeto": projeto,
+                "app": estados.get(f"lab-{projeto}", "parado") if projeto in portas else "não publicado",
+                "endereco": f"http://{ip_casa()}:{porta}" if porta else None,
+                "fora_de_casa": f"https://{host}:{porta}" if host and porta in servidas else None,
+                "codigo": projeto in pastas, "dados_guardados": projeto in com_dados}
+        if projeto in andamento:
+            item["em_andamento"] = andamento[projeto]
+        projetos.append(item)
+    return {"projetos": projetos,
+            "lixeira": [{"projeto": p, "apagado_em": quando(c), "some_de_vez_em": quando(c, DIAS_LIXEIRA)}
+                        for p, _, c in lixeira()]}
+
+
 # nome: (função, descrição, preparar). Sem preparar, a ação roda na hora: função(cliente, params).
 # Com preparar, vira um pedido: preparar(cliente, params) valida e descreve, e função(pedido) roda
 # depois da aprovação no celular (se o token do cliente exigir) ou na hora.
@@ -1657,6 +2554,37 @@ ACOES = {
     "pc.desligar":       (acao_pc_desligar, "desliga o PC em 60 s (pc.cancelar desiste)", None),
     "pc.reiniciar":      (acao_pc_reiniciar, "reinicia o PC em 60 s (pc.cancelar desiste)", None),
     "pc.cancelar":       (acao_pc_cancelar, "cancela um desligamento ou reinício do PC ainda na contagem", None),
+    # Claude Code e apps do lab (módulo lab, ./install.sh --lab): o Claude Code roda como atena-claude,
+    # sem sudo e sem Docker, com sandbox; no lab, desfazer é git.
+    "claude.tarefa":     (acao_claude_tarefa,
+                          "Claude Code trabalha sozinho numa pasta do lab (pedido, projeto, conta? = uma de "
+                          "claude.trabalhos, modelo? fable|opus|sonnet|haiku, esforco? low|medium|high|xhigh|max, "
+                          "minutos? 5-600, somente_plano?, continuar?, publicar? = publica quando terminar bem)",
+                          preparar_claude_tarefa),
+    "claude.trabalhos":  (acao_claude_trabalhos, "trabalhos do Claude Code (10 últimos), as contas e as que têm login", None),
+    "claude.perguntas":  (acao_claude_perguntas, "perguntas do Claude Code esperando resposta do dono", None),
+    "claude.responder":  (acao_claude_responder, "responde uma pergunta do Claude Code (pergunta, resposta, quem: dono|atena)", None),
+    "claude.cancelar":   (acao_claude_cancelar, "interrompe um trabalho do Claude Code (pedido)", None),
+    "app.publicar":      (acao_app_publicar, "publica um projeto do lab na rede de casa: constrói pelo Dockerfile "
+                          "e roda na zona lab (projeto, porta? 8000-8999)", preparar_app_publicar),
+    "app.parar":         (acao_app_parar, "tira do ar um app publicado do lab; dados e imagem ficam (projeto)", None),
+    "app.reiniciar":     (acao_app_reiniciar, "reinicia um app do lab; se estava parado, sobe de novo com a imagem "
+                          "que já existe (projeto)", None),
+    "app.cancelar":      (acao_app_cancelar, "para tudo o que está em andamento num projeto do lab: trabalho do "
+                          "Claude Code, construção e pedidos esperando o celular (projeto)", None),
+    "app.apagar":        (acao_app_apagar, "apaga partes de um projeto do lab (projeto, partes: docker = container "
+                          "e imagem; dados = volume, sem volta; codigo = pasta vai para a lixeira por 30 dias)",
+                          preparar_app_apagar),
+    "app.restaurar":     (acao_app_restaurar, "traz da lixeira o código de um projeto apagado (projeto)", None),
+    "app.comando":       (acao_app_comando, "roda um comando dentro de um app do lab no ar (projeto, comando = "
+                          "texto para sh -c ou lista, segundos? 1-120)", None),
+    "app.lista":         (acao_app_lista, "projetos do lab: app no ar, endereço, código, dados guardados, o que "
+                          "está em andamento e a lixeira", None),
+}
+
+# Ações que só o próprio executor cria (ninguém pede por POST /acao).
+INTERNAS = {
+    "claude.permissao": acao_claude_permissao,
 }
 
 
@@ -1788,10 +2716,11 @@ class Servidor(socketserver.ThreadingMixIn, socketserver.UnixStreamServer):
 
 
 def pedidos_interrompidos():
-    """stack.aplicar roda numa thread do executor: se ele reiniciou no meio, o pedido não volta sozinho."""
+    """stack.aplicar e app.publicar rodam numa thread do executor: se ele reiniciou no meio, o pedido
+    não volta sozinho. (O Claude Code roda no runner e continua: o resultado chega depois.)"""
     with TRAVA:
         for p in ESTADO["pedidos"].values():
-            if p["acao"] == "stack.aplicar" and p["estado"] == "executando":
+            if p["acao"] in ("stack.aplicar", "app.publicar") and p["estado"] == "executando":
                 p.update(estado="falhou", erro="o executor reiniciou no meio; confira com status.servicos e "
                                                 "aplique de novo se precisar", atualizado=time.time())
         salvar_estado()
