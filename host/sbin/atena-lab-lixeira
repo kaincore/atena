@@ -1,0 +1,21 @@
+#!/bin/bash
+# Atena: esvazia a lixeira do lab. O executor (app.apagar) só move o código de um projeto para
+# /srv/lab/lixeira/<projeto>.AAAAMMDD-HHMMSS; passados 30 dias dessa data, este script apaga de vez.
+# Roda como root (atena-lab-lixeira.timer), porque os arquivos são de quem os criou no lab.
+set -euo pipefail
+
+LIXEIRA=${ATENA_LIXEIRA:-/srv/lab/lixeira}   # trocar a pasta é só para os testes
+DIAS=30
+limite=$(( $(date +%s) - DIAS * 86400 ))
+
+shopt -s nullglob
+for pasta in "$LIXEIRA"/*; do
+  nome=${pasta##*/}
+  [[ $nome =~ ^[a-z0-9][a-z0-9-]{0,39}\.([0-9]{8})-([0-9]{2})([0-9]{2})([0-9]{2})$ ]] || continue
+  if [ ! -d "$pasta" ] || [ -L "$pasta" ]; then continue; fi   # atalho não é seguido nem apagado
+  quando=$(date -d "${BASH_REMATCH[1]} ${BASH_REMATCH[2]}:${BASH_REMATCH[3]}:${BASH_REMATCH[4]}" +%s) || continue
+  if [ "$quando" -lt "$limite" ]; then
+    rm -rf --one-file-system -- "$pasta"
+    echo "apagado de vez: $nome"
+  fi
+done

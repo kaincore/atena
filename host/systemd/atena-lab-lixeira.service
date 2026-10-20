@@ -1,0 +1,11 @@
+[Unit]
+Description=Atena: esvazia a lixeira do lab (projetos apagados há mais de 30 dias)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/atena-lab-lixeira
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes
+ReadWritePaths=/srv/lab/lixeira

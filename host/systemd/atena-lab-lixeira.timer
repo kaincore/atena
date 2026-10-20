@@ -1,0 +1,9 @@
+[Unit]
+Description=Atena: esvazia a lixeira do lab todo dia
+
+[Timer]
+OnCalendar=*-*-* 04:30
+Persistent=true
+
+[Install]
+WantedBy=timers.target
