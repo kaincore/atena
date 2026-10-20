@@ -1346,11 +1346,9 @@ def donos_no_docker(tipo):
     return dict(linha.split("\t", 1) for linha in saida.splitlines() if "\t" in linha) if codigo == 0 else {}
 
 
-def compose_da_stack(pasta, projeto):
-    """O compose como o Docker vai usar: includes, extends e overrides já juntos, caminhos absolutos.
-    --no-env-resolution: sem ela, o env_file vira environment e o caminho dele some da conferência."""
+def config_json(pasta, projeto, extra=()):
     try:
-        r = subprocess.run(["docker", "compose", "-p", projeto, "config", "--format", "json", "--no-env-resolution"],
+        r = subprocess.run(["docker", "compose", "-p", projeto, "config", "--format", "json", *extra],
                            cwd=pasta, capture_output=True, text=True, timeout=60)
     except subprocess.TimeoutExpired:
         return None, "docker compose config passou do tempo"
@@ -1360,6 +1358,26 @@ def compose_da_stack(pasta, projeto):
         return json.loads(r.stdout), None
     except ValueError:
         return None, "docker compose config não devolveu JSON"
+
+
+def compose_da_stack(pasta, projeto):
+    """O compose como o Docker vai usar: includes, extends e overrides já juntos, caminhos absolutos.
+    O env_file e o label_file vêm de uma segunda leitura, com --no-interpolate: na leitura normal, o
+    Compose junta o conteúdo deles no environment e nos labels, e o caminho some (no 2.x, até com
+    --no-env-resolution). As portas e as pastas ficam da leitura normal, já com as variáveis trocadas."""
+    cfg, erro = config_json(pasta, projeto)
+    if cfg is None:
+        return None, erro
+    cru, erro = config_json(pasta, projeto, ["--no-interpolate"])
+    if cru is None:
+        return None, erro
+    for nome, s in (cfg.get("services") or {}).items():
+        c = (cru.get("services") or {}).get(nome) or {}
+        for chave in ("env_file", "label_file"):
+            s.pop(chave, None)
+            if c.get(chave):
+                s[chave] = c[chave]
+    return cfg, None
 
 
 def problemas_compose(cfg, zona, stack, pasta, projeto):
