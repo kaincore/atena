@@ -1,0 +1,7 @@
+[user]
+	name = Claude Code (Atena)
+	email = claude-code@atena.local
+[init]
+	defaultBranch = main
+[safe]
+	directory = /srv/lab/projetos/*
