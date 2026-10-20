@@ -42,7 +42,7 @@ jobs:
           done
 
   testes:
-    name: testes (executor e Hermes)
+    name: testes (executor, Hermes e lab)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -50,12 +50,13 @@ jobs:
         run: sudo apt-get install -y -qq python3-yaml && sudo mkdir -p /srv
       - name: os scripts Python compilam
         run: |
-          for f in host/sbin/atena-executor host/sbin/atena-telegram hermes/scripts/ronda.py; do
+          for f in host/sbin/atena-executor host/sbin/atena-telegram host/sbin/atena-claude-runner \
+                   host/lab/dono.py host/lab/guarda_escopo.py hermes/scripts/ronda.py; do
             python3 -c 'import ast, sys; ast.parse(open(sys.argv[1]).read(), sys.argv[1])' "$f"
           done
       - name: testes
         run: |
-          for t in tests/executor/teste_*.py tests/hermes/teste_*.py; do
+          for t in tests/executor/teste_*.py tests/hermes/teste_*.py tests/lab/teste_*.py; do
             echo "== $t"
             (cd "$(dirname "$t")" && /usr/bin/python3 "$(basename "$t")")
           done
