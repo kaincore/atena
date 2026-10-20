@@ -1,0 +1,31 @@
+# Painel Atena: o servidor no navegador do PC e do celular (PWA), só pelo Tailscale.
+# Sem rede nenhuma: o tailscale serve entrega as visitas pelo socket em /srv/core/painel/run, e as
+# ações vão para o executor pelo socket dele (lista fechada). Sem socket do Docker, sem root.
+# Senha: sudo atena-painel-senha. Dados (banco, hash da senha, token do executor): /srv/core/painel.
+services:
+  painel:
+    build: ./app
+    image: atena/painel:0.1.0
+    container_name: painel
+    cgroup_parent: atena-core.slice
+    restart: unless-stopped
+    user: "${PAINEL_UID}:${PAINEL_GID}"   # usuário atena-painel do servidor
+    group_add: ["${ACOES_GID}"]           # grupo atena-acoes: dá acesso ao socket do executor
+    network_mode: none
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 256m
+    pids_limit: 64
+    environment:
+      TZ: {{ATENA_TZ}}
+    volumes:
+      - /srv/core/painel:/dados
+      # a pasta, e não o arquivo: o socket é recriado sempre que o executor reinicia
+      - /run/atena-executor:/run/atena-executor
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get({socketPath:'/dados/run/painel.sock',path:'/saude'},r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]
+      interval: 1m
+      timeout: 5s
+      start_period: 10s
