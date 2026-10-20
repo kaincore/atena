@@ -5,7 +5,7 @@
 services:
   painel:
     build: ./app
-    image: atena/painel:0.1.0
+    image: atena/painel:0.2.0
     container_name: painel
     cgroup_parent: atena-core.slice
     restart: unless-stopped
