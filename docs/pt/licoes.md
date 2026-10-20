@@ -132,6 +132,20 @@ O aviso de "limite atingido" da conta anterior continuava no registro; se a roda
 
 **Para continuar uma conversa em outra conta, copie a sessão.** O `--resume` procura a conversa na pasta da conta (`projects/*/<sessão>.jsonl`); o runner copia o arquivo, e a pasta de subagentes, antes de continuar.
 
+## Painel
+
+**O `tailscale serve` entrega num socket unix** (`unix:/caminho/do.sock`). Assim o container do painel fica sem rede nenhuma (`network_mode: none`), e ainda assim tem HTTPS fora de casa. O ufw continua precisando liberar a porta na `tailscale0`.
+
+**O Node do Ubuntu 26.04 não roda TypeScript direto.** A partir do 22.18, o Node oficial roda `.ts` sem compilar e traz o `node:sqlite`, o que deixou o painel sem nenhum pacote do npm. O pacote `nodejs` do Ubuntu (22.22) responde `ERR_UNKNOWN_FILE_EXTENSION`: use a imagem oficial do Node.
+
+**No Node 22, `node --test pasta/` não funciona.** Ele tenta abrir a pasta como arquivo. Passe o padrão: `node --test 'test/*.test.ts'`.
+
+**O atributo `hidden` perde para o `display` de uma classe.** A tela de senha aparecia embaixo do painel, porque `.entrada { display: grid }` vencia o `hidden`. Resolve com `[hidden] { display: none !important; }`.
+
+**Uma CSP sem `'unsafe-inline'` bloqueia o atributo `style`.** A largura das barras tem de ir pelo `elemento.style.width`, que a CSP permite.
+
+**`grep` sem resultado num pipeline com `pipefail` encerra o script calado.** O verificador de vazamentos travava todo commit quando um `.env` do servidor só tinha valores curtos. Um `{ grep ... || true; }` resolve.
+
 ## Aplicativos
 
 **Envio de arquivos com Express (`express-fileupload`):**
