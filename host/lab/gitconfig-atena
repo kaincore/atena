@@ -1,0 +1,8 @@
+[user]
+	name = Atena
+	email = atena@atena.local
+[init]
+	defaultBranch = main
+[safe]
+	# os projetos do lab são do atena-claude (Claude Code); sem isso o git recusa
+	directory = /srv/lab/projetos/*
