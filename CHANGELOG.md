@@ -8,6 +8,7 @@ A central de aprovações e a atividade do executor no painel (painel 0.2.0).
 - **Atividade:** o registro do executor no painel, do mais novo ao mais velho (cada pedido de cada cliente, as decisões e os erros), com filtro por cliente e só os erros. Parâmetros longos saem cortados e sem segredos.
 - **Executor:** ações `aprovacoes.lista`, `aprovacoes.decidir` e `atividade.lista`. O pedido guarda o texto que foi ao celular. Nenhum cliente decide os próprios pedidos, e cada um só enxerga pedidos de clientes dentro das zonas dele. Só o token do painel recebe essas ações; o da Atena não muda.
 - O instalador refaz o token do painel com as 19 ações e guarda o compose anterior.
+- A habilidade da Atena (servidor-atena 1.3.0) sabe que o dono também decide pelo painel, e que essas ações são só dele.
 - Testado numa VM Ubuntu 26.04 sem GPU, atualizando uma 0.5.0 com o painel: o token foi refeito com as 19 ações, o painel 0.2.0 subiu saudável e, com o executor e o ntfy de verdade, um cliente de teste pediu para reiniciar o Dockge, o painel viu o pedido com o texto do celular, aprovou (o Dockge reiniciou), recusou o seguinte e mostrou as duas decisões na atividade. Rodar o instalador de novo manteve o token.
 
 ## 0.5.0 (2026-10-20)
