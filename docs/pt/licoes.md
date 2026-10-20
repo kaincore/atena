@@ -67,8 +67,8 @@ Depois de editar um arquivo montado sozinho (como o `config.yaml`), use `docker 
 
 **A primeira pessoa que abre o Dockge, o Beszel ou o Open WebUI vira administradora.** Crie as contas logo depois de subir.
 
-**`docker compose config` junta o `env_file` no `environment`.**
-Para conferir de onde vêm as variáveis (e barrar um `.env` de outra stack), use `--no-env-resolution`: sem ela, o caminho do arquivo some do resultado.
+**`docker compose config` junta o `env_file` no `environment`, e o caminho some.**
+Para conferir de onde vêm as variáveis (e barrar um `.env` de outra stack), leia o compose uma segunda vez com `--no-interpolate`: é a única forma que mostra o caminho em todas as versões. O `--no-env-resolution` só funciona no Compose v5; no 2.x o caminho some mesmo com ele, e a regra deixava passar o `.env` de outra stack. Quem achou foi o CI do GitHub, que roda um Compose 2.x.
 
 ## Executor, ntfy e Hermes
 

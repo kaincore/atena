@@ -67,8 +67,8 @@ After editing a file mounted on its own (such as `config.yaml`), use `docker com
 
 **The first person to open Dockge, Beszel or Open WebUI becomes the admin.** Create the accounts right after starting them.
 
-**`docker compose config` merges `env_file` into `environment`.**
-To check where variables come from (and block an `.env` from another stack), use `--no-env-resolution`: without it, the file path disappears from the output.
+**`docker compose config` merges `env_file` into `environment`, and the path disappears.**
+To check where variables come from (and block an `.env` from another stack), read the compose a second time with `--no-interpolate`: it's the only way that shows the path on every version. `--no-env-resolution` only works on Compose v5; on 2.x the path disappears even with it, and the rule let another stack's `.env` through. GitHub's CI, which runs a Compose 2.x, caught it.
 
 ## Executor, ntfy and Hermes
 
