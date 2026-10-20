@@ -1,6 +1,6 @@
 # Mudanças
 
-## 0.4.0 (ainda não publicada)
+## 0.4.0 (2026-10-20)
 
 O lab: a Atena manda trabalhos de programação ao Claude Code. Extraído do primeiro servidor Atena.
 
