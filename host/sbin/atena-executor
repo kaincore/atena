@@ -490,6 +490,8 @@ OCULTAR = [
                 r"tskey-[\w-]{10,}|\d{8,10}:[\w-]{35}|eyJ[\w-]{10,}\.[\w-]{10,}\.[\w-]{10,})"), "***"),
     (re.compile(r"(?i)\b(bearer\s+)[\w.~+/-]{8,}=*"), r"\1***"),
 ]
+# o começo de um bloco PEM de verdade (só "PRIVATE KEY-----" pegava o próprio código do executor)
+CHAVE_PRIVADA = re.compile(r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----")
 
 
 def ocultar(texto):
@@ -524,7 +526,7 @@ def ler_texto(real, limite):
     if b"\0" in bruto[:8192]:
         return None, False
     texto = bruto[:limite].decode("utf-8", errors="replace")
-    if "PRIVATE KEY-----" in texto:
+    if CHAVE_PRIVADA.search(texto):
         raise Erro(403, "esse arquivo guarda uma chave privada e não sai do servidor")
     return ocultar(texto), len(bruto) > limite
 

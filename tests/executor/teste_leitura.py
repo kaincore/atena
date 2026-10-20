@@ -27,6 +27,7 @@ arquivos = {
     "app/keys/qualquer.txt": "x",
     "app/sub/disfarce.txt": CHAVE_PRIVADA,
     "app/sub/leia.md": "procure a palavra GIRASSOL aqui\n",
+    "app/sub/codigo.py": 'if "PRIVATE KEY-----" in texto:\n    pass\n',
     "app/id_ed25519": "x",
     "app/id_ed25519.pub": "ssh-ed25519 AAAA publico\n",
     "home/.config/atena/padroes.txt": "x",
@@ -50,6 +51,7 @@ for nome in ("app/.env", "app/.env.producao", "app/servidor.key", "app/tokens.js
 confere("chave pública passa", "publico" in le(f"{d}/app/id_ed25519.pub")["texto"])
 confere("atalho para um segredo: vale o caminho real (403)", erro(le, f"{d}/app/atalho.txt")[0] == 403)
 confere("arquivo com chave privada dentro: 403", erro(le, f"{d}/app/sub/disfarce.txt")[0] == 403)
+confere("código que só cita o fim do bloco PEM pode ser lido", "PRIVATE KEY" in le(f"{d}/app/sub/codigo.py")["texto"])
 for area in ("/proc/self/environ", "/run/atena-executor", "/etc/atena/executor/tokens.json", "/var/lib/docker"):
     confere(f"área do sistema: {area}", erro(le, area)[0] == 403)
 confere("caminho relativo: 400", erro(le, "app/config.yaml")[0] == 400)
