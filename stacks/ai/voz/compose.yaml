@@ -1,0 +1,23 @@
+# Voz da Atena (Speaches/Kokoro): texto -> fala, API compatível com a OpenAI. O LiteLLM chama como modelo "voz".
+# Separado do Whisper para ter o próprio tempo de descarga: a voz só ocupa a GPU enquanto fala,
+# e o Whisper continua carregado por 10 min (ouvir rápido). Uma falha aqui não derruba a transcrição.
+# Modelo (uma vez, ~330 MB): curl -X POST http://127.0.0.1:8003/v1/models/speaches-ai/Kokoro-82M-v1.0-ONNX
+services:
+  voz:
+    image: ghcr.io/speaches-ai/speaches:0.8.3-cuda-12.6.3   # a mesma imagem do Whisper (CUDA 12: roda nas Pascal)
+    container_name: voz
+    cgroup_parent: atena-ai.slice
+    restart: unless-stopped
+    gpus: all
+    environment:
+      WHISPER__TTL: "60"              # no Speaches 0.8.3 a voz usa o TTL do Whisper: sai da GPU 60 s depois de falar
+      ENABLE_UI: "false"
+    volumes:
+      - /srv/ai/models/huggingface:/home/ubuntu/.cache/huggingface/hub   # a mesma pasta de modelos do Whisper
+    networks: [zone]
+    ports: ["127.0.0.1:8003:8000"]    # sempre com 127.0.0.1 explícito
+
+networks:
+  zone:
+    name: zone-ai
+    external: true

@@ -13,6 +13,7 @@ services:
       STORE_MODEL_IN_DB: "False"
     volumes:
       - ./config.yaml:/app/config.yaml:ro
+      - ./ganchos.py:/app/ganchos.py:ro   # voz: troca opus por mp3 (o Speaches não gera opus)
     networks: [zone, llm, backend]
     ports:
       - "{{ATENA_LAN_IP}}:4000:4000"   # rede de casa (exige chave para usar)

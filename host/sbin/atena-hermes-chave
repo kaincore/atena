@@ -19,13 +19,13 @@ api() {   # api <rota> <json>: a chave mestra vai pela entrada do curl, não pel
     | curl -fsS -m 20 -K - -H 'Content-Type: application/json' -d "$2" "http://127.0.0.1:4000$1"
 }
 api /key/delete '{"key_aliases": ["hermes"]}' >/dev/null 2>&1 || true   # sem chave antiga: tudo bem
-RESPOSTA=$(api /key/generate "{\"key_alias\": \"hermes\", \"models\": [\"haiku\", \"sonnet\", \"opus\", \"local\", \"whisper\"],
+RESPOSTA=$(api /key/generate "{\"key_alias\": \"hermes\", \"models\": [\"haiku\", \"sonnet\", \"opus\", \"local\", \"whisper\", \"voz\"],
   \"max_budget\": $TETO, \"budget_duration\": \"1mo\"}") || { echo "O LiteLLM recusou criar a chave."; exit 1; }
 MASTER=
 KEY=$(printf %s "$RESPOSTA" | python3 -c 'import json, sys; print(json.load(sys.stdin)["key"])')
 RESPOSTA=
 
-# a mesma chave serve para conversar e para transcrever a voz (Whisper pelo LiteLLM)
+# a mesma chave serve para conversar, transcrever a voz (Whisper) e falar (voz), tudo pelo LiteLLM
 TMP=$(mktemp "$H.XXXXXX")
 grep -v -e '^ATENA_LITELLM_KEY=' -e '^VOICE_TOOLS_OPENAI_KEY=' "$H" > "$TMP" || true
 printf 'ATENA_LITELLM_KEY=%s\nVOICE_TOOLS_OPENAI_KEY=%s\n' "$KEY" "$KEY" >> "$TMP"

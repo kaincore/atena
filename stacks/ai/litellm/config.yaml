@@ -78,8 +78,23 @@ model_list:
       input_cost_per_second: 0
       output_cost_per_second: 0
 
+  # Voz da Atena (Kokoro no container voz, na GPU): texto -> fala, local e grátis. Voz pt-BR: pf_dora.
+  # A versão completa (fp32): a int8 cai para a CPU nas GPUs Pascal e fica ~5x mais lenta.
+  - model_name: voz
+    litellm_params:
+      model: openai/speaches-ai/Kokoro-82M-v1.0-ONNX
+      api_base: http://voz:8000/v1
+      api_key: sem-chave            # o Speaches não confere, mas o campo é obrigatório
+      timeout: 10                   # um pedaço de 150 letras leva até ~2,5 s; travou (GPU sem memória)? desiste logo
+      num_retries: 0                # repetir não adianta: sem memória na GPU, falha de novo
+    model_info:
+      id: dep-voz
+      mode: audio_speech
+      input_cost_per_character: 0
+      output_cost_per_second: 0
 
 litellm_settings:
+  callbacks: ganchos.voz   # ganchos.py: formato da voz para o Speaches
   drop_params: true
   num_retries: 2
   request_timeout: 600
