@@ -108,7 +108,7 @@ Opcional (`./install.sh --painel`). O servidor no navegador do PC e do celular, 
 
 ```text
 Celular ou PC (Tailscale) ──HTTPS :3100──> tailscale serve ──socket──> painel (zona core, sem rede)
-painel ──socket──> executor (token próprio: 16 ações, nenhuma que apague ou edite)
+painel ──socket──> executor (token próprio: 19 ações, nenhuma que apague ou edite)
 ```
 
 - **Sem rede.** O container tem `network_mode: none`: não alcança a internet, a rede de casa nem outros containers, e nada alcança ele pela rede. As visitas chegam pelo `tailscale serve`, que entrega no socket `/srv/core/painel/run/painel.sock`, e os pedidos vão ao executor pelo socket dele.
@@ -116,6 +116,8 @@ painel ──socket──> executor (token próprio: 16 ações, nenhuma que apa
 - **Uma conta, com senha.** O hash (scrypt) fica em `/srv/core/painel/senha`, gravado pelo `atena-painel-senha`. A sessão dura 30 dias e renova a cada uso; trocar a senha desconecta todos os aparelhos.
 - **Duas listas fechadas.** O painel só pede as ações dele, e o token dele no executor só aceita essas, nas zonas core, apps, ai, agents e lab: consultas, logs, gasto, reiniciar serviço, ligar e desligar o PC, reiniciar e parar apps do lab. Nada de apagar, editar stacks, Claude Code ou ler arquivos.
 - **Confirmação na tela.** Reiniciar, desligar e parar pedem confirmação no próprio painel; por isso o token dele não pede o celular.
+- **Central de aprovações.** O que a Atena e o Claude Code pedem e espera por você aparece no painel com o texto que foi ao celular: Aprovar, Recusar ou responder a pergunta. Vale o mesmo que o toque no celular, os dois continuam funcionando, e quem decidir primeiro decide. O painel nunca decide um pedido dele mesmo.
+- **Atividade.** O registro do executor (cada pedido de cada cliente, cada decisão e os eventos), com filtro por cliente e só os erros.
 - **Sem dependências.** Node 22, que já roda TypeScript e traz o SQLite: nenhum pacote do npm. O código fica na stack (`stacks/core/painel/app`), e o instalador atualiza a cada execução.
 - **Dados.** Banco SQLite em `/srv/core/painel/painel.db`: as sessões (só o hash do token), as tentativas de entrada e o histórico de 90 dias das ações que mudam algo.
 
