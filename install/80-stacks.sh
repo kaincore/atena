@@ -10,6 +10,8 @@ for compose in "$RAIZ"/stacks/*/*/compose.yaml; do
   zona=$(basename "$(dirname "$origem")")
   nome=$(basename "$origem")
   destino=/opt/atena/stacks/$zona/$nome
+  # o painel tem etapa própria (85, com --painel), que também atualiza o código dele
+  [ "$zona/$nome" = core/painel ] && continue
   if [ -e "$destino/compose.yaml" ]; then
     ok "$zona/$nome já existe, mantida como está"
     continue
