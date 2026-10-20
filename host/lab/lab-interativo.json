@@ -1,0 +1,84 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "ask": [
+      "Bash(sudo *)",
+      "Bash(systemctl *)",
+      "Bash(docker *)",
+      "Bash(rm -rf *)",
+      "Bash(git push *)",
+      "WebFetch"
+    ],
+    "deny": [
+      "Read(~/.ssh/**)",
+      "Read(~/.claude/.credentials.json)",
+      "Read(//srv/agents/**)",
+      "Read(//etc/atena/**)",
+      "Read(//var/lib/atena-claude/**)",
+      "Read(//**/.env)",
+      "Read(//**/*.key)",
+      "Read(//**/*.token)"
+    ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": true,
+    "filesystem": {
+      "denyRead": [
+        "~/.ssh",
+        "~/.claude/.credentials.json",
+        "/var/lib/atena-claude",
+        "/srv/agents",
+        "/srv/ai",
+        "/srv/apps",
+        "/srv/core",
+        "/srv/prod",
+        "/opt/atena/stacks",
+        "/etc/atena",
+        "/run/docker.sock",
+        "/run/containerd",
+        "/var/snap/lxd/common/lxd/unix.socket",
+        "/run/snapd.socket",
+        "/run/snapd-snap.socket",
+        "/run/atena-executor",
+        "/run/dbus",
+        "/run/user",
+        "/run/tailscale",
+        "/run/ssh-unix-local",
+        "/run/polkit",
+        "/run/systemd/io.systemd.Manager",
+        "/run/systemd/io.systemd.Login",
+        "/run/systemd/io.systemd.FactoryReset",
+        "/run/systemd/io.systemd.AskPassword"
+      ]
+    },
+    "network": {
+      "allowAllUnixSockets": true,
+      "allowedDomains": [
+        "registry.npmjs.org",
+        "pypi.org",
+        "files.pythonhosted.org",
+        "github.com",
+        "api.github.com",
+        "codeload.github.com",
+        "objects.githubusercontent.com",
+        "raw.githubusercontent.com"
+      ]
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 /srv/lab/.claude/hooks/guarda_escopo.py"
+          }
+        ]
+      }
+    ]
+  }
+}

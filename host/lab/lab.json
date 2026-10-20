@@ -1,0 +1,86 @@
+{
+  "disableAllHooks": true,
+  "permissions": {
+    "allow": [
+      "Bash",
+      "mcp__dono__perguntar"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "WebFetch"
+    ],
+    "deny": [
+      "Read(//var/lib/atena-claude/contas/**)",
+      "Read(//var/lib/atena-claude/fila/**)",
+      "Read(//var/lib/atena-claude/registros/**)",
+      "Read(//home/**)",
+      "Read(//srv/agents/**)",
+      "Read(//etc/atena/**)",
+      "Read(//**/.env)",
+      "Read(//**/*.key)",
+      "Read(//**/*.token)",
+      "Edit(//var/lib/atena-claude/**)"
+    ]
+  },
+  "disableSkillShellExecution": true,
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "autoAllowBashIfSandboxed": true,
+    "allowUnsandboxedCommands": false,
+    "filesystem": {
+      "allowWrite": [
+        "/var/lib/atena-claude/.npm",
+        "/var/lib/atena-claude/.cache"
+      ],
+      "denyRead": [
+        "/var/lib/atena-claude/fila",
+        "/var/lib/atena-claude/registros",
+        "/var/lib/atena-claude/resultados",
+        "/run/docker.sock",
+        "/run/containerd",
+        "/var/snap/lxd/common/lxd/unix.socket",
+        "/run/snapd.socket",
+        "/run/snapd-snap.socket",
+        "/run/atena-executor",
+        "/run/dbus",
+        "/run/user",
+        "/run/tailscale",
+        "/run/ssh-unix-local",
+        "/run/polkit",
+        "/run/systemd/io.systemd.Manager",
+        "/run/systemd/io.systemd.Login",
+        "/run/systemd/io.systemd.FactoryReset",
+        "/run/systemd/io.systemd.AskPassword",
+        "/home",
+        "/srv/agents",
+        "/srv/ai",
+        "/srv/apps",
+        "/srv/core",
+        "/srv/prod",
+        "/opt/atena/stacks",
+        "/etc/atena"
+      ]
+    },
+    "network": {
+      "allowAllUnixSockets": true,
+      "allowedDomains": [
+        "registry.npmjs.org",
+        "registry.yarnpkg.com",
+        "nodejs.org",
+        "pypi.org",
+        "files.pythonhosted.org",
+        "github.com",
+        "api.github.com",
+        "codeload.github.com",
+        "objects.githubusercontent.com",
+        "raw.githubusercontent.com",
+        "crates.io",
+        "index.crates.io",
+        "static.crates.io",
+        "proxy.golang.org",
+        "sum.golang.org"
+      ]
+    }
+  }
+}
