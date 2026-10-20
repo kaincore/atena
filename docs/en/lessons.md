@@ -127,6 +127,9 @@ The previous account's "limit reached" notice was still in the log; if the new r
 
 **Moving to the trash is a rename.** With separate `ReadWritePaths` for the projects and the trash, systemd mounts them apart and the rename fails (`EXDEV`). A single `ReadWritePaths=/srv/lab` fixes it.
 
+**On Ubuntu 26.04, `/usr/bin/test` (uutils) ignores ACLs.**
+`sudo -u atena-claude test -w file` said a file granted through an ACL wasn't writable, and it was. Bash's built-in `test` and Python's `os.access` get it right. Found in the 0.4 VM test.
+
 **To continue a conversation on another account, copy the session.** `--resume` looks for the conversation in the account's folder (`projects/*/<session>.jsonl`); the runner copies the file, and the subagents folder, before continuing.
 
 ## Apps

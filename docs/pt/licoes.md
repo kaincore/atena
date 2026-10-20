@@ -127,6 +127,9 @@ O aviso de "limite atingido" da conta anterior continuava no registro; se a roda
 
 **Mover para a lixeira é um rename.** Com `ReadWritePaths` separados para os projetos e para a lixeira, o systemd monta os dois à parte e o rename falha (`EXDEV`). Um `ReadWritePaths=/srv/lab` só resolve.
 
+**No Ubuntu 26.04, o `/usr/bin/test` (uutils) ignora ACL.**
+`sudo -u atena-claude test -w arquivo` disse que não dava para escrever num arquivo liberado por ACL, e dava. O `test` embutido do bash e o `os.access` do Python acertam. Achado no teste em VM da 0.4.
+
 **Para continuar uma conversa em outra conta, copie a sessão.** O `--resume` procura a conversa na pasta da conta (`projects/*/<sessão>.jsonl`); o runner copia o arquivo, e a pasta de subagentes, antes de continuar.
 
 ## Aplicativos

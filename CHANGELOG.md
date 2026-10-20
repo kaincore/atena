@@ -13,6 +13,7 @@ O lab: a Atena manda trabalhos de programação ao Claude Code. Extraído do pri
 - **Travas para quem escreve nos projetos:** o Claude Code só lê a configuração da conta e o `lab.json`, sem hooks do projeto, e o git do runner ignora fsmonitor e hooks; um `.git/config` que rode comandos faz o trabalho ser recusado.
 - Correção que veio junto: depois de trocar de conta, o aviso de limite da rodada anterior não vale mais para a nova.
 - Ainda não: as skills do Claude Code e os prints de tela (próxima versão).
+- Testado numa VM Ubuntu 26.04 sem GPU, instalando o lab sobre uma 0.3.1 com a Atena: o Claude Code (de mentira, com a ponte e a fila de verdade) fez um app e perguntou pela ponte; a Atena respondeu; o app foi publicado com o Aprovar pelo ntfy, respondeu na rede de casa, foi parado, apagado (código para a lixeira) e restaurado; a Atena fez commit no projeto pelo terminal dela; e o instalador rodou de novo sem refazer o token nem mexer nas permissões. O teste achou dois defeitos, já corrigidos: o arquivo de configuração do git da Atena tinha ficado fora do repositório, e o needrestart reiniciava serviços durante a instalação.
 
 ## 0.3.1 (2026-10-20)
 
