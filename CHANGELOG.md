@@ -1,5 +1,17 @@
 # Mudanças
 
+## 0.3.0 (ainda não publicada)
+
+Voz, temperaturas, o Arca e as stacks de apps nas mãos da Atena, extraídos do primeiro servidor Atena.
+
+- **Temperaturas e ventoinhas**: `sistema.sensores` (CPU AMD ou Intel, NVMe, GPU e o chip da placa) e as temperaturas no `status.recursos`. A ronda avisa CPU acima de 85 °C e NVMe acima de 70 °C. O chip da placa, que lê as ventoinhas, vem de um módulo opcional (`ATENA_SENSORES_MODULO`).
+- **Arca pela Atena**: `arca.lista`, `arca.pegar` e `arca.guardar`, pelo nome original e no formato do próprio Arca (texto com segredos ocultos).
+- **Stacks de apps pela Atena**: `stack.editar` (com foto antes de cada mudança), `stack.desfazer`, `stack.fotos` e `stack.aplicar`, que sobe a stack em segundo plano. O compose inteiro precisa caber nas regras da zona `apps`.
+- **Voz** (opcional, com GPU: `ATENA_VOZ=sim`): stack `ai/voz` com o Kokoro, modelo `voz` no LiteLLM (custo zero) e respostas em voz no Telegram com `/voice`.
+- O Ollama sai da GPU depois de 2 minutos sem uso, para caber com o Whisper e a voz numa placa de 6 GB.
+- O executor reconhece chave privada pelo cabeçalho do bloco PEM (antes recusava até o próprio código) e aceita pedidos de até 1 MB.
+- Numa atualização, o token da Atena ganha as ações novas, com as mesmas zonas e a mesma regra de aprovação. Os passos que são seus (LiteLLM, chave da Atena e Ollama) estão em [operação](docs/pt/operacao.md#atualizar-da-02-para-a-03).
+
 ## 0.2.0 (2026-10-19)
 
 O executor de ações e a Atena (Hermes), extraídos do primeiro servidor Atena.
