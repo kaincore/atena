@@ -1,5 +1,15 @@
 # Mudanças
 
+## 0.6.0 (2026-10-20)
+
+A central de aprovações e a atividade do executor no painel (painel 0.2.0).
+
+- **Aprovações no painel:** o que a Atena e o Claude Code pedem e espera por você (pedidos de aprovação, permissões e perguntas do Claude Code) aparece com o mesmo texto que foi ao celular, quem pediu e quando vence. Aprovar, Recusar ou responder a pergunta (por opção ou texto livre) vale o mesmo que o toque no celular, que continua funcionando. Quem decidir primeiro decide. A aba mostra quantos esperam, e a lista dos decididos há pouco mostra quem decidiu.
+- **Atividade:** o registro do executor no painel, do mais novo ao mais velho (cada pedido de cada cliente, as decisões e os erros), com filtro por cliente e só os erros. Parâmetros longos saem cortados e sem segredos.
+- **Executor:** ações `aprovacoes.lista`, `aprovacoes.decidir` e `atividade.lista`. O pedido guarda o texto que foi ao celular. Nenhum cliente decide os próprios pedidos, e cada um só enxerga pedidos de clientes dentro das zonas dele. Só o token do painel recebe essas ações; o da Atena não muda.
+- O instalador refaz o token do painel com as 19 ações e guarda o compose anterior.
+- Testado numa VM Ubuntu 26.04 sem GPU, atualizando uma 0.5.0 com o painel: o token foi refeito com as 19 ações, o painel 0.2.0 subiu saudável e, com o executor e o ntfy de verdade, um cliente de teste pediu para reiniciar o Dockge, o painel viu o pedido com o texto do celular, aprovou (o Dockge reiniciou), recusou o seguinte e mostrou as duas decisões na atividade. Rodar o instalador de novo manteve o token.
+
 ## 0.5.0 (2026-10-20)
 
 O painel: o servidor no navegador e no celular. Extraído do primeiro servidor Atena.
