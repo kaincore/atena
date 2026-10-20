@@ -7,6 +7,7 @@
   <img alt="Docker em zonas" src="https://img.shields.io/badge/docker-6%20zonas-05d9e8?style=for-the-badge&labelColor=0b0618&logo=docker&logoColor=05d9e8">
   <img alt="Atena no Hermes Agent" src="https://img.shields.io/badge/atena-hermes%20agent-d300c5?style=for-the-badge&labelColor=0b0618">
   <img alt="Lab com Claude Code" src="https://img.shields.io/badge/lab-claude%20code-ff2a6d?style=for-the-badge&labelColor=0b0618">
+  <img alt="Painel no celular" src="https://img.shields.io/badge/painel-pwa-f9f002?style=for-the-badge&labelColor=0b0618">
   <a href="https://github.com/kaincore/atena/actions/workflows/verificar.yml"><img alt="Verificação" src="https://img.shields.io/github/actions/workflow/status/kaincore/atena/verificar.yml?branch=main&style=for-the-badge&labelColor=0b0618&color=05d9e8&label=verifica%C3%A7%C3%A3o"></a>
   <a href="LICENSE"><img alt="Licença MIT" src="https://img.shields.io/badge/licen%C3%A7a-MIT-f9f002?style=for-the-badge&labelColor=0b0618"></a>
 </p>
@@ -14,8 +15,8 @@
 <p align="center">
   <b>Um servidor caseiro pronto para usar, organizado em zonas isoladas.</b><br>
   Ubuntu + Docker, com firewall para containers, limites de CPU e RAM por zona, IA local na GPU,
-  um gateway de LLM com tetos de gasto, uma assistente pelo Telegram que cuida de tudo isso
-  e um lab onde o Claude Code programa para você.
+  um gateway de LLM com tetos de gasto, uma assistente pelo Telegram que cuida de tudo isso,
+  um lab onde o Claude Code programa para você e um painel no celular para ver e mandar no servidor.
 </p>
 
 <p align="center">
@@ -27,13 +28,14 @@
 </p>
 
 ```text
-atena@servidor:~$ sudo ./install.sh --hermes --lab
+atena@servidor:~$ sudo ./install.sh --hermes --lab --painel
  [ OK ] zonas ........ prod · core · apps · ai · agents · lab
  [ OK ] firewall ..... nenhum container alcança a sua rede de casa
  [ OK ] ia local ..... ollama · whisper · litellm com teto de gasto
  [ OK ] executor ..... lista fechada de ações, aprovação no celular
  [ OK ] atena ........ online no telegram
  [ OK ] lab .......... o claude code programa para você
+ [ OK ] painel ....... o servidor no celular, só pelo tailscale
 atena@servidor:~$ █
 ```
 
@@ -47,13 +49,14 @@ atena@servidor:~$ █
 - **Painéis:** Dockge (gerenciar as stacks), Beszel (monitoramento, inclusive da GPU) e Open WebUI (chat no navegador).
 - **A Atena** (opcional): assistente pessoal pelo Telegram, feita com o [Hermes Agent](https://github.com/NousResearch/hermes-agent). Vigia o servidor (até a temperatura), responde sobre ele, guarda as suas notas, usa o Arca, edita as stacks de apps com foto e desfazer e age só por uma lista fechada de ações, pedindo o seu ok para o que é destrutivo.
 - **O lab** (opcional): a Atena manda trabalhos de programação ao Claude Code, que trabalha sozinho num sandbox, pergunta pelo celular quando precisa e deixa o app pronto para ela publicar na rede de casa.
+- **O painel** (opcional): o servidor no navegador e no celular, instalável como app. Mostra o estado, os serviços, o gasto de IA e os apps do lab; reinicia serviços e liga ou desliga o PC da rede de casa. Só pelo Tailscale, com senha, num container sem rede nenhuma.
 - **Executor de ações** com aprovação no celular: o único caminho dos agentes até o servidor, sem shell, com um token por cliente.
 - **Avisos no celular** (ntfy): serviço que falhou, container parado e pedidos de aprovação com botões.
 - **Instalador** que monta tudo numa máquina nova e pode rodar de novo sem estragar o que já existe.
 
 ## ▌02 // Mapa das zonas
 
-<p align="center"><img src="docs/assets/zonas.svg" width="100%" alt="Mapa das zonas: a internet não entra; a rede de casa e o Tailscale chegam ao servidor Atena, desenhado como um templo grego. Dentro dele ficam as zonas prod, core, apps, agents, ai e lab, e o executor no host. Ligações permitidas: agents para core (svc-ntfy), apps e agents para ai (svc-llm), agents para o executor (socket) e para lab (workers)."></p>
+<p align="center"><img src="docs/assets/zonas.svg" width="100%" alt="Mapa das zonas: a internet não entra; a rede de casa e o Tailscale chegam ao servidor Atena, desenhado como um templo grego. Dentro dele ficam as zonas prod, core, apps, agents, ai e lab, e o executor no host. Ligações permitidas: agents para core (svc-ntfy), apps e agents para ai (svc-llm), agents e o painel (na core) para o executor (socket) e agents para lab (workers)."></p>
 
 <details>
 <summary>Mapa em texto</summary>
@@ -68,15 +71,15 @@ atena@servidor:~$ █
  ║                                                               ║
  ║  ┌─ prod ──────────┐  ┌─ core ──────────┐  ┌─ apps ────────┐  ║
  ║  │ clientes        │  │ dockge · beszel │  │ arca          │  ║
- ║  │ prioridade máx. │  │ ntfy            │  │ open webui    │  ║
- ║  └─────────────────┘  └────────^────────┘  └───────┬───────┘  ║
- ║                                │ svc-ntfy          │ svc-llm  ║
- ║  ┌─ agents ────────────────────┴───┐       ┌───────v───────┐  ║
- ║  │ atena (hermes) · agentes        ├──────>│ ai            │  ║
- ║  └──┬──────────────────────┬───────┘svc-llm│ ollama        │  ║
- ║     │ socket               │ workers       │ whisper       │  ║
- ║  ┌──v──────────────┐  ┌────v────────────┐  │ litellm       │  ║
- ║  │ EXECUTOR · host │  │ lab             │  └───────────────┘  ║
+ ║  │ prioridade máx. │  │ ntfy · painel   │  │ open webui    │  ║
+ ║  └─────────────────┘  └──┬─────^────────┘  └───────┬───────┘  ║
+ ║ ┌────────────────────────┘     │ svc-ntfy          │ svc-llm  ║
+ ║ │┌─ agents ────────────────────┴───┐       ┌───────v───────┐  ║
+ ║ ││ atena (hermes) · agentes        ├──────>│ ai            │  ║
+ ║ │└──┬──────────────────────┬───────┘svc-llm│ ollama        │  ║
+ ║ │   │ socket               │ workers       │ whisper       │  ║
+ ║ │┌──v──────────────┐  ┌────v────────────┐  │ litellm       │  ║
+ ║ └> EXECUTOR · host │  │ lab             │  └───────────────┘  ║
  ║  │ lista fechada   │  │ claude code     │                     ║
  ║  └─────────────────┘  └─────────────────┘                     ║
  ╚═══════════════════════════════════════════════════════════════╝
@@ -84,7 +87,7 @@ atena@servidor:~$ █
 
 </details>
 
-Zonas diferentes não se enxergam. As ligações do desenho são as únicas permitidas, e cada uma é feita de propósito; os workers dos agentes também alcançam a zona `apps` (veja [arquitetura](docs/pt/arquitetura.md)).
+Zonas diferentes não se enxergam. As ligações do desenho são as únicas permitidas, e cada uma é feita de propósito; os workers dos agentes também alcançam a zona `apps`, e o painel não tem rede: fala com o executor por socket e recebe as visitas pelo Tailscale (veja [arquitetura](docs/pt/arquitetura.md)).
 
 | Zona | Para quê | Limite |
 |---|---|---|
@@ -103,7 +106,7 @@ Os limites foram pensados para 16 GB de RAM. Ajuste em `host/systemd/atena-*.sli
 - Um usuário administrador com **sudo** e **chave SSH** configurada.
 - Opcional: **GPU NVIDIA**. A série 580 do driver é a última que suporta placas Pascal (GTX 10xx).
 - Opcional: assinatura do **Claude** (Pro ou Max), para o lab.
-- Opcional: conta no **Tailscale** para acessar de fora de casa.
+- Opcional: conta no **Tailscale** para acessar de fora de casa (obrigatória para o painel).
 
 ## ▌04 // Instalação
 
@@ -112,7 +115,7 @@ git clone https://github.com/kaincore/atena.git
 cd atena
 cp atena.conf.example atena.conf
 nano atena.conf          # interface de rede, IP, faixa da rede, roteador, usuário, GPU
-sudo ./install.sh        # --ssh: SSH só com chave · --hermes: a Atena · --lab: o lab do Claude Code
+sudo ./install.sh        # --ssh: SSH só com chave · --hermes: a Atena · --lab: o lab · --painel: o painel
 ```
 
 Depois:
@@ -124,6 +127,7 @@ Depois:
 5. Avisos no celular: instale o app ntfy e crie o seu usuário com `sudo atena-ntfy-celular <nome>`.
 6. Com `--hermes`: `sudo atena-hermes-chave` (chave da Atena no LiteLLM, com teto) e `sudo atena-telegram` (o bot). Detalhes em [operação](docs/pt/operacao.md#atena-hermes).
 7. Com `--lab`: `sudo atena-claude-conta entrar <conta>` para cada conta de `ATENA_CLAUDE_CONTAS`. Detalhes em [operação](docs/pt/operacao.md#lab-claude-code).
+8. Com `--painel`: `sudo atena-painel-senha` e, com o Tailscale ligado, abra o endereço que o instalador mostrar (`https://<servidor>.<tailnet>.ts.net:3100`). No celular: menu ⋮ do Chrome → Instalar app. Detalhes em [operação](docs/pt/operacao.md#painel).
 
 ## ▌05 // Serviços incluídos
 
@@ -139,15 +143,16 @@ Depois:
 | Open WebUI 0.11.4 | apps | 3000 | Fala só com o LiteLLM |
 | Arca | apps | 3002 | Envio de arquivos pelo navegador, sem senha |
 | Hermes Agent 0.22.2 | agents | nenhuma | A Atena (com `--hermes`). Conversa pelo Telegram |
+| Painel 0.1.0 | core | 3100, só pelo Tailscale | O painel (com `--painel`). Sem rede, sem root, sem pacotes do npm, com senha |
 | Claude Code 2.1.302 | lab | apps em 8000-8999 | O lab (com `--lab`). Roda em sandbox, sem sudo e sem Docker; usa a sua assinatura do Claude |
 
 As versões são fixas de propósito. Antes de atualizar, leia os avisos de segurança e as notas da versão.
 
 ## ▌06 // Documentação
 
-- [Arquitetura](docs/pt/arquitetura.md): zonas, redes, limites, o executor, a Atena e o lab
+- [Arquitetura](docs/pt/arquitetura.md): zonas, redes, limites, o executor, a Atena, o lab e o painel
 - [Segurança](docs/pt/seguranca.md): o que está protegido, como foi testado e o que não está
-- [Operação](docs/pt/operacao.md): stacks, clientes, avisos no celular, a Atena, o lab e as atualizações
+- [Operação](docs/pt/operacao.md): stacks, clientes, avisos no celular, a Atena, o lab, o painel e as atualizações
 - [Lições aprendidas](docs/pt/licoes.md): armadilhas encontradas montando o primeiro servidor
 
 ## ▌07 // Estrutura do repositório
@@ -159,6 +164,7 @@ atena/
 │   ├── lab/               ponte, sandbox e guarda de escopo do Claude Code do lab
 │   └── windows/           script e passo a passo do PC da rede de casa (opcional)
 ├── stacks/<zona>/<nome>/  composes das stacks
+│   └── core/painel/app/   o painel: servidor, interface e testes
 ├── hermes/                a Atena: personalidade, habilidades, ronda e configuração
 ├── tests/                 testes do executor, da ronda e do lab
 ├── tools/                 verificador de vazamentos e trava de commit
