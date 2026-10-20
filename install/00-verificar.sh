@@ -27,6 +27,16 @@ case "$ATENA_NTFY_URL" in http://*|https://*) ;; *) erro "ATENA_NTFY_URL deve co
 case "$ATENA_VOZ" in sim|nao) ;; *) erro "ATENA_VOZ deve ser sim ou nao" ;; esac
 [ "$ATENA_VOZ" = nao ] || [ "$ATENA_GPU" = nvidia ] \
   || erro "ATENA_VOZ=sim precisa de ATENA_GPU=nvidia (na CPU a voz fica lenta demais para o Telegram)"
+# chaves da versão 0.4 (lab)
+: "${ATENA_CLAUDE_CONTAS:=principal}"
+: "${ATENA_CLAUDE_TROCA:=nao}"
+: "${ATENA_CLAUDE_VERSAO:=2.1.302}"
+for c in ${ATENA_CLAUDE_CONTAS//,/ }; do
+  [[ $c =~ ^[a-z0-9][a-z0-9-]{0,19}$ ]] \
+    || erro "ATENA_CLAUDE_CONTAS: \"$c\" não vale como nome de conta (minúsculas, números e hífen, até 20)"
+done
+case "$ATENA_CLAUDE_TROCA" in sim|nao) ;; *) erro "ATENA_CLAUDE_TROCA deve ser sim ou nao" ;; esac
+[[ $ATENA_CLAUDE_VERSAO =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || erro "ATENA_CLAUDE_VERSAO deve ser uma versão, como 2.1.302"
 case "$ATENA_SENSORES_MODULO" in
   *[!a-z0-9_]*) erro "ATENA_SENSORES_MODULO deve ser o nome de um módulo do kernel (ex.: nct6683) ou vazio" ;;
 esac

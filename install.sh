@@ -6,6 +6,7 @@
 #   sudo ./install.sh                  # instala ou atualiza
 #   sudo ./install.sh --ssh            # também endurece o SSH (só chave, sem root)
 #   sudo ./install.sh --hermes         # também instala a Atena (Hermes, pelo Telegram)
+#   sudo ./install.sh --hermes --lab   # e o lab: o Claude Code programa para você, pela Atena
 #
 # Pode rodar de novo quando quiser: o que já existe é mantido ou atualizado.
 set -euo pipefail
@@ -16,11 +17,13 @@ CONF=$RAIZ/atena.conf
 
 ENDURECER_SSH=nao
 INSTALAR_HERMES=nao
+INSTALAR_LAB=nao
 for arg in "$@"; do
   case "$arg" in
     --ssh) ENDURECER_SSH=sim ;;
     --hermes) INSTALAR_HERMES=sim ;;
-    -h|--help) sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    --lab) INSTALAR_LAB=sim ;;
+    -h|--help) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) erro "opção desconhecida: $arg (veja: ./install.sh --help)" ;;
   esac
 done
@@ -59,6 +62,14 @@ EOF
                           e mande /voice no Telegram
 EOF
   fi
+fi
+if [ "$INSTALAR_LAB" = sim ]; then
+  cat <<EOF
+    Lab (Claude Code):    sudo atena-claude-conta entrar <conta>, para cada conta de ATENA_CLAUDE_CONTAS
+                          ($ATENA_CLAUDE_CONTAS); depois, peça à Atena um app ou script
+                          O seu Claude Code no lab: saia e entre de novo no SSH (grupo atena-lab) e
+                          rode claude dentro de /srv/lab
+EOF
 fi
 if [ "$REINICIAR" = 1 ]; then
   aviso "reinicie o servidor para terminar (driver da NVIDIA): sudo reboot"

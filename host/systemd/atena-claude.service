@@ -1,0 +1,20 @@
+[Unit]
+Description=Atena: trabalhos do Claude Code no lab, pedidos pela Atena
+Documentation=file:///usr/local/sbin/atena-claude-runner
+
+[Service]
+Type=oneshot
+User=atena-claude
+Group=atena-claude
+SupplementaryGroups=atena-fila atena-lab
+Environment=HOME=/var/lib/atena-claude
+UMask=0002
+ExecStart=/usr/local/sbin/atena-claude-runner
+Slice=atena-lab.slice
+# cada trabalho tem o próprio limite (até 10 h); a fila pode ter mais de um
+TimeoutStartSec=infinity
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/atena-claude /srv/lab/projetos
+ProtectHome=yes
+PrivateTmp=yes

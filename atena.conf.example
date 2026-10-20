@@ -45,6 +45,16 @@ ATENA_LOCAL_MODELO=qwen3:4b-instruct-2507-q4_K_M
 # Contexto (tokens) do modelo do servidor: mais contexto, mais memória de vídeo
 ATENA_LOCAL_CONTEXTO=8192
 
+# --- Lab: o Claude Code programa para você (opcional, ./install.sh --lab) -------
+# Contas do Claude Code (Pro ou Max) que o lab usa, separadas por espaço. São só nomes: o login de
+# cada uma é com sudo atena-claude-conta entrar <nome>. Com uma conta só, a Atena nem pergunta.
+ATENA_CLAUDE_CONTAS=principal
+# Quando uma conta bate o limite de uso no meio de um trabalho, ele para e a Atena avisa. Com "sim",
+# ele passa sozinho para a próxima conta com login e continua a mesma conversa.
+ATENA_CLAUDE_TROCA=nao
+# Versão do Claude Code do lab (fixa; ele não se atualiza sozinho)
+ATENA_CLAUDE_VERSAO=2.1.302
+
 # --- PC da rede de casa (opcional) -------------------------------------------
 # Um PC com placa de vídeo e LM Studio que a Atena liga (Wake-on-LAN), usa para textos
 # maiores e desliga quando você pede. Deixe ATENA_PC_IP vazio para não usar.

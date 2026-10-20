@@ -1,0 +1,9 @@
+[Unit]
+Description=Atena: fila de trabalhos do Claude Code no lab
+
+[Path]
+# só os trabalhos (*.json); pedidos de permissão e respostas também passam pela fila
+PathExistsGlob=/var/lib/atena-claude/fila/*.json
+
+[Install]
+WantedBy=paths.target

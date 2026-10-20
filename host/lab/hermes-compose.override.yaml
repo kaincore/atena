@@ -1,0 +1,7 @@
+# Módulo lab (instalado pelo ./install.sh --lab): os projetos do lab no terminal da Atena, no mesmo
+# caminho do servidor e do Claude Code. Ela lê, edita, testa e faz commit direto; a escrita vem de uma
+# ACL do usuário hermes em /srv/lab/projetos.
+services:
+  hermes:
+    volumes:
+      - /srv/lab/projetos:/srv/lab/projetos
