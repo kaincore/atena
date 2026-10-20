@@ -44,17 +44,38 @@ copiar_hermes scripts/ronda.py scripts/ronda.py
 copiar_hermes ferramentas.txt ferramentas/requisitos.txt
 ok "personalidade, habilidades servidor-atena e notas, e ronda em $D"
 
-# token do executor: todas as consultas, reiniciar e o PC, sem a zona prod e sem pedir o celular.
-# Para exigir o celular em algo, refaça com o 4º campo (veja docs/pt/operacao.md).
+# token do executor: todas as consultas, reiniciar, o PC, o Arca e as stacks de apps, sem a zona prod e
+# sem pedir o celular. Para exigir o celular em algo, refaça com o 4º campo (veja docs/pt/operacao.md).
+novas=sistema.sensores,arca.lista,arca.guardar,arca.pegar,stack.editar,stack.aplicar,stack.fotos,stack.desfazer
+acoes=status.servicos,status.recursos,status.containers,status.sistema,gasto.api,servico.logs,servico.journal
+acoes=$acoes,arquivo.ler,arquivo.procurar,arquivo.entregar,arquivo.buscar,local.processar,sistema.processos
+acoes=$acoes,sistema.rede,$novas,servico.reiniciar,pc.estado,pc.ligar,pc.desligar,pc.reiniciar,pc.cancelar
 if [ ! -s "$D/executor.token" ]; then
-  acoes=status.servicos,status.recursos,status.containers,status.sistema,gasto.api,servico.logs,servico.journal
-  acoes=$acoes,arquivo.ler,arquivo.procurar,arquivo.entregar,arquivo.buscar,local.processar,sistema.processos
-  acoes=$acoes,sistema.rede,sistema.sensores,arca.lista,arca.guardar,arca.pegar
-  acoes=$acoes,stack.editar,stack.aplicar,stack.fotos,stack.desfazer
-  acoes=$acoes,servico.reiniciar,pc.estado,pc.ligar,pc.desligar,pc.reiniciar,pc.cancelar
   /usr/local/sbin/atena-executor token-novo hermes "$acoes" apps,ai,agents,lab,core nenhuma \
     | install -m 600 -o hermes -g hermes /dev/stdin "$D/executor.token"
   ok "token do executor para a Atena (sudo atena-executor tokens)"
+else
+  # vindo da 0.2: o token ganha as ações novas da 0.3, com as mesmas zonas e a mesma regra de aprovação
+  refazer=$(python3 - "$novas" <<'PY'
+import json, sys
+novas = sys.argv[1].split(",")
+try:
+    with open("/etc/atena/executor/tokens.json") as f:
+        t = next(c for c in json.load(f).values() if c["cliente"] == "hermes")
+except (OSError, ValueError, StopIteration):
+    sys.exit()
+if all(a in t["acoes"] for a in novas):
+    sys.exit()
+aprovar = (",".join(t["aprovar"]) or "nenhuma") if "aprovar" in t else ""
+print(",".join(t["acoes"] + [a for a in novas if a not in t["acoes"]]), ",".join(t["zonas"]), aprovar)
+PY
+  )
+  if [ -n "$refazer" ]; then
+    read -r r_acoes r_zonas r_aprovar <<< "$refazer"
+    /usr/local/sbin/atena-executor token-novo hermes "$r_acoes" "$r_zonas" ${r_aprovar:+"$r_aprovar"} \
+      | install -m 600 -o hermes -g hermes /dev/stdin "$D/executor.token"
+    ok "token da Atena com as ações novas da 0.3 (mesmas zonas e mesma aprovação)"
+  fi
 fi
 
 # o compose usa o UID do hermes e o GID do atena-acoes
