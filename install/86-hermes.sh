@@ -50,32 +50,39 @@ novas=sistema.sensores,arca.lista,arca.guardar,arca.pegar,stack.editar,stack.apl
 acoes=status.servicos,status.recursos,status.containers,status.sistema,gasto.api,servico.logs,servico.journal
 acoes=$acoes,arquivo.ler,arquivo.procurar,arquivo.entregar,arquivo.buscar,local.processar,sistema.processos
 acoes=$acoes,sistema.rede,$novas,servico.reiniciar,pc.estado,pc.ligar,pc.desligar,pc.reiniciar,pc.cancelar
-if [ ! -s "$D/executor.token" ]; then
-  /usr/local/sbin/atena-executor token-novo hermes "$acoes" apps,ai,agents,lab,core nenhuma \
-    | install -m 600 -o hermes -g hermes /dev/stdin "$D/executor.token"
-  ok "token do executor para a Atena (sudo atena-executor tokens)"
-else
-  # vindo da 0.2: o token ganha as ações novas da 0.3, com as mesmas zonas e a mesma regra de aprovação
-  refazer=$(python3 - "$novas" <<'PY'
-import json, sys
-novas = sys.argv[1].split(",")
+# Refaz o token quando ele não existe, quando o do arquivo não vale mais ou, vindo da 0.2, quando faltam
+# as ações novas. Um token refeito mantém as zonas e a regra de aprovação que você tiver ajustado.
+refazer=$(python3 - "$D/executor.token" "$acoes" "$novas" <<'PY'
+import hashlib, json, sys
+arquivo, acoes, novas = sys.argv[1], sys.argv[2].split(","), sys.argv[3].split(",")
 try:
     with open("/etc/atena/executor/tokens.json") as f:
-        t = next(c for c in json.load(f).values() if c["cliente"] == "hermes")
-except (OSError, ValueError, StopIteration):
-    sys.exit()
-if all(a in t["acoes"] for a in novas):
-    sys.exit()
-aprovar = (",".join(t["aprovar"]) or "nenhuma") if "aprovar" in t else ""
-print(",".join(t["acoes"] + [a for a in novas if a not in t["acoes"]]), ",".join(t["zonas"]), aprovar)
+        tokens = json.load(f)
+except (OSError, ValueError):
+    tokens = {}
+try:
+    with open(arquivo) as f:
+        atual = hashlib.sha256(f.read().strip().encode()).hexdigest()
+except OSError:
+    atual = None
+t = next((c for c in tokens.values() if c.get("cliente") == "hermes"), None)
+if t is None:
+    print(",".join(acoes), "apps,ai,agents,lab,core", "nenhuma")
+elif tokens.get(atual) is not t or not all(a in t["acoes"] for a in novas):
+    aprovar = (",".join(t["aprovar"]) or "nenhuma") if "aprovar" in t else ""
+    print(",".join(t["acoes"] + [a for a in novas if a not in t["acoes"]]), ",".join(t["zonas"]), aprovar)
 PY
-  )
-  if [ -n "$refazer" ]; then
-    read -r r_acoes r_zonas r_aprovar <<< "$refazer"
-    /usr/local/sbin/atena-executor token-novo hermes "$r_acoes" "$r_zonas" ${r_aprovar:+"$r_aprovar"} \
-      | install -m 600 -o hermes -g hermes /dev/stdin "$D/executor.token"
-    ok "token da Atena com as ações novas da 0.3 (mesmas zonas e mesma aprovação)"
-  fi
+)
+if [ -n "$refazer" ]; then
+  read -r r_acoes r_zonas r_aprovar <<< "$refazer"
+  # num arquivo novo e depois no lugar: o install do Ubuntu 26.04 (uutils) não copia de /dev/stdin por
+  # cima de um arquivo que já existe, e o token sai da tela direto para o arquivo
+  tmp=$(mktemp "$D/.executor.token.XXXXXX")
+  /usr/local/sbin/atena-executor token-novo hermes "$r_acoes" "$r_zonas" ${r_aprovar:+"$r_aprovar"} > "$tmp" \
+    || { rm -f "$tmp"; erro "não consegui criar o token do executor para a Atena"; }
+  chown hermes:hermes "$tmp"
+  mv "$tmp" "$D/executor.token"
+  ok "token do executor para a Atena, novo ou refeito (sudo atena-executor tokens)"
 fi
 
 # o compose usa o UID do hermes e o GID do atena-acoes
