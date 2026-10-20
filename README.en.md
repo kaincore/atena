@@ -6,6 +6,7 @@
   <img alt="Ubuntu 26.04" src="https://img.shields.io/badge/ubuntu-26.04-ff2a6d?style=for-the-badge&labelColor=0b0618&logo=ubuntu&logoColor=ff2a6d">
   <img alt="Docker in zones" src="https://img.shields.io/badge/docker-6%20zones-05d9e8?style=for-the-badge&labelColor=0b0618&logo=docker&logoColor=05d9e8">
   <img alt="Atena on Hermes Agent" src="https://img.shields.io/badge/atena-hermes%20agent-d300c5?style=for-the-badge&labelColor=0b0618">
+  <img alt="Lab with Claude Code" src="https://img.shields.io/badge/lab-claude%20code-ff2a6d?style=for-the-badge&labelColor=0b0618">
   <a href="https://github.com/kaincore/atena/actions/workflows/verificar.yml"><img alt="Checks" src="https://img.shields.io/github/actions/workflow/status/kaincore/atena/verificar.yml?branch=main&style=for-the-badge&labelColor=0b0618&color=05d9e8&label=checks"></a>
   <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-f9f002?style=for-the-badge&labelColor=0b0618"></a>
 </p>
@@ -13,7 +14,8 @@
 <p align="center">
   <b>A ready-to-use home server, organized into isolated zones.</b><br>
   Ubuntu + Docker, with a container firewall, CPU and RAM limits per zone, local AI on the GPU,
-  an LLM gateway with spending caps, and a Telegram assistant that looks after all of it.
+  an LLM gateway with spending caps, a Telegram assistant that looks after all of it,
+  and a lab where Claude Code writes code for you.
 </p>
 
 <p align="center">
@@ -25,7 +27,7 @@
 </p>
 
 ```text
-atena@server:~$ sudo ./install.sh --hermes
+atena@server:~$ sudo ./install.sh --hermes --lab
  [ OK ] zones ........ prod · core · apps · ai · agents · lab
  [ OK ] firewall ..... no container can reach your home network
  [ OK ] local ai ..... ollama · whisper · litellm with spending caps
@@ -75,7 +77,7 @@ atena@server:~$ █
  ║     │ socket               │ workers       │ whisper       │  ║
  ║  ┌──v──────────────┐  ┌────v────────────┐  │ litellm       │  ║
  ║  │ EXECUTOR · host │  │ lab             │  └───────────────┘  ║
- ║  │ closed list     │  │ tests           │                     ║
+ ║  │ closed list     │  │ claude code     │                     ║
  ║  └─────────────────┘  └─────────────────┘                     ║
  ╚═══════════════════════════════════════════════════════════════╝
 ```
@@ -137,6 +139,7 @@ Then:
 | Open WebUI 0.11.4 | apps | 3000 | Talks only to LiteLLM |
 | Arca | apps | 3002 | Browser file uploads, no password |
 | Hermes Agent 0.22.2 | agents | none | Atena (with `--hermes`). Talks over Telegram |
+| Claude Code 2.1.302 | lab | apps on 8000-8999 | The lab (with `--lab`). Runs in a sandbox, with no sudo and no Docker; uses your Claude subscription |
 
 Versions are pinned on purpose. Before upgrading, read the security advisories and release notes.
 
@@ -144,9 +147,9 @@ Versions are pinned on purpose. Before upgrading, read the security advisories a
 
 The detailed docs are written in Portuguese and English:
 
-- [Architecture](docs/en/architecture.md): zones, networks, limits, the executor and Atena
+- [Architecture](docs/en/architecture.md): zones, networks, limits, the executor, Atena and the lab
 - [Security](docs/en/security.md): what is protected, how it was tested, and what isn't
-- [Operations](docs/en/operations.md): stacks, clients, phone notifications, Atena and upgrades
+- [Operations](docs/en/operations.md): stacks, clients, phone notifications, Atena, the lab and upgrades
 - [Lessons learned](docs/en/lessons.md): pitfalls found while building the first server
 
 Commands, file names and on-screen messages are in Portuguese, the project's original language.
@@ -156,11 +159,12 @@ Commands, file names and on-screen messages are in Portuguese, the project's ori
 ```text
 atena/
 ├── install.sh, install/   installer (one step per file)
-├── host/                  system files: Docker, systemd, firewall, SSH, executor, alerts
+├── host/                  system files: Docker, systemd, firewall, SSH, executor, alerts, lab
+│   ├── lab/               the lab's Claude Code bridge, sandbox and scope guard
 │   └── windows/           script and guide for the optional home PC
 ├── stacks/<zone>/<name>/  stack compose files
 ├── hermes/                Atena: personality, skills, patrol and configuration
-├── tests/                 tests for the executor and the patrol
+├── tests/                 tests for the executor, the patrol and the lab
 ├── tools/                 leak checker and commit guard
 └── docs/                  documentation in Portuguese and English
 ```
