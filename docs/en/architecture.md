@@ -108,7 +108,7 @@ Optional (`./install.sh --painel`). The server in your PC and phone browser, ins
 
 ```text
 Phone or PC (Tailscale) ──HTTPS :3100──> tailscale serve ──socket──> panel (core zone, no network)
-panel ──socket──> executor (own token: 16 actions, none that delete or edit)
+panel ──socket──> executor (own token: 19 actions, none that delete or edit)
 ```
 
 - **No network.** The container runs with `network_mode: none`: it can't reach the internet, the home network or other containers, and nothing reaches it over the network. Visits arrive through `tailscale serve`, which delivers to the socket `/srv/core/painel/run/painel.sock`, and requests go to the executor through its socket.
@@ -116,6 +116,8 @@ panel ──socket──> executor (own token: 16 actions, none that delete or e
 - **One account, with a password.** The hash (scrypt) lives in `/srv/core/painel/senha`, written by `atena-painel-senha`. A session lasts 30 days and renews on every use; changing the password signs out every device.
 - **Two closed lists.** The panel only asks for its own actions, and its executor token only accepts those, in the core, apps, ai, agents and lab zones: queries, logs, spending, restart a service, turn the PC on and off, restart and stop lab apps. No deleting, editing stacks, Claude Code or reading files.
 - **Confirmation on screen.** Restart, shut down and stop ask for confirmation in the panel itself, which is why its token doesn't ask the phone.
+- **Approvals center.** What Atena and Claude Code ask for and is waiting for you shows up in the panel with the text that went to the phone: Approve, Refuse or answer the question. It counts the same as the tap on the phone, both keep working, and whoever decides first wins. The panel never decides its own requests.
+- **Activity.** The executor's log (every request from every client, every decision and its events), filtered by client or errors only.
 - **No dependencies.** Node 22, which already runs TypeScript and ships SQLite: not a single npm package. The code lives in the stack (`stacks/core/painel/app`), and the installer updates it on every run.
 - **Data.** SQLite database at `/srv/core/painel/painel.db`: sessions (only the token hash), login attempts and a 90-day history of the actions that change something.
 

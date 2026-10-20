@@ -61,7 +61,8 @@ Three layers keep a port from leaking by mistake:
 - **A password that's hard to brute-force:** scrypt (N=2^15, 32 MB per attempt), 5 mistakes in 15 minutes lock the login, and one check at a time.
 - **Cookie** HttpOnly, Secure and SameSite=Strict. Every POST requires JSON and a custom header, which blocks forms from other sites (CSRF).
 - **CSP** that only allows the panel itself, no frames. Screens are built without `innerHTML`, so a container name or a log line never becomes code.
-- **Own token, no phone approval:** 16 actions, none that delete or edit.
+- **Own token, no phone approval:** 19 actions, none that delete or edit.
+- **Deciding in the panel counts as the tap on the phone.** Only the panel token has `aprovacoes.decidir`; it never decides its own requests, and it only sees requests from clients within its zones (no `prod`). Whoever has the panel password can approve what Atena asks for: one more reason for a password used nowhere else.
 
 ## What was tested on the original server
 
