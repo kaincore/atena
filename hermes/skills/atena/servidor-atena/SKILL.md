@@ -1,7 +1,7 @@
 ---
 name: servidor-atena
 description: "Enxergar e operar o servidor Atena pelo executor de ações: qualquer arquivo, pasta, log ou serviço (menos segredos), busca em arquivos, achar e trazer fotos e arquivos do servidor (para olhar, ler ou mandar ao dono), arquivos do Arca (listar, pegar, guardar), processos, portas, estado dos containers, CPU/RAM/disco/GPU, temperaturas e ventoinhas, gasto de API do mês, reiniciar serviços, editar e aplicar stacks de apps (Arca, Open WebUI) com foto e desfazer, ligar/desligar o PC da rede de casa e processar texto privado num modelo de casa. Use sempre que o dono perguntar do servidor, de temperatura, de gastos, de erros, de arquivos ou pedir algo que mexa no servidor, e na ronda."
-version: 1.1.0
+version: 1.2.0
 author: Atena
 license: MIT
 platforms: [linux]
@@ -129,6 +129,8 @@ Para um serviço grande, divida e escolha quem faz cada parte:
   Usam o mesmo modelo da conversa. Cada subagente gasta API: use quando a divisão economizar tempo
   de verdade, não para tarefas pequenas.
 - Modelo de casa (`local.processar`): o que é privado.
+- Claude Code e você mesma no lab (se o servidor tiver o lab): o que é programação. Veja a
+  habilidade lab.
 Junte os resultados você mesma e entregue ao dono um relatório só, no formato de sempre: o que foi
 feito, o que você conferiu, o que falta.
 
@@ -196,11 +198,13 @@ está fora do normal. Você só é acordada quando essa lista muda. Quando for a
    está pesando) e conte ao dono. Não pare serviços por conta própria.
 4. Responda com um resumo curto (o que houve, o que fez, o que falta). Se um problema sumiu e tudo
    voltou ao normal, uma linha basta.
+5. Linhas que começam com `Claude Code` (servidor com o lab): siga a seção Ronda da habilidade lab.
 
 ## Limites conhecidos
 
 - O executor só faz o que está em `/acoes`. Escrever, você escreve nas stacks de apps
-  (`stack.editar`), no Arca (`arca.guardar`) e no seu espaço. Fora disso (stacks de core, ai, agents;
+  (`stack.editar`), no Arca (`arca.guardar`), no seu espaço e, se o servidor tiver o lab, nos projetos
+  do lab (habilidade lab). Fora disso (stacks de core, ai, agents;
   `/etc`; instalar pacotes no servidor), não está ao seu alcance: explique ao dono o que precisa ser
   feito.
 - Logs do litellm listam requisições, não gastos: para gastos, use `gasto.api`.

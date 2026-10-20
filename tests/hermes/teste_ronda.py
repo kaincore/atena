@@ -17,7 +17,8 @@ fonte = fonte.replace('"/run/atena-executor/executor.sock"', repr(SOCK)).replace
 RONDA = f"{tmp}/ronda.py"
 open(RONDA, "w").write(fonte)
 
-CENARIO = {"servicos": [], "falhas": [], "livre": 50, "ram": 8000, "gpu": None, "temperaturas": None, "fora": False}
+CENARIO = {"servicos": [], "falhas": [], "livre": 50, "ram": 8000, "gpu": None, "temperaturas": None, "fora": False,
+           "trabalhos": None, "perguntas": []}   # trabalhos None: token sem o lab (403)
 PEDIDOS = []
 
 
@@ -36,7 +37,12 @@ class Executor(http.server.BaseHTTPRequestHandler):
                  "status.recursos": {"discos": {"/": {"livre_gb": CENARIO["livre"], "total_gb": 100}},
                                      "ram_disponivel_mb": CENARIO["ram"], "ram_total_mb": 16000, "gpu": CENARIO["gpu"],
                                      "temperaturas": CENARIO["temperaturas"]}}
-        resposta, status = ({"ok": False, "erro": "fora"}, 403) if CENARIO["fora"] else ({"ok": True, "resultado": corpo[nome]}, 200)
+        corpo["claude.trabalhos"] = {"contas": ["pessoal"], "contas_com_login": ["pessoal"], "trabalhos": CENARIO["trabalhos"]}
+        corpo["claude.perguntas"] = CENARIO["perguntas"]
+        if CENARIO["fora"] or (nome.startswith("claude.") and CENARIO["trabalhos"] is None):
+            resposta, status = {"ok": False, "erro": "fora"}, 403
+        else:
+            resposta, status = {"ok": True, "resultado": corpo[nome]}, 200
         dados = json.dumps(resposta).encode()
         self.send_response(status)
         self.send_header("Content-Length", str(len(dados)))
@@ -86,7 +92,30 @@ CENARIO["temperaturas"] = {"cpu_c": 91.0, "nvme_c": 71.0}
 confere("a temperatura que oscila acima do limite não muda a saída", ronda() == saida)
 CENARIO["temperaturas"] = {"cpu_c": None, "nvme_c": None}
 confere("máquina sem sensores (None): tudo normal", ronda() == "tudo normal\n")
-CENARIO.update(temperaturas=None, fora=True)
+CENARIO["temperaturas"] = None
+
+
+# --- lab: o fim de um trabalho do Claude Code e as perguntas dele ---
+def t(id_, estado, projeto="loja"):
+    return {"id": id_, "estado": estado, "projeto": projeto}
+
+
+confere("sem o lab no token: igual à ronda sem lab", ronda() == "tudo normal\n")
+CENARIO["trabalhos"] = [t("aaaa0001", "executando")]
+confere("trabalho rodando: tudo normal", ronda() == "tudo normal\n")
+CENARIO["trabalhos"] = [t("aaaa0001", "concluido")]
+saida = ronda()
+confere("trabalho terminou: aparece a linha", saida == "tudo normal\nClaude Code: último trabalho terminado = aaaa0001 "
+        "(concluido, projeto loja)\n", saida)
+CENARIO["trabalhos"] = [t("bbbb0002", "executando"), t("aaaa0001", "concluido")]
+confere("outro começou: a linha não muda (não acorda a Atena à toa)", ronda() == saida)
+CENARIO["trabalhos"] = [t("bbbb0002", "falhou", "outro"), t("aaaa0001", "concluido")]
+confere("outro terminou: a linha muda", "bbbb0002 (falhou, projeto outro)" in ronda())
+CENARIO["perguntas"] = [{"id": "cccc0003", "projeto": "loja", "esperando_min": 2}]
+confere("pergunta esperando o dono", "Claude Code pergunta cccc0003 (projeto loja): esperando o dono" in ronda())
+CENARIO["perguntas"][0]["esperando_min"] = 12
+confere("aos 10 min sem resposta, a linha muda", "o dono não respondeu em 10 min" in ronda())
+CENARIO.update(trabalhos=None, perguntas=[], fora=True)
 saida = ronda()
 confere("executor recusando: a ronda avisa em vez de calar", saida.startswith("a ronda não conseguiu falar com o executor"), saida)
 

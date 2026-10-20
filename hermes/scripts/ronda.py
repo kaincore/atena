@@ -58,8 +58,38 @@ def problemas():
     return achados
 
 
+def claude_code():
+    """O último trabalho do Claude Code que terminou: muda só quando outro termina."""
+    terminados = {"concluido", "falhou", "recusado", "expirado", "cancelado"}
+    for t in acao("claude.trabalhos")["trabalhos"]:   # do mais novo para o mais velho
+        if t["estado"] in terminados:
+            return [f"Claude Code: último trabalho terminado = {t['id']} ({t['estado']}, projeto {t['projeto']})"]
+    return []
+
+
+def perguntas_claude():
+    """Perguntas do Claude Code sem resposta: acorda a Atena quando chega uma e aos 10 min sem resposta."""
+    linhas = []
+    for q in acao("claude.perguntas"):
+        if q["esperando_min"] >= 10:
+            linhas.append(f"Claude Code pergunta {q['id']} (projeto {q['projeto']}): o dono não respondeu em 10 min")
+        else:
+            linhas.append(f"Claude Code pergunta {q['id']} (projeto {q['projeto']}): esperando o dono")
+    return linhas
+
+
 try:
     lista = problemas()
 except Exception as e:
     lista = [f"a ronda não conseguiu falar com o executor ({type(e).__name__})"]
+try:
+    trabalhos = claude_code()
+except Exception:
+    trabalhos = []   # sem Claude Code liberado no token: a ronda segue só com o servidor
+try:
+    trabalhos += perguntas_claude()
+except Exception:
+    pass
 print("\n".join(sorted(lista)) if lista else "tudo normal")
+if trabalhos:
+    print("\n".join(trabalhos))
