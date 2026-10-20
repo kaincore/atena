@@ -1,0 +1,10 @@
+// Atena: o executor (usuário atena-exec) pode iniciar só estas unidades, que ligam ou desligam o
+// acesso pelo Tailscale aos apps do lab (portas 8000-8999). Nada além disso.
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.systemd1.manage-units" &&
+        subject.user == "atena-exec" &&
+        action.lookup("verb") == "start" &&
+        /^atena-lab-tailscale-(on|off)@8[0-9]{3}\.service$/.test(action.lookup("unit"))) {
+        return polkit.Result.YES;
+    }
+});

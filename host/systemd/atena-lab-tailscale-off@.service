@@ -1,0 +1,7 @@
+[Unit]
+Description=Atena: desliga o acesso pelo Tailscale ao app do lab na porta %i
+After=tailscaled.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/atena-lab-tailscale off %i

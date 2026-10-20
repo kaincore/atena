@@ -1,0 +1,26 @@
+#!/bin/bash
+# Atena: liga ou desliga o acesso de fora de casa (Tailscale) a um app do lab.
+#
+#   atena-lab-tailscale on|off <porta>     porta de 8000 a 8999 (as portas dos apps do lab)
+#
+# on : tailscale serve --https=<porta> → http://127.0.0.1:<porta>, e libera a porta na tailscale0
+#      (o tailscaled escuta pelo kernel; sem a regra, o ufw bloqueia os outros aparelhos)
+# off: desfaz os dois. Só a tailnet enxerga (nada de Funnel/internet).
+# Roda como root pelas unidades atena-lab-tailscale-on@<porta> / -off@<porta>, que o polkit deixa
+# o executor (atena-exec) iniciar, e só elas.
+set -euo pipefail
+acao=${1:-} porta=${2:-}
+[[ $porta =~ ^8[0-9]{3}$ ]] || { echo "porta deve ser de 8000 a 8999" >&2; exit 2; }
+case $acao in
+  on)
+    tailscale serve --bg --yes --https="$porta" "http://127.0.0.1:$porta" >/dev/null
+    ufw allow in on tailscale0 to any port "$porta" proto tcp comment "lab $porta via Tailscale Serve" >/dev/null
+    echo "ligado: https $porta"
+    ;;
+  off)
+    tailscale serve --https="$porta" off >/dev/null 2>&1 || true
+    ufw delete allow in on tailscale0 to any port "$porta" proto tcp >/dev/null 2>&1 || true
+    echo "desligado: $porta"
+    ;;
+  *) echo "uso: $0 on|off <porta>" >&2; exit 2 ;;
+esac
