@@ -15,8 +15,8 @@ The server is split into **zones by trust level**. Each zone has four things of 
 |---|---|---|---|
 | `prod` | `zone-prod-<client>` (10.10.101.0/24 onward) | Client systems, one network per client | Admin only |
 | `core` | `zone-core` (10.10.0.0/24) | Dockge, Beszel, ntfy, monitoring and backup | Admin only |
-| `apps` | `zone-apps` (10.10.10.0/24) | Personal apps (Arca, Open WebUI) | Admin |
-| `ai` | `zone-ai` (10.10.20.0/24) | Ollama, Whisper, LiteLLM | Admin |
+| `apps` | `zone-apps` (10.10.10.0/24) | Personal apps (Arca, Open WebUI) | Admin, and Atena through the executor (with a snapshot before each change) |
+| `ai` | `zone-ai` (10.10.20.0/24) | Ollama, Whisper, voice, LiteLLM | Admin |
 | `agents` | `zone-agents` (10.10.30.0/24) | Atena (Hermes), AI agents and workers | Admin, and agents through scripts |
 | `lab` | `zone-lab` (10.10.40.0/24) | Disposable test environments | Admin, and agents through scripts |
 
@@ -53,14 +53,17 @@ Phone (ntfy app) <── alerts and approval requests ── executor
 - **One token per client.** The token says which actions and which zones the client may request. Only the hash is stored (`/etc/atena/executor/tokens.json`).
 - **Stack zone.** It comes from the compose folder (`/opt/atena/stacks/<zone>/...`) or from the `zone-*` networks. When in doubt, the most restricted one wins.
 - **Approval on your phone.** An action that changes something can become a request: the executor sends a notification with Approve and Reject, and only runs after the tap. The request code exists only inside the notification, so the client can't approve itself. Each token says which actions need the phone.
-- **Reading without secrets.** The service has a single capability, `CAP_DAC_READ_SEARCH`: it reads any file and writes nothing outside its own folders. System areas and key, token and password files are refused, and lines with a password, token or key come out as `***`.
+- **Reading without secrets.** The service has a single capability, `CAP_DAC_READ_SEARCH`: it reads any file and only writes to its own folders, Atena's deliveries, Arca and the `apps` zone stacks (the last two through ACLs, without taking ownership of anything). System areas and key, token and password files are refused, and lines with a password, token or key come out as `***`.
 - **Audit log.** Every request goes to the journal (`journalctl -u atena-executor`) with client, action, parameters and result.
+- **App stacks with snapshots.** `stack.editar` saves the previous content before writing, and `stack.desfazer` brings it back. A compose change only sticks if the whole compose (`docker compose config`, with includes and overrides) fits the zone rules: nothing from the host (`privileged`, `cap_add`, `devices`, host network or PID, the Docker socket), folders only from the stack itself and `/srv/apps/<stack>`, networks only `zone-apps` and `svc-llm`, ports always with an IP in front. `stack.aplicar` checks again and brings the stack up in the background.
 
 | Group | Actions |
 |---|---|
-| Look at the server | `status.servicos`, `status.recursos`, `status.containers`, `status.sistema`, `gasto.api`, `servico.logs`, `servico.journal`, `sistema.processos`, `sistema.rede` |
+| Look at the server | `status.servicos`, `status.recursos`, `status.containers`, `status.sistema`, `gasto.api`, `servico.logs`, `servico.journal`, `sistema.processos`, `sistema.rede`, `sistema.sensores` (temperatures and fans) |
 | Files | `arquivo.ler`, `arquivo.buscar`, `arquivo.procurar`, `arquivo.entregar` |
 | Private text | `local.processar` (the server's Ollama or the PC's LM Studio, no cloud) |
+| Arca | `arca.lista`, `arca.pegar`, `arca.guardar` (by the original name; saving never replaces anything) |
+| App stacks | `stack.editar`, `stack.aplicar`, `stack.fotos`, `stack.desfazer` |
 | Act | `servico.reiniciar` (can require the phone) |
 | Home PC (optional) | `pc.estado`, `pc.ligar`, `pc.desligar`, `pc.reiniciar`, `pc.cancelar` |
 
@@ -71,7 +74,7 @@ The server's own alerts also go to your phone: `atena-avisar` reports when an `a
 Atena is a personal assistant built on [Hermes Agent](https://github.com/NousResearch/hermes-agent). She talks to you on Telegram and looks after the server. Her personality and skills are written in Portuguese.
 
 - **Where she runs.** The `hermes` container in the `agents` zone, as the server's `hermes` user: no Docker, no sudo and no route to your home network. Her data (config, memory, notes) lives in `/srv/agents/hermes`.
-- **How she thinks.** Through LiteLLM, with her own key and a monthly cap. Haiku by default; voice messages are transcribed by the home Whisper.
+- **How she thinks.** Through LiteLLM, with her own key and a monthly cap. Haiku by default; voice messages are transcribed by the home Whisper. With `ATENA_VOZ=sim` (and a GPU), she also answers by voice, generated at home by Kokoro.
 - **How she acts.** Only through the executor, with a token that excludes the `prod` zone. Commands inside her own container go through "smart" approval: a helper model allows what is safe and sends anything destructive to you.
 - **Personality and rules** in `SOUL.md`: she checks before stating something and asks for your OK before anything destructive.
 - **Skills.** `servidor-atena` (how to use the executor) and `notas` (keeping and finding what you send her).

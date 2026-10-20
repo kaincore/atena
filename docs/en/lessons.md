@@ -30,6 +30,15 @@ The signed kernel modules follow the driver's version. Holding the driver separa
 **Pascal is slow at float16.**
 In Whisper (faster-whisper/CTranslate2), use `int8`. The GTX 1060 supports DP4A, so int8 runs fast.
 
+**For the voice (Kokoro, ONNX) it's the opposite: use the full version (fp32).**
+The int8 one falls back to the CPU on Pascal cards and gets about 5 times slower.
+
+**The voice's GPU memory grows with the text.**
+Numbers and percentages turn into many phonemes: 837 characters went past 3.4 GB and hung the request on a 6 GB card, and 300 characters reached 4.2 GB. In chunks of 150 characters the voice stays at ~2.2 GB. That's why Hermes speaks in chunks (`tts.openai.max_text_length 150`) and LiteLLM gives up after 10 s, without retrying.
+
+**Three models don't fit together in 6 GB.**
+Ollama (3.2 GB), Whisper (1.1 GB) and the voice (2.2 GB) go over the limit. Each one leaves the GPU on its own after sitting idle: the voice after 60 s, Ollama after 2 min and Whisper after 10 min (fast listening matters more).
+
 ## LiteLLM and the Claude API
 
 **Haiku, Sonnet and Opus 5.5 reject non-default `temperature`, `top_p` and `top_k`** (error 400). Many clients send them. Use `additional_drop_params` on each model.
@@ -57,6 +66,9 @@ After editing a file mounted on its own (such as `config.yaml`), use `docker com
 **Dockge doesn't read subfolders** (the project's request #687). The fix is a folder of symlinks maintained by a systemd `.path` unit.
 
 **The first person to open Dockge, Beszel or Open WebUI becomes the admin.** Create the accounts right after starting them.
+
+**`docker compose config` merges `env_file` into `environment`.**
+To check where variables come from (and block an `.env` from another stack), use `--no-env-resolution`: without it, the file path disappears from the output.
 
 ## Executor, ntfy and Hermes
 
@@ -86,6 +98,15 @@ Use the instruct version (`qwen3:4b-instruct-2507`) and send `/no_think`.
 
 **After shutting down, the PC still looks "on" in the neighbor table for a few minutes.**
 The executor treats "no route to host" over SSH as "off" instead of an error.
+
+**Look for the PEM block header, not just "PRIVATE KEY".**
+Refusing any text containing "PRIVATE KEY-----" blocked files that merely mention it, such as the executor itself. What identifies a key is `-----BEGIN ... PRIVATE KEY-----`.
+
+**The executor writes in place, without replacing the file.**
+Arca rewrites its `metadata.json` on every upload, and a stack may mount a single file. Writing a new file and renaming it would change the owner and the inode; `stack.editar` and `arca.guardar` write to the same file.
+
+**Speaches doesn't produce opus.**
+Hermes asks for the voice in opus (Telegram's voice message format) and Speaches answers 422. A LiteLLM hook switches the request to mp3, and Hermes converts it back with ffmpeg. Hermes sends the voice before the text, so the text waits for the speech to be ready.
 
 ## Apps
 
