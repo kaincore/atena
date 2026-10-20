@@ -1,0 +1,70 @@
+#!/bin/bash
+# Atena: contas do Claude Code do lab, as de ATENA_CLAUDE_CONTAS no /etc/atena/atena.conf.
+# Cada conta tem a própria pasta (CLAUDE_CONFIG_DIR), separada do Claude Code do seu usuário.
+#
+#   sudo atena-claude-conta entrar <conta>   login (mostra um link para autorizar no navegador)
+#   sudo atena-claude-conta sair <conta>     desconecta a conta deste servidor
+#   sudo atena-claude-conta estado           quais contas estão prontas
+set -euo pipefail
+BASE=/var/lib/atena-claude
+CONF=/etc/atena/atena.conf
+
+ajuda() { sed -n '2,7p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
+[ "$(id -u)" = 0 ] || { echo "rode com sudo" >&2; exit 1; }
+
+# as contas do atena.conf, na ordem; sem a chave, a conta principal
+lista=$(sed -n 's/^ATENA_CLAUDE_CONTAS=//p' "$CONF" 2>/dev/null | tail -n 1 | tr -d "\"'" | tr ',' ' ')
+CONTAS=()
+for c in $lista; do
+  if [[ $c =~ ^[a-z0-9][a-z0-9-]{0,19}$ ]] && [[ " ${CONTAS[*]} " != *" $c "* ]]; then CONTAS+=("$c"); fi
+done
+[ ${#CONTAS[@]} -gt 0 ] || CONTAS=(principal)
+
+como_claude() {  # como_claude <conta> <argumentos do claude...>
+  local conta=$1; shift
+  install -d -m 700 -o atena-claude -g atena-claude "$BASE/contas/$conta"
+  sudo -u atena-claude env -i HOME="$BASE" LANG=C.UTF-8 TERM="${TERM:-xterm-256color}" \
+    PATH=/usr/local/bin:/usr/bin:/bin CLAUDE_CONFIG_DIR="$BASE/contas/$conta" DISABLE_AUTOUPDATER=1 \
+    CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1 \
+    /usr/local/lib/atena-claude/claude "$@"
+}
+
+atualizar() {  # contas.json: o executor lê para recusar pedidos de conta sem login
+  local json="{" sep="" conta pronta
+  for conta in "${CONTAS[@]}"; do
+    pronta=false
+    como_claude "$conta" auth status --json 2>/dev/null | grep -q '"loggedIn": *true' && pronta=true
+    json+="$sep\"$conta\": $pronta"; sep=", "
+  done
+  echo "$json}" > "$BASE/contas.json.novo"
+  chmod 644 "$BASE/contas.json.novo"
+  mv "$BASE/contas.json.novo" "$BASE/contas.json"
+}
+
+conta_valida() {
+  [[ " ${CONTAS[*]} " == *" ${1:-} "* ]] || {
+    echo "conta deve ser: ${CONTAS[*]} (as de ATENA_CLAUDE_CONTAS no $CONF)" >&2; exit 2; }
+}
+
+case "${1:-}" in
+  entrar)
+    conta_valida "${2:-}"
+    echo "Abra o link que aparecer, entre na conta \"$2\" e cole o código aqui."
+    como_claude "$2" auth login --claudeai
+    atualizar
+    ;;
+  sair)
+    conta_valida "${2:-}"
+    como_claude "$2" auth logout
+    atualizar
+    ;;
+  estado)
+    atualizar
+    for conta in "${CONTAS[@]}"; do
+      if grep -q "\"$conta\": true" "$BASE/contas.json"; then echo "$conta: pronta"; else echo "$conta: sem login"; fi
+    done
+    ;;
+  *)
+    ajuda
+    ;;
+esac
