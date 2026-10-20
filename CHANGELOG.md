@@ -1,5 +1,9 @@
 # Mudanças
 
+## 0.3.1 (2026-10-20)
+
+- **Correção nas stacks de apps:** com o Docker Compose 2.x, o executor não enxergava o `env_file` e o `label_file` de um compose, e deixava uma stack de apps ler o `.env` de outra. Agora ele lê o compose uma segunda vez com `--no-interpolate`, que mostra esses caminhos em qualquer versão (testado no 2.24, 2.38, 2.40 e 5.6). Com o Compose v5, que o instalador traz, a regra já funcionava.
+
 ## 0.3.0 (2026-10-20)
 
 Voz, temperaturas, o Arca e as stacks de apps nas mãos da Atena, extraídos do primeiro servidor Atena.
