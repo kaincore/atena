@@ -50,6 +50,11 @@ def problemas():
     gpu = recursos.get("gpu")
     if gpu and gpu["temperatura_c"] >= 85:
         achados.append("GPU acima de 85 °C")
+    temperaturas = recursos.get("temperaturas") or {}
+    if (temperaturas.get("cpu_c") or 0) >= 85:
+        achados.append("CPU acima de 85 °C")
+    if (temperaturas.get("nvme_c") or 0) >= 70:
+        achados.append("NVMe acima de 70 °C")
     return achados
 
 

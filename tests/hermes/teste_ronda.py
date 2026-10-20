@@ -17,7 +17,7 @@ fonte = fonte.replace('"/run/atena-executor/executor.sock"', repr(SOCK)).replace
 RONDA = f"{tmp}/ronda.py"
 open(RONDA, "w").write(fonte)
 
-CENARIO = {"servicos": [], "falhas": [], "livre": 50, "ram": 8000, "gpu": None, "fora": False}
+CENARIO = {"servicos": [], "falhas": [], "livre": 50, "ram": 8000, "gpu": None, "temperaturas": None, "fora": False}
 PEDIDOS = []
 
 
@@ -34,7 +34,8 @@ class Executor(http.server.BaseHTTPRequestHandler):
         nome = self.path.rsplit("/", 1)[-1]
         corpo = {"status.servicos": CENARIO["servicos"], "status.sistema": {"falhas": CENARIO["falhas"]},
                  "status.recursos": {"discos": {"/": {"livre_gb": CENARIO["livre"], "total_gb": 100}},
-                                     "ram_disponivel_mb": CENARIO["ram"], "ram_total_mb": 16000, "gpu": CENARIO["gpu"]}}
+                                     "ram_disponivel_mb": CENARIO["ram"], "ram_total_mb": 16000, "gpu": CENARIO["gpu"],
+                                     "temperaturas": CENARIO["temperaturas"]}}
         resposta, status = ({"ok": False, "erro": "fora"}, 403) if CENARIO["fora"] else ({"ok": True, "resultado": corpo[nome]}, 200)
         dados = json.dumps(resposta).encode()
         self.send_response(status)
@@ -78,7 +79,14 @@ saida = ronda()
 confere("unidade com falha, disco, RAM e GPU", saida.splitlines() == sorted([
     "unidade do systemd com falha: atena-docker-firewall.service", "disco / acima de 90%",
     "RAM disponível abaixo de 10%", "GPU acima de 85 °C"]), saida)
-CENARIO.update(falhas=[], livre=50, ram=8000, gpu=None, fora=True)
+CENARIO.update(falhas=[], livre=50, ram=8000, gpu=None, temperaturas={"cpu_c": 91.5, "nvme_c": 72.0})
+saida = ronda()
+confere("CPU e NVMe quentes", saida.splitlines() == ["CPU acima de 85 °C", "NVMe acima de 70 °C"], saida)
+CENARIO["temperaturas"] = {"cpu_c": 91.0, "nvme_c": 71.0}
+confere("a temperatura que oscila acima do limite não muda a saída", ronda() == saida)
+CENARIO["temperaturas"] = {"cpu_c": None, "nvme_c": None}
+confere("máquina sem sensores (None): tudo normal", ronda() == "tudo normal\n")
+CENARIO.update(temperaturas=None, fora=True)
 saida = ronda()
 confere("executor recusando: a ronda avisa em vez de calar", saida.startswith("a ronda não conseguiu falar com o executor"), saida)
 
