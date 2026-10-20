@@ -8,7 +8,7 @@ services:
     gpus: all
     environment:
       OLLAMA_MODELS: /models
-      OLLAMA_KEEP_ALIVE: 10m          # libera a VRAM depois de 10 min sem uso
+      OLLAMA_KEEP_ALIVE: 2m           # libera a VRAM depois de 2 min sem uso (divide a GPU com o Whisper e a voz)
       OLLAMA_MAX_LOADED_MODELS: "1"   # 6 GB de VRAM: um modelo por vez
       OLLAMA_NUM_PARALLEL: "1"
       OLLAMA_NO_CLOUD: "true"         # nada de modelos na nuvem do Ollama: dados ficam aqui
