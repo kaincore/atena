@@ -18,7 +18,7 @@ O servidor é dividido em **zonas por nível de confiança**. Cada zona tem quat
 | `apps` | `zone-apps` (10.10.10.0/24) | Apps pessoais (Arca, Open WebUI) | Administrador e a Atena, pelo executor (com foto antes de cada mudança) |
 | `ai` | `zone-ai` (10.10.20.0/24) | Ollama, Whisper, voz, LiteLLM | Administrador |
 | `agents` | `zone-agents` (10.10.30.0/24) | A Atena (Hermes), agentes de IA e workers | Administrador e agentes, por scripts |
-| `lab` | `zone-lab` (10.10.40.0/24) | Ambientes de teste descartáveis | Administrador e agentes, por scripts |
+| `lab` | `zone-lab` (10.10.40.0/24) | Projetos e apps do Claude Code (módulo lab) e testes descartáveis | Administrador, o Claude Code e a Atena (pelo executor e pelo terminal dela) |
 
 As redes que o Compose cria sozinho (por exemplo, a rede interna do banco de uma stack) usam a faixa `10.20.0.0/16`, longe da rede de casa e do Tailscale (`100.64.0.0/10`).
 
@@ -64,6 +64,8 @@ Celular (app ntfy) <── alertas e pedidos de aprovação ── executor
 | Texto privado | `local.processar` (Ollama do servidor ou LM Studio do PC, sem nuvem) |
 | Arca | `arca.lista`, `arca.pegar`, `arca.guardar` (pelo nome original; guardar não substitui nada) |
 | Stacks de apps | `stack.editar`, `stack.aplicar`, `stack.fotos`, `stack.desfazer` |
+| Claude Code (módulo lab) | `claude.tarefa`, `claude.trabalhos`, `claude.perguntas`, `claude.responder`, `claude.cancelar` |
+| Apps do lab (módulo lab) | `app.publicar`, `app.parar`, `app.reiniciar`, `app.cancelar`, `app.apagar`, `app.restaurar`, `app.comando`, `app.lista` |
 | Agir | `servico.reiniciar` (pode pedir o celular) |
 | PC da rede de casa (opcional) | `pc.estado`, `pc.ligar`, `pc.desligar`, `pc.reiniciar`, `pc.cancelar` |
 
@@ -81,6 +83,25 @@ A Atena é uma assistente pessoal feita com o [Hermes Agent](https://github.com/
 - **Ronda.** De 3 em 3 minutos, um script barato lista o que está fora do normal. O Hermes compara com a lista anterior e só acorda a IA (e gasta API) quando ela muda.
 - **Dados privados.** Documento de cliente ou dado que não pode ir para a nuvem vai para `local.processar`: o executor extrai o texto e pergunta a um modelo de casa, e só a resposta volta para a Atena.
 
+## O lab (Claude Code)
+
+Opcional (`./install.sh --lab`). A Atena manda trabalhos de programação ao [Claude Code](https://code.claude.com/), que trabalha sozinho, por minutos ou horas, numa pasta do lab, com a sua assinatura do Claude (Pro ou Max).
+
+```text
+Você (Telegram) ──> Atena ──> executor ──> fila ──> runner (atena-claude) ──> Claude Code em /srv/lab/projetos/<projeto>
+Claude Code pede permissão ou pergunta ──> ponte (dono.py) ──> fila ──> executor ──> celular (ntfy) e Atena
+App pronto ──> app.publicar ──> stack lab-<projeto> na zona lab (porta 8000-8999 na rede de casa)
+```
+
+- **Quem roda.** O usuário `atena-claude`, sem sudo e sem Docker, disparado pelo `atena-claude.path` quando chega trabalho na fila. Até 3 trabalhos ao mesmo tempo, um por projeto, na `atena-lab.slice`. O Claude Code tem versão fixa (`ATENA_CLAUDE_VERSAO`) e não se atualiza sozinho.
+- **Sandbox.** O Claude Code escreve só na pasta do projeto. O socket do Docker, o executor, o D-Bus, o systemd e as outras zonas ficam escondidos, a internet é só para repositórios de pacotes, e não existe sair do sandbox. `git push` e páginas web pedem o celular.
+- **A configuração do projeto não manda.** O Claude Code só lê a configuração da conta e o `lab.json` (`--setting-sources user`, sem hooks), e o git do runner ignora o fsmonitor e os hooks do projeto. Um `.git/config` com algo que rode comandos faz o trabalho ser recusado. É isso que permite a Atena escrever nos projetos sem virar um caminho para fora do sandbox.
+- **Permissões e perguntas pelo celular.** O que o Claude Code pede vai ao celular com Aprovar e Recusar (11 min, depois nega). Uma dúvida dele chega ao celular e à Atena; sem resposta em 10 min, a Atena decide; em 30 min, ele segue sozinho.
+- **Contas.** As de `ATENA_CLAUDE_CONTAS`, cada uma com a própria pasta e o próprio login (`atena-claude-conta`). No limite de uso, o trabalho para e a Atena avisa; com `ATENA_CLAUDE_TROCA=sim`, ele passa sozinho para a próxima conta com login e continua a mesma conversa.
+- **Apps.** `app.publicar` constrói pelo Dockerfile do projeto e põe no ar na zona lab: disco só de leitura (os dados ficam no volume `/data`), sem capacidades, 512 MB, porta 8000-8999 na rede de casa e, com Tailscale, também fora de casa (Tailscale Serve, só na sua tailnet). Apagar o código manda a pasta para a lixeira por 30 dias.
+- **A Atena no lab.** Os projetos estão montados no terminal dela (escrita por ACL), para ajustes pequenos com commit; programação grande vai ao Claude Code.
+- **Lab interativo.** O seu Claude Code, aberto dentro de `/srv/lab`, tem o mesmo sandbox e um guarda de escopo que pede confirmação para sudo, Docker, caminhos fora do lab e instalação global.
+
 ## Limites de CPU e RAM
 
 Cada zona é um slice do systemd dentro de `atena.slice`. Os containers entram no slice com `cgroup_parent: atena-<zona>.slice` no compose.
@@ -92,7 +113,7 @@ Cada zona é um slice do systemd dentro de `atena.slice`. Os containers entram n
 | `atena-apps` | `MemoryMax=4G` |
 | `atena-ai` | `MemoryMax=6G` |
 | `atena-agents` | `CPUWeight=50`, `CPUQuota=600%`, `MemoryMax=6G` |
-| `atena-lab` | `CPUWeight=50`, `CPUQuota=600%`, `MemoryMax=4G` |
+| `atena-lab` | `CPUWeight=50`, `CPUQuota=600%`, `MemoryMax=4G` (6G com o módulo lab: 3 trabalhos do Claude Code e os apps) |
 
 O `atena.slice` tem `MemoryLow=5G`, porque a proteção de memória de um slice só vale se o slice pai também tiver.
 

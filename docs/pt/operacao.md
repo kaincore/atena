@@ -104,6 +104,25 @@ journalctl -u atena-executor -f                               # cada pedido, com
 - Gasto: pergunte a ela ("quanto gastamos este mês?").
 - Atualizar o Hermes: leia as notas da versão, troque a imagem no compose e confira o `config.yaml` gerado. A documentação no GitHub é da versão em desenvolvimento, que pode ser mais nova que a sua.
 
+## Lab (Claude Code)
+
+**Instalar.** Ponha as contas do Claude Code em `ATENA_CLAUDE_CONTAS` (só nomes, ex.: `pessoal trabalho`; com uma, a Atena nem pergunta qual usar) e rode `sudo ./install.sh --hermes --lab` (ou `--lab`, se a Atena já estiver instalada). Depois, para cada conta:
+
+```bash
+sudo atena-claude-conta entrar pessoal    # mostra um link: entre na conta e cole o código
+sudo atena-claude-conta estado            # quais contas estão prontas
+```
+
+**No dia a dia**, peça à Atena: "faz um app de lista de compras", "publica a lista-compras", "muda a cor do botão". Ela pergunta a conta (se houver mais de uma), o modelo e o esforço, manda o trabalho e para. O celular recebe o aviso de início (com Cancelar), os pedidos de permissão e as perguntas; a Atena manda o resumo quando termina.
+
+- Projetos em `/srv/lab/projetos/<projeto>`, cada um com git (os commits são o jeito de desfazer). Para editar com o seu usuário, saia e entre de novo no SSH depois de instalar (grupo `atena-lab`).
+- O seu Claude Code no lab: `cd /srv/lab && claude`. Vale o sandbox de `/srv/lab/.claude/settings.json`, mais o guarda de escopo.
+- Apps publicados: `http://<ip-do-servidor>:<porta>` (8000-8999) e, com Tailscale, `https://<servidor>.<tailnet>.ts.net:<porta>`. Viram stacks `lab-<projeto>` no Dockge.
+- Limite de uso: o trabalho para e a Atena pergunta se continua depois ou em outra conta. Para a troca automática, `ATENA_CLAUDE_TROCA=sim` no `/etc/atena/atena.conf`.
+- Lixeira: `app.apagar` com `codigo` move a pasta para `/srv/lab/lixeira`; o `atena-lab-lixeira.timer` apaga de vez depois de 30 dias.
+- Trocar a versão do Claude Code: `ATENA_CLAUDE_VERSAO` no `atena.conf` e o instalador de novo (ele baixa e confere o checksum oficial). Leia as notas da versão antes.
+- Registros: `journalctl -u atena-claude` (o runner) e a conversa completa de cada trabalho em `/var/lib/atena-claude/registros`.
+
 ## Temperaturas e ventoinhas
 
 `sistema.sensores` (e a Atena, quando você pergunta) lê a CPU, o NVMe e a GPU sem configurar nada. As ventoinhas vêm do chip da placa-mãe, que costuma precisar de um módulo do kernel: descubra qual com `sudo apt install lm-sensors && sudo sensors-detect`, ponha em `ATENA_SENSORES_MODULO` (ex.: `nct6683`) e rode o instalador de novo. A ronda avisa CPU acima de 85 °C, GPU acima de 85 °C e NVMe acima de 70 °C.

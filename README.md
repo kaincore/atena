@@ -31,6 +31,7 @@ atena@servidor:~$ sudo ./install.sh --hermes
  [ OK ] ia local ..... ollama · whisper · litellm com teto de gasto
  [ OK ] executor ..... lista fechada de ações, aprovação no celular
  [ OK ] atena ........ online no telegram
+ [ OK ] lab .......... o claude code programa para você
 atena@servidor:~$ █
 ```
 
@@ -43,6 +44,7 @@ atena@servidor:~$ █
 - **LiteLLM** como porta única para Claude (Haiku, Sonnet, Opus) e para os modelos locais, com teto de gasto por modelo e por chave, renovado todo dia 1º.
 - **Painéis:** Dockge (gerenciar as stacks), Beszel (monitoramento, inclusive da GPU) e Open WebUI (chat no navegador).
 - **A Atena** (opcional): assistente pessoal pelo Telegram, feita com o [Hermes Agent](https://github.com/NousResearch/hermes-agent). Vigia o servidor (até a temperatura), responde sobre ele, guarda as suas notas, usa o Arca, edita as stacks de apps com foto e desfazer e age só por uma lista fechada de ações, pedindo o seu ok para o que é destrutivo.
+- **O lab** (opcional): a Atena manda trabalhos de programação ao Claude Code, que trabalha sozinho num sandbox, pergunta pelo celular quando precisa e deixa o app pronto para ela publicar na rede de casa.
 - **Executor de ações** com aprovação no celular: o único caminho dos agentes até o servidor, sem shell, com um token por cliente.
 - **Avisos no celular** (ntfy): serviço que falhou, container parado e pedidos de aprovação com botões.
 - **Instalador** que monta tudo numa máquina nova e pode rodar de novo sem estragar o que já existe.
@@ -89,7 +91,7 @@ Zonas diferentes não se enxergam. As ligações do desenho são as únicas perm
 | `apps` | Apps pessoais | Até 4 GB |
 | `ai` | IA local e gateway de LLM | Até 6 GB |
 | `agents` | Agentes de IA | Até 6 threads e 6 GB, prioridade baixa |
-| `lab` | Ambientes de teste | Até 6 threads e 4 GB, prioridade baixa |
+| `lab` | Projetos do Claude Code e testes | Até 6 threads e 4 GB (6 GB com o lab), prioridade baixa |
 
 Os limites foram pensados para 16 GB de RAM. Ajuste em `host/systemd/atena-*.slice`.
 
@@ -98,6 +100,7 @@ Os limites foram pensados para 16 GB de RAM. Ajuste em `host/systemd/atena-*.sli
 - **Ubuntu 26.04** (servidor, direto no hardware) com **IP fixo** na rede de casa.
 - Um usuário administrador com **sudo** e **chave SSH** configurada.
 - Opcional: **GPU NVIDIA**. A série 580 do driver é a última que suporta placas Pascal (GTX 10xx).
+- Opcional: assinatura do **Claude** (Pro ou Max), para o lab.
 - Opcional: conta no **Tailscale** para acessar de fora de casa.
 
 ## ▌04 // Instalação
@@ -107,7 +110,7 @@ git clone https://github.com/kaincore/atena.git
 cd atena
 cp atena.conf.example atena.conf
 nano atena.conf          # interface de rede, IP, faixa da rede, roteador, usuário, GPU
-sudo ./install.sh        # --ssh: SSH só com chave · --hermes: instala a Atena
+sudo ./install.sh        # --ssh: SSH só com chave · --hermes: a Atena · --lab: o lab do Claude Code
 ```
 
 Depois:
@@ -118,6 +121,7 @@ Depois:
 4. Suba as outras stacks pelo Dockge.
 5. Avisos no celular: instale o app ntfy e crie o seu usuário com `sudo atena-ntfy-celular <nome>`.
 6. Com `--hermes`: `sudo atena-hermes-chave` (chave da Atena no LiteLLM, com teto) e `sudo atena-telegram` (o bot). Detalhes em [operação](docs/pt/operacao.md#atena-hermes).
+7. Com `--lab`: `sudo atena-claude-conta entrar <conta>` para cada conta de `ATENA_CLAUDE_CONTAS`. Detalhes em [operação](docs/pt/operacao.md#lab-claude-code).
 
 ## ▌05 // Serviços incluídos
 

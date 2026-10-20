@@ -111,6 +111,24 @@ O Arca reescreve o `metadata.json` a cada envio, e uma stack pode montar um arqu
 **O Speaches não gera opus.**
 O Hermes pede a voz em opus (formato das mensagens de voz do Telegram) e o Speaches responde 422. Um gancho no LiteLLM troca o pedido para mp3, e o Hermes converte de volta com o ffmpeg. O Hermes manda a voz antes do texto, então o texto espera a fala ficar pronta.
 
+## Lab (Claude Code)
+
+**No Ubuntu 26.04, o sandbox do Claude Code precisa de `allowAllUnixSockets`.**
+O AppArmor tira as capacidades de tudo que roda dentro do bubblewrap, e o ajudante de seccomp do Claude Code (que bloqueia sockets locais) aborta. Todo comando falhava no sandbox, era repetido fora dele e virava um pedido de permissão. Sem o ajudante, os sockets perigosos (Docker, executor, D-Bus, systemd) ficam escondidos pelo `denyRead`.
+
+**Um servidor de teste esquecido em segundo plano segura o `claude -p` aberto.**
+O resumo final já tinha saído, mas o processo não fechava, e o trabalho só terminaria no limite de tempo, como erro. O runner fecha o Claude Code 30 s depois do resumo final, e as regras pedem que nada fique rodando em segundo plano.
+
+**Depois de trocar de conta, leia só a rodada nova do registro.**
+O aviso de "limite atingido" da conta anterior continuava no registro; se a rodada nova não mandasse outro aviso, o trabalho parava à toa.
+
+**Se alguém além do Claude Code escreve nos projetos, o projeto não pode configurar nada que rode fora do sandbox.**
+`--setting-sources user` (sem hooks e sem `apiKeyHelper` do projeto) e o git com `core.fsmonitor=false` e `core.hooksPath=/dev/null` no ambiente. Um `.git/config` com fsmonitor rodaria um programa do projeto no próprio runner.
+
+**Mover para a lixeira é um rename.** Com `ReadWritePaths` separados para os projetos e para a lixeira, o systemd monta os dois à parte e o rename falha (`EXDEV`). Um `ReadWritePaths=/srv/lab` só resolve.
+
+**Para continuar uma conversa em outra conta, copie a sessão.** O `--resume` procura a conversa na pasta da conta (`projects/*/<sessão>.jsonl`); o runner copia o arquivo, e a pasta de subagentes, antes de continuar.
+
 ## Aplicativos
 
 **Envio de arquivos com Express (`express-fileupload`):**

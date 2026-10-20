@@ -47,6 +47,14 @@ São três camadas para nenhuma porta escapar por engano:
 - **Conteúdo é dado, não ordem.** A `SOUL.md` manda tratar páginas, documentos e mensagens de terceiros como dados. Comandos no container dela passam pela aprovação "smart", e o destrutivo vai para você.
 - **Chave do LiteLLM com teto mensal.** Um erro dela não esvazia o crédito da API.
 
+### Lab (Claude Code)
+- **Sem sudo e sem Docker.** O `atena-claude` só está nos grupos `atena-fila` e `atena-lab`. O instalador para se ele estiver no grupo `docker`.
+- **Sandbox obrigatório e sem saída.** Escrita só na pasta do projeto; Docker, executor, D-Bus, systemd, as outras zonas e as credenciais das contas ficam escondidos; internet só para repositórios de pacotes. Se o sandbox não subir, o Claude Code não roda.
+- **O projeto não configura o Claude Code nem o git.** Só valem a configuração da conta e o `lab.json`; hooks do projeto ficam desligados; o git do runner ignora fsmonitor e hooks, e um `.git/config` que rode comandos faz o trabalho ser recusado.
+- **O que sai do servidor passa pelo celular.** `git push`, páginas web e edição fora da pasta viram pedido de permissão; sem resposta, é negado.
+- **Apps do lab fechados.** Disco só de leitura, sem capacidades, `no-new-privileges`, 512 MB, só a rede `zone-lab`. Publicar e apagar pedem o celular por padrão.
+- **Tailscale só pelo polkit.** O executor só consegue iniciar as unidades `atena-lab-tailscale-on@` e `-off@`, nas portas 8000-8999.
+
 ## O que foi testado no servidor original
 
 | Teste | Resultado |
@@ -60,6 +68,8 @@ São três camadas para nenhuma porta escapar por engano:
 | A Atena pedindo ao executor `/etc/shadow`, um `.env` e uma chave SSH | Recusado (403) |
 | Aprovação com código errado, toque repetido e pedido vencido | Nada rodou |
 | Cliente pedindo ação fora do token ou stack de outra zona | Recusado (403) |
+| Claude Code do lab escrevendo fora da pasta do projeto e usando `sudo` e o socket do Docker | Barrado pelo sandbox |
+| Projeto com `core.fsmonitor` no `.git/config` | Trabalho recusado, sem abrir o Claude Code |
 
 Os testes automáticos do executor e da ronda ficam em `tests/` e rodam a cada envio ao GitHub.
 
@@ -74,6 +84,8 @@ Os testes automáticos do executor e da ronda ficam em `tests/` e rodam a cada e
 - **O que a Atena lê vai para o modelo na nuvem** (Anthropic), menos o que passa por `local.processar`.
 - **ntfy sem HTTPS na rede de casa.** Com `http://`, quem escuta o Wi-Fi pode ver o código de um pedido e aprovar antes de você. Fora de casa, use o endereço `https://` do Tailscale em `ATENA_NTFY_URL`.
 - **Injeção de instruções** (um texto que tenta mandar na IA) é reduzida pelas regras e pela aprovação, não eliminada. Por isso a Atena só faz sem aprovação o que tem volta.
+- **O Claude Code do lab baixa pacotes da internet** (npm, PyPI, GitHub). Um pacote malicioso roda dentro do sandbox, só na pasta do projeto, mas pode ir parar num app publicado. Leia o que ele instalou antes de publicar algo importante.
+- **O Claude Code roda na sua assinatura.** O que ele lê no projeto vai para a Anthropic, como numa conversa.
 - **Outros encaminhamentos de tráfego** (máquinas virtuais, subnet router do Tailscale) são descartados pela última regra da `DOCKER-USER`. Se precisar deles, crie exceções.
 
 ## Antes de publicar algo
