@@ -1,5 +1,19 @@
 # Mudanças
 
+## 0.4.0 (ainda não publicada)
+
+O lab: a Atena manda trabalhos de programação ao Claude Code. Extraído do primeiro servidor Atena.
+
+- **Claude Code pela Atena** (opcional, `./install.sh --lab`): `claude.tarefa` põe o trabalho na fila, e o runner roda o Claude Code como `atena-claude` (sem sudo, sem Docker) em `/srv/lab/projetos/<projeto>`, num sandbox estrito, até 3 ao mesmo tempo. O Claude Code tem versão fixa (`ATENA_CLAUDE_VERSAO`), baixada do repositório oficial e conferida pelo checksum.
+- **Permissões e perguntas no celular:** o que o Claude Code pede vem com Aprovar e Recusar; uma dúvida dele chega ao celular e à Atena, que decide se você não responder em 10 min.
+- **Contas:** as de `ATENA_CLAUDE_CONTAS`, com login pelo `atena-claude-conta`. No limite de uso, o trabalho para e a Atena avisa; a troca automática para outra conta é opcional (`ATENA_CLAUDE_TROCA=sim`). Continuar em outra conta, a seu pedido, leva a conversa junto.
+- **Apps do lab:** `app.publicar` constrói pelo Dockerfile e põe no ar na zona lab (porta 8000-8999 na rede de casa e, com Tailscale, fora de casa). `app.reiniciar`, `app.parar`, `app.cancelar`, `app.apagar` (o código vai para uma lixeira por 30 dias), `app.restaurar`, `app.comando` e `app.lista`. Publicar e apagar pedem o celular.
+- **A Atena no lab:** os projetos ficam no terminal dela, para ajustes pequenos com commit; a habilidade `lab` diz quando fazer ela mesma e quando mandar ao Claude Code; a ronda avisa quando um trabalho termina e quando o Claude Code pergunta algo.
+- **Lab interativo:** o seu Claude Code em `/srv/lab` ganha o mesmo sandbox e um guarda de escopo.
+- **Travas para quem escreve nos projetos:** o Claude Code só lê a configuração da conta e o `lab.json`, sem hooks do projeto, e o git do runner ignora fsmonitor e hooks; um `.git/config` que rode comandos faz o trabalho ser recusado.
+- Correção que veio junto: depois de trocar de conta, o aviso de limite da rodada anterior não vale mais para a nova.
+- Ainda não: as skills do Claude Code e os prints de tela (próxima versão).
+
 ## 0.3.1 (2026-10-20)
 
 - **Correção nas stacks de apps:** com o Docker Compose 2.x, o executor não enxergava o `env_file` e o `label_file` de um compose, e deixava uma stack de apps ler o `.env` de outra. Agora ele lê o compose uma segunda vez com `--no-interpolate`, que mostra esses caminhos em qualquer versão (testado no 2.24, 2.38, 2.40 e 5.6). Com o Compose v5, que o instalador traz, a regra já funcionava.
