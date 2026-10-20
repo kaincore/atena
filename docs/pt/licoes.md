@@ -96,6 +96,9 @@ O LiteLLM pode cair para um modelo da nuvem quando o modelo de casa não respond
 **O qwen3 4B "thinking" escreve o raciocínio antes da resposta e gasta o limite de saída.**
 Use a versão instruct (`qwen3:4b-instruct-2507`) e mande `/no_think`.
 
+**No Ubuntu 26.04, o `install` não copia de `/dev/stdin` por cima de um arquivo que já existe.**
+O `install` agora é o do uutils (coreutils em Rust) e responde só "No such file or directory". Num arquivo novo funciona, por isso o primeiro token da Atena gravava e a troca na atualização falhava, deixando no arquivo um token já revogado. Grave num arquivo novo e mova, ou use `tee` num arquivo que já existe. Achado no teste em VM da 0.3.
+
 **Depois de desligar, o PC continua "ligado" na tabela de vizinhos por alguns minutos.**
 O executor trata o SSH sem rota como "desligado", em vez de dar erro.
 

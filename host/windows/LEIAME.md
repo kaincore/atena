@@ -68,7 +68,8 @@ chave do PC (assim ninguém se passa por ele):
 
 ```bash
 ssh-keyscan -t ed25519 IP_DO_PC 2>/dev/null | ssh-keygen -lf -
-ssh-keyscan -t ed25519 IP_DO_PC 2>/dev/null | sudo install -m 644 -o root -g atena-exec /dev/stdin /etc/atena/executor/pc-known-hosts
+ssh-keyscan -t ed25519 IP_DO_PC 2>/dev/null > /tmp/pc-known-hosts
+sudo install -m 644 -o root -g atena-exec /tmp/pc-known-hosts /etc/atena/executor/pc-known-hosts
 ```
 
 Por fim, ponha o usuário do Windows em `ATENA_PC_USUARIO` no `/etc/atena/atena.conf` (o nome que

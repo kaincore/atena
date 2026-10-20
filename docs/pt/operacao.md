@@ -77,7 +77,7 @@ journalctl -u atena-executor -f                               # cada pedido, com
   ```bash
   sudo atena-executor tokens | grep hermes      # copie a lista de ações e de zonas dela
   sudo atena-executor token-novo hermes <ações> <zonas> servico.reiniciar \
-    | sudo install -m 600 -o hermes -g hermes /dev/stdin /srv/agents/hermes/executor.token
+    | sudo tee /srv/agents/hermes/executor.token >/dev/null   # o arquivo continua do hermes, com 600
   ```
 
 ## Atena (Hermes)

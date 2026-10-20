@@ -96,6 +96,9 @@ LiteLLM can fall back to a cloud model when the home model doesn't answer. `loca
 **The "thinking" qwen3 4B writes its reasoning before the answer and burns the output limit.**
 Use the instruct version (`qwen3:4b-instruct-2507`) and send `/no_think`.
 
+**On Ubuntu 26.04, `install` can't copy from `/dev/stdin` over a file that already exists.**
+`install` is now uutils (coreutils in Rust) and only says "No such file or directory". A new file works, which is why Atena's first token was saved and the swap during an upgrade failed, leaving an already-revoked token in the file. Write to a new file and move it, or use `tee` on a file that already exists. Found in the 0.3 VM test.
+
 **After shutting down, the PC still looks "on" in the neighbor table for a few minutes.**
 The executor treats "no route to host" over SSH as "off" instead of an error.
 
