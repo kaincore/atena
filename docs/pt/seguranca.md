@@ -55,6 +55,14 @@ São três camadas para nenhuma porta escapar por engano:
 - **Apps do lab fechados.** Disco só de leitura, sem capacidades, `no-new-privileges`, 512 MB, só a rede `zone-lab`. Publicar e apagar pedem o celular por padrão.
 - **Tailscale só pelo polkit.** O executor só consegue iniciar as unidades `atena-lab-tailscale-on@` e `-off@`, nas portas 8000-8999.
 
+### Painel
+- **Sem rede, sem root e sem Docker.** `network_mode: none`, disco só de leitura, sem capacidades, `no-new-privileges`, 256 MB. O usuário `atena-painel` só está no grupo `atena-acoes`; o instalador para se ele estiver no grupo `docker`.
+- **Entrada só pelo Tailscale**, por um socket que só o root e o painel abrem (`/srv/core/painel` é 700).
+- **Senha difícil de adivinhar por força bruta:** scrypt (N=2^15, 32 MB por tentativa), 5 erros em 15 minutos bloqueiam a entrada, e uma conferência por vez.
+- **Cookie** HttpOnly, Secure e SameSite=Strict. Todo POST exige JSON e um cabeçalho próprio, o que barra formulários de outros sites (CSRF).
+- **CSP** que só aceita o próprio painel, sem frames. As telas são montadas sem `innerHTML`, então um nome de container ou uma linha de log nunca vira código.
+- **Token próprio, sem aprovação no celular:** 16 ações, nenhuma que apague ou edite.
+
 ## O que foi testado no servidor original
 
 | Teste | Resultado |
@@ -70,8 +78,11 @@ São três camadas para nenhuma porta escapar por engano:
 | Cliente pedindo ação fora do token ou stack de outra zona | Recusado (403) |
 | Claude Code do lab escrevendo fora da pasta do projeto e usando `sudo` e o socket do Docker | Barrado pelo sandbox |
 | Projeto com `core.fsmonitor` no `.git/config` | Trabalho recusado, sem abrir o Claude Code |
+| Painel: ação fora da lista dele, POST sem o cabeçalho próprio, formulário de outro site | Recusado (403, 415), sem chegar ao executor |
+| Painel: senha errada 5 vezes, depois a certa | Bloqueado por 15 min |
+| Painel: `docker inspect` do container e a porta 3100 pela rede de casa | Sem rede, sem o socket do Docker; nada responde na rede de casa |
 
-Os testes automáticos do executor e da ronda ficam em `tests/` e rodam a cada envio ao GitHub.
+Os testes automáticos do executor, da ronda e do lab ficam em `tests/`, os do painel em `stacks/core/painel/app/test/`, e todos rodam a cada envio ao GitHub.
 
 ## O que a Atena NÃO protege
 
@@ -79,6 +90,7 @@ Os testes automáticos do executor e da ronda ficam em `tests/` e rodam a cada e
 - **Serviços sem senha ficam abertos para toda a rede de casa.** O Arca, por exemplo, não tem login: qualquer aparelho do Wi-Fi pode ver e apagar arquivos.
 - **As zonas dividem o mesmo kernel.** Uma falha grave de escape de container atravessaria as zonas. Para isolamento forte, use máquinas virtuais.
 - **IPv6 dentro dos containers** não é usado. Se você ativar IPv6 nas redes do Docker, revise o firewall, que hoje só tem regras de IPv4.
+- **Quem tem a senha do painel** reinicia serviços e desliga o PC, sem passar pelo celular. Use uma senha que você não usa em outro lugar.
 - **O executor tem acesso ao Docker.** Isso equivale a root. A proteção é a lista fechada: um defeito no executor seria um defeito de segurança do servidor inteiro.
 - **O filtro de segredos é por nome e por formato.** Um segredo num formato desconhecido, dentro de um arquivo de nome comum, pode passar. Guarde segredos em `.env`, `*.key` ou `*.token`.
 - **O que a Atena lê vai para o modelo na nuvem** (Anthropic), menos o que passa por `local.processar`.
