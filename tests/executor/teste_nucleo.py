@@ -55,8 +55,12 @@ status, r = pedir(ex, "POST", "/acao/status.servicos", hermes, {"params": ["x"]}
 confere("params que não é objeto: 400", status == 400)
 status, r = pedir(ex, "POST", "/acao/status.servicos", hermes, cru=b"{nada")
 confere("JSON quebrado: 400", status == 400)
+# o limite real é 1 MB; aqui, menor, para o corpo caber no buffer do socket antes da recusa
+confere("o pedido aceita até 1 MB", ex.LIMITE_PEDIDO == 1024 * 1024)
+ex.LIMITE_PEDIDO = 16384
 status, r = pedir(ex, "POST", "/acao/status.servicos", hermes, {"params": {"x": "a" * 20000}})
-confere("corpo acima de 16 KB: 413", status == 413)
+confere("corpo acima do limite: 413", status == 413)
+ex.LIMITE_PEDIDO = 1024 * 1024
 
 # --- ações ---
 status, r = pedir(ex, "POST", "/acao/status.servicos", hermes, {"params": {}, "origem": "teste"})

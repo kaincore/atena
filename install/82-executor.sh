@@ -35,6 +35,15 @@ setfacl -d -m u:atena-exec:rw "$A/data"
 if [ -f "$A/data/metadata.json" ]; then setfacl -m u:atena-exec:rw "$A/data/metadata.json"; fi
 ok "Arca: o executor guarda arquivos lá (arca.guardar)"
 
+# stacks da zona apps: o executor escreve (stack.editar), menos nos .env, que são do dono; o dono
+# continua com escrita no que o executor criar
+S=/opt/atena/stacks/apps
+if [ -d "$S" ]; then
+  find "$S" -name '.env*' -prune -o -exec setfacl -m u:atena-exec:rwX {} +
+  find "$S" -type d -exec setfacl -m "d:u:atena-exec:rwX,d:u:$ATENA_ADMIN_USER:rwX" {} +
+  ok "stacks de apps: o executor edita, com foto antes (stack.editar)"
+fi
+
 # chip da placa (ventoinhas) para o sistema.sensores: módulo opcional, carregado agora e a cada boot
 M=/etc/modules-load.d/atena-sensores.conf
 if [ -n "$ATENA_SENSORES_MODULO" ]; then

@@ -1,6 +1,6 @@
 ---
 name: servidor-atena
-description: "Enxergar e operar o servidor Atena pelo executor de ações: qualquer arquivo, pasta, log ou serviço (menos segredos), busca em arquivos, achar e trazer fotos e arquivos do servidor (para olhar, ler ou mandar ao dono), arquivos do Arca (listar, pegar, guardar), processos, portas, estado dos containers, CPU/RAM/disco/GPU, temperaturas e ventoinhas, gasto de API do mês, reiniciar serviços, ligar/desligar o PC da rede de casa e processar texto privado num modelo de casa. Use sempre que o dono perguntar do servidor, de temperatura, de gastos, de erros, de arquivos ou pedir algo que mexa no servidor, e na ronda."
+description: "Enxergar e operar o servidor Atena pelo executor de ações: qualquer arquivo, pasta, log ou serviço (menos segredos), busca em arquivos, achar e trazer fotos e arquivos do servidor (para olhar, ler ou mandar ao dono), arquivos do Arca (listar, pegar, guardar), processos, portas, estado dos containers, CPU/RAM/disco/GPU, temperaturas e ventoinhas, gasto de API do mês, reiniciar serviços, editar e aplicar stacks de apps (Arca, Open WebUI) com foto e desfazer, ligar/desligar o PC da rede de casa e processar texto privado num modelo de casa. Use sempre que o dono perguntar do servidor, de temperatura, de gastos, de erros, de arquivos ou pedir algo que mexa no servidor, e na ronda."
 version: 1.1.0
 author: Atena
 license: MIT
@@ -155,6 +155,34 @@ Reiniciar e ligar/desligar o PC são reversíveis: faça direto. Se `/acoes` mar
 quando o dono tocar em Aprovar: não peça outro ok no chat, diga que a aprovação está no celular
 (vale 10 min) e acompanhe com `GET /pedido/<id>`.
 
+## Stacks de apps (Arca, Open WebUI): editar com foto
+
+As stacks da zona apps (`/opt/atena/stacks/apps/<stack>`) você pode editar: compose, Dockerfile,
+código do Arca (`app/...`) e outras configurações. Leia antes com `arquivo.ler`.
+
+| Ação | Params | O que faz |
+|---|---|---|
+| `stack.editar` | `stack`, `arquivo` (relativo à pasta, ex.: `compose.yaml`, `app/src/index.ts`), e `trocar` (lista de `{"de": trecho exato, "para": trecho novo}`) ou `conteudo` (o arquivo inteiro, para arquivo novo ou reescrita) | Tira uma foto do arquivo e grava. Não põe no ar sozinho |
+| `stack.aplicar` | `stack` | Confere as regras e sobe a stack (`docker compose up -d --build`). Responde 202 com o `pedido`; acompanhe com `GET /pedido/<id>?esperar=170`. O resultado traz os containers e, se um não ficou de pé, o fim do log |
+| `stack.fotos` | `stack` | As edições guardadas, da mais nova para a mais velha |
+| `stack.desfazer` | `stack`, `foto?` | Sem `foto`: volta a última edição. Depois, `stack.aplicar` para pôr no ar como era |
+
+Como fazer:
+1. Leia o arquivo (`arquivo.ler`). Prefira `trocar`, com trechos copiados exatamente do arquivo e
+   contexto suficiente para aparecerem uma vez só.
+2. `stack.editar`, depois `stack.aplicar` e acompanhe o pedido até `concluido`.
+3. Confira que funcionou (`servico.logs`, `status.servicos`). Se quebrou: `stack.desfazer` e
+   `stack.aplicar` de novo, e conte ao dono o que houve.
+4. Para o dono: o que mudou, o que você conferiu, e que dá para desfazer.
+
+Regras que o executor confere (erro 422 diz qual): pastas só da própria stack e de
+`/srv/apps/<stack>`; redes só `zone-apps` e `svc-llm`; portas com IP na frente (o IP do servidor
+na rede de casa, como nas outras portas do compose, ou `127.0.0.1` só no servidor);
+`cgroup_parent: atena-apps.slice`; nada de `privileged`, `cap_add`, `devices`, rede/PID do host,
+socket do Docker. `.env` e arquivos de senha só o dono edita (403). Esses limites são de propósito:
+não tente contornar; explique ao dono o que precisaria e por quê.
+Faça quando o dono pedir. Por iniciativa própria (ex.: na ronda), sugira em vez de editar.
+
 ## Ronda
 
 Uma tarefa agendada ("ronda", a cada 3 min) roda `/opt/data/scripts/ronda.py`, que lista só o que
@@ -171,18 +199,20 @@ está fora do normal. Você só é acordada quando essa lista muda. Quando for a
 
 ## Limites conhecidos
 
-- O executor só faz o que está em `/acoes`. Escrever, você escreve no Arca (`arca.guardar`) e no seu
-  espaço. Mudar configurações, instalar coisas ou mexer em outros arquivos do servidor não está ao
-  seu alcance: explique ao dono o que precisa ser feito.
+- O executor só faz o que está em `/acoes`. Escrever, você escreve nas stacks de apps
+  (`stack.editar`), no Arca (`arca.guardar`) e no seu espaço. Fora disso (stacks de core, ai, agents;
+  `/etc`; instalar pacotes no servidor), não está ao seu alcance: explique ao dono o que precisa ser
+  feito.
 - Logs do litellm listam requisições, não gastos: para gastos, use `gasto.api`.
 - Zona prod (sistemas de clientes) fica fora do seu alcance.
 
 ## Respostas
 
 - `{"ok": true, "resultado": ...}`: deu certo. Resuma para o dono em português, sem colar JSON cru.
-- HTTP 202: virou pedido de aprovação; acompanhe com `GET /pedido/<id>`.
+- HTTP 202: virou pedido (aprovação no celular, ou uma ação que segue em segundo plano, como `stack.aplicar`); acompanhe com `GET /pedido/<id>?esperar=170`.
 - HTTP 400: parâmetro errado; a mensagem diz qual.
 - HTTP 403: fora do seu alcance (segredo, zona prod, ação não liberada). Explique; não contorne.
 - HTTP 404: stack, ação ou caminho inexistente. Liste as stacks com `status.servicos`.
+- HTTP 422: a mudança numa stack fere uma regra da zona (a mensagem diz qual); nada foi gravado ou aplicado.
 - HTTP 429: pedidos demais esperando. Espere os que estão em andamento.
 - HTTP 503: o ntfy (avisos do celular) está fora do ar. Avise o dono.

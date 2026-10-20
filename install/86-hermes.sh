@@ -50,6 +50,7 @@ if [ ! -s "$D/executor.token" ]; then
   acoes=status.servicos,status.recursos,status.containers,status.sistema,gasto.api,servico.logs,servico.journal
   acoes=$acoes,arquivo.ler,arquivo.procurar,arquivo.entregar,arquivo.buscar,local.processar,sistema.processos
   acoes=$acoes,sistema.rede,sistema.sensores,arca.lista,arca.guardar,arca.pegar
+  acoes=$acoes,stack.editar,stack.aplicar,stack.fotos,stack.desfazer
   acoes=$acoes,servico.reiniciar,pc.estado,pc.ligar,pc.desligar,pc.reiniciar,pc.cancelar
   /usr/local/sbin/atena-executor token-novo hermes "$acoes" apps,ai,agents,lab,core nenhuma \
     | install -m 600 -o hermes -g hermes /dev/stdin "$D/executor.token"
