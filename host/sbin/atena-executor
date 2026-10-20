@@ -53,6 +53,11 @@ Leitura: as consultas enxergam o servidor inteiro (o serviço tem só CAP_DAC_RE
 qualquer arquivo e não escreve nada), menos segredos: áreas do sistema e arquivos de chave, token e
 senha são recusados, e linhas com senha, token ou chave saem ocultas (***).
 
+Central do painel: aprovacoes.lista mostra os pedidos que esperam o dono, de todos os clientes
+(só os das zonas de quem pergunta), com o texto que foi ao celular; aprovacoes.decidir aprova,
+recusa ou responde a pergunta, como o toque no celular faria, mas nunca um pedido do próprio
+cliente; atividade.lista lê o registro do executor (cada pedido, cada decisão e os eventos).
+
 Protocolo: HTTP no socket /run/atena-executor/executor.sock (permissão 660, grupo atena-acoes)
   GET  /acoes                     ações que o token pode pedir
   POST /acao/<nome>               corpo JSON {"params": {...}, "origem": "manual|agendamento|..."}
@@ -318,7 +323,7 @@ def criar_pedido(cliente, nome, params, origem, titulo):
 
 def pedir_aprovacao(p, titulo, texto):
     segredo = secrets.token_urlsafe(18)
-    mudar(p, estado="aguardando", segredo=segredo, expira=time.time() + VALIDADE)
+    mudar(p, estado="aguardando", segredo=segredo, expira=time.time() + VALIDADE, aviso=texto[:3000])
     try:
         ntfy("aprovacoes", titulo,
              f"{texto}\n\nPedido {p['id']} de {p['cliente']} · vale por {VALIDADE // 60} min",
@@ -346,34 +351,48 @@ def tratar_resposta(texto):
             if not p or p["estado"] in ("aguardando", "planejando", "executando", "perguntando"):
                 log(evento="resposta inválida", pedido=id_)   # toque repetido num decidido é normal
             return
-        log(evento="decisão do dono", pedido=id_, acao=p["acao"], decisao=decisao)
-        if decisao.startswith("opcao"):   # botão de uma pergunta do Claude Code
-            opcoes = p["params"].get("opcoes") or []
-            i = int(decisao[-1])
-            if p["acao"] == "claude.pergunta" and p["estado"] == "perguntando" and i < len(opcoes):
-                responder_pergunta(p, opcoes[i], "dono (botão no celular)")
-            return
+    decidir(p, decisao, "celular")
+
+
+def decidir(p, decisao, por, resposta=None):
+    """A decisão do dono: pelo botão do celular (tratar_resposta) ou pelo painel (aprovacoes.decidir).
+    Devolve o que aconteceu: aprovado, recusado, expirado, respondida, cancelando ou ignorado."""
+    with TRAVA:
+        log(evento="decisão do dono", pedido=p["id"], acao=p["acao"], decisao=decisao, por=por)
+        if decisao.startswith("opcao") or decisao == "responder":   # pergunta do Claude Code
+            if decisao == "responder":
+                texto = resposta
+            else:
+                opcoes = p["params"].get("opcoes") or []
+                i = int(decisao[-1])
+                texto = opcoes[i] if i < len(opcoes) else None
+            if p["acao"] != "claude.pergunta" or p["estado"] != "perguntando" or not texto:
+                return "ignorado"
+            responder_pergunta(p, texto, "dono (botão no celular)" if por == "celular" else f"dono ({por})")
+            return "respondida"
         if decisao == "cancelar":
             if p["estado"] in ("planejando", "executando"):
                 cancelar_claude(p)
-            return
+                return "cancelando"
+            return "ignorado"
         if p["estado"] != "aguardando":
-            return
+            return "ignorado"
         if time.time() > p["expira"]:
             mudar(p, estado="expirado", segredo=None)
             negar_permissao(p, "o dono não respondeu a tempo")
-            avisar(f"Pedido {id_} expirou", "Nada foi feito. Peça de novo à Atena se ainda quiser.",
+            avisar(f"Pedido {p['id']} expirou", "Nada foi feito. Peça de novo à Atena se ainda quiser.",
                    tags=["hourglass"])
-            return
+            return "expirado"
         if decisao == "recusar":
-            mudar(p, estado="recusado", segredo=None)
+            mudar(p, estado="recusado", segredo=None, decidido_por=por)
             if p["acao"] == "claude.permissao":   # o Claude Code fica sabendo; sem aviso extra
                 negar_permissao(p, "o dono recusou")
-                return
+                return "recusado"
             avisar(f"Recusado: {p['titulo']}", "Nada foi feito.", tags=["no_entry"])
-            return
-        mudar(p, estado="executando", segredo=None)
+            return "recusado"
+        mudar(p, estado="executando", segredo=None, decidido_por=por)
     threading.Thread(target=executar_aprovado, args=(p,), daemon=True).start()
+    return "aprovado"
 
 
 def executar(p):
@@ -2512,10 +2531,140 @@ def acao_app_lista(cliente, params):
                         for p, _, c in lixeira()]}
 
 
+# --- central do painel: aprovações e atividade ---------------------------------------------------
+
+LIMITE_ATIVIDADE = 1000   # linhas do registro numa consulta
+
+
+def curto(valor, tamanho=160):
+    """Um valor de params para mostrar: texto curto e sem segredos (stack.editar manda o arquivo inteiro)."""
+    texto = valor if isinstance(valor, str) else json.dumps(valor, ensure_ascii=False)
+    texto = ocultar(texto)
+    return texto if len(texto) <= tamanho else texto[:tamanho] + "…"
+
+
+def no_alcance(cliente, p):
+    """O cliente só enxerga pedidos de quem não passa das zonas dele."""
+    return set(p.get("zonas") or ()) <= set(cliente["zonas"])
+
+
+def pendente(p):
+    """O que o dono precisa para decidir: quem pediu, o quê e o texto que foi ao celular."""
+    item = {"id": p["id"], "cliente": p["cliente"], "acao": p["acao"], "titulo": p.get("titulo"),
+            "origem": p.get("origem"), "criado": p["criado"],
+            "params": {k: curto(v) for k, v in (p.get("params") or {}).items()
+                       if k not in ("chave", "nonce")}}
+    if p["acao"] == "claude.pergunta":
+        params = p["params"]
+        return {**item, "tipo": "pergunta", "pergunta": params.get("pergunta"),
+                "opcoes": params.get("opcoes") or [], "por_que": params.get("por_que"),
+                "projeto": params.get("projeto"), "expira": p["criado"] + ESPERA_PERGUNTA}
+    return {**item, "tipo": "aprovacao", "texto": p.get("aviso") or "", "expira": p.get("expira")}
+
+
+def acao_aprovacoes_lista(cliente, params):
+    agora = time.time()
+    with TRAVA:
+        todos = [p for p in ESTADO["pedidos"].values() if no_alcance(cliente, p)]
+        esperando = [pendente(p) for p in todos
+                     if (p["estado"] == "aguardando" and p.get("expira", 0) > agora)
+                     or (p["estado"] == "perguntando" and p["criado"] + ESPERA_PERGUNTA > agora)]
+        passaram = sorted((p for p in todos if p["estado"] not in ("aguardando", "perguntando")
+                           and (p.get("aviso") or p["acao"] in ("claude.permissao", "claude.pergunta"))),
+                          key=lambda p: p.get("atualizado", p["criado"]), reverse=True)[:15]
+        recentes = [{"id": p["id"], "cliente": p["cliente"], "acao": p["acao"], "titulo": p.get("titulo"),
+                     "estado": p["estado"], "quando": p.get("atualizado", p["criado"]),
+                     "por": p.get("decidido_por") or p.get("quem"), "erro": p.get("erro")}
+                    for p in passaram]
+    return {"pendentes": sorted(esperando, key=lambda x: x["criado"]), "recentes": recentes, "agora": agora}
+
+
+def acao_aprovacoes_decidir(cliente, params):
+    alvo, decisao, resposta = params.get("pedido"), params.get("decisao"), params.get("resposta")
+    if decisao not in ("aprovar", "recusar", "responder"):
+        raise Erro(400, "decisao deve ser aprovar, recusar ou responder")
+    if decisao == "responder" and (not isinstance(resposta, str) or not 1 <= len(resposta.strip()) <= 2000):
+        raise Erro(400, "resposta deve ter de 1 a 2000 caracteres")
+    with TRAVA:
+        p = ESTADO["pedidos"].get(alvo) if isinstance(alvo, str) else None
+        if not p or not no_alcance(cliente, p):
+            raise Erro(404, "pedido não encontrado (veja aprovacoes.lista)")
+        if p["cliente"] == cliente["cliente"]:
+            raise Erro(403, "um cliente não decide sobre os próprios pedidos")
+        pergunta = p["acao"] == "claude.pergunta"
+        if pergunta != (decisao == "responder"):
+            raise Erro(400, "pergunta do Claude Code se responde (decisao responder); o resto, aprovar ou recusar")
+        if p["estado"] != ("perguntando" if pergunta else "aguardando"):
+            raise Erro(409, f"esse pedido já foi decidido (estado: {p['estado']})")
+        resultado = decidir(p, decisao, cliente["cliente"], resposta.strip() if pergunta else None)
+    return {"pedido": alvo, "resultado": resultado}
+
+
+def ler_registro(quantas):
+    """As últimas linhas do registro do executor, em JSON do journal (uma entrada por linha)."""
+    r = subprocess.run(["journalctl", "-u", "atena-executor", "-o", "json", "--output-fields=MESSAGE",
+                        "--no-pager", "-n", str(quantas)], capture_output=True, text=True, timeout=30)
+    if r.returncode != 0:
+        raise Erro(500, "não consegui ler o registro do executor")
+    return r.stdout
+
+
+def acao_atividade_lista(cliente, params):
+    """O registro do executor no journal, do mais novo para o mais velho."""
+    linhas, quem, so_erros = params.get("linhas", 200), params.get("cliente"), params.get("so_erros", False)
+    if not isinstance(linhas, int) or not 1 <= linhas <= LIMITE_ATIVIDADE:
+        raise Erro(400, f"linhas deve ser um número de 1 a {LIMITE_ATIVIDADE}")
+    if quem is not None and (not isinstance(quem, str) or not re.fullmatch(r"[a-z0-9_-]{1,32}", quem)):
+        raise Erro(400, "cliente inválido")
+    if not isinstance(so_erros, bool):
+        raise Erro(400, "so_erros deve ser true ou false")
+    filtrando = quem is not None or so_erros
+    itens = []
+    for bruta in reversed(ler_registro(LIMITE_ATIVIDADE * 5 if filtrando else linhas).splitlines()):
+        try:
+            entrada = json.loads(bruta)
+            mensagem = entrada.get("MESSAGE")
+            quando = int(entrada["__REALTIME_TIMESTAMP"]) / 1e6
+        except (ValueError, KeyError, TypeError):
+            continue
+        if not isinstance(mensagem, str):   # mensagem binária no journal
+            continue
+        try:
+            campos = json.loads(mensagem)
+        except ValueError:
+            campos = None
+        if not isinstance(campos, dict):   # linha que não é do log(): erro do Python, aviso do systemd
+            campos = {"evento": curto(mensagem, 300)}
+        item = {"quando": quando}
+        for chave in ("cliente", "origem", "acao", "evento", "pedido", "decisao", "por", "ok", "segundos",
+                      "aprovacao", "trabalho", "ferramenta", "quem"):
+            if campos.get(chave) is not None:
+                item[chave] = campos[chave] if isinstance(campos[chave], (bool, int, float)) else curto(campos[chave])
+        if campos.get("erro") is not None:
+            item["erro"] = curto(campos["erro"], 300)
+        if isinstance(campos.get("params"), dict):
+            item["params"] = {k: curto(v) for k, v in campos["params"].items()}
+        if quem is not None and item.get("cliente") != quem:
+            continue
+        if so_erros and item.get("ok") is not False and "erro" not in item:
+            continue
+        itens.append(item)
+        if len(itens) >= linhas:
+            break
+    return {"itens": itens}
+
+
 # nome: (função, descrição, preparar). Sem preparar, a ação roda na hora: função(cliente, params).
 # Com preparar, vira um pedido: preparar(cliente, params) valida e descreve, e função(pedido) roda
 # depois da aprovação no celular (se o token do cliente exigir) ou na hora.
 ACOES = {
+    # central do painel: o dono vê e decide o que espera por ele, e lê o registro do executor
+    "aprovacoes.lista":  (acao_aprovacoes_lista, "pedidos esperando o dono (aprovação ou pergunta do Claude Code), "
+                          "de todos os clientes das suas zonas, e os que passaram há pouco", None),
+    "aprovacoes.decidir": (acao_aprovacoes_decidir, "decide um pedido de outro cliente como o dono no celular "
+                           "(pedido, decisao: aprovar|recusar|responder, resposta? para pergunta)", None),
+    "atividade.lista":   (acao_atividade_lista, "registro do executor, do mais novo ao mais velho "
+                          "(linhas? 1-1000, cliente?, so_erros?)", None),
     "status.servicos":   (acao_status_servicos, "estado dos containers das zonas do cliente", None),
     "status.recursos":   (acao_status_recursos, "CPU, RAM, discos, GPU e temperaturas agora", None),
     "status.containers": (acao_status_containers, "CPU e RAM de cada container agora", None),
