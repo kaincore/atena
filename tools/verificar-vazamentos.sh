@@ -35,7 +35,8 @@ fi
 # valores reais dos .env do servidor (só os que têm 8 caracteres ou mais)
 for env in /opt/atena/stacks/*/*/.env; do
   [ -r "$env" ] || continue
-  grep -E '^[A-Z_]+=.{8,}$' "$env" | cut -d= -f2- | sed 's/[][\.*^$+?(){}|/]/\\&/g' >> "$padroes"
+  # sem nenhum valor longo, o grep sai com 1 e o pipefail derrubaria o script calado
+  { grep -E '^[A-Z_]+=.{8,}$' "$env" || true; } | cut -d= -f2- | sed 's/[][\.*^$+?(){}|/]/\\&/g' >> "$padroes"
 done
 
 achou=0
