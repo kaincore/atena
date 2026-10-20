@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+"""Define ou troca a senha do painel Atena.
+
+Uso: sudo atena-painel-senha
+
+A senha não aparece na tela nem fica no histórico do shell: só o hash (scrypt) vai para
+/srv/core/painel/senha, legível apenas pelo usuário do painel. Trocar a senha desconecta todos os
+aparelhos (eles pedem a senha nova na próxima vez).
+"""
+import base64
+import getpass
+import hashlib
+import os
+import pwd
+import secrets
+import sys
+import unicodedata
+
+ARQUIVO = "/srv/core/painel/senha"
+USUARIO = "atena-painel"
+MINIMO = 8
+N, R, P = 2 ** 15, 8, 1   # o painel lê os parâmetros do arquivo; mudar aqui não quebra nada
+
+
+def b64(dados):
+    return base64.b64encode(dados).decode()
+
+
+def main():
+    if len(sys.argv) > 1:
+        sys.exit(__doc__)
+    if os.geteuid() != 0:
+        sys.exit("rode com sudo: sudo atena-painel-senha")
+    try:
+        dono = pwd.getpwnam(USUARIO)
+    except KeyError:
+        sys.exit(f"o usuário {USUARIO} não existe: instale o painel primeiro")
+    if not os.path.isdir(os.path.dirname(ARQUIVO)):
+        sys.exit(f"falta a pasta {os.path.dirname(ARQUIVO)}: instale o painel primeiro")
+    if not sys.stdin.isatty():
+        sys.exit("rode num terminal de verdade (SSH), para a senha não aparecer")
+    senha = getpass.getpass("Senha nova do painel: ")
+    if len(senha) < MINIMO:
+        sys.exit(f"use pelo menos {MINIMO} caracteres; nada mudou")
+    if getpass.getpass("Repita a senha: ") != senha:
+        sys.exit("as senhas não batem; nada mudou")
+    sal = secrets.token_bytes(16)
+    chave = hashlib.scrypt(unicodedata.normalize("NFC", senha).encode(), salt=sal, n=N, r=R, p=P,
+                           maxmem=128 * 1024 * 1024, dklen=32)
+    novo = ARQUIVO + ".novo"
+    fd = os.open(novo, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, "w") as f:
+        f.write("$".join(["scrypt", str(N), str(R), str(P), b64(sal), b64(chave)]) + "\n")
+    os.chown(novo, dono.pw_uid, dono.pw_gid)
+    os.replace(novo, ARQUIVO)
+    print("Senha gravada. Os aparelhos que estavam conectados vão pedir a senha nova.")
+
+
+if __name__ == "__main__":
+    main()
