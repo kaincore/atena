@@ -14,7 +14,7 @@ O servidor é dividido em **zonas por nível de confiança**. Cada zona tem quat
 | Zona | Rede | O que roda | Quem mexe |
 |---|---|---|---|
 | `prod` | `zone-prod-<cliente>` (10.10.101.0/24 em diante) | Sistemas de clientes, uma rede por cliente | Só o administrador |
-| `core` | `zone-core` (10.10.0.0/24) | Dockge, Beszel, ntfy, monitoramento e backup | Só o administrador |
+| `core` | `zone-core` (10.10.0.0/24) | Dockge, Beszel, ntfy, o painel, monitoramento e backup | Só o administrador |
 | `apps` | `zone-apps` (10.10.10.0/24) | Apps pessoais (Arca, Open WebUI) | Administrador e a Atena, pelo executor (com foto antes de cada mudança) |
 | `ai` | `zone-ai` (10.10.20.0/24) | Ollama, Whisper, voz, LiteLLM | Administrador |
 | `agents` | `zone-agents` (10.10.30.0/24) | A Atena (Hermes), agentes de IA e workers | Administrador e agentes, por scripts |
@@ -32,7 +32,7 @@ O Docker já isola redes diferentes: um container da zona `agents` não alcança
 
 ## Executor de ações
 
-O executor (`/usr/local/sbin/atena-executor`) é o **único caminho** dos clientes (a Atena e, no futuro, um painel) até o servidor. Ele roda no próprio servidor, como o usuário `atena-exec`, e ouve o socket `/run/atena-executor/executor.sock` (grupo `atena-acoes`).
+O executor (`/usr/local/sbin/atena-executor`) é o **único caminho** dos clientes (a Atena e o painel) até o servidor. Ele roda no próprio servidor, como o usuário `atena-exec`, e ouve o socket `/run/atena-executor/executor.sock` (grupo `atena-acoes`).
 
 <p align="center"><img src="../assets/fluxo.svg" width="100%" alt="Caminho de um pedido: você fala no Telegram com o Hermes, que usa o LiteLLM para chegar ao Claude ou aos modelos de casa. Pelo socket, o Hermes pede ao executor, que age no servidor (Docker, systemd, arquivos, PC). Para aprovar, o executor avisa o celular pelo ntfy, e o toque em Aprovar volta pelo ntfy até o executor."></p>
 
@@ -102,6 +102,23 @@ App pronto ──> app.publicar ──> stack lab-<projeto> na zona lab (porta 8
 - **A Atena no lab.** Os projetos estão montados no terminal dela (escrita por ACL), para ajustes pequenos com commit; programação grande vai ao Claude Code.
 - **Lab interativo.** O seu Claude Code, aberto dentro de `/srv/lab`, tem o mesmo sandbox e um guarda de escopo que pede confirmação para sudo, Docker, caminhos fora do lab e instalação global.
 
+## O painel
+
+Opcional (`./install.sh --painel`). O servidor no navegador do PC e do celular, instalável como app (PWA): estado, serviços, o PC da rede de casa, os apps do lab, o gasto de IA e o histórico do que você mandou fazer.
+
+```text
+Celular ou PC (Tailscale) ──HTTPS :3100──> tailscale serve ──socket──> painel (zona core, sem rede)
+painel ──socket──> executor (token próprio: 16 ações, nenhuma que apague ou edite)
+```
+
+- **Sem rede.** O container tem `network_mode: none`: não alcança a internet, a rede de casa nem outros containers, e nada alcança ele pela rede. As visitas chegam pelo `tailscale serve`, que entrega no socket `/srv/core/painel/run/painel.sock`, e os pedidos vão ao executor pelo socket dele.
+- **Só pelo Tailscale**, inclusive em casa. O HTTPS do Tailscale é o que deixa instalar o app e manter o cookie seguro.
+- **Uma conta, com senha.** O hash (scrypt) fica em `/srv/core/painel/senha`, gravado pelo `atena-painel-senha`. A sessão dura 30 dias e renova a cada uso; trocar a senha desconecta todos os aparelhos.
+- **Duas listas fechadas.** O painel só pede as ações dele, e o token dele no executor só aceita essas, nas zonas core, apps, ai, agents e lab: consultas, logs, gasto, reiniciar serviço, ligar e desligar o PC, reiniciar e parar apps do lab. Nada de apagar, editar stacks, Claude Code ou ler arquivos.
+- **Confirmação na tela.** Reiniciar, desligar e parar pedem confirmação no próprio painel; por isso o token dele não pede o celular.
+- **Sem dependências.** Node 22, que já roda TypeScript e traz o SQLite: nenhum pacote do npm. O código fica na stack (`stacks/core/painel/app`), e o instalador atualiza a cada execução.
+- **Dados.** Banco SQLite em `/srv/core/painel/painel.db`: as sessões (só o hash do token), as tentativas de entrada e o histórico de 90 dias das ações que mudam algo.
+
 ## Limites de CPU e RAM
 
 Cada zona é um slice do systemd dentro de `atena.slice`. Os containers entram no slice com `cgroup_parent: atena-<zona>.slice` no compose.
@@ -122,6 +139,7 @@ O `atena.slice` tem `MemoryLow=5G`, porque a proteção de memória de um slice 
 - **Saída dos containers:** internet e DNS do roteador, sim. Rede de casa, aparelhos do Tailscale e o próprio servidor, não.
 - **Entrada pela rede de casa:** qualquer aparelho da rede de casa acessa o que estiver publicado no IP do servidor.
 - **Entrada de fora de casa:** só pelo Tailscale, com `tailscale serve` em cada serviço.
+- **O painel:** só pelo Tailscale, em casa e fora. Ele não tem porta na rede de casa.
 - **Internet:** nada fica exposto.
 
 Detalhes e testes em [segurança](seguranca.md).
