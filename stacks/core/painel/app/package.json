@@ -1,0 +1,15 @@
+{
+  "name": "atena-painel",
+  "version": "0.1.0",
+  "description": "Painel do servidor Atena: estado, serviços, PC e lab, pelo navegador ou como app (PWA)",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/principal.ts",
+    "test": "node --disable-warning=ExperimentalWarning --test 'test/*.test.ts'"
+  }
+}
