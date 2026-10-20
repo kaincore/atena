@@ -27,6 +27,19 @@ if [ ! -f /etc/atena/executor/pc-chave ]; then
   chmod 640 /etc/atena/executor/pc-chave
 fi
 
+# chip da placa (ventoinhas) para o sistema.sensores: módulo opcional, carregado agora e a cada boot
+M=/etc/modules-load.d/atena-sensores.conf
+if [ -n "$ATENA_SENSORES_MODULO" ]; then
+  printf '# Atena: chip da placa para o sistema.sensores (ventoinhas)\n%s\n' "$ATENA_SENSORES_MODULO" > "$M"
+  if modprobe "$ATENA_SENSORES_MODULO"; then
+    ok "sensores da placa: módulo $ATENA_SENSORES_MODULO (agora e no boot)"
+  else
+    aviso "o módulo $ATENA_SENSORES_MODULO não carregou; sistema.sensores mostra o resto, sem as ventoinhas"
+  fi
+elif [ -f "$M" ]; then
+  rm -f "$M"
+fi
+
 systemctl daemon-reload
 systemctl enable --now atena-executor.service atena-vigia.timer >/dev/null 2>&1
 systemctl restart atena-executor.service   # numa atualização, pega a versão nova

@@ -21,6 +21,11 @@ done
 : "${ATENA_NTFY_URL:=http://$ATENA_LAN_IP:2586}"
 [ -f "/usr/share/zoneinfo/$ATENA_TZ" ] || erro "ATENA_TZ=$ATENA_TZ não é um fuso horário válido (ex.: America/Sao_Paulo)"
 case "$ATENA_NTFY_URL" in http://*|https://*) ;; *) erro "ATENA_NTFY_URL deve começar com http:// ou https://" ;; esac
+# chaves da versão 0.3
+: "${ATENA_SENSORES_MODULO:=}"
+case "$ATENA_SENSORES_MODULO" in
+  *[!a-z0-9_]*) erro "ATENA_SENSORES_MODULO deve ser o nome de um módulo do kernel (ex.: nct6683) ou vazio" ;;
+esac
 
 ip link show "$ATENA_LAN_IF" >/dev/null 2>&1 \
   || erro "a interface $ATENA_LAN_IF não existe (veja as interfaces com: ip -br link)"
