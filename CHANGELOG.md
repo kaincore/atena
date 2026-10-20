@@ -1,5 +1,18 @@
 # Mudanças
 
+## 0.5.0 (2026-10-20)
+
+O painel: o servidor no navegador e no celular. Extraído do primeiro servidor Atena.
+
+- **Painel** (opcional, `./install.sh --painel`): app instalável (PWA) com as telas Início (CPU, RAM, discos, GPU, temperaturas, serviços com problema, gasto de IA do mês e falhas do systemd), Serviços (stacks por zona, logs e reiniciar), PC (ligar, desligar, reiniciar e cancelar), Lab (apps publicados, reiniciar e parar), Histórico e Ajustes (aparelhos conectados).
+- **Só pelo Tailscale e sem rede:** o `tailscale serve` entrega as visitas num socket (porta 3100), e o container roda com `network_mode: none`, sem root, com o disco só de leitura, sem capacidades e sem o socket do Docker. Na rede de casa, a porta nem existe.
+- **Senha** com `atena-painel-senha` (scrypt, só num terminal). A sessão dura 30 dias e renova no uso; 5 erros em 15 minutos bloqueiam a entrada; trocar a senha desconecta todos os aparelhos.
+- **Token próprio no executor:** 16 ações, nenhuma que apague ou edite, sem aprovação no celular, porque quem confirma é você, na tela. O instalador só refaz o token se ele não bater.
+- **Sem pacotes do npm:** o Node 22 roda o TypeScript direto e traz o SQLite. Os 27 testes do painel rodam no CI.
+- Correção que veio junto: o verificador de vazamentos encerrava sem mensagem, e bloqueava todo commit, quando um `.env` do servidor só tinha valores curtos.
+- Ainda não: conversar com a Atena pelo painel, agendamentos e o visual definitivo.
+- Testado numa VM Ubuntu 26.04 sem GPU, atualizando uma 0.4.0: o instalador criou o usuário, o token e a stack, deixou o painel saudável e avisou que faltavam o Tailscale e a senha. A senha foi gravada por um terminal de verdade. Pelo socket, como o Tailscale faz, 15 conferências passaram contra o executor de verdade: entrar, recusar a senha errada e o pedido sem o cabeçalho, consultas, reiniciar o Dockge com histórico, e os erros explicados sem LiteLLM, sem PC e sem lab. Rodar o instalador de novo manteve o token, a senha e o histórico. O ensaio da interface no navegador, no tamanho de celular e de PC, achou três defeitos de tela, corrigidos antes dos commits.
+
 ## 0.4.0 (2026-10-20)
 
 O lab: a Atena manda trabalhos de programação ao Claude Code. Extraído do primeiro servidor Atena.
