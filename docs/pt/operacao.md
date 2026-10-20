@@ -88,6 +88,7 @@ journalctl -u atena-executor -f                               # cada pedido, com
 2. `sudo atena-hermes-chave [teto]`: cria a chave da Atena no LiteLLM, com teto em dólares por mês (padrão 10), e grava no Hermes sem mostrar.
 3. Crie um bot com o **@BotFather** no Telegram e rode `sudo atena-telegram`. O script pede o token sem mostrar, espera você mandar "oi" ao bot e confirma o seu ID. Só você conversa com ela.
 4. Para o texto privado (`local.processar`), baixe o modelo do servidor: `docker exec ollama ollama pull qwen3:4b-instruct-2507-q4_K_M` (ou o de `ATENA_LOCAL_MODELO`).
+5. Voz (opcional, com GPU): `ATENA_VOZ=sim` no `atena.conf` e rode o instalador de novo. Suba a stack `ai/voz`, baixe o modelo uma vez com `curl -X POST http://127.0.0.1:8003/v1/models/speaches-ai/Kokoro-82M-v1.0-ONNX` e mande `/voice` no Telegram (`on`: responde em voz quando você manda voz; `tts`: sempre; `off`: desliga). A voz padrão é `pf_dora`; outras em português: `pm_alex` e `pm_santa` (`docker exec -u hermes hermes hermes config set tts.openai.voice pm_alex`).
 
 **No dia a dia.**
 
@@ -103,6 +104,10 @@ journalctl -u atena-executor -f                               # cada pedido, com
 - Gasto: pergunte a ela ("quanto gastamos este mês?").
 - Atualizar o Hermes: leia as notas da versão, troque a imagem no compose e confira o `config.yaml` gerado. A documentação no GitHub é da versão em desenvolvimento, que pode ser mais nova que a sua.
 
+## Temperaturas e ventoinhas
+
+`sistema.sensores` (e a Atena, quando você pergunta) lê a CPU, o NVMe e a GPU sem configurar nada. As ventoinhas vêm do chip da placa-mãe, que costuma precisar de um módulo do kernel: descubra qual com `sudo apt install lm-sensors && sudo sensors-detect`, ponha em `ATENA_SENSORES_MODULO` (ex.: `nct6683`) e rode o instalador de novo. A ronda avisa CPU acima de 85 °C, GPU acima de 85 °C e NVMe acima de 70 °C.
+
 ## PC da rede de casa
 
 Opcional: a Atena liga o PC pela rede, usa o modelo dele para textos maiores e desliga quando você pede. O passo a passo está em [`host/windows/LEIAME.md`](../../host/windows/LEIAME.md).
@@ -117,6 +122,16 @@ As imagens têm versão fixa. Para atualizar:
 4. **GPUs Pascal (GTX 10xx):** depois de atualizar o Ollama ou o Whisper, confira nos logs se a GPU continua sendo usada (`library=CUDA compute=6.1` no Ollama).
 
 O driver da NVIDIA atualiza junto com o sistema, sempre dentro da mesma série. **Não use `apt-mark hold`** (veja as [lições](licoes.md)).
+
+## Atualizar da 0.2 para a 0.3
+
+`git pull` e `sudo ./install.sh` (com `--hermes`, se você usa a Atena). O instalador atualiza o executor, a habilidade e a personalidade, e refaz o token da Atena com as ações novas, mantendo as zonas e a regra de aprovação. Como as stacks que já existem não são sobrescritas, três passos são seus:
+
+1. **LiteLLM** (para a voz): copie `stacks/ai/litellm/ganchos.py` para `/opt/atena/stacks/ai/litellm/`, acrescente o modelo `voz` e a linha `callbacks: ganchos.voz` do `config.yaml` do modelo e a montagem do `ganchos.py` do `compose.yaml`, e rode `docker compose up -d --force-recreate` na pasta.
+2. **Chave da Atena** (para a voz): `sudo atena-hermes-chave [teto]` de novo, para a chave incluir o modelo `voz`.
+3. **Ollama** (opcional): `OLLAMA_KEEP_ALIVE: 2m` no compose, se a GPU tiver de dividir espaço com o Whisper e a voz.
+
+Depois, `/new` no Telegram.
 
 ## Rodar o instalador de novo
 

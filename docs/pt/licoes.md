@@ -30,6 +30,15 @@ Os módulos assinados do kernel acompanham a versão do driver. Travar o driver 
 **Pascal é lento em float16.**
 No Whisper (faster-whisper/CTranslate2), use `int8`. A GTX 1060 suporta DP4A, então o int8 roda rápido.
 
+**Na voz (Kokoro, ONNX), é o contrário: use a versão completa (fp32).**
+A int8 cai para a CPU nas placas Pascal e fica cerca de 5 vezes mais lenta.
+
+**A memória da voz na GPU cresce com o texto.**
+Números e porcentagens viram muitos fonemas: 837 letras passaram de 3,4 GB e travaram o pedido numa placa de 6 GB, e 300 letras chegaram a 4,2 GB. Em pedaços de 150 letras, a voz fica em ~2,2 GB. Por isso o Hermes fala em pedaços (`tts.openai.max_text_length 150`) e o LiteLLM desiste em 10 s, sem repetir.
+
+**Três modelos não cabem juntos em 6 GB.**
+Ollama (3,2 GB), Whisper (1,1 GB) e voz (2,2 GB) passam do limite. Cada um sai da GPU sozinho depois de um tempo parado: a voz em 60 s, o Ollama em 2 min e o Whisper em 10 min (ouvir rápido importa mais).
+
 ## LiteLLM e a API do Claude
 
 **Haiku, Sonnet e Opus 5.5 recusam `temperature`, `top_p` e `top_k` fora do padrão** (erro 400). Vários clientes mandam esses parâmetros. Use `additional_drop_params` em cada modelo.
@@ -57,6 +66,9 @@ Depois de editar um arquivo montado sozinho (como o `config.yaml`), use `docker 
 **O Dockge não lê subpastas** (pedido #687 do projeto). A solução é uma pasta de atalhos mantida por um `.path` do systemd.
 
 **A primeira pessoa que abre o Dockge, o Beszel ou o Open WebUI vira administradora.** Crie as contas logo depois de subir.
+
+**`docker compose config` junta o `env_file` no `environment`.**
+Para conferir de onde vêm as variáveis (e barrar um `.env` de outra stack), use `--no-env-resolution`: sem ela, o caminho do arquivo some do resultado.
 
 ## Executor, ntfy e Hermes
 
@@ -86,6 +98,15 @@ Use a versão instruct (`qwen3:4b-instruct-2507`) e mande `/no_think`.
 
 **Depois de desligar, o PC continua "ligado" na tabela de vizinhos por alguns minutos.**
 O executor trata o SSH sem rota como "desligado", em vez de dar erro.
+
+**Procure o cabeçalho do bloco PEM, não só "PRIVATE KEY".**
+Recusar qualquer texto com "PRIVATE KEY-----" barrava arquivos que só citam o trecho, como o próprio executor. O que identifica uma chave é `-----BEGIN ... PRIVATE KEY-----`.
+
+**O executor escreve no lugar, sem trocar o arquivo.**
+O Arca reescreve o `metadata.json` a cada envio, e uma stack pode montar um arquivo sozinho. Gravar um arquivo novo e renomear trocaria o dono e o inode; `stack.editar` e `arca.guardar` escrevem no mesmo arquivo.
+
+**O Speaches não gera opus.**
+O Hermes pede a voz em opus (formato das mensagens de voz do Telegram) e o Speaches responde 422. Um gancho no LiteLLM troca o pedido para mp3, e o Hermes converte de volta com o ffmpeg. O Hermes manda a voz antes do texto, então o texto espera a fala ficar pronta.
 
 ## Aplicativos
 

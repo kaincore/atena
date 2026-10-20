@@ -39,10 +39,10 @@ atena@servidor:~$ █
 - **Seis zonas** separadas por nível de confiança, cada uma com rede, pasta de dados e limite de CPU/RAM próprios.
 - **Firewall para containers.** Nenhum container alcança a sua rede de casa nem os seus aparelhos no Tailscale. De fora, só a rede de casa chega aos serviços. O ufw sozinho não faz isso, porque não enxerga as portas do Docker.
 - **Limites de recursos.** Os agentes de IA nunca deixam os sistemas de clientes lentos: a zona `prod` tem prioridade e memória garantida.
-- **IA local:** Ollama (modelos de linguagem) e Whisper (transcrição de voz) na GPU, inclusive em placas antigas como a GTX 1060.
+- **IA local:** Ollama (modelos de linguagem), Whisper (transcrição de voz) e Kokoro (respostas em voz) na GPU, inclusive em placas antigas como a GTX 1060.
 - **LiteLLM** como porta única para Claude (Haiku, Sonnet, Opus) e para os modelos locais, com teto de gasto por modelo e por chave, renovado todo dia 1º.
 - **Painéis:** Dockge (gerenciar as stacks), Beszel (monitoramento, inclusive da GPU) e Open WebUI (chat no navegador).
-- **A Atena** (opcional): assistente pessoal pelo Telegram, feita com o [Hermes Agent](https://github.com/NousResearch/hermes-agent). Vigia o servidor, responde sobre ele, guarda as suas notas e age só por uma lista fechada de ações, pedindo o seu ok para o que é destrutivo.
+- **A Atena** (opcional): assistente pessoal pelo Telegram, feita com o [Hermes Agent](https://github.com/NousResearch/hermes-agent). Vigia o servidor (até a temperatura), responde sobre ele, guarda as suas notas, usa o Arca, edita as stacks de apps com foto e desfazer e age só por uma lista fechada de ações, pedindo o seu ok para o que é destrutivo.
 - **Executor de ações** com aprovação no celular: o único caminho dos agentes até o servidor, sem shell, com um token por cliente.
 - **Avisos no celular** (ntfy): serviço que falhou, container parado e pedidos de aprovação com botões.
 - **Instalador** que monta tudo numa máquina nova e pode rodar de novo sem estragar o que já existe.
@@ -128,6 +128,7 @@ Depois:
 | ntfy 2.28.0 | core | 2586 | Avisos e aprovações no celular. Só com usuário |
 | Ollama 0.40.5 | ai | só no servidor | Usa o CUDA 12 (o CUDA 13 não suporta GPUs Pascal) |
 | Whisper (Speaches 0.8.3) | ai | só no servidor | API compatível com a OpenAI, int8 na GPU |
+| Voz (Speaches 0.8.3 + Kokoro) | ai | só no servidor | Respostas em voz da Atena (`ATENA_VOZ=sim`), fp32 na GPU |
 | LiteLLM 1.101.6 | ai | 4000 | Exige chave. Tetos de gasto por modelo e por chave |
 | Open WebUI 0.11.4 | apps | 3000 | Fala só com o LiteLLM |
 | Arca | apps | 3002 | Envio de arquivos pelo navegador, sem senha |

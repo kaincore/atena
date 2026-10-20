@@ -15,8 +15,8 @@ O servidor é dividido em **zonas por nível de confiança**. Cada zona tem quat
 |---|---|---|---|
 | `prod` | `zone-prod-<cliente>` (10.10.101.0/24 em diante) | Sistemas de clientes, uma rede por cliente | Só o administrador |
 | `core` | `zone-core` (10.10.0.0/24) | Dockge, Beszel, ntfy, monitoramento e backup | Só o administrador |
-| `apps` | `zone-apps` (10.10.10.0/24) | Apps pessoais (Arca, Open WebUI) | Administrador |
-| `ai` | `zone-ai` (10.10.20.0/24) | Ollama, Whisper, LiteLLM | Administrador |
+| `apps` | `zone-apps` (10.10.10.0/24) | Apps pessoais (Arca, Open WebUI) | Administrador e a Atena, pelo executor (com foto antes de cada mudança) |
+| `ai` | `zone-ai` (10.10.20.0/24) | Ollama, Whisper, voz, LiteLLM | Administrador |
 | `agents` | `zone-agents` (10.10.30.0/24) | A Atena (Hermes), agentes de IA e workers | Administrador e agentes, por scripts |
 | `lab` | `zone-lab` (10.10.40.0/24) | Ambientes de teste descartáveis | Administrador e agentes, por scripts |
 
@@ -53,14 +53,17 @@ Celular (app ntfy) <── alertas e pedidos de aprovação ── executor
 - **Um token por cliente.** O token diz quais ações e quais zonas o cliente pode pedir. Só o hash fica guardado (`/etc/atena/executor/tokens.json`).
 - **Zona da stack.** Vem da pasta do compose (`/opt/atena/stacks/<zona>/...`) ou das redes `zone-*`. Na dúvida, vale a mais restrita.
 - **Aprovação no celular.** Uma ação que muda algo pode virar um pedido: o executor manda uma notificação com Aprovar e Recusar, e só roda depois do toque. O código do pedido só existe na notificação, então o cliente não consegue se aprovar. Cada token diz quais ações pedem o celular.
-- **Leitura sem segredos.** O serviço tem só a capacidade `CAP_DAC_READ_SEARCH`: lê qualquer arquivo e não escreve nada fora das pastas dele. Áreas do sistema e arquivos de chave, token e senha são recusados, e linhas com senha, token ou chave saem com `***`.
+- **Leitura sem segredos.** O serviço tem só a capacidade `CAP_DAC_READ_SEARCH`: lê qualquer arquivo e só escreve nas pastas dele, nas entregas da Atena, no Arca e nas stacks da zona `apps` (estas duas por ACL, sem tirar o dono de nada). Áreas do sistema e arquivos de chave, token e senha são recusados, e linhas com senha, token ou chave saem com `***`.
 - **Registro.** Cada pedido vai para o journal (`journalctl -u atena-executor`), com cliente, ação, parâmetros e resultado.
+- **Stacks de apps com foto.** `stack.editar` guarda o conteúdo anterior antes de gravar, e `stack.desfazer` volta. Uma mudança no compose só fica se o compose inteiro (`docker compose config`, com includes e overrides) caber nas regras da zona: nada do host (`privileged`, `cap_add`, `devices`, rede ou PID do host, socket do Docker), pastas só da própria stack e de `/srv/apps/<stack>`, redes só `zone-apps` e `svc-llm`, portas sempre com IP na frente. `stack.aplicar` confere de novo e sobe em segundo plano.
 
 | Grupo | Ações |
 |---|---|
-| Ver o servidor | `status.servicos`, `status.recursos`, `status.containers`, `status.sistema`, `gasto.api`, `servico.logs`, `servico.journal`, `sistema.processos`, `sistema.rede` |
+| Ver o servidor | `status.servicos`, `status.recursos`, `status.containers`, `status.sistema`, `gasto.api`, `servico.logs`, `servico.journal`, `sistema.processos`, `sistema.rede`, `sistema.sensores` (temperaturas e ventoinhas) |
 | Arquivos | `arquivo.ler`, `arquivo.buscar`, `arquivo.procurar`, `arquivo.entregar` |
 | Texto privado | `local.processar` (Ollama do servidor ou LM Studio do PC, sem nuvem) |
+| Arca | `arca.lista`, `arca.pegar`, `arca.guardar` (pelo nome original; guardar não substitui nada) |
+| Stacks de apps | `stack.editar`, `stack.aplicar`, `stack.fotos`, `stack.desfazer` |
 | Agir | `servico.reiniciar` (pode pedir o celular) |
 | PC da rede de casa (opcional) | `pc.estado`, `pc.ligar`, `pc.desligar`, `pc.reiniciar`, `pc.cancelar` |
 
@@ -71,7 +74,7 @@ Os avisos do próprio servidor também vão ao celular: o `atena-avisar` avisa q
 A Atena é uma assistente pessoal feita com o [Hermes Agent](https://github.com/NousResearch/hermes-agent). Ela conversa com você pelo Telegram e cuida do servidor.
 
 - **Onde roda.** Container `hermes` na zona `agents`, como o usuário `hermes` do servidor: sem Docker, sem sudo e sem rede até a sua casa. Os dados dela (configuração, memória, notas) ficam em `/srv/agents/hermes`.
-- **Como pensa.** Pelo LiteLLM, com uma chave própria e teto mensal. Haiku por padrão; mensagens de voz são transcritas pelo Whisper da casa.
+- **Como pensa.** Pelo LiteLLM, com uma chave própria e teto mensal. Haiku por padrão; mensagens de voz são transcritas pelo Whisper da casa. Com `ATENA_VOZ=sim` (e GPU), ela também responde em voz, gerada em casa pelo Kokoro.
 - **Como age.** Só pelo executor, com um token sem a zona `prod`. Comandos no próprio container passam pela aprovação "smart": um modelo auxiliar libera o que é seguro e manda o destrutivo para você decidir.
 - **Personalidade e regras** em `SOUL.md`: confere antes de afirmar e pede o seu ok para qualquer medida destrutiva.
 - **Habilidades.** `servidor-atena` (como usar o executor) e `notas` (guardar e consultar o que você manda).
