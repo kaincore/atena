@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Atena</title>
+  <meta name="theme-color" content="#16131f">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icone.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icone-192.png">
+  <link rel="stylesheet" href="/estilo.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="topo" hidden>
+    <strong class="marca">Atena</strong>
+    <nav class="abas">
+      <a href="#inicio">Início</a>
+      <a href="#servicos">Serviços</a>
+      <a href="#pc">PC</a>
+      <a href="#lab">Lab</a>
+      <a href="#historico">Histórico</a>
+      <a href="#ajustes">Ajustes</a>
+    </nav>
+  </header>
+
+  <main id="tela"></main>
+
+  <section id="entrada" class="entrada" hidden>
+    <form id="form-entrada" class="cartao">
+      <h1>Atena</h1>
+      <label for="senha">Senha do painel</label>
+      <input id="senha" name="senha" type="password" autocomplete="current-password" required autofocus>
+      <button type="submit">Entrar</button>
+      <p id="msg-entrada" class="erro" role="alert"></p>
+    </form>
+  </section>
+
+  <dialog id="janela">
+    <div class="janela-topo">
+      <strong id="janela-titulo"></strong>
+      <button type="button" id="janela-fechar" class="discreto">Fechar</button>
+    </div>
+    <div id="janela-corpo"></div>
+  </dialog>
+
+  <div id="avisos" class="avisos" aria-live="polite"></div>
+</body>
+</html>
