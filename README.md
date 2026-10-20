@@ -6,6 +6,7 @@
   <img alt="Ubuntu 26.04" src="https://img.shields.io/badge/ubuntu-26.04-ff2a6d?style=for-the-badge&labelColor=0b0618&logo=ubuntu&logoColor=ff2a6d">
   <img alt="Docker em zonas" src="https://img.shields.io/badge/docker-6%20zonas-05d9e8?style=for-the-badge&labelColor=0b0618&logo=docker&logoColor=05d9e8">
   <img alt="Atena no Hermes Agent" src="https://img.shields.io/badge/atena-hermes%20agent-d300c5?style=for-the-badge&labelColor=0b0618">
+  <img alt="Lab com Claude Code" src="https://img.shields.io/badge/lab-claude%20code-ff2a6d?style=for-the-badge&labelColor=0b0618">
   <a href="https://github.com/kaincore/atena/actions/workflows/verificar.yml"><img alt="Verificação" src="https://img.shields.io/github/actions/workflow/status/kaincore/atena/verificar.yml?branch=main&style=for-the-badge&labelColor=0b0618&color=05d9e8&label=verifica%C3%A7%C3%A3o"></a>
   <a href="LICENSE"><img alt="Licença MIT" src="https://img.shields.io/badge/licen%C3%A7a-MIT-f9f002?style=for-the-badge&labelColor=0b0618"></a>
 </p>
@@ -13,7 +14,8 @@
 <p align="center">
   <b>Um servidor caseiro pronto para usar, organizado em zonas isoladas.</b><br>
   Ubuntu + Docker, com firewall para containers, limites de CPU e RAM por zona, IA local na GPU,
-  um gateway de LLM com tetos de gasto e uma assistente pelo Telegram que cuida de tudo isso.
+  um gateway de LLM com tetos de gasto, uma assistente pelo Telegram que cuida de tudo isso
+  e um lab onde o Claude Code programa para você.
 </p>
 
 <p align="center">
@@ -25,7 +27,7 @@
 </p>
 
 ```text
-atena@servidor:~$ sudo ./install.sh --hermes
+atena@servidor:~$ sudo ./install.sh --hermes --lab
  [ OK ] zonas ........ prod · core · apps · ai · agents · lab
  [ OK ] firewall ..... nenhum container alcança a sua rede de casa
  [ OK ] ia local ..... ollama · whisper · litellm com teto de gasto
@@ -75,7 +77,7 @@ atena@servidor:~$ █
  ║     │ socket               │ workers       │ whisper       │  ║
  ║  ┌──v──────────────┐  ┌────v────────────┐  │ litellm       │  ║
  ║  │ EXECUTOR · host │  │ lab             │  └───────────────┘  ║
- ║  │ lista fechada   │  │ testes          │                     ║
+ ║  │ lista fechada   │  │ claude code     │                     ║
  ║  └─────────────────┘  └─────────────────┘                     ║
  ╚═══════════════════════════════════════════════════════════════╝
 ```
@@ -137,14 +139,15 @@ Depois:
 | Open WebUI 0.11.4 | apps | 3000 | Fala só com o LiteLLM |
 | Arca | apps | 3002 | Envio de arquivos pelo navegador, sem senha |
 | Hermes Agent 0.22.2 | agents | nenhuma | A Atena (com `--hermes`). Conversa pelo Telegram |
+| Claude Code 2.1.302 | lab | apps em 8000-8999 | O lab (com `--lab`). Roda em sandbox, sem sudo e sem Docker; usa a sua assinatura do Claude |
 
 As versões são fixas de propósito. Antes de atualizar, leia os avisos de segurança e as notas da versão.
 
 ## ▌06 // Documentação
 
-- [Arquitetura](docs/pt/arquitetura.md): zonas, redes, limites, o executor e a Atena
+- [Arquitetura](docs/pt/arquitetura.md): zonas, redes, limites, o executor, a Atena e o lab
 - [Segurança](docs/pt/seguranca.md): o que está protegido, como foi testado e o que não está
-- [Operação](docs/pt/operacao.md): stacks, clientes, avisos no celular, a Atena e as atualizações
+- [Operação](docs/pt/operacao.md): stacks, clientes, avisos no celular, a Atena, o lab e as atualizações
 - [Lições aprendidas](docs/pt/licoes.md): armadilhas encontradas montando o primeiro servidor
 
 ## ▌07 // Estrutura do repositório
@@ -152,11 +155,12 @@ As versões são fixas de propósito. Antes de atualizar, leia os avisos de segu
 ```text
 atena/
 ├── install.sh, install/   instalador (uma etapa por arquivo)
-├── host/                  arquivos do sistema: Docker, systemd, firewall, SSH, executor, avisos
+├── host/                  arquivos do sistema: Docker, systemd, firewall, SSH, executor, avisos, lab
+│   ├── lab/               ponte, sandbox e guarda de escopo do Claude Code do lab
 │   └── windows/           script e passo a passo do PC da rede de casa (opcional)
 ├── stacks/<zona>/<nome>/  composes das stacks
 ├── hermes/                a Atena: personalidade, habilidades, ronda e configuração
-├── tests/                 testes do executor e da ronda
+├── tests/                 testes do executor, da ronda e do lab
 ├── tools/                 verificador de vazamentos e trava de commit
 └── docs/                  documentação em português e inglês
 ```
