@@ -11,7 +11,8 @@ B=/var/lib/atena-claude
 L=/usr/local/lib/atena-claude
 
 # o sandbox do Claude Code (bubblewrap, socat) e o que ele usa para programar
-apt-get install -y -qq bubblewrap socat git python3-venv python3-pip nodejs npm >/dev/null
+# NEEDRESTART_SUSPEND: o needrestart reiniciaria serviços (o executor no meio da instalação) e encheria a tela
+NEEDRESTART_SUSPEND=1 apt-get install -y -qq bubblewrap socat git python3-venv python3-pip nodejs npm >/dev/null
 ok "bubblewrap, socat, git, Python (venv, pip), Node (node, npm)"
 
 # atena-claude: sem login, sem sudo e sem Docker. atena-fila: quem fala com a fila (ele e o executor).
@@ -92,7 +93,7 @@ ok "runner, ponte, lixeira e o sandbox do trabalhador (contas: $ATENA_CLAUDE_CON
 # com Tailscale, os apps publicados ganham o link de fora de casa. O polkit deixa o executor iniciar só
 # as unidades atena-lab-tailscale-on@/off@<porta>
 if [ "$ATENA_TAILSCALE" = sim ]; then
-  apt-get install -y -qq polkitd >/dev/null
+  NEEDRESTART_SUSPEND=1 apt-get install -y -qq polkitd >/dev/null
   for u in atena-lab-tailscale-on@.service atena-lab-tailscale-off@.service; do
     instalar_arquivo "$RAIZ/host/systemd/$u" "/etc/systemd/system/$u"
   done
