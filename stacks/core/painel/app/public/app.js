@@ -8,10 +8,11 @@ const NOMES = {
   "pc.cancelar": "Cancelar desligamento do PC",
   "app.reiniciar": "Reiniciar app do lab",
   "app.parar": "Parar app do lab",
+  "aprovacoes.decidir": "Decisão",
 };
 const ORDEM_ZONAS = ["core", "ai", "agents", "apps", "lab", "prod"];
 const TERMINADOS = new Set(["concluido", "falhou", "recusado", "expirado", "cancelado"]);
-const INTERVALO = 30_000;
+const TIQUE = 10_000;
 
 const $ = (seletor) => document.querySelector(seletor);
 
@@ -278,8 +279,131 @@ async function telaAjustes() {
   ];
 }
 
-const TELAS = { inicio: telaInicio, servicos: telaServicos, pc: telaPC, lab: telaLab, historico: telaHistorico, ajustes: telaAjustes };
-const ATUALIZAM_SOZINHAS = new Set(["inicio", "servicos", "pc"]);
+// --- central de aprovações e atividade do executor (os tempos do executor vêm em segundos) ---------
+
+const hora = (s) => new Date(s * 1000).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+function relativo(s) {
+  const minutos = Math.round((s * 1000 - Date.now()) / 60000);
+  if (minutos === 0) return "agora";
+  return minutos > 0 ? `em ${minutos} min` : `há ${-minutos} min`;
+}
+
+// executor antigo ou token do painel sem as ações da central
+function semCentral(r) {
+  if (r.status !== 403 && r.status !== 404) return null;
+  return h("p", { class: "fraco" }, "A central precisa do executor novo e das ações aprovacoes.lista, aprovacoes.decidir e atividade.lista no token do painel (rode o instalador com --painel).");
+}
+
+function marcarPendentes(n) {
+  const aba = document.querySelector('.abas a[href="#aprovacoes"]');
+  if (aba) aba.textContent = n ? `Aprovações (${n})` : "Aprovações";
+  document.title = n ? `(${n}) Atena` : "Atena";
+}
+
+async function contarPendentes() {
+  const r = await consultar("aprovacoes.lista");
+  if (r.ok !== false) marcarPendentes(r.resultado.pendentes.length);
+}
+
+async function decidirPedido(p, decisao, resposta) {
+  const r = await mudar("aprovacoes.decidir", { pedido: p.id, decisao, ...(resposta ? { resposta } : {}) });
+  const resultado = r?.resultado?.resultado;
+  if (resultado === "expirado") avisar(`O pedido ${p.id} já tinha vencido; nada foi feito.`, "erro");
+  else if (resultado === "ignorado") avisar(`O pedido ${p.id} já tinha sido decidido.`, "erro");
+  atualizar();
+}
+
+function cartaoPendente(p) {
+  const meta = h("p", { class: "fraco" }, [p.cliente, p.acao, `pedido ${p.id}`, `pedido ${relativo(p.criado)}`,
+    `vence ${relativo(p.expira)}`, p.origem && `origem ${p.origem}`].filter(Boolean).join(" · "));
+  if (p.tipo === "pergunta") {
+    const campo = h("textarea", { rows: "2", maxlength: "2000", placeholder: "Ou escreva a resposta" });
+    return cartao(p.titulo ?? "Pergunta do Claude Code", meta,
+      h("p", { class: "pergunta" }, p.pergunta),
+      p.por_que && h("p", { class: "fraco" }, `Por quê: ${p.por_que}`),
+      p.opcoes.length > 0 && h("div", { class: "botoes" }, p.opcoes.map((o) =>
+        h("button", { type: "button", onclick: () => decidirPedido(p, "responder", o) }, o))),
+      h("form", { class: "resposta", onsubmit: (evento) => {
+        evento.preventDefault();
+        if (campo.value.trim()) decidirPedido(p, "responder", campo.value.trim());
+      } }, campo, h("button", { type: "submit" }, "Responder")));
+  }
+  const params = Object.entries(p.params ?? {});
+  return cartao(p.titulo ?? p.acao, meta,
+    p.texto && h("pre", { class: "texto-pedido" }, p.texto),
+    params.length > 0 && h("details", null, h("summary", null, "Parâmetros"),
+      h("ul", { class: "lista" }, params.map(([k, v]) => h("li", null, h("span", { class: "rotulo" }, `${k}: `), v)))),
+    h("div", { class: "botoes grandes" },
+      h("button", { type: "button", onclick: () => decidirPedido(p, "aprovar") }, "Aprovar"),
+      h("button", { type: "button", class: "discreto", onclick: () => decidirPedido(p, "recusar") }, "Recusar")));
+}
+
+async function telaAprovacoes() {
+  const r = await consultar("aprovacoes.lista");
+  if (r.ok === false) return [cartao("Aprovações", falha(r), semCentral(r))];
+  const { pendentes, recentes } = r.resultado;
+  marcarPendentes(pendentes.length);
+  return [
+    pendentes.length ? pendentes.map(cartaoPendente)
+      : cartao("Aprovações", h("p", { class: "fraco" }, "Nada esperando por você. Os pedidos da Atena e do Claude Code aparecem aqui e no celular.")),
+    cartao("Decididos há pouco", recentes.length ? h("ul", { class: "lista" }, recentes.map((x) => h("li", null,
+      h("span", { class: `selo ${x.estado === "concluido" ? "ok" : TERMINADOS.has(x.estado) ? "ruim" : "neutro"}` }, x.estado),
+      ` ${x.titulo ?? x.acao} `,
+      h("small", null, [x.cliente, hora(x.quando), x.por && `por ${x.por}`].filter(Boolean).join(" · ")),
+      x.erro && h("div", { class: "fraco resumo" }, x.erro)))) : h("p", { class: "fraco" }, "Nenhum ainda.")),
+  ];
+}
+
+const filtro = { cliente: "", so_erros: false, linhas: 200 };
+const clientesVistos = new Set(["hermes", "painel"]);
+
+function linhaAtividade(i) {
+  const erro = i.ok === false || Boolean(i.erro);
+  const oque = i.acao && i.evento ? `${i.evento}: ${i.acao}` : i.acao ?? i.evento ?? "?";
+  const detalhes = [
+    i.params && Object.entries(i.params).map(([k, v]) => `${k}=${v}`).join(" "),
+    i.decisao && `decisão ${i.decisao}${i.por ? ` por ${i.por}` : ""}`,
+    i.pedido && `pedido ${i.pedido}`, i.aprovacao && `aprovação ${i.aprovacao}`,
+    i.origem && `origem ${i.origem}`, i.segundos != null && `${i.segundos} s`,
+  ].filter(Boolean).join(" · ");
+  return h("li", null,
+    h("span", { class: `selo ${erro ? "ruim" : i.ok ? "ok" : "neutro"}` }, erro ? "erro" : i.ok ? "ok" : "evento"),
+    ` ${oque} `, h("small", null, `${i.cliente ?? "executor"} · ${hora(i.quando)}`),
+    detalhes && h("div", { class: "fraco resumo" }, detalhes),
+    i.erro && h("div", { class: "erro resumo" }, i.erro));
+}
+
+async function telaAtividade() {
+  const r = await consultar("atividade.lista", { linhas: filtro.linhas, so_erros: filtro.so_erros, ...(filtro.cliente ? { cliente: filtro.cliente } : {}) });
+  if (r.ok === false) return [cartao("Atividade", falha(r), semCentral(r))];
+  for (const i of r.resultado.itens) if (i.cliente) clientesVistos.add(i.cliente);
+  const controles = h("form", { class: "filtros", onchange: (evento) => {
+    const f = evento.currentTarget;
+    filtro.cliente = f.cliente.value;
+    filtro.so_erros = f.so_erros.checked;
+    filtro.linhas = Number(f.linhas.value);
+    atualizar();
+  } },
+    h("label", null, "Cliente ", h("select", { name: "cliente" }, ["", ...[...clientesVistos].sort()].map((c) =>
+      h("option", { value: c, selected: c === filtro.cliente }, c || "todos")))),
+    h("label", null, h("input", { type: "checkbox", name: "so_erros", checked: filtro.so_erros }), " só erros"),
+    h("label", null, "Linhas ", h("select", { name: "linhas" }, [100, 200, 500, 1000].map((n) =>
+      h("option", { value: String(n), selected: n === filtro.linhas }, String(n))))));
+  const itens = r.resultado.itens;
+  const c = cartao("Atividade do executor", controles,
+    h("p", { class: "fraco" }, "Tudo o que a Atena, o painel e o lab pediram ao executor, as suas decisões e os eventos dele, do mais novo ao mais velho."),
+    itens.length ? h("ul", { class: "lista atividade" }, itens.map(linhaAtividade)) : h("p", { class: "fraco" }, "Nada no registro com esse filtro."));
+  c.classList.add("largo");
+  return [c];
+}
+
+const TELAS = {
+  inicio: telaInicio, aprovacoes: telaAprovacoes, servicos: telaServicos, pc: telaPC, lab: telaLab,
+  atividade: telaAtividade, historico: telaHistorico, ajustes: telaAjustes,
+};
+// de quantos em quantos tiques (10 s) cada tela se atualiza sozinha
+const ATUALIZAM_SOZINHAS = { aprovacoes: 1, inicio: 3, servicos: 3, pc: 3 };
 
 // --- navegação --------------------------------------------------------------------------------
 
@@ -322,6 +446,7 @@ function mostrarPainel() {
   $("#entrada").hidden = true;
   $(".topo").hidden = false;
   atualizar();
+  if (telaAtual() !== "aprovacoes") contarPendentes();
 }
 
 $("#form-entrada").addEventListener("submit", async (evento) => {
@@ -341,9 +466,16 @@ $("#form-entrada").addEventListener("submit", async (evento) => {
 
 $("#janela-fechar").addEventListener("click", () => $("#janela").close());
 addEventListener("hashchange", atualizar);
+let tiques = 0;
 setInterval(() => {
-  if (document.visibilityState === "visible" && $("#entrada").hidden && !$("#janela").open && ATUALIZAM_SOZINHAS.has(telaAtual())) atualizar();
-}, INTERVALO);
+  if (document.visibilityState !== "visible" || !$("#entrada").hidden) return;
+  tiques++;
+  const cada = ATUALIZAM_SOZINHAS[telaAtual()];
+  // não apaga uma resposta que você está escrevendo
+  const escrevendo = [...document.querySelectorAll("#tela textarea")].some((t) => t.value || t === document.activeElement);
+  if (cada && tiques % cada === 0 && !$("#janela").open && !escrevendo) atualizar();
+  else if (telaAtual() !== "aprovacoes" && tiques % 3 === 0) contarPendentes();
+}, TIQUE);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "visible" && $("#entrada").hidden) atualizar();
 });

@@ -158,6 +158,19 @@ test("ação que muda algo entra no histórico, com o pedido acompanhado até o 
   assert.equal(banco.historico()[0].resumo, "falhou de propósito");
 });
 
+test("a central: consultas não entram no histórico, a decisão entra", async () => {
+  const cookie = await entrar();
+  for (const nome of ["aprovacoes.lista", "atividade.lista"])
+    assert.equal((await pedir("POST", `/api/acao/${nome}`, { params: {} }, cookie)).status, 200, nome);
+  const r = await pedir("POST", "/api/acao/aprovacoes.decidir", { params: { pedido: "abcd9999", decisao: "aprovar" } }, cookie);
+  assert.equal(r.status, 200);
+  assert.deepEqual(recebidos.at(-1)!.corpo, { params: { pedido: "abcd9999", decisao: "aprovar" }, origem: "painel" });
+  const [ultimo] = banco.historico();
+  assert.equal(ultimo.acao, "aprovacoes.decidir");
+  assert.deepEqual(JSON.parse(ultimo.params), { pedido: "abcd9999", decisao: "aprovar" });
+  assert.equal(banco.historico().filter((x) => x.acao === "aprovacoes.lista" || x.acao === "atividade.lista").length, 0);
+});
+
 test("esperar do pedido tem teto de 60 s", async () => {
   const cookie = await entrar();
   await pedir("GET", "/api/pedido/abcd1234?esperar=999", undefined, cookie);

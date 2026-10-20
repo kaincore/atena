@@ -64,6 +64,7 @@ main {
   min-width: 0;
 }
 .destaque { font-size: 1.4rem; font-weight: 600; margin: 0 0 .5rem; }
+.cartao.largo { grid-column: 1 / -1; }
 
 .linha { display: flex; justify-content: space-between; gap: 1rem; margin: .35rem 0; flex-wrap: wrap; }
 .rotulo { color: var(--fraco); }
@@ -74,7 +75,18 @@ main {
 .lista { list-style: none; padding: 0; margin: .25rem 0; }
 .lista li { padding: .35rem 0; border-top: 1px solid var(--borda); overflow-wrap: anywhere; }
 .lista li:first-child { border-top: 0; }
-.historico .resumo { font-family: ui-monospace, monospace; font-size: .8rem; }
+.historico .resumo, .atividade .resumo { font-family: ui-monospace, monospace; font-size: .8rem; overflow-wrap: anywhere; }
+.texto-pedido {
+  font: .85rem/1.45 ui-monospace, monospace; background: var(--fundo); padding: .6rem; border-radius: .5rem;
+  white-space: pre-wrap; overflow-wrap: anywhere; margin: .5rem 0;
+}
+.pergunta { font-size: 1.05rem; margin: .5rem 0; white-space: pre-wrap; }
+.resposta { display: grid; gap: .5rem; margin-top: .75rem; }
+.filtros { display: flex; gap: .75rem 1rem; flex-wrap: wrap; align-items: center; margin-bottom: .5rem; }
+select, textarea {
+  font: inherit; padding: .45rem .6rem; border-radius: .5rem; border: 1px solid var(--borda);
+  background: var(--fundo); color: var(--texto);
+}
 
 .selo {
   display: inline-block; font-size: .75rem; font-weight: 600; padding: .05rem .45rem; border-radius: 1rem;
