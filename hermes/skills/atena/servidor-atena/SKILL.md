@@ -1,7 +1,7 @@
 ---
 name: servidor-atena
-description: "Enxergar e operar o servidor Atena pelo executor de ações: qualquer arquivo, pasta, log ou serviço (menos segredos), busca em arquivos, achar e trazer fotos e arquivos do servidor (para olhar, ler ou mandar ao dono), processos, portas, estado dos containers, CPU/RAM/disco/GPU, gasto de API do mês, reiniciar serviços, ligar/desligar o PC da rede de casa e processar texto privado num modelo de casa. Use sempre que o dono perguntar do servidor, de gastos, de erros ou pedir algo que mexa no servidor, e na ronda."
-version: 1.0.0
+description: "Enxergar e operar o servidor Atena pelo executor de ações: qualquer arquivo, pasta, log ou serviço (menos segredos), busca em arquivos, achar e trazer fotos e arquivos do servidor (para olhar, ler ou mandar ao dono), processos, portas, estado dos containers, CPU/RAM/disco/GPU, temperaturas e ventoinhas, gasto de API do mês, reiniciar serviços, ligar/desligar o PC da rede de casa e processar texto privado num modelo de casa. Use sempre que o dono perguntar do servidor, de temperatura, de gastos, de erros ou pedir algo que mexa no servidor, e na ronda."
+version: 1.1.0
 author: Atena
 license: MIT
 platforms: [linux]
@@ -37,7 +37,8 @@ Nunca mostre o token na resposta nem o copie para outro lugar.
 | Ação | Params | Para quê |
 |---|---|---|
 | `status.servicos` | — | Containers (zona, stack, estado) |
-| `status.recursos` | — | CPU, RAM livre, discos, GPU |
+| `status.recursos` | — | CPU, RAM livre, discos, GPU e temperatura da CPU e do NVMe |
+| `sistema.sensores` | — | Temperaturas da CPU, NVMe, GPU (com ventoinha e consumo) e da placa, ventoinhas da placa em rpm, e `avaliacao` (`normal` ou o que está quente). Para "qual a temperatura?", "está esquentando?", "a ventoinha está girando?" |
 | `status.containers` | — | CPU e RAM de cada container agora |
 | `status.sistema` | — | Serviços e timers `atena-*` e unidades com falha no sistema todo |
 | `gasto.api` | — | Gasto de API do mês por modelo e por chave, com os tetos |
@@ -51,6 +52,11 @@ Nunca mostre o token na resposta nem o copie para outro lugar.
 | `sistema.processos` | `ordem?` (`cpu` ou `ram`), `quantos?` (1 a 100) | Processos que mais pesam |
 | `sistema.rede` | — | Endereços do servidor e portas abertas |
 | `pc.estado` | — | PC da rede de casa ligado? LM Studio respondendo? |
+
+Temperatura e ventoinhas: `sistema.sensores` (não tente ler `/sys`: responde 403). Na resposta ao dono,
+dê CPU, GPU e NVMe em °C e diga se está normal; CPU e GPU só preocupam perto de 85 °C. Campo `None`:
+a máquina não tem aquele sensor (numa VM, por exemplo). Sem ventoinhas: o chip da placa precisa de um
+módulo do kernel (`ATENA_SENSORES_MODULO`), coisa que o dono configura.
 
 Mapa rápido: stacks em `/opt/atena/stacks/<zona>/<stack>` (compose.yaml), dados em `/srv/<zona>/...`,
 scripts do servidor em `/usr/local/sbin/atena-*`, firewall em `/etc/ufw/user.rules` e
@@ -137,6 +143,8 @@ está fora do normal. Você só é acordada quando essa lista muda. Quando for a
    Não repita se cair de novo: conte ao dono.
 3. Disco, memória ou GPU no limite: descubra o que está pesando e sugira o que fazer. Apagar
    qualquer coisa é destrutivo: só com o ok do dono.
+   CPU, GPU ou NVMe quente: veja `sistema.sensores` (ventoinha girando?) e `sistema.processos` (quem
+   está pesando) e conte ao dono. Não pare serviços por conta própria.
 4. Responda com um resumo curto (o que houve, o que fez, o que falta). Se um problema sumiu e tudo
    voltou ao normal, uma linha basta.
 
