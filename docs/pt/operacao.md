@@ -123,6 +123,27 @@ sudo atena-claude-conta estado            # quais contas estão prontas
 - Trocar a versão do Claude Code: `ATENA_CLAUDE_VERSAO` no `atena.conf` e o instalador de novo (ele baixa e confere o checksum oficial). Leia as notas da versão antes.
 - Registros: `journalctl -u atena-claude` (o runner) e a conversa completa de cada trabalho em `/var/lib/atena-claude/registros`.
 
+## Painel
+
+**Instalar.** Precisa do Tailscale logado no servidor e do HTTPS ligado no tailnet (no painel do Tailscale: DNS → HTTPS Certificates). Rode `sudo ./install.sh --painel` e depois:
+
+```bash
+sudo atena-painel-senha    # a senha de entrada (num terminal; não aparece na tela)
+```
+
+O instalador mostra o endereço: `https://<servidor>.<tailnet>.ts.net:3100`. No celular, com o Tailscale ligado, abra o endereço no Chrome e use o menu ⋮ → **Instalar app**.
+
+- **Trocar a senha:** `sudo atena-painel-senha` de novo. Todos os aparelhos saem.
+- **Aparelhos conectados:** na aba Ajustes, com o botão Desconectar.
+- **Registros:** `docker logs painel` (o painel) e `journalctl -u atena-executor` (cada pedido dele, com o cliente `painel`).
+- **Tirar do ar:**
+  ```bash
+  sudo tailscale serve --https=3100 off
+  cd /opt/atena/stacks/core/painel && docker compose down
+  sudo atena-executor token-remover painel
+  ```
+  Os dados ficam em `/srv/core/painel` até você apagar a pasta.
+
 ## Temperaturas e ventoinhas
 
 `sistema.sensores` (e a Atena, quando você pergunta) lê a CPU, o NVMe e a GPU sem configurar nada. As ventoinhas vêm do chip da placa-mãe, que costuma precisar de um módulo do kernel: descubra qual com `sudo apt install lm-sensors && sudo sensors-detect`, ponha em `ATENA_SENSORES_MODULO` (ex.: `nct6683`) e rode o instalador de novo. A ronda avisa CPU acima de 85 °C, GPU acima de 85 °C e NVMe acima de 70 °C.
@@ -155,5 +176,5 @@ Depois, `/new` no Telegram.
 ## Rodar o instalador de novo
 
 `sudo ./install.sh` pode rodar quantas vezes quiser:
-- **Stacks que já existem** não são sobrescritas.
+- **Stacks que já existem** não são sobrescritas. A exceção é o painel: com `--painel`, o código dele vem sempre do repositório, e o compose anterior fica guardado se mudou.
 - **Arquivos do sistema diferentes do modelo** são substituídos, e uma cópia do anterior fica ao lado (`*.antes-atena-<data>`).
