@@ -236,6 +236,13 @@ function abrirZona(zona) {
   else location.hash = "#servicos";
 }
 
+// a tela de serviços pega a zona em foco uma vez, e ela some
+function tirarFoco() {
+  const foco = zonaEmFoco;
+  zonaEmFoco = null;
+  return foco;
+}
+
 // --- telas ------------------------------------------------------------------------------------
 
 // "**negrito**" e "`código`" do README, sem innerHTML
@@ -475,8 +482,7 @@ async function telaServicos() {
   const resumo = resumirZonas(servicos.resultado);
   marcarZonas(resumo);
   const desenho = modulo("Vista explodida", `${resumo.length} zonas · ${servicos.resultado.length} containers`, vistaExplodida(resumo, abrirZona));
-  const foco = zonaEmFoco;
-  zonaEmFoco = null;
+  const foco = tirarFoco();
   if (foco) requestAnimationFrame(() => document.getElementById(`zona-${foco}`)?.scrollIntoView({ behavior: "smooth", block: "start" }));
   return [desenho, ordem.map((zona) => {
     const stacks = Object.keys(zonas[zona]).length;
@@ -503,6 +509,10 @@ async function telaServicos() {
 
 let pcLigadoEm = 0; // a cena da ventoinha acelerando vale no primeiro minuto depois de ligar
 
+function marcarPcLigado() {
+  pcLigadoEm = Date.now();
+}
+
 async function telaPC() {
   const r = await consultar("pc.estado");
   if (r.ok === false) return [cartao("PC gamer", falha(r))];
@@ -513,7 +523,7 @@ async function telaPC() {
     h("div", { class: "botoes grandes" },
       !ligado && h("button", { type: "button", class: "principal", onclick: async () => {
         const x = await mudar("pc.ligar", {});
-        if (x && x.ok !== false) pcLigadoEm = Date.now();
+        if (x && x.ok !== false) marcarPcLigado();
         depois(x);
       } }, picto("pc"), "Ligar"),
       ligado && h("button", { type: "button", onclick: async () => depois(await mudar("pc.desligar", {}, "Desligar o PC gamer? Ele desliga em 60 s.")) }, "Desligar"),
@@ -1373,7 +1383,7 @@ function marcarAtiva(nome) {
 // Ctrl+K: as telas, as ações do PC e, por stack que o painel já viu, logs e reiniciar
 const abrirPaleta = iniciarPaleta($("#paleta"), () => [
   ...NAV.map((n) => ({ titulo: n.nome, grupo: "tela", picto: n.tela, acao: () => { location.hash = `#${n.tela}`; } })),
-  { titulo: "Ligar o PC", grupo: "pc", picto: "pc", acao: () => mudar("pc.ligar", {}).then((x) => { if (x && x.ok !== false) pcLigadoEm = Date.now(); }) },
+  { titulo: "Ligar o PC", grupo: "pc", picto: "pc", acao: () => mudar("pc.ligar", {}).then((x) => { if (x && x.ok !== false) marcarPcLigado(); }) },
   { titulo: "Desligar o PC", grupo: "pc", picto: "pc", acao: () => mudar("pc.desligar", {}, "Desligar o PC gamer? Ele desliga em 60 s.") },
   { titulo: "Reiniciar o PC", grupo: "pc", picto: "pc", acao: () => mudar("pc.reiniciar", {}, "Reiniciar o PC gamer? Ele reinicia em 60 s.") },
   { titulo: "Novo agendamento", grupo: "agenda", picto: "agenda", acao: () => { location.hash = "#agenda"; } },
