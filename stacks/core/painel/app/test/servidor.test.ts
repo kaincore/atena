@@ -80,7 +80,9 @@ async function pedir(metodo: string, caminho: string, corpo?: unknown, cookie?: 
     },
     body: corpo !== undefined ? JSON.stringify(corpo) : undefined,
   });
-  return { status: r.status, cabecalhos: r.headers, corpo: await r.json().catch(() => null) };
+  // o corpo muda de rota para rota; cada teste confere o que importa nele
+  const dados: any = await r.json().catch(() => null);
+  return { status: r.status, cabecalhos: r.headers, corpo: dados };
 }
 
 async function entrar(): Promise<string> {

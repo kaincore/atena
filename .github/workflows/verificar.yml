@@ -34,6 +34,17 @@ jobs:
           docker run --rm -v "$PWD:/repo:ro" -w /repo ghcr.io/astral-sh/ruff:0.16.10 check --no-cache \
             $(grep -l '^#!.*python' host/sbin/*) host/executor host/lab hermes/scripts tests
 
+  tipos:
+    name: tipos do painel
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: tsc --noEmit no servidor e nos testes do painel (o TypeScript fica só aqui, fora do painel)
+        run: |
+          docker run --rm -v "$PWD/stacks/core/painel/app:/app:ro" -w /app node:22.23.3-alpine3.24 sh -c \
+            'npm install --prefix /tmp/tsc --no-audit --no-fund --loglevel=error typescript@6.0.3 @types/node@22.20.5 \
+             && /tmp/tsc/node_modules/.bin/tsc -p /app --typeRoots /tmp/tsc/node_modules/@types'
+
   composes:
     name: composes válidos
     runs-on: ubuntu-24.04
