@@ -1,5 +1,15 @@
 # Mudanças
 
+## 0.13.0 (2026-10-21)
+
+A interface do painel em módulos (painel 0.6.1) e a checagem de tipos do servidor dele.
+
+- **Uma tela por arquivo:** o `app.js` de 1500 linhas virou a casca (navegação, paleta e atualização), o `comum.js` (o que todas as telas usam), o `zonas.js` e uma tela por arquivo em `public/telas`. Continua JavaScript puro, sem build e sem pacote do npm.
+- **Nada mudou na tela:** a divisão foi feita por um programa; as 126 declarações são idênticas às de antes (comparadas pela árvore do JavaScript), sem nome sem import nem import sem uso. As três funções da casca que as telas chamam (atualizar, telaAtual, mostrarEntrada) o `comum.js` expõe e o `app.js` liga ao começar, para nenhuma tela importar a casca. Antes de dividir, duas variáveis que uma tela reatribuía em outra (a zona em foco e a hora em que o PC ligou) passaram a mudar por funções.
+- **Tipos:** o CI confere o servidor e os testes do painel com `tsc --noEmit` (strict, só a sintaxe que o Node apaga). O TypeScript e os tipos do Node entram só no container do CI e do `tools/ci-local.sh`.
+- O service worker guarda os arquivos novos (cache v3): no celular, feche e abra o app uma vez depois de atualizar.
+- Testado no navegador, no ensaio com o executor falso: das 27 capturas de antes (celular e PC, claro e escuro), 21 saíram iguais pixel a pixel e as outras só diferem no relógio da agenda e no "há N min" das aprovações; a zona em foco, ligar o PC (na tela e na paleta), a sessão caída e sair funcionam, sem erro na página. No servidor de origem, o painel 0.6.1 subiu saudável e serve a casca, as telas e o cache novo.
+
 ## 0.12.0 (2026-10-21)
 
 O executor em módulos.
