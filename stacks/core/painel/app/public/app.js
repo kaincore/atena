@@ -406,7 +406,8 @@ async function telaPC() {
 // --- lab: os apps que o Claude Code fez e os trabalhos dele ------------------------------------------
 
 const NOME_PROJETO = "[a-z0-9][a-z0-9\\-]{0,39}";
-const rascunho = { projeto: "", pedido: "", conta: "", modelo: "", esforco: "", minutos: "60", somente_plano: false, publicar: false };
+const rascunho = { projeto: "", pedido: "", conta: "", modelo: "", esforco: "", minutos: "60", somente_plano: false, publicar: false,
+  skill: "", continuar: null };
 
 // os botões de um app; cada um confirma, pede e recarrega a tela
 function botoesApp(p) {
@@ -485,7 +486,12 @@ function itemTrabalho(t) {
         ` ${t.projeto ?? "?"} `),
       rodando && h("button", { type: "button", class: "discreto", onclick: async () => {
         if (await mudar("claude.cancelar", { pedido: t.id }, `Interromper o trabalho ${t.id} em ${t.projeto}? A conversa fica guardada.`)) atualizar();
-      } }, "Cancelar")),
+      } }, "Cancelar"),
+      t.continuavel && h("button", { type: "button", class: "discreto", onclick: () => {
+        Object.assign(rascunho, { continuar: t.id, projeto: t.projeto, conta: t.conta ?? rascunho.conta, pedido: "", publicar: false });
+        atualizar();
+        scrollTo({ top: 0, behavior: "smooth" });
+      } }, "Continuar")),
     h("div", null, t.pedido),
     h("small", null, [quem, t.conta, t.modelo, t.esforco, t.criado, `trabalho ${t.id}`, t.commits ? `${t.commits} commits` : null].filter(Boolean).join(" · ")),
     t.esperando_permissao_no_celular && h("div", null, h("a", { href: "#aprovacoes" }, "Esperando a sua permissão: ver em Aprovações")),
@@ -499,40 +505,51 @@ function cartaoNovoTrabalho(trabalhos, projetos) {
     const f = evento.currentTarget;
     Object.assign(rascunho, {
       projeto: f.projeto.value, pedido: f.pedido.value, conta: f.conta.value, modelo: f.modelo.value, esforco: f.esforco.value,
-      minutos: f.minutos.value, somente_plano: f.somente_plano.checked, publicar: f.publicar.checked,
+      minutos: f.minutos.value, somente_plano: f.somente_plano.checked, publicar: f.publicar.checked, skill: f.skill?.value ?? "",
     });
   };
+  const continuando = rascunho.continuar;
   const opcoes = (nome, lista) => h("select", { name: nome }, lista.map(([v, t]) => h("option", { value: v, selected: v === rascunho[nome] }, t)));
   const marcar = (nome, texto) => h("label", { class: "opcao" }, h("input", { type: "checkbox", name: nome, checked: rascunho[nome] }), ` ${texto}`);
-  return cartao("Novo trabalho do Claude Code",
+  const c = cartao(continuando ? "Continuar trabalho do Claude Code" : "Novo trabalho do Claude Code",
     contas.length ? null : h("p", { class: "erro" }, "Nenhuma conta do Claude Code com login no servidor (sudo atena-claude-conta entrar <conta>)."),
+    continuando && h("div", { class: "stack-topo" },
+      h("p", { class: "fraco" }, `Continuando o trabalho ${continuando} em ${rascunho.projeto}: a conversa vem junto.`),
+      h("button", { type: "button", class: "discreto", onclick: () => {
+        Object.assign(rascunho, { continuar: null, projeto: "" });
+        c.replaceWith(cartaoNovoTrabalho(trabalhos, projetos));
+      } }, "Começar um novo")),
     h("form", { class: "resposta", oninput: guardar, onchange: guardar, onsubmit: async (evento) => {
       evento.preventDefault();
       guardar(evento);
       const params = { projeto: rascunho.projeto.trim(), pedido: rascunho.pedido.trim(), conta: rascunho.conta, minutos: Number(rascunho.minutos),
         ...(rascunho.modelo ? { modelo: rascunho.modelo } : {}), ...(rascunho.esforco ? { esforco: rascunho.esforco } : {}),
-        ...(rascunho.somente_plano ? { somente_plano: true } : {}), ...(rascunho.publicar ? { publicar: true } : {}) };
+        ...(rascunho.somente_plano ? { somente_plano: true } : {}), ...(rascunho.publicar ? { publicar: true } : {}),
+        ...(rascunho.skill ? { skill: rascunho.skill } : {}), ...(continuando ? { continuar: continuando } : {}) };
       const r = await mudar("claude.tarefa", params, null, false);
       if (r && r.ok !== false) {
-        Object.assign(rascunho, { projeto: "", pedido: "", somente_plano: false, publicar: false });
+        Object.assign(rascunho, { projeto: "", pedido: "", somente_plano: false, publicar: false, skill: "", continuar: null });
         atualizar();
       }
     } },
       h("label", null, "Projeto ", h("input", { name: "projeto", list: "projetos-lab", required: true, pattern: NOME_PROJETO,
-        value: rascunho.projeto, placeholder: "lista-compras", autocomplete: "off", title: "minúsculas, números e hífen" })),
+        value: rascunho.projeto, placeholder: "lista-compras", autocomplete: "off", title: "minúsculas, números e hífen", readonly: Boolean(continuando) })),
       h("datalist", { id: "projetos-lab" }, projetos.map((p) => h("option", { value: p.projeto }))),
       h("textarea", { name: "pedido", rows: "4", minlength: "3", maxlength: "4000", required: true,
-        placeholder: "O que o Claude Code deve fazer (um nome de projeto novo cria a pasta)" }, rascunho.pedido),
+        placeholder: continuando ? "O que ele deve fazer agora" : "O que o Claude Code deve fazer (um nome de projeto novo cria a pasta)" }, rascunho.pedido),
       h("div", { class: "filtros" },
         h("label", null, "Conta ", opcoes("conta", contas.map((c) => [c, c]))),
         h("label", null, "Modelo ", opcoes("modelo", [["", "padrão"], ["fable", "fable"], ["opus", "opus"], ["sonnet", "sonnet"], ["haiku", "haiku"]])),
         h("label", null, "Esforço ", opcoes("esforco", [["", "padrão"], ...["low", "medium", "high", "xhigh", "max"].map((e) => [e, e])])),
-        h("label", null, "Tempo ", opcoes("minutos", [["15", "15 min"], ["30", "30 min"], ["60", "1 h"], ["120", "2 h"], ["240", "4 h"], ["600", "10 h"]]))),
+        h("label", null, "Tempo ", opcoes("minutos", [["15", "15 min"], ["30", "30 min"], ["60", "1 h"], ["120", "2 h"], ["240", "4 h"], ["600", "10 h"]])),
+        // só o executor do servidor de origem tem skills do Claude Code; nos outros, o campo não aparece
+        trabalhos.skills && h("label", null, "Skill ", opcoes("skill", [["", "nenhuma"], ...trabalhos.skills.map((s) => [s, s])]))),
       h("div", { class: "filtros" },
         marcar("somente_plano", "só planejar (não muda nada)"),
         marcar("publicar", "publicar quando terminar bem")),
-      h("button", { type: "submit", disabled: !contas.length }, "Mandar")),
+      h("button", { type: "submit", disabled: !contas.length }, continuando ? "Continuar" : "Mandar")),
     h("p", { class: "fraco" }, "O Claude Code trabalha sozinho na pasta do projeto, sem sudo e sem Docker. As permissões e perguntas dele aparecem em Aprovações e no celular."));
+  return c;
 }
 
 async function cartaoTrabalhos(trabalhos) {
