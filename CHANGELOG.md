@@ -1,5 +1,19 @@
 # Mudanças
 
+## 0.10.0 (2026-10-21)
+
+O visual do painel: um aparelho de mesa (painel 0.6.0).
+
+- **A direção:** escolhida pelo dono entre três (um mapa de metrô, um grid suíço e um aparelho), com as skills de design: um aparelho na linha da Teenage Engineering (OP-1), de Dieter Rams/Braun e da calculadora Braun ET66. As regras ficam em `stacks/core/painel/DESIGN.md`, e o que o painel é e para quem em `stacks/core/painel/PRODUCT.md`.
+- **O aparelho:** chassi de alumínio ou grafite, que segue o tema do aparelho; módulos com parafusos, régua, código de peça (IN-01) e a placa ATENA AT-1; teclas grafite que afundam ao apertar, com o amarelo sinal só na ação principal; LEDs como vocabulário de estado, sempre com o texto ao lado.
+- **O visor:** um vidro preto com desenhos que vêm dos dados de verdade (carretéis que giram na velocidade da CPU, termômetro, tanque da RAM, chip da GPU, a torre do PC com a ventoinha, o mostrador de 24 h da agenda) e números em 7 segmentos, com os apagados por trás. A **vista explodida** desenha as zonas como placas encaixadas, com um LED por container; a da zona com problema sai do lugar.
+- **Navegação:** barra embaixo no celular (Início, PC, Agenda, Serviços, Mais), trilho agrupado no PC e a paleta de comandos (Ctrl+K). Uma faixa amarela avisa quando há aprovação esperando e pulsa quando chega uma nova.
+- **Cena só nos momentos:** os LEDs varrem ao entrar, a ventoinha acelera quando o PC liga e o mostrador gira quando um agendamento roda; com redução de movimento, nada se move.
+- **Textos:** os estados do Docker e dos pedidos em português ("há 3 dias · verificação de saúde falhando", "parado há 5 h", "concluído").
+- **Fontes e ícone:** Archivo e Martian Mono (licença OFL) servidas pelo próprio painel, porque a CSP não deixa buscar fora; ícone novo, uma tecla amarela no grafite.
+- No PC, os módulos descem em colunas, sem vãos.
+- Testado no servidor de origem (o painel 0.6.0 subiu saudável e serve a casca nova e as fontes) e no navegador, no tamanho de celular e de PC, nos temas claro e escuro. Um revisor separado, com as instruções da skill e sem o histórico de quem construiu, pediu duas rodadas de correção (códigos de peça, vãos no PC, o visor como foco, as teclas, os textos, os controles do navegador); as da segunda rodada foram aplicadas e conferidas nas capturas, sem um terceiro veredito.
+
 ## 0.9.0 (2026-10-21)
 
 A agenda, os arquivos e o editor de stacks no painel (painel 0.5.0), e uma correção de segurança no executor.
