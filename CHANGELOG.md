@@ -1,5 +1,16 @@
 # Mudanças
 
+## 0.14.0 (2026-10-21)
+
+As regras de trabalho escritas, e o fim da falha intermitente do CI.
+
+- **`CONTRIBUTING.md`** (e `CONTRIBUTING.en.md`): o que estava só na cabeça de quem mantém o repositório, num lugar só. Só valores de exemplo, e onde pôr os seus dados para o verificador procurar; commits em fatias pequenas, com o porquê e o teste no corpo; o `tools/ci-local.sh` e o verificador antes de cada push; as regras do executor (módulos de baixo para cima, lista fechada, ação nova com teste e com a linha na habilidade da Atena), do painel (sem npm, uma tela por arquivo, a CSP, o cache do service worker), do instalador e das versões; e, num servidor de verdade, o repositório primeiro e depois instalar.
+- **`CLAUDE.md`:** curto, para um assistente de código que abre o repositório: o que vale em qualquer tarefa e quando ler cada seção do `CONTRIBUTING.md`.
+- Os READMEs apontam para as regras na seção Contribuindo.
+- **Executor:** um pedido grande demais (acima de 1 MB) recebe o 413 em vez de "conexão encerrada": o executor lê e joga fora o corpo, até 8 MB, antes de recusar. Era a falha intermitente do CI (`BrokenPipeError` no `teste_nucleo`), que as anotações novas mostraram; o teste usa agora o limite real, e no executor antigo ele falha sempre.
+- Com esta versão fecha a passada de qualidade: o servidor de origem roda o mesmo código do repositório (0.11.0), o executor está em módulos (0.12.0), a interface do painel também (0.13.0), e o CI ganhou o ruff, os tipos do painel e as anotações de falha.
+- Testado: os comandos e caminhos citados nos documentos foram conferidos no repositório; o teste novo do limite falha no executor antigo e passa no novo (aqui e no CI local, num Ubuntu 24.04 limpo); e, no servidor de origem, o executor com o conserto passou na conferência.
+
 ## 0.13.0 (2026-10-21)
 
 A interface do painel em módulos (painel 0.6.1) e a checagem de tipos do servidor dele.
