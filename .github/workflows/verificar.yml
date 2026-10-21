@@ -13,7 +13,7 @@ jobs:
     name: shellcheck
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: instalador, ferramentas e scripts do servidor em bash
         run: |
           docker run --rm -v "$PWD:/mnt:ro" -w /mnt koalaman/shellcheck:v0.10.0 -x -s bash \
@@ -28,7 +28,7 @@ jobs:
     name: composes válidos
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: valida cada compose com os valores de exemplo
         run: |
           set -a; . ./atena.conf.example; set +a
@@ -45,7 +45,7 @@ jobs:
     name: testes (executor, Hermes e lab)
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: dependências (as mesmas do servidor)
         run: sudo apt-get install -y -qq python3-yaml && sudo mkdir -p /srv
       - name: os scripts Python compilam
@@ -56,16 +56,30 @@ jobs:
           done
       - name: testes
         run: |
+          # roda todos, mesmo depois de uma falha; cada FALHA vira uma anotação do GitHub,
+          # que dá para ler sem abrir o log (a API pública mostra as anotações)
+          falharam=""
           for t in tests/executor/teste_*.py tests/hermes/teste_*.py tests/lab/teste_*.py; do
             echo "== $t"
-            (cd "$(dirname "$t")" && /usr/bin/python3 "$(basename "$t")")
+            if ! (cd "$(dirname "$t")" && /usr/bin/python3 "$(basename "$t")") > saida.txt 2>&1; then
+              falharam="$falharam $t"
+              grep -E '^FALHA|falhas:|Error|Traceback' saida.txt | head -20 | while IFS= read -r linha; do
+                echo "::error file=$t::$linha"
+              done
+            fi
+            cat saida.txt
           done
+          rm -f saida.txt
+          if [ -n "$falharam" ]; then
+            echo "falharam:$falharam"
+            exit 1
+          fi
 
   painel:
     name: testes do painel
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: testes na mesma imagem do Node do painel
         run: |
           docker run --rm --network none -v "$PWD/stacks/core/painel/app:/app:ro" -w /app \
@@ -75,7 +89,7 @@ jobs:
     name: gitleaks
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: procura segredos em todo o histórico
