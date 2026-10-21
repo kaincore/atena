@@ -5,9 +5,13 @@ saída com a anterior e só acorda a Atena (e gasta API) quando ela muda.
 """
 import http.client
 import json
+import os
 import socket
+import time
 
 SOCKET = "/run/atena-executor/executor.sock"
+ESTADO = "/opt/data/cron/ronda-estado.json"   # o que a ronda lembra de uma volta para a outra
+CARENCIA = 15 * 60   # a unidade com falha que roda de novo (por um timer) segue na lista por 15 min
 
 
 class Conexao(http.client.HTTPConnection):
@@ -29,7 +33,40 @@ def acao(nome):
     return r["resultado"]
 
 
-def problemas():
+def ler_estado():
+    try:
+        with open(ESTADO) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+
+def gravar_estado(estado):
+    """Grava o estado; devolve o erro, ou None se gravou."""
+    try:
+        with open(ESTADO + ".tmp", "w") as f:
+            json.dump(estado, f)
+        os.replace(ESTADO + ".tmp", ESTADO)
+    except OSError as e:
+        return type(e).__name__
+    return None
+
+
+def unidades_com_falha(estado):
+    """As unidades do systemd com falha. A que um timer roda de novo sai do estado failed enquanto roda
+    e volta a ele quando falha outra vez, e cada troca acordaria a Atena: ela só sai da lista depois
+    de 15 min sem falhar."""
+    agora = time.time()
+    vistas = estado.setdefault("unidades", {})
+    for unidade in acao("status.sistema").get("falhas", []):
+        vistas[unidade] = agora
+    for unidade, quando in list(vistas.items()):
+        if agora - quando > CARENCIA:
+            del vistas[unidade]
+    return sorted(vistas)
+
+
+def problemas(estado):
     achados = []
     for c in acao("status.servicos"):
         onde = f"{c['container']} (stack {c['stack']}, zona {c['zona']})"
@@ -37,7 +74,7 @@ def problemas():
             achados.append(f"container {onde}: {c['estado']}")
         elif "unhealthy" in c["status"]:
             achados.append(f"container {onde}: doente (unhealthy)")
-    for unidade in acao("status.sistema").get("falhas", []):
+    for unidade in unidades_com_falha(estado):
         achados.append(f"unidade do systemd com falha: {unidade}")
     recursos = acao("status.recursos")
     for ponto, d in recursos["discos"].items():
@@ -78,8 +115,9 @@ def perguntas_claude():
     return linhas
 
 
+estado = ler_estado() or {}
 try:
-    lista = problemas()
+    lista = problemas(estado)
 except Exception as e:
     lista = [f"a ronda não conseguiu falar com o executor ({type(e).__name__})"]
 try:
@@ -90,6 +128,9 @@ try:
     trabalhos += perguntas_claude()
 except Exception:
     pass
+erro = gravar_estado(estado)
+if erro:
+    lista.append(f"a ronda não conseguiu guardar o estado em {ESTADO} ({erro})")
 print("\n".join(sorted(lista)) if lista else "tudo normal")
 if trabalhos:
     print("\n".join(trabalhos))

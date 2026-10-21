@@ -10,10 +10,11 @@ import threading
 
 RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 tmp = tempfile.mkdtemp(prefix="teste-ronda-")
-SOCK, TOKEN = f"{tmp}/executor.sock", f"{tmp}/executor.token"
+SOCK, TOKEN, ESTADO = f"{tmp}/executor.sock", f"{tmp}/executor.token", f"{tmp}/ronda-estado.json"
 open(TOKEN, "w").write("token-falso\n")
 fonte = open(os.path.join(RAIZ, "hermes", "scripts", "ronda.py")).read()
 fonte = fonte.replace('"/run/atena-executor/executor.sock"', repr(SOCK)).replace('"/opt/data/executor.token"', repr(TOKEN))
+fonte = fonte.replace('"/opt/data/cron/ronda-estado.json"', repr(ESTADO))
 RONDA = f"{tmp}/ronda.py"
 open(RONDA, "w").write(fonte)
 
@@ -68,6 +69,13 @@ def ronda():
     return subprocess.run([sys.executable, "-I", RONDA], capture_output=True, text=True, timeout=30).stdout
 
 
+def passar_minutos(minutos):
+    """Faz de conta que as unidades com falha foram vistas pela última vez há tantos minutos."""
+    estado = json.load(open(ESTADO))
+    estado["unidades"] = {u: quando - 60 * minutos for u, quando in estado.get("unidades", {}).items()}
+    json.dump(estado, open(ESTADO, "w"))
+
+
 confere("servidor bem: tudo normal", ronda() == "tudo normal\n")
 confere("usa o token da Atena e marca a origem", PEDIDOS[-1][1] == "Bearer token-falso" and PEDIDOS[-1][2]["origem"] == "ronda")
 CENARIO["servicos"] = [
@@ -85,7 +93,19 @@ saida = ronda()
 confere("unidade com falha, disco, RAM e GPU", saida.splitlines() == sorted([
     "unidade do systemd com falha: atena-docker-firewall.service", "disco / acima de 90%",
     "RAM disponível abaixo de 10%", "GPU acima de 85 °C"]), saida)
-CENARIO.update(falhas=[], livre=50, ram=8000, gpu=None, temperaturas={"cpu_c": 91.5, "nvme_c": 72.0})
+CENARIO.update(falhas=[], livre=50, ram=8000, gpu=None)
+confere("unidade que o timer roda de novo (sai do failed enquanto roda): a saída não muda",
+        "unidade do systemd com falha: atena-docker-firewall.service" in ronda())
+passar_minutos(10)
+CENARIO["falhas"] = ["atena-docker-firewall.service"]
+ronda()
+CENARIO["falhas"] = []
+passar_minutos(10)
+confere("a carência conta da última falha (20 min da primeira, 10 da última)",
+        "atena-docker-firewall.service" in ronda())
+passar_minutos(6)
+confere("15 min sem falhar: sai da lista", ronda() == "tudo normal\n")
+CENARIO["temperaturas"] = {"cpu_c": 91.5, "nvme_c": 72.0}
 saida = ronda()
 confere("CPU e NVMe quentes", saida.splitlines() == ["CPU acima de 85 °C", "NVMe acima de 70 °C"], saida)
 CENARIO["temperaturas"] = {"cpu_c": 91.0, "nvme_c": 71.0}
@@ -115,7 +135,13 @@ CENARIO["perguntas"] = [{"id": "cccc0003", "projeto": "loja", "esperando_min": 2
 confere("pergunta esperando o dono", "Claude Code pergunta cccc0003 (projeto loja): esperando o dono" in ronda())
 CENARIO["perguntas"][0]["esperando_min"] = 12
 confere("aos 10 min sem resposta, a linha muda", "o dono não respondeu em 10 min" in ronda())
-CENARIO.update(trabalhos=None, perguntas=[], fora=True)
+CENARIO["perguntas"] = []
+os.chmod(tmp, 0o500)
+saida = ronda()
+os.chmod(tmp, 0o700)
+confere("sem conseguir guardar o estado: a ronda avisa", "a ronda não conseguiu guardar o estado" in saida
+        or os.geteuid() == 0, saida)
+CENARIO.update(trabalhos=None, fora=True)
 saida = ronda()
 confere("executor recusando: a ronda avisa em vez de calar", saida.startswith("a ronda não conseguiu falar com o executor"), saida)
 
