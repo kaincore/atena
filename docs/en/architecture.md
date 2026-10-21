@@ -32,7 +32,7 @@ Docker already isolates different networks: a container in `agents` can't reach 
 
 ## Action executor
 
-The executor (`/usr/local/sbin/atena-executor`) is the **only path** from clients (Atena and the panel) to the server. It runs on the server itself as the `atena-exec` user and listens on the socket `/run/atena-executor/executor.sock` (group `atena-acoes`).
+The executor (`/usr/local/sbin/atena-executor`, with its code in the `atena_executor` package, one module per topic, in `/usr/local/lib/atena-executor`) is the **only path** from clients (Atena and the panel) to the server. It runs on the server itself as the `atena-exec` user and listens on the socket `/run/atena-executor/executor.sock` (group `atena-acoes`).
 
 <p align="center"><img src="../assets/fluxo.en.svg" width="100%" alt="How a request flows: you talk to Hermes on Telegram, and Hermes uses LiteLLM to reach Claude or the home models. Through the socket, Hermes asks the executor, which acts on the server (Docker, systemd, files, PC). For approval, the executor notifies your phone through ntfy, and the tap on Approve comes back through ntfy to the executor."></p>
 
