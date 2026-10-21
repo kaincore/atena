@@ -161,6 +161,25 @@ decidir(idp, "recusar")
 confere("recusar a permissão responde que não", resposta_da_ponte()["permitir"] is False
         and ex.ESTADO["pedidos"][idp]["estado"] == "recusado")
 
+# permissão e pergunta são do Claude Code: o painel decide as dos trabalhos que ele mesmo mandou
+do_painel = {"cliente": "painel", "zonas": ["core", "apps", "lab"]}
+p = ex.criar_pedido(do_painel, "claude.permissao",
+                    {"trabalho": "abcd0003", "chave": "abcd0003-1", "ferramenta": "Bash", "detalhe": "npm test"},
+                    "claude", "Claude Code quer usar Bash")
+ex.mudar(p, nonce="nonce-3")
+ex.pedir_aprovacao(p, "Claude Code pede: Bash", "Trabalho abcd0003: npm test")
+status, r = decidir(p["id"], "aprovar")
+esperar(p["id"])
+with open(f"{ex.CLAUDE}/fila/abcd0003-1.resposta") as f:
+    resp = json.load(f)
+confere("o painel aprova a permissão de um trabalho que ele mandou", status == 200 and resp["permitir"] is True, r)
+p = ex.criar_pedido(do_painel, "claude.pergunta",
+                    {"trabalho": "abcd0004", "chave": "abcd0004-q1", "projeto": "lista", "pergunta": "Porta 8000?",
+                     "opcoes": ["sim", "não"], "por_que": "a porta"}, "claude", "Claude Code pergunta (lista)")
+ex.mudar(p, estado="perguntando", nonce="nonce-q4", segredo="s" * 24)
+status, r = decidir(p["id"], "responder", "sim")
+confere("e responde a pergunta de um trabalho que ele mandou", status == 200 and r["resultado"]["resultado"] == "respondida", r)
+
 # --- pergunta do Claude Code ---
 p = ex.criar_pedido(cliente_lab, "claude.pergunta",
                     {"trabalho": "abcd0002", "chave": "abcd0002-q1", "projeto": "lista", "pergunta": "Azul ou verde?",

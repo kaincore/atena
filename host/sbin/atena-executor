@@ -2601,7 +2601,7 @@ def acao_aprovacoes_decidir(cliente, params):
         p = ESTADO["pedidos"].get(alvo) if isinstance(alvo, str) else None
         if not p or not no_alcance(cliente, p):
             raise Erro(404, "pedido não encontrado (veja aprovacoes.lista)")
-        if p["cliente"] == cliente["cliente"]:
+        if p["cliente"] == cliente["cliente"] and p["acao"] not in ("claude.permissao", "claude.pergunta"):
             raise Erro(403, "um cliente não decide sobre os próprios pedidos")
         pergunta = p["acao"] == "claude.pergunta"
         if pergunta != (decisao == "responder"):
