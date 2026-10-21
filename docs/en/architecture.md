@@ -104,20 +104,21 @@ Finished app ──> app.publicar ──> lab-<project> stack in the lab zone (p
 
 ## The panel
 
-Optional (`./install.sh --painel`). The server in your PC and phone browser, installable as an app (PWA): status, services, sensors, processes, network and the systemd journal, the home PC, the lab apps, AI spending and a history of what you told it to do.
+Optional (`./install.sh --painel`). The server in your PC and phone browser, installable as an app (PWA): status, services, sensors, processes, network and the systemd journal, the home PC, the lab apps and Claude Code, AI spending and a history of what you told it to do.
 
 ```text
 Phone or PC (Tailscale) ──HTTPS :3100──> tailscale serve ──socket──> panel (core zone, no network)
-panel ──socket──> executor (own token: 22 actions, none that delete or edit)
+panel ──socket──> executor (own token: 30 actions; only deletes lab apps, nothing that edits)
 ```
 
 - **No network.** The container runs with `network_mode: none`: it can't reach the internet, the home network or other containers, and nothing reaches it over the network. Visits arrive through `tailscale serve`, which delivers to the socket `/srv/core/painel/run/painel.sock`, and requests go to the executor through its socket.
 - **Tailscale only**, at home too. Tailscale's HTTPS is what makes the app installable and keeps the cookie secure.
 - **One account, with a password.** The hash (scrypt) lives in `/srv/core/painel/senha`, written by `atena-painel-senha`. A session lasts 30 days and renews on every use; changing the password signs out every device.
-- **Two closed lists.** The panel only asks for its own actions, and its executor token only accepts those, in the core, apps, ai, agents and lab zones: queries, logs, spending, restart a service, turn the PC on and off, restart and stop lab apps. No deleting, editing stacks, Claude Code or reading files.
-- **Confirmation on screen.** Restart, shut down and stop ask for confirmation in the panel itself, which is why its token doesn't ask the phone.
-- **Approvals center.** What Atena and Claude Code ask for and is waiting for you shows up in the panel with the text that went to the phone: Approve, Refuse or answer the question. It counts the same as the tap on the phone, both keep working, and whoever decides first wins. The panel never decides its own requests.
+- **Two closed lists.** The panel only asks for its own actions, and its executor token only accepts those, in the core, apps, ai, agents and lab zones: queries, logs, spending, restart a service, turn the PC on and off, the lab apps and Claude Code. No editing stacks, reading files or deleting outside the lab.
+- **Confirmation on screen.** Restart, shut down, stop, publish and delete ask for confirmation in the panel itself, and deleting an app's data requires typing its name; that's why its token doesn't ask the phone.
+- **Approvals center.** What Atena and Claude Code ask for and is waiting for you shows up in the panel with the text that went to the phone: Approve, Refuse or answer the question. It counts the same as the tap on the phone, both keep working, and whoever decides first wins. The panel never decides its own requests; the exception is Claude Code's permissions and questions in jobs the panel started, because Claude Code is the one asking.
 - **Activity.** The executor's log (every request from every client, every decision and its events), filtered by client or errors only.
+- **Lab and Claude Code.** The lab apps: publish, restart, stop, cancel what's running, delete (container and image, the code to the trash for 30 days, or the data), restore from the trash and run a command inside the app. Sends jobs to Claude Code (account, model, effort, time, plan only, publish when done) and shows every client's jobs, Atena's included, with the summary; any of them can be cancelled.
 - **System.** Temperatures, fans and GPU; the processes using the most CPU or RAM; addresses and open ports, each with its reach (server only, containers, home network, Tailscale or every network); and the systemd journal by unit, severity and time span. Read only, with secrets hidden.
 - **No dependencies.** Node 22, which already runs TypeScript and ships SQLite: not a single npm package. The code lives in the stack (`stacks/core/painel/app`), and the installer updates it on every run.
 - **Data.** SQLite database at `/srv/core/painel/painel.db`: sessions (only the token hash), login attempts and a 90-day history of the actions that change something.
