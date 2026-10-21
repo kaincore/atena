@@ -1,13 +1,13 @@
 """O atena-claude-runner com um Claude Code de mentira: trabalho normal, plano, recusas, cancelar,
 contas do atena.conf, limite de uso (com e sem troca automática), continuar em outra conta, as
-travas de git, o fechamento depois do resumo final e os trabalhos em paralelo."""
+travas de git, o fechamento depois do resumo final, os trabalhos em paralelo e as skills."""
 import json
 import os
 import subprocess
 import threading
 import time
 
-from comum import SESSAO, confere, fim, runner
+from comum import RAIZ, SESSAO, confere, fim, runner
 
 rn, tmp = runner()
 base, projetos = rn.BASE, rn.PROJETOS
@@ -100,7 +100,8 @@ confere("terminou ok com resumo e sessão", r["ok"] and r["texto"].startswith("T
 confere("roda na pasta do projeto", c["cwd"] == f"{projetos}/lista-compras")
 confere("pasta herda o setgid de projetos (grupo atena-lab)", os.stat(f"{projetos}/lista-compras").st_mode & 0o2000)
 confere("usa a conta escolhida", c["env"]["CLAUDE_CONFIG_DIR"] == f"{base}/contas/pessoal")
-confere("HOME do trabalhador e PATH sem sbin", c["env"]["HOME"] == base and "sbin" not in c["env"]["PATH"])
+confere("HOME do trabalhador e PATH sem sbin nem as ferramentas das skills", c["env"]["HOME"] == base
+        and "sbin" not in c["env"]["PATH"] and rn.FERRAMENTAS not in c["env"]["PATH"])
 confere("sandbox pelo --settings lab.json", argv[argv.index("--settings") + 1] == rn.CONFIG)
 confere("só a configuração da conta (--setting-sources user)", argv[argv.index("--setting-sources") + 1] == "user")
 confere("permissões vão para a ponte", argv[argv.index("--permission-prompt-tool") + 1] == "mcp__dono__permissao"
@@ -290,5 +291,30 @@ with open(f"{base}/resultados/ffff0005.executar.json") as f:
     r = json.load(f)
 confere("erro inesperado vira resultado de falha", r["ok"] is False and "bug de teste" in r["texto"], r)
 rn.executar_trabalho = original
+
+# --- skills (ATENA_CLAUDE_SKILLS) ---
+if os.path.exists(f"{tmp}/chamadas.jsonl"):
+    os.remove(f"{tmp}/chamadas.jsonl")
+rn.SKILLS = os.path.join(RAIZ, "host", "lab", "skills.json")
+r, _ = trabalho("abab0001", projeto="site", skill="impeccable polish", pedido="capricha")
+confere("skill com as skills desligadas: falha sem chamar o Claude Code", not r["ok"] and "catálogo" in r["texto"]
+        and not os.path.exists(f"{tmp}/chamadas.jsonl"), r)
+with open(rn.CONF, "a") as f:
+    f.write("ATENA_CLAUDE_SKILLS=sim\n")
+r, _ = trabalho("abab0002", projeto="site", skill="impeccable polish", pedido="capricha")
+c = chamadas()[-1]
+argv = c["argv"]
+regras = argv[argv.index("--append-system-prompt") + 1]
+confere("skill: o comando dela na primeira linha do pedido", r["ok"] and argv[-1].startswith("/impeccable polish\n\n")
+        and "capricha" in argv[-1], argv[-1][:80])
+confere("com as skills: atena-tela e os servidores de linguagem no PATH",
+        c["env"]["PATH"].startswith(f"{rn.FERRAMENTAS}/bin:{rn.FERRAMENTAS}/node_modules/.bin:"), c["env"]["PATH"])
+confere("com as skills: as regras dizem quando usar cada uma", "atena-tela" in regras and "frontend-design" in regras
+        and regras.index("Skills instaladas") < regras.index("revise o próprio diff"))
+r, _ = trabalho("abab0003", projeto="site", pedido="sem skill")
+argv = chamadas()[-1]["argv"]
+confere("sem skill no pedido, o pedido começa normal", r["ok"] and argv[-1].startswith("Pedido do dono:"), argv[-1][:40])
+r, _ = trabalho("abab0004", projeto="site", skill="impeccable rm", pedido="faz")
+confere("skill fora do catálogo: falha", not r["ok"] and "impeccable rm" in r["texto"], r)
 
 fim()
