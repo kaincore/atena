@@ -1,0 +1,6 @@
+#!/bin/sh
+# atena-tela: print de uma página local (127.0.0.1/localhost), para o Claude Code do lab conferir o
+# visual. Roda dentro do sandbox, com o Chromium sem tela que fica ao lado (ATENA_CLAUDE_SKILLS=sim).
+#   atena-tela http://127.0.0.1:<porta>/<caminho> <saida.png> [--celular] [--largura N] [--altura N] [--inteira]
+D=/usr/local/lib/atena-claude/ferramentas
+PLAYWRIGHT_BROWSERS_PATH="$D/navegadores" exec /usr/bin/node "$D/tela.js" "$@"

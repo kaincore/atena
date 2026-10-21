@@ -5,11 +5,15 @@
 #   sudo atena-claude-conta entrar <conta>   login (mostra um link para autorizar no navegador)
 #   sudo atena-claude-conta sair <conta>     desconecta a conta deste servidor
 #   sudo atena-claude-conta estado           quais contas estão prontas
+#   sudo atena-claude-conta skills           põe (ou, com ATENA_CLAUDE_SKILLS=nao, tira) os plugins e o
+#                                            Impeccable nas contas com login
 set -euo pipefail
 BASE=/var/lib/atena-claude
+LIB=/usr/local/lib/atena-claude
 CONF=/etc/atena/atena.conf
+PLUGINS=(frontend-design mattpocock-skills pyright-lsp typescript-lsp)   # do claude-plugins-official
 
-ajuda() { sed -n '2,7p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
+ajuda() { sed -n '2,9p' "$0" | sed 's/^# \{0,1\}//' >&2; exit 2; }
 [ "$(id -u)" = 0 ] || { echo "rode com sudo" >&2; exit 1; }
 
 # as contas do atena.conf, na ordem; sem a chave, a conta principal
@@ -19,6 +23,7 @@ for c in $lista; do
   if [[ $c =~ ^[a-z0-9][a-z0-9-]{0,19}$ ]] && [[ " ${CONTAS[*]} " != *" $c "* ]]; then CONTAS+=("$c"); fi
 done
 [ ${#CONTAS[@]} -gt 0 ] || CONTAS=(principal)
+SKILLS=$(sed -n 's/^ATENA_CLAUDE_SKILLS=//p' "$CONF" 2>/dev/null | tail -n 1 | tr -d "\"' ")
 
 como_claude() {  # como_claude <conta> <argumentos do claude...>
   local conta=$1; shift
@@ -41,6 +46,30 @@ atualizar() {  # contas.json: o executor lê para recusar pedidos de conta sem l
   mv "$BASE/contas.json.novo" "$BASE/contas.json"
 }
 
+skills_na_conta() {  # com ATENA_CLAUDE_SKILLS=sim, os plugins e o Impeccable (só leitura para o trabalhador)
+  local conta=$1 dir=$BASE/contas/$1 p ok=0
+  rm -rf "$dir/skills/impeccable"
+  if [ "$SKILLS" != sim ]; then
+    for p in "${PLUGINS[@]}"; do como_claude "$conta" plugin uninstall "$p@claude-plugins-official" >/dev/null 2>&1 || true; done
+    echo "$conta: sem skills"
+    return
+  fi
+  if [ -d "$LIB/skills/impeccable" ]; then
+    install -d -m 755 -o atena-claude -g atena-claude "$dir/skills"
+    cp -r "$LIB/skills/impeccable" "$dir/skills/impeccable"
+    chown -R root:atena-claude "$dir/skills/impeccable"
+  fi
+  como_claude "$conta" plugin marketplace add anthropics/claude-plugins-official >/dev/null 2>&1 || true
+  for p in "${PLUGINS[@]}"; do
+    if como_claude "$conta" plugin install "$p@claude-plugins-official" -y --json 2>/dev/null | grep -q '"outcome": *"ok"'; then
+      ok=$((ok + 1))
+    else
+      echo "$conta: não consegui instalar o plugin $p (sem rede?); tente de novo: sudo atena-claude-conta skills" >&2
+    fi
+  done
+  echo "$conta: $ok de ${#PLUGINS[@]} plugins$([ -d "$dir/skills/impeccable" ] && echo " e o Impeccable")"
+}
+
 conta_valida() {
   [[ " ${CONTAS[*]} " == *" ${1:-} "* ]] || {
     echo "conta deve ser: ${CONTAS[*]} (as de ATENA_CLAUDE_CONTAS no $CONF)" >&2; exit 2; }
@@ -52,6 +81,7 @@ case "${1:-}" in
     echo "Abra o link que aparecer, entre na conta \"$2\" e cole o código aqui."
     como_claude "$2" auth login --claudeai
     atualizar
+    if [ "$SKILLS" = sim ] && grep -q "\"$2\": true" "$BASE/contas.json"; then skills_na_conta "$2"; fi
     ;;
   sair)
     conta_valida "${2:-}"
@@ -62,6 +92,12 @@ case "${1:-}" in
     atualizar
     for conta in "${CONTAS[@]}"; do
       if grep -q "\"$conta\": true" "$BASE/contas.json"; then echo "$conta: pronta"; else echo "$conta: sem login"; fi
+    done
+    ;;
+  skills)
+    atualizar
+    for conta in "${CONTAS[@]}"; do
+      if grep -q "\"$conta\": true" "$BASE/contas.json"; then skills_na_conta "$conta"; else echo "$conta: sem login; pulei"; fi
     done
     ;;
   *)

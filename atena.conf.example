@@ -54,6 +54,11 @@ ATENA_CLAUDE_CONTAS=principal
 ATENA_CLAUDE_TROCA=nao
 # Versão do Claude Code do lab (fixa; ele não se atualiza sozinho)
 ATENA_CLAUDE_VERSAO=2.1.302
+# Skills no Claude Code do lab: com "sim", cada conta ganha os plugins frontend-design,
+# mattpocock-skills, pyright-lsp e typescript-lsp e a skill Impeccable (só o texto, numa versão
+# fixa); a Atena escolhe a skill de cada trabalho, e o Claude Code confere as telas com prints
+# (atena-tela, com um Chromium sem tela). Baixa cerca de 400 MB.
+ATENA_CLAUDE_SKILLS=nao
 
 # --- PC da rede de casa (opcional) -------------------------------------------
 # Um PC com placa de vídeo e LM Studio que a Atena liga (Wake-on-LAN), usa para textos

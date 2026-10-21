@@ -1,7 +1,8 @@
 # Etapa 88 (só com --lab): o lab do Claude Code. O usuário atena-claude (sem sudo, sem Docker) roda os
 # trabalhos que a Atena pede ao executor, em /srv/lab/projetos, no sandbox do Claude Code; os pedidos
 # de permissão e as perguntas vão ao celular. Os apps prontos vão para a zona lab (app.publicar).
-# Depois, falta você: sudo atena-claude-conta entrar <conta>, para cada conta de ATENA_CLAUDE_CONTAS.
+# Depois, falta você: sudo atena-claude-conta entrar <conta>, para cada conta de ATENA_CLAUDE_CONTAS
+# (com ATENA_CLAUDE_SKILLS=sim, o login já põe os plugins e o Impeccable na conta).
 
 [ "$INSTALAR_LAB" = sim ] || return 0
 
@@ -90,6 +91,61 @@ for u in atena-claude.path atena-claude.service atena-lab-lixeira.service atena-
 done
 ok "runner, ponte, lixeira e o sandbox do trabalhador (contas: $ATENA_CLAUDE_CONTAS)"
 
+# skills do Claude Code (ATENA_CLAUDE_SKILLS=sim): o catálogo que a Atena usa, o Impeccable (só o texto:
+# sem o lançador, que baixa um binário, e sem os hooks), numa versão fixa e conferida, e as ferramentas do
+# trabalhador: atena-tela (print de uma página local, com um Chromium sem tela) e os servidores de
+# linguagem dos plugins pyright-lsp e typescript-lsp, nas versões do package-lock.json. Os plugins entram
+# em cada conta pelo atena-claude-conta, porque precisam do login.
+IMPECCABLE_COMMIT=08d5b470495d242ca0470f4aeae1956c3a074f83   # versão 4.6.0
+IMPECCABLE_SOMA=7f33df64049dad1a20160305b5b9e5dc15d45dbdcc689a56cc89440f6c22ac1a   # dos arquivos copiados
+soma_impeccable() (   # o sha256 da lista de sha256 dos arquivos que vão para as contas
+  cd "$1" && find SKILL.md reference LICENSE NOTICE.md -type f -print0 | LC_ALL=C sort -z \
+    | xargs -0 sha256sum | sha256sum | cut -d' ' -f1
+)
+instalar_arquivo "$RAIZ/host/lab/skills.json" "$L/skills.json"
+if [ "$ATENA_CLAUDE_SKILLS" = sim ]; then
+  F=$L/ferramentas
+  install -d -m 755 "$F" "$F/bin"
+  install -m 644 "$RAIZ/host/lab/ferramentas/package.json" "$RAIZ/host/lab/ferramentas/package-lock.json" "$F/"
+  ( cd "$F" && npm ci --ignore-scripts --no-audit --no-fund --loglevel=error >/dev/null ) \
+    || erro "não consegui instalar as ferramentas do lab (cd $F && npm ci)"
+  # o Chromium sem tela e as bibliotecas do Ubuntu que ele usa
+  NEEDRESTART_SUSPEND=1 DEBIAN_FRONTEND=noninteractive PLAYWRIGHT_BROWSERS_PATH="$F/navegadores" \
+    node "$F/node_modules/playwright-core/cli.js" install --with-deps --only-shell chromium >/dev/null 2>&1 \
+    || erro "não consegui instalar o Chromium sem tela do atena-tela"
+  install -m 644 "$RAIZ/host/lab/tela.js" "$F/tela.js"
+  install -m 755 "$RAIZ/host/lab/atena-tela" "$F/bin/atena-tela"
+  chmod -R a+rX "$F"
+  imp=$L/skills/impeccable
+  if [ ! -d "$imp" ] || [ "$(soma_impeccable "$imp")" != "$IMPECCABLE_SOMA" ]; then
+    baixado=$(mktemp -d)
+    curl -fsSL "https://codeload.github.com/pbakaus/impeccable/tar.gz/$IMPECCABLE_COMMIT" \
+      | tar -xz --no-same-owner -C "$baixado" || erro "não consegui baixar o Impeccable do GitHub"
+    r=$baixado/impeccable-$IMPECCABLE_COMMIT
+    install -d -m 755 "$baixado/impeccable"
+    cp -r "$r/plugin/skills/impeccable/SKILL.md" "$r/plugin/skills/impeccable/reference" "$r/LICENSE" "$r/NOTICE.md" \
+      "$baixado/impeccable/"
+    [ "$(soma_impeccable "$baixado/impeccable")" = "$IMPECCABLE_SOMA" ] \
+      || erro "o Impeccable baixado não confere com a versão esperada ($IMPECCABLE_COMMIT)"
+    cat > "$baixado/impeccable/ORIGEM.md" <<EOF
+# Origem desta cópia
+
+- Fonte: https://github.com/pbakaus/impeccable (Apache-2.0), commit $IMPECCABLE_COMMIT (versão 4.6.0).
+- Só o texto: SKILL.md, reference/, LICENSE e NOTICE.md. Ficaram de fora o lançador (scripts/, que
+  baixa um binário), os hooks do plugin e a telemetria; o SKILL.md segue sem o lançador e lê
+  PRODUCT.md e DESIGN.md direto.
+- Instalado pelo instalador da Atena (ATENA_CLAUDE_SKILLS=sim).
+EOF
+    rm -rf "$imp"
+    install -d -m 755 "$L/skills"
+    mv "$baixado/impeccable" "$imp"
+    chown -R root:root "$imp"
+    chmod -R u=rwX,go=rX "$imp"
+    rm -rf "$baixado"
+  fi
+  ok "skills do Claude Code: catálogo, Impeccable, atena-tela e servidores de linguagem"
+fi
+
 # com Tailscale, os apps publicados ganham o link de fora de casa. O polkit deixa o executor iniciar só
 # as unidades atena-lab-tailscale-on@/off@<porta>
 if [ "$ATENA_TAILSCALE" = sim ]; then
@@ -120,6 +176,9 @@ sleep 1
 systemctl is-active --quiet atena-executor || erro "o executor não subiu: journalctl -u atena-executor"
 systemctl is-active --quiet atena-claude.path || erro "a fila do Claude Code não subiu: journalctl -u atena-claude.path"
 ok "fila do Claude Code no ar (atena-claude.path)"
+if [ "$ATENA_CLAUDE_SKILLS" = sim ]; then   # os plugins e o Impeccable nas contas que já têm login
+  atena-claude-conta skills | sed 's/^/    /'
+fi
 
 # a Atena no lab, se ela estiver instalada: a habilidade, as ações no token, e os projetos no terminal
 # dela (mesmo caminho do servidor e do Claude Code), com escrita por ACL

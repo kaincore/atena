@@ -31,11 +31,13 @@ case "$ATENA_VOZ" in sim|nao) ;; *) erro "ATENA_VOZ deve ser sim ou nao" ;; esac
 : "${ATENA_CLAUDE_CONTAS:=principal}"
 : "${ATENA_CLAUDE_TROCA:=nao}"
 : "${ATENA_CLAUDE_VERSAO:=2.1.302}"
+: "${ATENA_CLAUDE_SKILLS:=nao}"
 for c in ${ATENA_CLAUDE_CONTAS//,/ }; do
   [[ $c =~ ^[a-z0-9][a-z0-9-]{0,19}$ ]] \
     || erro "ATENA_CLAUDE_CONTAS: \"$c\" não vale como nome de conta (minúsculas, números e hífen, até 20)"
 done
 case "$ATENA_CLAUDE_TROCA" in sim|nao) ;; *) erro "ATENA_CLAUDE_TROCA deve ser sim ou nao" ;; esac
+case "$ATENA_CLAUDE_SKILLS" in sim|nao) ;; *) erro "ATENA_CLAUDE_SKILLS deve ser sim ou nao" ;; esac
 [[ $ATENA_CLAUDE_VERSAO =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || erro "ATENA_CLAUDE_VERSAO deve ser uma versão, como 2.1.302"
 case "$ATENA_SENSORES_MODULO" in
   *[!a-z0-9_]*) erro "ATENA_SENSORES_MODULO deve ser o nome de um módulo do kernel (ex.: nct6683) ou vazio" ;;

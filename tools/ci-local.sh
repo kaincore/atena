@@ -47,7 +47,7 @@ shellcheck_bash() (
 shellcheck_sh() (
   cd "$copia"
   docker run --rm -v "$copia:/mnt:ro" -w /mnt koalaman/shellcheck:v0.10.0 -s sh \
-    $(grep -l '^#!/bin/sh' host/sbin/* tools/hooks/* hermes/*.sh)
+    host/lab/atena-tela $(grep -l '^#!/bin/sh' host/sbin/* tools/hooks/* hermes/*.sh)
 )
 
 composes() (

@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "playwright-core": "^1.64.1",
+    "pyright": "^1.1.414",
+    "typescript": "^7.0.2",
+    "typescript-language-server": "^6.0.2"
+  }
+}
