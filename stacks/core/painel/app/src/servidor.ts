@@ -29,6 +29,7 @@ export const ACOES: Record<string, { muda: boolean }> = {
   "servico.journal": { muda: false },
   "pc.estado": { muda: false },
   "app.lista": { muda: false },
+  "claude.trabalhos": { muda: false },
   "aprovacoes.lista": { muda: false },
   "atividade.lista": { muda: false },
   "aprovacoes.decidir": { muda: true },
@@ -39,6 +40,13 @@ export const ACOES: Record<string, { muda: boolean }> = {
   "pc.cancelar": { muda: true },
   "app.reiniciar": { muda: true },
   "app.parar": { muda: true },
+  "app.publicar": { muda: true },
+  "app.cancelar": { muda: true },
+  "app.apagar": { muda: true },
+  "app.restaurar": { muda: true },
+  "app.comando": { muda: true },
+  "claude.tarefa": { muda: true },
+  "claude.cancelar": { muda: true },
 };
 
 const COOKIE = "atena_sessao";
@@ -250,7 +258,10 @@ export function criarServidor(config: Config, banco: Banco): Server {
       const r = await executor("GET", `/pedido/${pedido[1]}?esperar=${Math.floor(esperar)}`);
       const p = r.corpo.pedido as Record<string, unknown> | undefined;
       if (p && TERMINADOS.has(String(p.estado)))
-        banco.atualizarPedido(pedido[1], String(p.estado), resumir({ ok: p.estado === "concluido", erro: p.erro, resultado: p.resultado }));
+        // o trabalho do Claude Code termina com um resumo em vez de resultado
+        banco.atualizarPedido(pedido[1], String(p.estado), resumir({
+          ok: p.estado === "concluido", erro: p.erro ?? p.resumo ?? p.estado, resultado: p.resultado ?? p.resumo,
+        }));
       return responder(res, r.status, r.corpo);
     }
 

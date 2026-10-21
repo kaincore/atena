@@ -42,6 +42,9 @@ before(async () => {
       if (req.url?.startsWith("/pedido/abcd1234"))
         return responder(200, { ok: true, pedido: { id: "abcd1234", estado: "concluido", resultado: { reiniciados: ["arca"] } } });
       if (req.url === "/acao/pc.ligar") return responder(500, { ok: false, erro: "falhou de propósito" });
+      if (req.url === "/acao/claude.tarefa") return responder(202, { ok: true, pedido: "beef0001", estado: "executando" });
+      if (req.url?.startsWith("/pedido/beef0001"))
+        return responder(200, { ok: true, pedido: { id: "beef0001", estado: "concluido", resumo: "Fiz o app de lista de compras" } });
       responder(200, { ok: true, acao: req.url, resultado: { eco: corpo } });
     });
   });
@@ -134,7 +137,7 @@ test("consulta vai ao executor com o token do painel e não entra no histórico"
 test("ação fora da lista do painel nem chega ao executor", async () => {
   const cookie = await entrar();
   recebidos.length = 0;
-  for (const nome of ["app.apagar", "claude.tarefa", "stack.editar", "arquivo.ler"]) {
+  for (const nome of ["stack.editar", "stack.aplicar", "arquivo.ler", "arca.guardar", "claude.responder"]) {
     const r = await pedir("POST", `/api/acao/${nome}`, { params: {} }, cookie);
     assert.equal(r.status, 403, nome);
   }
@@ -186,6 +189,29 @@ test("a aba Sistema: sensores, processos, rede e journal vão ao executor e não
     assert.deepEqual(recebidos.at(-1)!.corpo, { params, origem: "painel" });
   }
   assert.equal(banco.historico().length, antes);
+});
+
+test("o lab e o Claude Code: consultas fora do histórico; o resto entra, e o trabalho termina com o resumo", async () => {
+  const cookie = await entrar();
+  const antes = banco.historico().length;
+  assert.equal((await pedir("POST", "/api/acao/claude.trabalhos", { params: {} }, cookie)).status, 200);
+  assert.equal(banco.historico().length, antes);
+  const mudam = {
+    "app.publicar": { projeto: "loja" }, "app.cancelar": { projeto: "loja" }, "app.restaurar": { projeto: "loja" },
+    "app.apagar": { projeto: "loja", partes: ["docker", "codigo"] }, "app.comando": { projeto: "loja", comando: "ls /data" },
+    "claude.cancelar": { pedido: "beef0002" },
+  };
+  for (const [nome, params] of Object.entries(mudam)) {
+    assert.equal((await pedir("POST", `/api/acao/${nome}`, { params }, cookie)).status, 200, nome);
+    assert.equal(banco.historico()[0].acao, nome);
+    assert.deepEqual(JSON.parse(banco.historico()[0].params), params);
+  }
+  const r = await pedir("POST", "/api/acao/claude.tarefa", { params: { projeto: "loja", pedido: "faz um app", conta: "pessoal" } }, cookie);
+  assert.equal(r.status, 202);
+  assert.equal(banco.historico()[0].estado, "executando");
+  await pedir("GET", "/api/pedido/beef0001", undefined, cookie);
+  assert.equal(banco.historico()[0].estado, "concluido");
+  assert.match(banco.historico()[0].resumo, /Fiz o app de lista de compras/);
 });
 
 test("esperar do pedido tem teto de 60 s", async () => {
