@@ -67,6 +67,7 @@ const TIPOS: Record<string, string> = {
   ".webmanifest": "application/manifest+json",
   ".svg": "image/svg+xml",
   ".png": "image/png",
+  ".woff2": "font/woff2", // as fontes vêm do próprio painel (a CSP não deixa buscar fora)
 };
 const SEGURANCA = {
   "Content-Security-Policy":
