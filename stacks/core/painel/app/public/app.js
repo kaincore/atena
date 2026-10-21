@@ -8,6 +8,11 @@ const NOMES = {
   "pc.cancelar": "Cancelar desligamento do PC",
   "app.reiniciar": "Reiniciar app do lab",
   "app.parar": "Parar app do lab",
+  "app.publicar": "Publicar app do lab",
+  "app.cancelar": "Cancelar no lab",
+  "app.apagar": "Apagar do lab",
+  "app.restaurar": "Restaurar da lixeira",
+  "app.comando": "Comando no app",
   "aprovacoes.decidir": "Decisão",
 };
 const ORDEM_ZONAS = ["core", "ai", "agents", "apps", "lab", "prod"];
@@ -226,28 +231,95 @@ async function telaPC() {
   )];
 }
 
+// --- lab: os apps que o Claude Code fez -------------------------------------------------------------
+
+
+// os botões de um app; cada um confirma, pede e recarrega a tela
+function botoesApp(p) {
+  const publicado = p.app !== "não publicado";
+  const noAr = /^Up/.test(p.app);
+  const fazer = (nome, pergunta, params = {}) => async () => {
+    if (await mudar(nome, { projeto: p.projeto, ...params }, pergunta)) atualizar();
+  };
+  return h("span", { class: "botoes" },
+    p.em_andamento && h("button", { type: "button", onclick: fazer("app.cancelar",
+      `Parar o que está em andamento em ${p.projeto} (trabalho do Claude Code, construção ou pedido esperando o celular)?`) }, "Cancelar"),
+    p.codigo && !p.em_andamento && h("button", { type: "button", onclick: fazer("app.publicar",
+      `${publicado ? "Publicar de novo" : "Publicar"} ${p.projeto} na rede de casa? Constrói pelo Dockerfile; pode levar alguns minutos.`) },
+      publicado ? "Publicar de novo" : "Publicar"),
+    publicado && h("button", { type: "button", class: "discreto", onclick: fazer("app.reiniciar", `Reiniciar o app ${p.projeto}?`) }, "Reiniciar"),
+    noAr && h("button", { type: "button", class: "discreto", onclick: fazer("app.parar", `Tirar o app ${p.projeto} do ar? Os dados ficam.`) }, "Parar"),
+    noAr && h("button", { type: "button", class: "discreto", onclick: () => janelaComando(p.projeto) }, "Comando"),
+    !p.em_andamento && h("button", { type: "button", class: "discreto perigo", onclick: () => janelaApagar(p) }, "Apagar"));
+}
+
+function janelaComando(projeto) {
+  const saida = h("div");
+  const campo = h("input", { name: "comando", required: true, placeholder: "ex.: ls -la /data", autocomplete: "off" });
+  abrirJanela(`Comando em ${projeto}`,
+    h("p", { class: "fraco" }, "Roda dentro do container do app, como o usuário dele (sh -c), por até 30 s. Fica no histórico."),
+    h("form", { class: "resposta", onsubmit: async (evento) => {
+      evento.preventDefault();
+      const botao = evento.currentTarget.querySelector("button");
+      botao.disabled = true;
+      saida.replaceChildren(h("p", { class: "fraco" }, "Rodando…"));
+      const r = await consultar("app.comando", { projeto, comando: campo.value });
+      botao.disabled = false;
+      saida.replaceChildren(...(r.ok === false ? [falha(r)] : [
+        linha("Código de saída", h("span", { class: `selo ${r.resultado.codigo === 0 ? "ok" : "ruim"}` }, String(r.resultado.codigo))),
+        h("pre", { class: "log" }, r.resultado.saida || "(sem saída)"),
+        r.resultado.dica && h("p", { class: "fraco" }, r.resultado.dica),
+      ].filter(Boolean)));
+    } }, campo, h("button", { type: "submit" }, "Rodar")),
+    saida);
+  campo.focus();
+}
+
+function janelaApagar(p) {
+  const publicado = p.app !== "não publicado";
+  const opcao = (valor, texto, marcado) => h("label", { class: "opcao" },
+    h("input", { type: "checkbox", name: "partes", value: valor, checked: marcado }), ` ${texto}`);
+  const confirmacao = h("input", { name: "nome", autocomplete: "off", placeholder: p.projeto });
+  const aviso = h("p", { class: "erro" });
+  const form = h("form", { class: "resposta", onsubmit: async (evento) => {
+    evento.preventDefault();
+    const partes = [...form.querySelectorAll("input[name=partes]:checked")].map((x) => x.value);
+    if (!partes.length) return void (aviso.textContent = "Escolha o que apagar.");
+    if (partes.includes("dados") && confirmacao.value.trim() !== p.projeto)
+      return void (aviso.textContent = `Para apagar os dados, digite ${p.projeto}.`);
+    $("#janela").close();
+    if (await mudar("app.apagar", { projeto: p.projeto, partes })) atualizar();
+  } },
+    publicado && opcao("docker", "Tirar do Docker: o container e a imagem (publicar de novo reconstrói)", true),
+    p.codigo && opcao("codigo", "Código: vai para a lixeira, onde dá para restaurar por 30 dias", !publicado),
+    p.dados_guardados && [opcao("dados", "Dados do app (sai do Docker junto): NÃO TEM VOLTA", false),
+      h("label", null, `Para apagar os dados, digite ${p.projeto}: `, confirmacao)],
+    aviso,
+    h("button", { type: "submit", class: "perigo" }, "Apagar"));
+  abrirJanela(`Apagar ${p.projeto}`, form);
+}
+
+
 async function telaLab() {
   const r = await consultar("app.lista");
   if (r.ok === false) return [cartao("Lab", falha(r))];
   const { projetos, lixeira } = r.resultado;
+  const apps = cartao("Apps do lab", projetos.length ? projetos.map((p) => h("div", { class: "stack" },
+    h("div", { class: "stack-topo" }, h("strong", null, p.projeto), botoesApp(p)),
+    linha("App", p.app),
+    p.fora_de_casa && linha("Endereço", h("a", { href: p.fora_de_casa, target: "_blank", rel: "noopener" }, p.fora_de_casa)),
+    p.endereco && linha("Na rede de casa", h("a", { href: p.endereco, target: "_blank", rel: "noopener" }, p.endereco)),
+    linha("Guardado", [p.codigo ? "código" : "sem código", p.dados_guardados ? "dados" : "sem dados"].join(" · ")),
+    p.em_andamento && linha("Em andamento", `pedido ${p.em_andamento}`),
+  )) : h("p", { class: "fraco" }, "Nenhum projeto no lab ainda."));
   return [
-    cartao("Apps do lab", projetos.length ? projetos.map((p) => h("div", { class: "stack" },
+    apps,
+    lixeira.length ? cartao("Lixeira", h("ul", { class: "lista" }, lixeira.map((l) => h("li", null,
       h("div", { class: "stack-topo" },
-        h("strong", null, p.projeto),
-        h("span", { class: "botoes" },
-          p.app !== "não publicado" && h("button", { type: "button", onclick: async () => {
-            if (await mudar("app.reiniciar", { projeto: p.projeto }, `Reiniciar o app ${p.projeto}?`)) atualizar();
-          } }, "Reiniciar"),
-          p.app !== "não publicado" && p.app !== "parado" && h("button", { type: "button", class: "discreto", onclick: async () => {
-            if (await mudar("app.parar", { projeto: p.projeto }, `Tirar o app ${p.projeto} do ar? Os dados ficam.`)) atualizar();
-          } }, "Parar"))),
-      linha("App", p.app),
-      p.fora_de_casa && linha("Endereço", h("a", { href: p.fora_de_casa, target: "_blank", rel: "noopener" }, p.fora_de_casa)),
-      p.endereco && linha("Na rede de casa", h("a", { href: p.endereco, target: "_blank", rel: "noopener" }, p.endereco)),
-      p.em_andamento && linha("Em andamento", JSON.stringify(p.em_andamento)),
-    )) : h("p", { class: "fraco" }, "Nenhum projeto no lab ainda.")),
-    lixeira.length ? cartao("Lixeira", h("ul", { class: "lista" }, lixeira.map((l) =>
-      h("li", null, l.projeto, h("small", null, ` apagado em ${l.apagado_em}; some de vez em ${l.some_de_vez_em}`))))) : null,
+        h("span", null, l.projeto, h("small", null, ` apagado em ${l.apagado_em}; some de vez em ${l.some_de_vez_em}`)),
+        h("button", { type: "button", class: "discreto", onclick: async () => {
+          if (await mudar("app.restaurar", { projeto: l.projeto }, `Trazer o código de ${l.projeto} de volta da lixeira?`)) atualizar();
+        } }, "Restaurar")))))) : null,
   ];
 }
 
