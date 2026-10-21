@@ -2034,7 +2034,7 @@ def acao_claude_tarefa(p):
 def acao_claude_trabalhos(cliente, params):
     with TRAVA:
         meus = sorted((p for p in ESTADO["pedidos"].values()
-                       if p["acao"] == "claude.tarefa" and p["cliente"] == cliente["cliente"]),
+                       if p["acao"] == "claude.tarefa" and alcanca(cliente, p)),
                       key=lambda p: p["criado"], reverse=True)[:10]
         esperando = {q["params"]["trabalho"] for q in ESTADO["pedidos"].values()
                      if q["acao"] == "claude.permissao" and q["estado"] == "aguardando"}
@@ -2043,6 +2043,8 @@ def acao_claude_trabalhos(cliente, params):
          "conta": p.get("conta_final") or p["params"].get("conta"), "modelo": p["params"].get("modelo"),
          "esforco": p["params"].get("esforco"),
          "pedido": p["params"]["pedido"][:150],
+         **({"cliente": p["cliente"], "resumo": curto(p["resumo"], 2000) if p.get("resumo") else None,
+             "commits": len(p.get("commits") or [])} if pelo_dono(cliente) else {}),
          "criado": time.strftime("%Y-%m-%d %H:%M", time.localtime(p["criado"])),
          "esperando_permissao_no_celular": p["id"] in esperando}
         for p in meus]}
@@ -2546,6 +2548,16 @@ def curto(valor, tamanho=160):
 def no_alcance(cliente, p):
     """O cliente só enxerga pedidos de quem não passa das zonas dele."""
     return set(p.get("zonas") or ()) <= set(cliente["zonas"])
+
+
+def pelo_dono(cliente):
+    """O painel: quem decide pelo dono também vê e cancela os trabalhos dos outros clientes."""
+    return "aprovacoes.decidir" in cliente.get("acoes", ())
+
+
+def alcanca(cliente, p):
+    """O pedido é do cliente, ou o cliente fala pelo dono e o pedido está no alcance dele."""
+    return p["cliente"] == cliente["cliente"] or (pelo_dono(cliente) and no_alcance(cliente, p))
 
 
 def pendente(p):
