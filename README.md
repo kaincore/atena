@@ -167,13 +167,13 @@ atena/
 │   └── core/painel/app/   o painel: servidor, interface e testes
 ├── hermes/                a Atena: personalidade, habilidades, ronda e configuração
 ├── tests/                 testes do executor, da ronda e do lab
-├── tools/                 verificador de vazamentos e trava de commit
+├── tools/                 CI local, verificador de vazamentos e trava de commit
 └── docs/                  documentação em português e inglês
 ```
 
 ## ▌08 // Contribuindo
 
-Ative a trava que impede commitar segredos:
+As regras de trabalho (commits, testes, o que nunca entra no repositório, como mudar o executor e o painel) estão no [CONTRIBUTING.md](CONTRIBUTING.md). Antes do primeiro commit, ative a trava que impede commitar segredos:
 
 ```bash
 git config core.hooksPath tools/hooks

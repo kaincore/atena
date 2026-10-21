@@ -171,13 +171,13 @@ atena/
 │   └── core/painel/app/   the panel: server, interface and tests
 ├── hermes/                Atena: personality, skills, patrol and configuration
 ├── tests/                 tests for the executor, the patrol and the lab
-├── tools/                 leak checker and commit guard
+├── tools/                 local CI, leak checker and commit guard
 └── docs/                  documentation in Portuguese and English
 ```
 
 ## ▌08 // Contributing
 
-Enable the guard that blocks committing secrets:
+The working rules (commits, tests, what never goes into the repository, how to change the executor and the panel) are in [CONTRIBUTING.en.md](CONTRIBUTING.en.md). Before your first commit, enable the guard that blocks committing secrets:
 
 ```bash
 git config core.hooksPath tools/hooks
