@@ -17,7 +17,7 @@ jobs:
       - name: instalador, ferramentas e scripts do servidor em bash
         run: |
           docker run --rm -v "$PWD:/mnt:ro" -w /mnt koalaman/shellcheck:v0.10.0 -x -s bash \
-            install.sh install/*.sh tools/verificar-vazamentos.sh \
+            install.sh install/*.sh tools/verificar-vazamentos.sh tools/ci-local.sh \
             $(grep -lE '^#!(/bin/bash|/usr/bin/env bash)' host/sbin/*)
       - name: scripts do servidor em sh (os de Python ficam para o job de testes)
         run: |
