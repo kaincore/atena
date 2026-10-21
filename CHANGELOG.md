@@ -1,5 +1,20 @@
 # Mudanças
 
+## 0.9.0 (2026-10-21)
+
+A agenda, os arquivos e o editor de stacks no painel (painel 0.5.0), e uma correção de segurança no executor.
+
+- **Agenda:** o agendador fica no próprio painel. Uma vez, toda semana (com atalhos para dias úteis e todo dia) ou todo mês, só com as ações da lista de agendáveis: ligar, desligar e reiniciar o PC, reiniciar um serviço, reiniciar, parar e publicar um app do lab. Com o painel fora do ar na hora marcada, ao voltar ele roda o que atrasou até a tolerância (15 min por padrão); passou disso, a vez fica perdida e não roda depois. Aviso no celular sempre, só se falhar ou nunca. A lista mostra a próxima vez, a última e as últimas execuções, com Rodar agora, Pausar, Editar e Apagar, e o Início mostra os três próximos.
+- **Editor das stacks de apps:** nos Serviços, as stacks da zona apps ganham Editar, com os arquivos da pasta, Gravar (com foto do anterior), Aplicar e Desfazer. O arquivo chega com os segredos ocultos; a gravação manda só o trecho que mudou, e um trecho com segredo oculto fica para o terminal, para nunca gravar `***` no lugar de uma senha.
+- **Arquivos:** navegar pelo servidor, ver e baixar arquivos de texto, e procurar pelo nome, tipo e data ou pelo texto de dentro, sempre menos os segredos.
+- **Pendências:** no Início, as suas e, quando o servidor tem `/opt/atena/README.md`, as da seção "Pendências conhecidas", que ficam resolvidas quando saem de lá.
+- **Claude Code:** continuar um trabalho terminado, inclusive os da Atena, com a conversa; e escolher a skill, quando o executor tem skills.
+- **Executor:** `aviso.celular`, para os agendamentos avisarem (o painel não tem rede); quem decide pelo dono continua os trabalhos dos clientes no alcance dele. A habilidade da Atena (servidor-atena 1.5.0) registra as duas coisas.
+- **Correção de segurança:** `arquivo.ler` e `arquivo.buscar` não conferiam a zona prod, então quem não tem a zona (a Atena e o painel) lia e buscava texto nos arquivos de clientes em `/srv/prod`. Agora os dois respondem 403, como `arquivo.procurar` e `arquivo.entregar` já faziam.
+- Com uma janela aberta, os avisos aparecem dentro dela (ficavam escondidos atrás). A tela que se atualiza sozinha não apaga um campo em que você está escrevendo. O banco da 0.4 ganha as tabelas novas sem perder nada.
+- O instalador refaz o token do painel com as 38 ações.
+- Testado no CI e no servidor de origem: o executor novo entrou conferindo o hash, o token da Atena ficou igual, o painel 0.5.0 subiu saudável com o banco antigo migrado, e pelo token novo responderam as skills, o README, as fotos das stacks e o aviso (sem mandar nada ao celular); a zona prod passou a responder 403 para o painel. O agendador tem testes com relógio falso (na hora, atrasado dentro e fora da tolerância, uma vez, pausado, falha e aviso). O ensaio da interface no navegador, no tamanho de celular e de PC, passou por agendar, editar, pausar e rodar agora, navegar, baixar e procurar arquivos, editar uma stack (inclusive o trecho com segredo recusado), desfazer, aplicar e continuar um trabalho com skill. Sem VM nesta versão: o instalador só ganhou nomes no token.
+
 ## 0.8.0 (2026-10-21)
 
 O lab e o Claude Code pelo painel (painel 0.4.0).
