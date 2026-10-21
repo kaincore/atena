@@ -160,10 +160,47 @@ function linha(rotulo, valor, extra) {
 
 const containerOk = (c) => c.estado === "running" && !/unhealthy/.test(c.status);
 
+// os estados dos pedidos, como o executor guarda, no português da tela
+const ESTADOS = {
+  concluido: "concluído", falhou: "falhou", recusado: "recusado", expirado: "expirado", cancelado: "cancelado",
+  executando: "rodando", aguardando: "esperando", perguntando: "perguntando", perdida: "perdida", planejando: "planejando",
+};
+const estadoTexto = (e) => ESTADOS[e] ?? e;
+
+const ESTADOS_DOCKER = { running: "no ar", exited: "parado", restarting: "reiniciando", paused: "pausado", created: "criado", dead: "morto", removing: "saindo" };
+const UNIDADES = { second: ["s", "s"], minute: ["min", "min"], hour: ["h", "h"], day: ["dia", "dias"], week: ["semana", "semanas"], month: ["mês", "meses"], year: ["ano", "anos"] };
+
+// "3 days", "About an hour", "Less than a second" (como o Docker escreve) → "3 dias", "1 h", "agora"
+function tempoDocker(texto) {
+  if (/^less than a second/i.test(texto)) return null;
+  const m = texto.match(/^(\d+|about an?|an?) (second|minute|hour|day|week|month|year)s?$/i);
+  if (!m) return texto;
+  const n = /^\d+$/.test(m[1]) ? Number(m[1]) : 1;
+  const [um, varios] = UNIDADES[m[2].toLowerCase()];
+  return `${n} ${n === 1 ? um : varios}`;
+}
+
+// "Up 3 days (unhealthy)", "Exited (137) 5 hours ago" → "no ar há 3 dias · saúde falhando", "parado há 5 h (erro 137)";
+// semEstado: só "há 3 dias · …" (para o lado de um LED que já diz o estado)
+function statusDocker(status, semEstado = false) {
+  let m = status.match(/^Up (.+?)(?: \((healthy|unhealthy|health: starting)\))?$/);
+  if (m) {
+    const ha = tempoDocker(m[1]);
+    const saude = { healthy: " · saudável", unhealthy: " · verificação de saúde falhando", "health: starting": " · verificação começando" }[m[2]] ?? "";
+    return `${semEstado ? "" : "no ar "}${ha ? `há ${ha}` : "agora"}${saude}`;
+  }
+  m = status.match(/^(Exited|Restarting) \((-?\d+)\) (.+) ago$/);
+  if (m) {
+    const ha = tempoDocker(m[3]);
+    const codigo = m[2] === "0" ? "" : ` (erro ${m[2]})`;
+    return `${semEstado ? "" : `${m[1] === "Exited" ? "parado" : "reiniciando"} `}${ha ? `há ${ha}` : "agora"}${codigo}`;
+  }
+  return semEstado ? "" : ESTADOS_DOCKER[status.toLowerCase()] ?? status;
+}
 
 function estadoContainer(c) {
   const ok = containerOk(c);
-  return h("span", { class: `selo ${ok ? "ok" : "ruim"}` }, ok ? "no ar" : c.estado === "running" ? "com problema" : c.estado);
+  return h("span", { class: `selo ${ok ? "ok" : "ruim"}` }, ok ? "no ar" : c.estado === "running" ? "com problema" : ESTADOS_DOCKER[c.estado] ?? c.estado);
 }
 
 // --- as zonas: a vista explodida e os LEDs do topo ---
@@ -279,7 +316,7 @@ async function telaInicio() {
     const ruins = lista.filter((c) => !containerOk(c));
     const desenho = modulo("Zonas", `${lista.length - ruins.length} de ${lista.length} no ar`,
       vistaExplodida(zonas, abrirZona),
-      ruins.length ? h("ul", { class: "lista" }, ruins.map((c) => h("li", null, estadoContainer(c), ` ${c.container} `, h("small", null, c.status))))
+      ruins.length ? h("ul", { class: "lista" }, ruins.map((c) => h("li", null, estadoContainer(c), ` ${c.container} `, h("small", null, statusDocker(c.status, true)))))
         : h("p", { class: "fraco" }, "Todos os containers no ar. Toque numa zona para ver os serviços dela."),
       h("a", { href: "#servicos" }, "Ver os serviços"));
     cartoes.push(desenho);
@@ -456,8 +493,8 @@ async function telaServicos() {
               if (await mudar("servico.reiniciar", { stack }, `Reiniciar ${stack}?`)) atualizar();
             } }, "Reiniciar"))),
         h("ul", { class: "lista" }, containers.map((c) => h("li", null,
-          estadoContainer(c), ` ${c.container} `,
-          h("small", null, [c.status, consumo[c.container] && `CPU ${consumo[c.container].cpu} · RAM ${consumo[c.container].ram}`].filter(Boolean).join(" · "))))),
+          estadoContainer(c), c.container !== stack && ` ${c.container} `,
+          h("small", null, [statusDocker(c.status, true), consumo[c.container] && `CPU ${consumo[c.container].cpu} · RAM ${consumo[c.container].ram}`].filter(Boolean).join(" · "))))),
       )));
     m.id = `zona-${zona}`;
     return m;
@@ -567,7 +604,7 @@ function itemTrabalho(t) {
   return h("li", null,
     h("div", { class: "stack-topo" },
       h("span", null,
-        h("span", { class: `selo ${t.estado === "concluido" ? "ok" : ESTADOS_TRABALHO[t.estado] ? "neutro" : "ruim"}` }, ESTADOS_TRABALHO[t.estado] ?? t.estado),
+        h("span", { class: `selo ${t.estado === "concluido" ? "ok" : ESTADOS_TRABALHO[t.estado] ? "neutro" : "ruim"}` }, ESTADOS_TRABALHO[t.estado] ?? estadoTexto(t.estado)),
         ` ${t.projeto ?? "?"} `),
       rodando && h("button", { type: "button", class: "discreto", onclick: async () => {
         if (await mudar("claude.cancelar", { pedido: t.id }, `Interromper o trabalho ${t.id} em ${t.projeto}? A conversa fica guardada.`)) atualizar();
@@ -652,7 +689,7 @@ async function telaLab() {
   const { projetos, lixeira } = r.resultado;
   const apps = cartao("Apps do lab", projetos.length ? projetos.map((p) => h("div", { class: "stack" },
     h("div", { class: "stack-topo" }, h("strong", null, p.projeto), botoesApp(p)),
-    linha("App", p.app),
+    linha("App", statusDocker(p.app)),
     p.fora_de_casa && linha("Endereço", h("a", { href: p.fora_de_casa, target: "_blank", rel: "noopener" }, p.fora_de_casa)),
     p.endereco && linha("Na rede de casa", h("a", { href: p.endereco, target: "_blank", rel: "noopener" }, p.endereco)),
     linha("Guardado", [p.codigo ? "código" : "sem código", p.dados_guardados ? "dados" : "sem dados"].join(" · ")),
@@ -684,7 +721,7 @@ async function telaHistorico() {
     const params = Object.values(JSON.parse(x.params)).join(", ");
     const ok = x.estado === "concluido";
     return h("li", null,
-      h("span", { class: `selo ${ok ? "ok" : TERMINADOS.has(x.estado) ? "ruim" : "neutro"}` }, x.estado),
+      h("span", { class: `selo ${ok ? "ok" : TERMINADOS.has(x.estado) ? "ruim" : "neutro"}` }, estadoTexto(x.estado)),
       ` ${NOMES[x.acao] ?? x.acao}${params ? ` (${params})` : ""} `,
       h("small", null, data(x.quando)),
       x.resumo && h("div", { class: "fraco resumo" }, x.resumo));
@@ -799,7 +836,7 @@ async function telaAprovacoes() {
     pendentes.length ? pendentes.map(cartaoPendente)
       : cartao("Aprovações", h("p", { class: "fraco" }, "Nada esperando por você. Os pedidos da Atena e do Claude Code aparecem aqui e no celular.")),
     cartao("Decididos há pouco", recentes.length ? h("ul", { class: "lista" }, recentes.map((x) => h("li", null,
-      h("span", { class: `selo ${x.estado === "concluido" ? "ok" : TERMINADOS.has(x.estado) ? "ruim" : "neutro"}` }, x.estado),
+      h("span", { class: `selo ${x.estado === "concluido" ? "ok" : TERMINADOS.has(x.estado) ? "ruim" : "neutro"}` }, estadoTexto(x.estado)),
       ` ${x.titulo ?? x.acao} `,
       h("small", null, [x.cliente, hora(x.quando), x.por && `por ${x.por}`].filter(Boolean).join(" · ")),
       x.erro && h("div", { class: "fraco resumo" }, x.erro)))) : h("p", { class: "fraco" }, "Nenhum ainda.")),
@@ -1140,7 +1177,7 @@ function cartaoNovoAgendamento(agendaveis, stacks, projetos) {
 }
 
 function seloEstado(estado) {
-  return h("span", { class: `selo ${estado === "concluido" ? "ok" : estado === "executando" ? "neutro" : "ruim"}` }, estado);
+  return h("span", { class: `selo ${estado === "concluido" ? "ok" : estado === "executando" ? "neutro" : "ruim"}` }, estadoTexto(estado));
 }
 
 function itemAgendamento(a) {
@@ -1171,7 +1208,7 @@ function itemAgendamento(a) {
         } }, "Editar"),
         h("button", { type: "button", class: "discreto perigo", onclick: fazer("/api/agendamentos/apagar", { id: a.id }, `Apagar "${a.nome}"?`) }, "Apagar"))),
     h("div", null, descreverQuando(a.quando), h("small", null, ` · aviso ${NOMES_AVISO[a.aviso]} · tolerância ${a.tolerancia} min`)),
-    h("small", null, [a.ativo && a.proxima && `próxima: ${quandoTexto(a.proxima)}`, a.ultima && `última: ${data(a.ultima)} (${a.ultimo_estado})`].filter(Boolean).join(" · ")),
+    h("small", null, [a.ativo && a.proxima && `próxima: ${quandoTexto(a.proxima)}`, a.ultima && `última: ${data(a.ultima)} (${estadoTexto(a.ultimo_estado)})`].filter(Boolean).join(" · ")),
     a.execucoes.length > 0 && h("details", null, h("summary", null, "Últimas execuções"),
       h("ul", { class: "lista historico" }, a.execucoes.map((x) => h("li", null, seloEstado(x.estado), ` ${data(x.quando)}`,
         x.resumo && h("div", { class: "fraco resumo" }, x.resumo))))));
