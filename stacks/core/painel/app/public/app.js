@@ -252,7 +252,13 @@ async function telaLab() {
 }
 
 async function telaHistorico() {
-  const r = await api("GET", "/api/historico");
+  let r = await api("GET", "/api/historico");
+  // o que ficou em andamento quando a tela fechou: pergunta ao executor como terminou
+  const abertos = r.ok === false ? [] : r.historico.filter((x) => x.pedido && !TERMINADOS.has(x.estado)).slice(0, 10);
+  if (abertos.length) {
+    await Promise.all(abertos.map((x) => api("GET", `/api/pedido/${x.pedido}`)));
+    r = await api("GET", "/api/historico");
+  }
   if (r.ok === false) return [cartao("Histórico", falha(r))];
   return [cartao("Histórico (90 dias)", r.historico.length ? h("ul", { class: "lista historico" }, r.historico.map((x) => {
     const params = Object.values(JSON.parse(x.params)).join(", ");
