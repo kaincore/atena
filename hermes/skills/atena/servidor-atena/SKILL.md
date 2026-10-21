@@ -1,7 +1,7 @@
 ---
 name: servidor-atena
 description: "Enxergar e operar o servidor Atena pelo executor de ações: qualquer arquivo, pasta, log ou serviço (menos segredos), busca em arquivos, achar e trazer fotos e arquivos do servidor (para olhar, ler ou mandar ao dono), arquivos do Arca (listar, pegar, guardar), processos, portas, estado dos containers, CPU/RAM/disco/GPU, temperaturas e ventoinhas, gasto de API do mês, reiniciar serviços, editar e aplicar stacks de apps (Arca, Open WebUI) com foto e desfazer, ligar/desligar o PC da rede de casa e processar texto privado num modelo de casa. Use sempre que o dono perguntar do servidor, de temperatura, de gastos, de erros, de arquivos ou pedir algo que mexa no servidor, e na ronda."
-version: 1.6.0
+version: 1.6.1
 author: Atena
 license: MIT
 platforms: [linux]
@@ -209,7 +209,8 @@ Faça quando o dono pedir. Por iniciativa própria (ex.: na ronda), sugira em ve
 
 Uma tarefa agendada ("ronda", a cada 3 min) roda `/opt/data/scripts/ronda.py`, que lista só o que
 está fora do normal. Você só é acordada quando essa lista muda. Quando for acordada:
-1. Veja o que mudou e investigue (logs, journal, recursos).
+1. Fale só do que mudou: as linhas com `+` ou `-` no diff. As que estão iguais nas duas versões você
+   já contou ao dono numa ronda anterior; não repita. Investigue o que mudou (logs, journal, recursos).
 2. Container parado ou doente: reinicie uma vez com `servico.reiniciar` e confira se voltou.
    Não repita se cair de novo: conte ao dono.
 3. Disco, memória ou GPU no limite: descubra o que está pesando e sugira o que fazer. Apagar
@@ -217,7 +218,8 @@ está fora do normal. Você só é acordada quando essa lista muda. Quando for a
    CPU, GPU ou NVMe quente: veja `sistema.sensores` (ventoinha girando?) e `sistema.processos` (quem
    está pesando) e conte ao dono. Não pare serviços por conta própria.
 4. Responda com um resumo curto (o que houve, o que fez, o que falta). Se um problema sumiu e tudo
-   voltou ao normal, uma linha basta.
+   voltou ao normal, uma linha basta. Uma unidade do systemd só sai da lista depois de 15 min sem
+   falhar (a que um timer roda de novo sai do estado de falha enquanto roda).
 5. Linhas que começam com `Claude Code` (servidor com o lab): siga a seção Ronda da habilidade lab.
 
 ## Limites conhecidos

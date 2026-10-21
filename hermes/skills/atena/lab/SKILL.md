@@ -1,7 +1,7 @@
 ---
 name: lab
 description: "Programar no lab do servidor Atena: mandar trabalhos de programação ao Claude Code (apps, scripts, sites), repassar as perguntas dele ao dono, programar você mesma nos projetos do lab pelo terminal e cuidar dos apps do lab (publicar na rede de casa, rodar comandos dentro deles, reiniciar, parar, cancelar, apagar e restaurar). Use sempre que o dono pedir um programa, app, script ou site, falar de um projeto do lab ou de um app publicado, e quando a ronda trouxer uma linha do Claude Code."
-version: 1.2.0
+version: 1.2.1
 author: Atena
 license: MIT
 platforms: [linux]
@@ -234,13 +234,13 @@ vierem (os dois, se houver `fora_de_casa`), copiados do resultado ou de `app.lis
 ## Ronda
 
 A ronda (habilidade servidor-atena) também lista o que é do Claude Code:
-- A última linha pode ser `Claude Code: último trabalho terminado = <id> (...)`. Se foi essa linha
-  que mudou, um trabalho acabou: busque `GET /pedido/<id>` e mande ao dono o resumo em poucas linhas,
-  do seu jeito: o que ele fez (campo `resumo`), onde está (`/srv/lab/projetos/<projeto>`), quantos
+- A última linha pode ser `Claude Code: último trabalho terminado = <id> (...)`. Ela aparece numa
+  ronda só, a do fim do trabalho: busque `GET /pedido/<id>` e mande ao dono o resumo em poucas
+  linhas, do seu jeito: o que ele fez (campo `resumo`), onde está (`/srv/lab/projetos/<projeto>`), quantos
   commits e o que ficou pendente. Se o estado não for `concluido`, diga o que houve (limite de uso:
   veja "Continuar e trocar"). Se o pedido tiver `publicacao`, a versão nova está sendo publicada ou
   esperando o Aprovar no celular (diga isso); se tiver `publicacao_erro`, ela não foi publicada:
   diga o motivo. Não investigue o servidor por causa dessa linha.
 - Linhas `Claude Code pergunta ...`: siga "Perguntas do Claude Code".
-- Se a única mudança foi uma linha do Claude Code que SUMIU (pergunta respondida, por exemplo), não
-  há nada a dizer: responda exatamente `[SILENT]`.
+- Se a única mudança foi uma linha do Claude Code que SUMIU (o trabalho que você já resumiu na ronda
+  anterior, ou uma pergunta respondida), não há nada a dizer: responda exatamente `[SILENT]`.
