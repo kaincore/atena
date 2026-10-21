@@ -1,8 +1,12 @@
 // Service worker: guarda a casca do app para ele abrir mesmo sem conexão (e avisar).
 // A API nunca vai para o cache: o estado do servidor tem que ser sempre o de agora.
-const CACHE = "atena-painel-v2";
-const CASCA = ["/", "/app.js", "/pictos.js", "/visor.js", "/paleta.js", "/estilo.css", "/fontes/archivo.woff2",
-  "/fontes/martian-mono.woff2", "/manifest.webmanifest", "/icone.svg", "/icone-192.png", "/icone-512.png"];
+const CACHE = "atena-painel-v3";
+const CASCA = ["/", "/app.js", "/comum.js", "/zonas.js", "/pictos.js", "/visor.js", "/paleta.js", "/estilo.css",
+  "/fontes/archivo.woff2", "/fontes/martian-mono.woff2", "/manifest.webmanifest", "/icone.svg", "/icone-192.png",
+  "/icone-512.png",
+  // uma tela por arquivo
+  "/telas/agenda.js", "/telas/ajustes.js", "/telas/aprovacoes.js", "/telas/arquivos.js", "/telas/atividade.js",
+  "/telas/historico.js", "/telas/inicio.js", "/telas/lab.js", "/telas/pc.js", "/telas/servicos.js", "/telas/sistema.js"];
 
 self.addEventListener("install", (evento) => {
   evento.waitUntil(caches.open(CACHE).then((c) => c.addAll(CASCA)).then(() => self.skipWaiting()));
