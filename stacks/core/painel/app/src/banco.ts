@@ -1,4 +1,5 @@
-// Banco do painel (SQLite em /dados/painel.db): sessões, tentativas de entrada e histórico das ações.
+// Banco do painel (SQLite em /dados/painel.db): sessões, tentativas de entrada, histórico das ações,
+// agendamentos e pendências.
 import { createHash, randomBytes } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 
@@ -16,7 +17,23 @@ export type Registro = {
   estado: string;
   resumo: string;
   pedido: string | null;
+  agendamento: number | null;
 };
+export type LinhaAgendamento = {
+  id: number;
+  nome: string;
+  acao: string;
+  params: string;
+  quando: string;
+  aviso: string;
+  tolerancia: number;
+  ativo: number;
+  proxima: number | null;
+  ultima: number | null;
+  ultimo_estado: string | null;
+  criado: number;
+};
+export type Pendencia = { id: number; texto: string; origem: string; feita: number | null; criada: number };
 
 const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
 
@@ -34,7 +51,17 @@ export class Banco {
       CREATE TABLE IF NOT EXISTS historico (
         id INTEGER PRIMARY KEY, quando INTEGER NOT NULL, acao TEXT NOT NULL, params TEXT NOT NULL,
         estado TEXT NOT NULL, resumo TEXT NOT NULL DEFAULT '', pedido TEXT);
+      CREATE TABLE IF NOT EXISTS agendamentos (
+        id INTEGER PRIMARY KEY, nome TEXT NOT NULL, acao TEXT NOT NULL, params TEXT NOT NULL,
+        quando TEXT NOT NULL, aviso TEXT NOT NULL, tolerancia INTEGER NOT NULL, ativo INTEGER NOT NULL,
+        proxima INTEGER, ultima INTEGER, ultimo_estado TEXT, criado INTEGER NOT NULL);
+      CREATE TABLE IF NOT EXISTS pendencias (
+        id INTEGER PRIMARY KEY, texto TEXT NOT NULL, origem TEXT NOT NULL, feita INTEGER,
+        criada INTEGER NOT NULL, UNIQUE (origem, texto));
     `);
+    // banco da versão 0.4 e anteriores: o histórico ainda não ligava a execução ao agendamento
+    const colunas = this.db.prepare("PRAGMA table_info(historico)").all() as { name: string }[];
+    if (!colunas.some((c) => c.name === "agendamento")) this.db.exec("ALTER TABLE historico ADD COLUMN agendamento INTEGER");
   }
 
   limpar(agora = Date.now()) {
@@ -102,10 +129,21 @@ export class Banco {
 
   // --- histórico das ações que mudam algo (as consultas não entram)
 
-  registrar(acao: string, params: unknown, estado: string, resumo: string, pedido: string | null = null) {
+  registrar(acao: string, params: unknown, estado: string, resumo: string, pedido: string | null = null,
+    agendamento: number | null = null): number {
+    return Number(this.db
+      .prepare("INSERT INTO historico (quando, acao, params, estado, resumo, pedido, agendamento) VALUES (?, ?, ?, ?, ?, ?, ?)")
+      .run(Date.now(), acao, JSON.stringify(params ?? {}), estado, resumo.slice(0, 1000), pedido, agendamento)
+      .lastInsertRowid);
+  }
+
+  atualizarRegistro(id: number, campos: { estado?: string; resumo?: string; pedido?: string }) {
+    const atual = this.db.prepare("SELECT estado, resumo, pedido FROM historico WHERE id = ?").get(id) as
+      { estado: string; resumo: string; pedido: string | null } | undefined;
+    if (!atual) return;
     this.db
-      .prepare("INSERT INTO historico (quando, acao, params, estado, resumo, pedido) VALUES (?, ?, ?, ?, ?, ?)")
-      .run(Date.now(), acao, JSON.stringify(params ?? {}), estado, resumo.slice(0, 1000), pedido);
+      .prepare("UPDATE historico SET estado = ?, resumo = ?, pedido = ? WHERE id = ?")
+      .run(campos.estado ?? atual.estado, (campos.resumo ?? atual.resumo).slice(0, 1000), campos.pedido ?? atual.pedido, id);
   }
 
   atualizarPedido(pedido: string, estado: string, resumo: string) {
@@ -114,9 +152,77 @@ export class Banco {
       .run(estado, resumo.slice(0, 1000), pedido);
   }
 
-  historico(limite = 100): Registro[] {
-    return this.db
-      .prepare("SELECT id, quando, acao, params, estado, resumo, pedido FROM historico ORDER BY id DESC LIMIT ?")
-      .all(limite) as Registro[];
+  historico(limite = 100, agendamento: number | null = null): Registro[] {
+    const colunas = "SELECT id, quando, acao, params, estado, resumo, pedido, agendamento FROM historico";
+    if (agendamento !== null)
+      return this.db.prepare(`${colunas} WHERE agendamento = ? ORDER BY id DESC LIMIT ?`).all(agendamento, limite) as Registro[];
+    return this.db.prepare(`${colunas} ORDER BY id DESC LIMIT ?`).all(limite) as Registro[];
+  }
+
+  // --- agendamentos: o agendador do painel roda as ações na hora marcada (veja agendador.ts)
+
+  agendamentos(): LinhaAgendamento[] {
+    return this.db.prepare("SELECT * FROM agendamentos ORDER BY ativo DESC, proxima IS NULL, proxima, id").all() as LinhaAgendamento[];
+  }
+
+  agendamento(id: number): LinhaAgendamento | null {
+    return (this.db.prepare("SELECT * FROM agendamentos WHERE id = ?").get(id) as LinhaAgendamento | undefined) ?? null;
+  }
+
+  salvarAgendamento(a: { id?: number; nome: string; acao: string; params: unknown; quando: unknown; aviso: string;
+    tolerancia: number; ativo: boolean; proxima: number | null }, agora = Date.now()): number {
+    const valores = [a.nome, a.acao, JSON.stringify(a.params), JSON.stringify(a.quando), a.aviso, a.tolerancia, a.ativo ? 1 : 0, a.proxima];
+    if (a.id) {
+      this.db
+        .prepare("UPDATE agendamentos SET nome = ?, acao = ?, params = ?, quando = ?, aviso = ?, tolerancia = ?, ativo = ?, proxima = ? WHERE id = ?")
+        .run(...valores, a.id);
+      return a.id;
+    }
+    return Number(this.db
+      .prepare("INSERT INTO agendamentos (nome, acao, params, quando, aviso, tolerancia, ativo, proxima, criado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      .run(...valores, agora).lastInsertRowid);
+  }
+
+  marcarAgendamento(id: number, campos: { proxima?: number | null; ativo?: boolean; ultima?: number; ultimo_estado?: string }) {
+    const atual = this.agendamento(id);
+    if (!atual) return;
+    this.db
+      .prepare("UPDATE agendamentos SET proxima = ?, ativo = ?, ultima = ?, ultimo_estado = ? WHERE id = ?")
+      .run(campos.proxima !== undefined ? campos.proxima : atual.proxima,
+        campos.ativo !== undefined ? (campos.ativo ? 1 : 0) : atual.ativo,
+        campos.ultima ?? atual.ultima, campos.ultimo_estado ?? atual.ultimo_estado, id);
+  }
+
+  apagarAgendamento(id: number) {
+    return this.db.prepare("DELETE FROM agendamentos WHERE id = ?").run(id).changes > 0;
+  }
+
+  // --- pendências: as do README do servidor (origem readme) e as suas (origem manual)
+
+  pendencias(): Pendencia[] {
+    return this.db.prepare("SELECT * FROM pendencias ORDER BY feita IS NOT NULL, feita DESC, id").all() as Pendencia[];
+  }
+
+  // o que entrou no README vira pendência; o que saiu dele foi resolvido
+  sincronizarReadme(textos: string[], agora = Date.now()) {
+    const inserir = this.db.prepare("INSERT OR IGNORE INTO pendencias (texto, origem, criada) VALUES (?, 'readme', ?)");
+    for (const texto of textos) inserir.run(texto, agora);
+    const abertas = this.db.prepare("SELECT id, texto FROM pendencias WHERE origem = 'readme' AND feita IS NULL").all() as Pendencia[];
+    const marcar = this.db.prepare("UPDATE pendencias SET feita = ? WHERE id = ?");
+    for (const p of abertas) if (!textos.includes(p.texto)) marcar.run(agora, p.id);
+  }
+
+  novaPendencia(texto: string, agora = Date.now()): number {
+    return Number(this.db.prepare("INSERT OR IGNORE INTO pendencias (texto, origem, criada) VALUES (?, 'manual', ?)")
+      .run(texto, agora).lastInsertRowid);
+  }
+
+  marcarPendencia(id: number, feita: boolean, agora = Date.now()) {
+    return this.db.prepare("UPDATE pendencias SET feita = ? WHERE id = ?").run(feita ? agora : null, id).changes > 0;
+  }
+
+  // só as suas: uma do README voltaria na próxima leitura
+  apagarPendencia(id: number) {
+    return this.db.prepare("DELETE FROM pendencias WHERE id = ? AND origem = 'manual'").run(id).changes > 0;
   }
 }

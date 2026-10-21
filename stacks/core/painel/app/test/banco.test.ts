@@ -1,5 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { mkdtempSync, rmSync } from "node:fs";
+import { DatabaseSync } from "node:sqlite";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { Banco, DURACAO_SESSAO, JANELA_TENTATIVAS } from "../src/banco.ts";
 
 const novo = () => new Banco(":memory:");
@@ -80,4 +84,21 @@ test("limpar apaga o que venceu", () => {
   b.limpar();
   for (const tabela of ["sessoes", "tentativas", "historico"])
     assert.equal((b.db.prepare(`SELECT count(*) AS n FROM ${tabela}`).get() as { n: number }).n, 0, tabela);
+});
+
+test("banco da versão 0.4: o histórico ganha a coluna do agendamento e continua com o que tinha", () => {
+  const pasta = mkdtempSync(join(tmpdir(), "painel-banco-"));
+  const arquivo = join(pasta, "painel.db");
+  const velho = new DatabaseSync(arquivo);
+  velho.exec(`CREATE TABLE historico (id INTEGER PRIMARY KEY, quando INTEGER NOT NULL, acao TEXT NOT NULL, params TEXT NOT NULL,
+    estado TEXT NOT NULL, resumo TEXT NOT NULL DEFAULT '', pedido TEXT);
+    INSERT INTO historico (quando, acao, params, estado) VALUES (1, 'pc.ligar', '{}', 'concluido');`);
+  velho.close();
+  const b = new Banco(arquivo);
+  assert.equal(b.historico()[0].agendamento, null);
+  const id = b.registrar("pc.ligar", {}, "executando", "", null, 7);
+  b.atualizarRegistro(id, { estado: "concluido", pedido: "abcd1234" });
+  assert.deepEqual(b.historico(5, 7).map((r) => [r.estado, r.pedido]), [["concluido", "abcd1234"]]);
+  b.db.close();
+  rmSync(pasta, { recursive: true, force: true });
 });
