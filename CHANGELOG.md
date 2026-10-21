@@ -1,5 +1,16 @@
 # Mudanças
 
+## 0.11.0 (2026-10-21)
+
+Skills no Claude Code do lab, e o servidor de origem roda o executor deste repositório.
+
+- **Skills (opcional, `ATENA_CLAUDE_SKILLS=sim`):** cada conta do lab ganha os plugins frontend-design, mattpocock-skills, pyright-lsp e typescript-lsp e a skill Impeccable. O Impeccable vai só com o texto: o instalador baixa um commit fixo do GitHub e confere o sha256 dos arquivos, sem o lançador (que baixa um binário) e sem os hooks. A Atena escolhe a skill de cada trabalho pelo catálogo do lab (`host/lab/skills.json`) e por uma tabela "o dono pede → skill"; em projeto grande, segue o fluxo to-spec → implement-spec. O runner chama a skill na primeira linha do pedido.
+- **`atena-tela`:** o Claude Code confere as telas que faz com prints de uma página local, num Chromium sem tela que roda dentro do sandbox, e vê os erros do console. As ferramentas ficam nas versões do `package-lock.json` (npm ci, sem scripts).
+- **`sudo atena-claude-conta skills`:** põe os plugins e o Impeccable nas contas com login (o `entrar` já faz isso) ou, com a chave em `nao`, tira tudo.
+- **O servidor de origem igual ao modelo:** o servidor onde a Atena nasceu passou a rodar o executor, o runner e o `atena-claude-conta` deste repositório, sem diferença. O que só existia lá virou chave do `atena.conf`.
+- **CI:** a bateria de testes roda inteira mesmo depois de uma falha, e cada falha vira uma anotação do GitHub, que dá para ler sem abrir o log. O `actions/checkout` foi para a v5 (Node 24). O `tools/ci-local.sh` roda os mesmos jobs do CI em containers, antes do push.
+- Testado: os testes novos do executor e do runner (skill ligada, desligada e fora do catálogo; PATH, regras e primeira linha do pedido); o trecho novo do instalador num Ubuntu 26.04 limpo, em container (ferramentas, Chromium, um print de verdade, o Impeccable baixado e conferido, e a segunda rodada sem baixar de novo); o CI inteiro pelo `ci-local.sh`; e, no servidor de origem, as consultas do painel e da Atena com o executor novo. O `atena-claude-conta skills` (os plugins nas contas) não foi rodado de novo: as contas do servidor já tinham os plugins.
+
 ## 0.10.0 (2026-10-21)
 
 O visual do painel: um aparelho de mesa (painel 0.6.0).
