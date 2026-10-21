@@ -1,7 +1,7 @@
 ---
 name: servidor-atena
 description: "Enxergar e operar o servidor Atena pelo executor de ações: qualquer arquivo, pasta, log ou serviço (menos segredos), busca em arquivos, achar e trazer fotos e arquivos do servidor (para olhar, ler ou mandar ao dono), arquivos do Arca (listar, pegar, guardar), processos, portas, estado dos containers, CPU/RAM/disco/GPU, temperaturas e ventoinhas, gasto de API do mês, reiniciar serviços, editar e aplicar stacks de apps (Arca, Open WebUI) com foto e desfazer, ligar/desligar o PC da rede de casa e processar texto privado num modelo de casa. Use sempre que o dono perguntar do servidor, de temperatura, de gastos, de erros, de arquivos ou pedir algo que mexa no servidor, e na ronda."
-version: 1.3.0
+version: 1.4.0
 author: Atena
 license: MIT
 platforms: [linux]
@@ -160,7 +160,8 @@ quando o dono tocar em Aprovar: não peça outro ok no chat, diga que a aprovaç
 O dono também decide pelo painel (aba Aprovações): ele pode aprovar, recusar ou responder ali em vez
 do celular, e o resultado chega do mesmo jeito em `GET /pedido/<id>`. `aprovacoes.lista`,
 `aprovacoes.decidir` e `atividade.lista` são ações só do painel: você não as tem, e nenhum cliente
-decide os próprios pedidos.
+decide os próprios pedidos. Pelo painel ele também vê os trabalhos do Claude Code que você mandou e
+pode cancelá-los: um trabalho cancelado sem você pedir foi ele.
 
 ## Stacks de apps (Arca, Open WebUI): editar com foto
 
