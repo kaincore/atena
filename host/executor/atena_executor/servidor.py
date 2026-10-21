@@ -43,6 +43,7 @@ from .tokens import TOKENS, carregar_tokens, cliente_do_token, hash_token
 SOCKET = "/run/atena-executor/executor.sock"
 GRUPO_CLIENTES = "atena-acoes"
 LIMITE_PEDIDO = 1024 * 1024   # stack.editar manda o arquivo inteiro
+DESCARTE_MAXIMO = 8 * 1024 * 1024   # quanto de um pedido grande demais é lido (e jogado fora) antes do 413
 ESPERA_MAXIMA = 170         # GET /pedido?esperar: abaixo do limite de 180 s do terminal do Hermes
 
 
@@ -101,6 +102,14 @@ class Pedido(http.server.BaseHTTPRequestHandler):
                 raise Erro(403, f"o cliente {cliente['cliente']} não pode pedir {nome}")
             tamanho = int(self.headers.get("Content-Length") or 0)
             if tamanho > LIMITE_PEDIDO:
+                # lê e joga fora o corpo antes de recusar: fechar com ele ainda por ler faz o cliente
+                # receber "conexão encerrada" (broken pipe) em vez do 413
+                falta = min(tamanho, DESCARTE_MAXIMO)
+                while falta > 0:
+                    pedaco = self.rfile.read(min(falta, 65536))
+                    if not pedaco:
+                        break
+                    falta -= len(pedaco)
                 raise Erro(413, "pedido grande demais")
             corpo = json.loads(self.rfile.read(tamanho) or b"{}")
             params = corpo.get("params") or {}
