@@ -92,7 +92,8 @@ async function mudar(nome, params, pergunta, acompanhar = true) {
 
 function avisar(texto, tipo = "") {
   const aviso = h("div", { class: `aviso ${tipo}` }, texto);
-  $("#avisos").append(aviso);
+  // com a janela aberta, o aviso vai dentro dela (a janela fica por cima de tudo)
+  ($("#janela").open ? $("#janela-avisos") : $("#avisos")).append(aviso);
   setTimeout(() => aviso.remove(), tipo === "erro" ? 8000 : 4000);
 }
 

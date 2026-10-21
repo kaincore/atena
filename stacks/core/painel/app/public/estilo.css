@@ -119,6 +119,7 @@ button.perigo { background: var(--ruim); border-color: var(--ruim); }
 button.discreto.perigo { background: transparent; color: var(--ruim); }
 .opcao { display: flex; gap: .4rem; align-items: flex-start; }
 .opcao input { margin-top: .3rem; }
+.janela-avisos { display: grid; gap: .5rem; margin-top: .5rem; position: sticky; bottom: 0; }
 button:disabled { opacity: .5; cursor: wait; }
 
 .entrada { min-height: 100dvh; display: grid; place-items: center; padding: 1rem; }
