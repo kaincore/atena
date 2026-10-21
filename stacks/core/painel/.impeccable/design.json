@@ -1,0 +1,1180 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-21T15:38:37+00:00",
+  "title": "Design System: Painel Atena",
+  "extensions": {
+    "colorMeta": {
+      "amarelo": {
+        "role": "primary",
+        "displayName": "Amarelo Sinal",
+        "canonical": "#ffc400",
+        "tonalRamp": [
+          "#110a00",
+          "#312300",
+          "#533f08",
+          "#795d0a",
+          "#a27c0d",
+          "#cb9e20",
+          "#f7c12a",
+          "#ffedc6"
+        ]
+      },
+      "amarelo-borda": {
+        "role": "primary",
+        "displayName": "Borda do Amarelo",
+        "canonical": "#c99a00",
+        "tonalRamp": [
+          "#110a00",
+          "#302301",
+          "#533f03",
+          "#785d11",
+          "#a17d19",
+          "#cc9d0d",
+          "#f2c248",
+          "#feedc7"
+        ]
+      },
+      "amarelo-lado": {
+        "role": "primary",
+        "displayName": "Lado do Amarelo",
+        "canonical": "#9a7600",
+        "tonalRamp": [
+          "#110a00",
+          "#302300",
+          "#543f00",
+          "#795d0d",
+          "#a17d12",
+          "#c5a042",
+          "#eac468",
+          "#feedc6"
+        ]
+      },
+      "amarelo-tinta": {
+        "role": "primary",
+        "displayName": "Tinta sobre Amarelo",
+        "canonical": "#141414",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#252525",
+          "#424242",
+          "#616161",
+          "#828282",
+          "#a5a5a5",
+          "#c9c9c9",
+          "#eeeeee"
+        ]
+      },
+      "tecla": {
+        "role": "secondary",
+        "displayName": "Tecla Grafite",
+        "canonical": "#2c2f2d",
+        "tonalRamp": [
+          "#090c0a",
+          "#232624",
+          "#404341",
+          "#5f6260",
+          "#808381",
+          "#a2a6a4",
+          "#c6cac8",
+          "#ecf0ed"
+        ]
+      },
+      "tecla-borda": {
+        "role": "secondary",
+        "displayName": "Borda da Tecla",
+        "canonical": "#1f2120",
+        "tonalRamp": [
+          "#0a0c0b",
+          "#242625",
+          "#404341",
+          "#5f6261",
+          "#808382",
+          "#a3a6a4",
+          "#c7cac8",
+          "#ecefee"
+        ]
+      },
+      "tecla-lado": {
+        "role": "secondary",
+        "displayName": "Lado da Tecla",
+        "canonical": "#0b0c0b",
+        "tonalRamp": [
+          "#0a0b0a",
+          "#242524",
+          "#414241",
+          "#606260",
+          "#818381",
+          "#a4a5a4",
+          "#c8c9c8",
+          "#edefed"
+        ]
+      },
+      "tecla-tinta": {
+        "role": "secondary",
+        "displayName": "Tinta da Tecla",
+        "canonical": "#f1f2ef",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#252523",
+          "#414240",
+          "#61625f",
+          "#828380",
+          "#a4a5a3",
+          "#c8c9c7",
+          "#eeefec"
+        ]
+      },
+      "tecla-perigo": {
+        "role": "secondary",
+        "displayName": "Coral de Perigo",
+        "canonical": "#ff8a7f",
+        "tonalRamp": [
+          "#1f0001",
+          "#4d0004",
+          "#7d0e11",
+          "#a33732",
+          "#ca5b52",
+          "#f27e74",
+          "#fdb4ab",
+          "#fee9e6"
+        ]
+      },
+      "led-verde": {
+        "role": "tertiary",
+        "displayName": "Luz Verde",
+        "canonical": "#2bd46a",
+        "tonalRamp": [
+          "#001003",
+          "#012e11",
+          "#015022",
+          "#127537",
+          "#189c4b",
+          "#00c65c",
+          "#4eec80",
+          "#c7ffd2"
+        ]
+      },
+      "led-ambar": {
+        "role": "tertiary",
+        "displayName": "Luz Âmbar",
+        "canonical": "#ffa51f",
+        "tonalRamp": [
+          "#140800",
+          "#361f01",
+          "#5d3903",
+          "#885400",
+          "#b27319",
+          "#e2900e",
+          "#feba6a",
+          "#feebd7"
+        ]
+      },
+      "led-vermelho": {
+        "role": "tertiary",
+        "displayName": "Luz Vermelha",
+        "canonical": "#ff4433",
+        "tonalRamp": [
+          "#1f0000",
+          "#4b0502",
+          "#7e0d06",
+          "#b61007",
+          "#eb2c1e",
+          "#fd7664",
+          "#fdb4a8",
+          "#fee9e5"
+        ]
+      },
+      "led-azul": {
+        "role": "tertiary",
+        "displayName": "Luz Azul",
+        "canonical": "#3e8bff",
+        "tonalRamp": [
+          "#000923",
+          "#012253",
+          "#033d8b",
+          "#115bc2",
+          "#307ef0",
+          "#6da5fc",
+          "#aacbfd",
+          "#e5effe"
+        ]
+      },
+      "led-apagado": {
+        "role": "tertiary",
+        "displayName": "LED Apagado",
+        "canonical": "#aeb1ac",
+        "tonalRamp": [
+          "#0a0c09",
+          "#242622",
+          "#40433f",
+          "#5f625e",
+          "#80837f",
+          "#a3a6a1",
+          "#c7cac5",
+          "#ecf0ea"
+        ]
+      },
+      "verde": {
+        "role": "tertiary",
+        "displayName": "Texto de Estado Verde",
+        "canonical": "#12773a",
+        "tonalRamp": [
+          "#001003",
+          "#002e11",
+          "#0a5025",
+          "#0d7538",
+          "#3d9758",
+          "#62bc7a",
+          "#87e19d",
+          "#cafed4"
+        ]
+      },
+      "ambar": {
+        "role": "tertiary",
+        "displayName": "Texto de Estado Âmbar",
+        "canonical": "#965400",
+        "tonalRamp": [
+          "#150700",
+          "#381e03",
+          "#613607",
+          "#8d5009",
+          "#b4702c",
+          "#da9352",
+          "#fdb97d",
+          "#feebdb"
+        ]
+      },
+      "vermelho": {
+        "role": "tertiary",
+        "displayName": "Texto de Estado Vermelho",
+        "canonical": "#c42b1e",
+        "tonalRamp": [
+          "#1e0000",
+          "#4d0100",
+          "#800300",
+          "#b5160c",
+          "#dd4636",
+          "#fb7765",
+          "#fcb5a9",
+          "#ffe9e5"
+        ]
+      },
+      "azul": {
+        "role": "tertiary",
+        "displayName": "Texto de Estado Azul",
+        "canonical": "#2559c4",
+        "tonalRamp": [
+          "#000729",
+          "#011d5f",
+          "#02349d",
+          "#2558c3",
+          "#457cea",
+          "#74a3fe",
+          "#aecafe",
+          "#e6efff"
+        ]
+      },
+      "foco": {
+        "role": "neutral",
+        "displayName": "Foco",
+        "canonical": "#2559c4",
+        "tonalRamp": [
+          "#000729",
+          "#011d5f",
+          "#02349d",
+          "#2558c3",
+          "#457cea",
+          "#74a3fe",
+          "#aecafe",
+          "#e6efff"
+        ]
+      },
+      "chassi": {
+        "role": "neutral",
+        "displayName": "Alumínio Escovado",
+        "canonical": "#e3e4e1",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#252523",
+          "#414240",
+          "#61625f",
+          "#828380",
+          "#a4a5a3",
+          "#c8c9c7",
+          "#eeefec"
+        ]
+      },
+      "chassi-2": {
+        "role": "neutral",
+        "displayName": "Lateral do Chassi",
+        "canonical": "#d6d8d4",
+        "tonalRamp": [
+          "#0a0c09",
+          "#242623",
+          "#41433f",
+          "#60625e",
+          "#81837f",
+          "#a4a6a2",
+          "#c8cac6",
+          "#edefeb"
+        ]
+      },
+      "modulo": {
+        "role": "neutral",
+        "displayName": "Placa",
+        "canonical": "#f1f2ef",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#252523",
+          "#414240",
+          "#61625f",
+          "#828380",
+          "#a4a5a3",
+          "#c8c9c7",
+          "#eeefec"
+        ]
+      },
+      "modulo-claro": {
+        "role": "neutral",
+        "displayName": "Tampo",
+        "canonical": "#fafaf8",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#252524",
+          "#424240",
+          "#616160",
+          "#828281",
+          "#a5a5a3",
+          "#c9c9c7",
+          "#eeeeec"
+        ]
+      },
+      "poco": {
+        "role": "neutral",
+        "displayName": "Poço",
+        "canonical": "#d3d5d1",
+        "tonalRamp": [
+          "#0a0c09",
+          "#242623",
+          "#41433f",
+          "#60625e",
+          "#81837f",
+          "#a4a6a2",
+          "#c8cac6",
+          "#edefeb"
+        ]
+      },
+      "tinta": {
+        "role": "neutral",
+        "displayName": "Tinta de Serigrafia",
+        "canonical": "#161716",
+        "tonalRamp": [
+          "#0a0b0a",
+          "#242524",
+          "#414241",
+          "#606260",
+          "#818381",
+          "#a4a5a4",
+          "#c8c9c8",
+          "#edefed"
+        ]
+      },
+      "tinta-2": {
+        "role": "neutral",
+        "displayName": "Tinta Secundária",
+        "canonical": "#585b57",
+        "tonalRamp": [
+          "#0a0c09",
+          "#232622",
+          "#40433f",
+          "#5f625e",
+          "#80837f",
+          "#a3a6a2",
+          "#c7cac6",
+          "#ecf0eb"
+        ]
+      },
+      "risco": {
+        "role": "neutral",
+        "displayName": "Risco",
+        "canonical": "#c3c6c1",
+        "tonalRamp": [
+          "#0a0c09",
+          "#242622",
+          "#40433f",
+          "#60625e",
+          "#81837f",
+          "#a3a6a1",
+          "#c7cac5",
+          "#ecf0ea"
+        ]
+      },
+      "risco-forte": {
+        "role": "neutral",
+        "displayName": "Risco Forte",
+        "canonical": "#9da09b",
+        "tonalRamp": [
+          "#0a0c09",
+          "#242622",
+          "#40433f",
+          "#5f625e",
+          "#80837f",
+          "#a3a6a1",
+          "#c7cac5",
+          "#ecf0ea"
+        ]
+      },
+      "moldura": {
+        "role": "neutral",
+        "displayName": "Moldura",
+        "canonical": "#2a2c2b",
+        "tonalRamp": [
+          "#0a0c0b",
+          "#242625",
+          "#404241",
+          "#5f6261",
+          "#808382",
+          "#a3a6a4",
+          "#c7cac8",
+          "#ecefee"
+        ]
+      },
+      "borda-visor": {
+        "role": "neutral",
+        "displayName": "Borda do Visor",
+        "canonical": "transparent",
+        "tonalRamp": []
+      },
+      "visor": {
+        "role": "neutral",
+        "displayName": "Vidro Preto",
+        "canonical": "#070908",
+        "tonalRamp": [
+          "#090c0b",
+          "#232624",
+          "#404341",
+          "#5f6260",
+          "#808382",
+          "#a2a6a4",
+          "#c6cac8",
+          "#ecefee"
+        ]
+      },
+      "visor-traco": {
+        "role": "neutral",
+        "displayName": "Traço do Visor",
+        "canonical": "#e6efe9",
+        "tonalRamp": [
+          "#070d09",
+          "#202723",
+          "#3d443f",
+          "#5c635e",
+          "#7d857f",
+          "#9fa7a2",
+          "#c3ccc6",
+          "#e8f1eb"
+        ]
+      },
+      "visor-fraco": {
+        "role": "neutral",
+        "displayName": "Legenda do Visor",
+        "canonical": "#7d8a83",
+        "tonalRamp": [
+          "#050e09",
+          "#1d2822",
+          "#3a453f",
+          "#58655e",
+          "#79867f",
+          "#9ba9a2",
+          "#bfcdc6",
+          "#e4f3eb"
+        ]
+      },
+      "visor-apagado": {
+        "role": "neutral",
+        "displayName": "Segmento Fantasma",
+        "canonical": "#17211c",
+        "tonalRamp": [
+          "#050d09",
+          "#1e2823",
+          "#3a453f",
+          "#59645e",
+          "#7a867f",
+          "#9ca9a2",
+          "#c0cdc6",
+          "#e5f2eb"
+        ]
+      },
+      "tecla-escuro": {
+        "role": "secondary",
+        "displayName": "Tecla Grafite (tema escuro)",
+        "canonical": "#353937",
+        "tonalRamp": [
+          "#090c0a",
+          "#222624",
+          "#3f4341",
+          "#5e6260",
+          "#7f8481",
+          "#a1a6a4",
+          "#c5cac8",
+          "#ebf0ed"
+        ]
+      },
+      "tecla-borda-escuro": {
+        "role": "secondary",
+        "displayName": "Borda da Tecla (tema escuro)",
+        "canonical": "#444946",
+        "tonalRamp": [
+          "#080c0a",
+          "#222624",
+          "#3e4340",
+          "#5d6360",
+          "#7e8481",
+          "#a1a7a3",
+          "#c5cbc7",
+          "#eaf0ec"
+        ]
+      },
+      "tecla-lado-escuro": {
+        "role": "secondary",
+        "displayName": "Lado da Tecla (tema escuro)",
+        "canonical": "#080908",
+        "tonalRamp": [
+          "#0a0b0a",
+          "#242524",
+          "#414241",
+          "#606260",
+          "#818381",
+          "#a4a5a4",
+          "#c8cac8",
+          "#edefed"
+        ]
+      },
+      "tecla-tinta-escuro": {
+        "role": "secondary",
+        "displayName": "Tinta da Tecla (tema escuro)",
+        "canonical": "#ecedea",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#252523",
+          "#414240",
+          "#61625f",
+          "#828380",
+          "#a4a5a3",
+          "#c8c9c7",
+          "#eeefec"
+        ]
+      },
+      "led-apagado-escuro": {
+        "role": "tertiary",
+        "displayName": "LED Apagado (tema escuro)",
+        "canonical": "#3a3e3b",
+        "tonalRamp": [
+          "#090c0a",
+          "#222623",
+          "#3f4340",
+          "#5e625f",
+          "#7f8480",
+          "#a2a6a3",
+          "#c6cbc7",
+          "#ebf0ec"
+        ]
+      },
+      "verde-escuro": {
+        "role": "tertiary",
+        "displayName": "Texto de Estado Verde (tema escuro)",
+        "canonical": "#3ddc7a",
+        "tonalRamp": [
+          "#000f04",
+          "#012e13",
+          "#035025",
+          "#15743c",
+          "#1c9b51",
+          "#0ec564",
+          "#51eb88",
+          "#c8fed4"
+        ]
+      },
+      "ambar-escuro": {
+        "role": "tertiary",
+        "displayName": "Texto de Estado Âmbar (tema escuro)",
+        "canonical": "#ffb347",
+        "tonalRamp": [
+          "#130900",
+          "#352002",
+          "#5b3a06",
+          "#855606",
+          "#b17306",
+          "#dd9319",
+          "#fdbb64",
+          "#ffebd4"
+        ]
+      },
+      "vermelho-escuro": {
+        "role": "tertiary",
+        "displayName": "Texto de Estado Vermelho (tema escuro)",
+        "canonical": "#ff6a5c",
+        "tonalRamp": [
+          "#1f0000",
+          "#4c0303",
+          "#7f090a",
+          "#b21c19",
+          "#db483e",
+          "#fe7466",
+          "#feb3a9",
+          "#ffe9e6"
+        ]
+      },
+      "azul-escuro": {
+        "role": "tertiary",
+        "displayName": "Texto de Estado Azul (tema escuro)",
+        "canonical": "#6aa4ff",
+        "tonalRamp": [
+          "#000923",
+          "#002155",
+          "#003c8e",
+          "#275eb3",
+          "#4981d9",
+          "#6fa5fa",
+          "#accbfb",
+          "#e6effe"
+        ]
+      },
+      "foco-escuro": {
+        "role": "neutral",
+        "displayName": "Foco (tema escuro)",
+        "canonical": "#6aa4ff",
+        "tonalRamp": [
+          "#000923",
+          "#002155",
+          "#003c8e",
+          "#275eb3",
+          "#4981d9",
+          "#6fa5fa",
+          "#accbfb",
+          "#e6effe"
+        ]
+      },
+      "chassi-escuro": {
+        "role": "neutral",
+        "displayName": "Grafite Fundido",
+        "canonical": "#151615",
+        "tonalRamp": [
+          "#0a0b0a",
+          "#242524",
+          "#414241",
+          "#606260",
+          "#818381",
+          "#a4a5a4",
+          "#c8c9c8",
+          "#edefed"
+        ]
+      },
+      "chassi-2-escuro": {
+        "role": "neutral",
+        "displayName": "Lateral do Chassi (tema escuro)",
+        "canonical": "#0f100f",
+        "tonalRamp": [
+          "#0a0b0a",
+          "#242524",
+          "#414241",
+          "#606260",
+          "#818381",
+          "#a4a5a4",
+          "#c8c9c8",
+          "#edefed"
+        ]
+      },
+      "modulo-escuro": {
+        "role": "neutral",
+        "displayName": "Placa (tema escuro)",
+        "canonical": "#1d1f1e",
+        "tonalRamp": [
+          "#0a0c0b",
+          "#242625",
+          "#404341",
+          "#5f6261",
+          "#808382",
+          "#a3a6a4",
+          "#c7cac8",
+          "#ecefee"
+        ]
+      },
+      "modulo-claro-escuro": {
+        "role": "neutral",
+        "displayName": "Tampo (tema escuro)",
+        "canonical": "#242625",
+        "tonalRamp": [
+          "#0a0c0b",
+          "#242625",
+          "#404341",
+          "#5f6261",
+          "#808382",
+          "#a3a6a4",
+          "#c7cac8",
+          "#ecefee"
+        ]
+      },
+      "poco-escuro": {
+        "role": "neutral",
+        "displayName": "Poço (tema escuro)",
+        "canonical": "#0d0e0d",
+        "tonalRamp": [
+          "#0a0b0a",
+          "#242524",
+          "#414241",
+          "#606260",
+          "#818381",
+          "#a4a5a4",
+          "#c8c9c8",
+          "#edefed"
+        ]
+      },
+      "tinta-escuro": {
+        "role": "neutral",
+        "displayName": "Tinta de Serigrafia (tema escuro)",
+        "canonical": "#ecedea",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#252523",
+          "#414240",
+          "#61625f",
+          "#828380",
+          "#a4a5a3",
+          "#c8c9c7",
+          "#eeefec"
+        ]
+      },
+      "tinta-2-escuro": {
+        "role": "neutral",
+        "displayName": "Tinta Secundária (tema escuro)",
+        "canonical": "#a3a6a1",
+        "tonalRamp": [
+          "#0a0c09",
+          "#242622",
+          "#40433f",
+          "#5f625e",
+          "#80837f",
+          "#a3a6a1",
+          "#c7cac5",
+          "#ecf0ea"
+        ]
+      },
+      "risco-escuro": {
+        "role": "neutral",
+        "displayName": "Risco (tema escuro)",
+        "canonical": "#2e312f",
+        "tonalRamp": [
+          "#090c0a",
+          "#232624",
+          "#404341",
+          "#5f6260",
+          "#808381",
+          "#a2a6a4",
+          "#c6cac8",
+          "#ecf0ed"
+        ]
+      },
+      "risco-forte-escuro": {
+        "role": "neutral",
+        "displayName": "Risco Forte (tema escuro)",
+        "canonical": "#424643",
+        "tonalRamp": [
+          "#090c0a",
+          "#222623",
+          "#3f4340",
+          "#5e625f",
+          "#7f8480",
+          "#a2a6a3",
+          "#c6cac7",
+          "#ebf0ec"
+        ]
+      },
+      "moldura-escuro": {
+        "role": "neutral",
+        "displayName": "Moldura (tema escuro)",
+        "canonical": "#090a09",
+        "tonalRamp": [
+          "#0a0b0a",
+          "#242524",
+          "#414241",
+          "#606260",
+          "#818381",
+          "#a4a5a4",
+          "#c8c9c8",
+          "#edefed"
+        ]
+      },
+      "borda-visor-escuro": {
+        "role": "neutral",
+        "displayName": "Borda do Visor (tema escuro)",
+        "canonical": "#343835",
+        "tonalRamp": [
+          "#090c0a",
+          "#222623",
+          "#3f4340",
+          "#5e625f",
+          "#7f8480",
+          "#a2a6a3",
+          "#c6cbc7",
+          "#ebf0ec"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "marca": {
+        "displayName": "Marca",
+        "purpose": "O ATENA do cabeçalho, do trilho e da frente de entrada, sempre seguido da placa de modelo AT-1."
+      },
+      "titulo": {
+        "displayName": "Título",
+        "purpose": "O texto da faixa de aprovações e o título das janelas; não há manchete maior."
+      },
+      "corpo": {
+        "displayName": "Corpo",
+        "purpose": "Texto corrido e valores das linhas."
+      },
+      "corpo-fraco": {
+        "displayName": "Corpo fraco",
+        "purpose": "Explicações, metadados de pedidos e estados vazios, em Tinta Secundária."
+      },
+      "campo": {
+        "displayName": "Campo",
+        "purpose": "O texto digitado em campos, selects e textareas."
+      },
+      "tecla": {
+        "displayName": "Tecla",
+        "purpose": "O texto das teclas; .95rem nas teclas grandes de decisão."
+      },
+      "trilho": {
+        "displayName": "Trilho",
+        "purpose": "Os nomes das telas no trilho do PC."
+      },
+      "rotulo": {
+        "displayName": "Rótulo",
+        "purpose": "Títulos de módulo, rótulos de linha e h3, sempre em caixa alta espaçada."
+      },
+      "selo": {
+        "displayName": "Selo",
+        "purpose": "A legenda ao lado do LED de estado, em caixa alta."
+      },
+      "rotulo-pequeno": {
+        "displayName": "Rótulo pequeno",
+        "purpose": "O nome das telas na barra do celular e o título dos grupos do trilho, em caixa alta."
+      },
+      "codigo": {
+        "displayName": "Código",
+        "purpose": "O que o módulo mede, à direita do título, com algarismos tabulares."
+      },
+      "peca": {
+        "displayName": "Peça",
+        "purpose": "O código posicional do módulo (IN-01)."
+      },
+      "placa-modelo": {
+        "displayName": "Placa de modelo",
+        "purpose": "O AT-1 invertido ao lado da marca."
+      },
+      "mono-texto": {
+        "displayName": "Texto de máquina",
+        "purpose": "O texto de um pedido e o editor de stacks."
+      },
+      "mono-registro": {
+        "displayName": "Registro",
+        "purpose": "Logs e saídas de comando no vidro preto."
+      }
+    },
+    "shadows": [
+      {
+        "name": "placa",
+        "value": "0 1px 0 rgb(255 255 255 / .7) inset, 0 1px 2px rgb(0 0 0 / .07), 0 6px 16px -6px rgb(0 0 0 / .12)",
+        "purpose": "Módulos e frente de entrada no tema claro (--sombra-modulo)."
+      },
+      {
+        "name": "placa-escuro",
+        "value": "0 1px 0 rgb(255 255 255 / .04) inset, 0 1px 2px rgb(0 0 0 / .5), 0 8px 20px -8px rgb(0 0 0 / .6)",
+        "purpose": "Módulos e frente de entrada no tema escuro (--sombra-modulo)."
+      },
+      {
+        "name": "tecla",
+        "value": "0 2px 5px -1px rgb(0 0 0 / .18)",
+        "purpose": "Teclas e faixa no tema claro, junto com o lado de 3px (--sombra-tecla)."
+      },
+      {
+        "name": "tecla-escuro",
+        "value": "0 2px 5px -1px rgb(0 0 0 / .6)",
+        "purpose": "Teclas e faixa no tema escuro (--sombra-tecla)."
+      },
+      {
+        "name": "tecla-apertada",
+        "value": "0 1px 2px rgb(0 0 0 / .2)",
+        "purpose": "Durante o toque, com a tecla 1px abaixo e o lado em 2px."
+      },
+      {
+        "name": "poco",
+        "value": "inset 0 1px 3px rgb(0 0 0 / .14)",
+        "purpose": "Campos, tecla ativa da barra e do trilho, item marcado da paleta."
+      },
+      {
+        "name": "visor-moldura",
+        "value": "0 0 0 1px var(--borda-visor), 0 1px 0 rgb(255 255 255 / .35), inset 0 1px 1px rgb(0 0 0 / .6)",
+        "purpose": "A moldura em volta do vidro do visor."
+      },
+      {
+        "name": "visor-vidro",
+        "value": "inset 0 0 0 1px rgb(255 255 255 / .035), inset 0 10px 28px rgb(0 0 0 / .7)",
+        "purpose": "A profundidade do vidro preto."
+      },
+      {
+        "name": "mostrador-numero",
+        "value": "0 0 0 4px var(--moldura), inset 0 6px 16px rgb(0 0 0 / .7)",
+        "purpose": "O visorzinho de um número dentro de um módulo."
+      },
+      {
+        "name": "aviso",
+        "value": "0 0 0 3px var(--moldura), 0 10px 24px -8px rgb(0 0 0 / .5)",
+        "purpose": "Avisos passageiros."
+      },
+      {
+        "name": "janela",
+        "value": "0 20px 50px -12px rgb(0 0 0 / .45)",
+        "purpose": "Janelas, folha Mais e paleta; fundo rgb(10 11 10 / .5)."
+      },
+      {
+        "name": "brilho-led",
+        "value": "0 0 6px rgb(43 212 106 / .55)",
+        "purpose": "Brilho do LED aceso, na cor do LED a 55% (aqui o verde); só em LEDs."
+      }
+    ],
+    "motion": [
+      {
+        "name": "tecla-afunda",
+        "value": "transform .08s ease-out, border-bottom-width .08s ease-out, box-shadow .08s ease-out",
+        "purpose": "A tecla desce 1px e o lado vai de 3px a 2px ao apertar."
+      },
+      {
+        "name": "varredura-leds",
+        "value": "varrer .5s ease-out both; atraso calc(var(--i) * 70ms)",
+        "purpose": "Ao entrar, cada LED das zonas acende em amarelo e volta ao estado, um depois do outro, uma vez."
+      },
+      {
+        "name": "faixa-pulsa",
+        "value": "chamar 1.2s ease-out 2",
+        "purpose": "Anel amarelo de 16px em volta da faixa quando chega aprovação nova."
+      },
+      {
+        "name": "ventoinha-acelera",
+        "value": "girar .45s linear infinite, acelerar 1.4s ease-out 1",
+        "purpose": "No primeiro minuto depois de ligar o PC, a ventoinha da torre sobe de giro."
+      },
+      {
+        "name": "ponteiro-gira",
+        "value": "girar 1.4s cubic-bezier(.2, .7, .2, 1) 2",
+        "purpose": "O ponteiro do mostrador da agenda dá duas voltas quando um agendamento roda."
+      },
+      {
+        "name": "carreteis",
+        "value": "girar var(--volta) linear infinite; --volta de 9s (CPU parada) a 0,7s (CPU cheia)",
+        "purpose": "Leitura viva da carga da CPU no visor do Início."
+      },
+      {
+        "name": "ventoinha-placa",
+        "value": "girar var(--volta) linear infinite; --volta = 800/rpm s, entre .4s e 4s",
+        "purpose": "Leitura viva do rpm da ventoinha no visor do Sistema."
+      },
+      {
+        "name": "reducao",
+        "value": "@media (prefers-reduced-motion: reduce) { animation: none; transition: none }",
+        "purpose": "Com redução de movimento, nada se move."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "celular-compacto",
+        "value": "max-width: 40rem"
+      },
+      {
+        "name": "pc",
+        "value": "min-width: 60rem"
+      },
+      {
+        "name": "toque-grosso",
+        "value": "pointer: coarse"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Tecla grafite",
+      "kind": "button",
+      "refersTo": "tecla",
+      "description": "A tecla padrão de toda ação que não é a principal, grafite nos dois temas, com lado de 3px que afunda ao toque.",
+      "html": "<button type=\"button\" class=\"ds-tecla\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 4v7\"/><path d=\"M7.4 7.2a6.8 6.8 0 1 0 9.2 0\"/></svg>Reiniciar</button>",
+      "css": ".ds-tecla{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.5rem;padding:.5rem .95rem;cursor:pointer;font:600 .84rem/1.1 var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:106%;letter-spacing:.01em;color:var(--tecla-tinta, #f1f2ef);background:var(--tecla, #2c2f2d);border:1px solid var(--tecla-borda, #1f2120);border-bottom:3px solid var(--tecla-lado, #0b0c0b);border-radius:var(--raio-tecla, 5px);box-shadow:var(--sombra-tecla, 0 2px 5px -1px rgb(0 0 0 / .18));transition:transform .08s ease-out,border-bottom-width .08s ease-out,box-shadow .08s ease-out}.ds-tecla:hover{filter:brightness(1.03)}.ds-tecla:active{transform:translateY(1px);border-bottom-width:2px;box-shadow:0 1px 2px rgb(0 0 0 / .2)}.ds-tecla:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px}.ds-tecla .ds-picto{width:1.15rem;height:1.15rem;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}@media (prefers-reduced-motion: reduce){.ds-tecla{animation:none;transition:none}}"
+    },
+    {
+      "name": "Tecla principal",
+      "kind": "button",
+      "refersTo": "tecla-principal",
+      "description": "A única tecla amarela do módulo ou da janela: a ação principal (Aprovar, Ligar, Entrar, Agendar).",
+      "html": "<button type=\"button\" class=\"ds-tecla-principal\">Aprovar</button>",
+      "css": ".ds-tecla-principal{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.5rem;padding:.5rem .95rem;cursor:pointer;font:600 .84rem/1.1 var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:106%;letter-spacing:.01em;color:var(--amarelo-tinta, #141414);background:var(--amarelo, #ffc400);border:1px solid var(--amarelo-borda, #c99a00);border-bottom:3px solid var(--amarelo-lado, #9a7600);border-radius:var(--raio-tecla, 5px);box-shadow:var(--sombra-tecla, 0 2px 5px -1px rgb(0 0 0 / .18));transition:transform .08s ease-out,border-bottom-width .08s ease-out,box-shadow .08s ease-out}.ds-tecla-principal:hover{filter:brightness(1.03)}.ds-tecla-principal:active{transform:translateY(1px);border-bottom-width:2px;box-shadow:0 1px 2px rgb(0 0 0 / .2)}.ds-tecla-principal:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px}.ds-tecla-principal .ds-picto{width:1.15rem;height:1.15rem;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}@media (prefers-reduced-motion: reduce){.ds-tecla-principal{animation:none;transition:none}}"
+    },
+    {
+      "name": "Tecla de perigo",
+      "kind": "button",
+      "refersTo": "tecla-perigo",
+      "description": "Tecla grafite discreta para apagar ou desfazer: texto coral e um ponto de LED vermelho; a ação pede confirmação antes de rodar.",
+      "html": "<button type=\"button\" class=\"ds-tecla-perigo\">Apagar</button>",
+      "css": ".ds-tecla-perigo{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.2rem;padding:.4rem .72rem;cursor:pointer;font:600 .78rem/1.1 var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:106%;letter-spacing:.01em;color:var(--tecla-perigo, #ff8a7f);background:var(--tecla, #2c2f2d);border:1px solid var(--tecla-borda, #1f2120);border-bottom:3px solid var(--tecla-lado, #0b0c0b);border-radius:var(--raio-tecla, 5px);box-shadow:var(--sombra-tecla, 0 2px 5px -1px rgb(0 0 0 / .18));transition:transform .08s ease-out,border-bottom-width .08s ease-out,box-shadow .08s ease-out}.ds-tecla-perigo:hover{filter:brightness(1.03)}.ds-tecla-perigo:active{transform:translateY(1px);border-bottom-width:2px;box-shadow:0 1px 2px rgb(0 0 0 / .2)}.ds-tecla-perigo:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px}.ds-tecla-perigo .ds-picto{width:1.15rem;height:1.15rem;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}@media (prefers-reduced-motion: reduce){.ds-tecla-perigo{animation:none;transition:none}}.ds-tecla-perigo::before{content:\"\";width:.42rem;height:.42rem;border-radius:50%;background:var(--led-vermelho, #ff4433)}"
+    },
+    {
+      "name": "Campo",
+      "kind": "input",
+      "refersTo": "campo",
+      "description": "Campo de texto como um poço no painel: fundo afundado, contorno em risco forte e o rótulo em versalete acima.",
+      "html": "<label class=\"ds-campo-rotulo\"><span>Nova pendência</span><input class=\"ds-campo\" type=\"text\" placeholder=\"O que falta fazer\"></label>",
+      "css": ".ds-campo-rotulo{display:grid;gap:.45rem;max-width:22rem}.ds-campo-rotulo span{font:650 .69rem var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:112%;text-transform:uppercase;letter-spacing:.14em;color:var(--tinta-2, #585b57)}.ds-campo{font:400 .95rem var(--fonte, \"Archivo\", system-ui, sans-serif);color:var(--tinta, #161716);background:var(--poco, #d3d5d1);border:1px solid var(--risco-forte, #9da09b);border-radius:4px;padding:.5rem .65rem;min-height:2.5rem;box-shadow:inset 0 1px 3px rgb(0 0 0 / .14)}.ds-campo::placeholder{color:var(--tinta-2, #585b57)}.ds-campo:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px;border-radius:4px}"
+    },
+    {
+      "name": "Barra de navegação (celular)",
+      "kind": "nav",
+      "refersTo": "barra-item",
+      "description": "As cinco teclas de baixo no celular; a tela ativa afunda e acende o ponto amarelo, e a contagem de aprovações vai no Mais.",
+      "html": "<nav class=\"ds-barra\" aria-label=\"Telas principais\"><a href=\"#inicio\" class=\"ds-barra-item ds-ativa\" aria-current=\"page\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 11.2 12 4.5l8 6.7V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z\"/></svg><span>Início</span></a><a href=\"#pc\" class=\"ds-barra-item\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 4v7\"/><path d=\"M7.4 7.2a6.8 6.8 0 1 0 9.2 0\"/></svg><span>PC</span></a><a href=\"#agenda\" class=\"ds-barra-item\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\"/><path d=\"M12 7.5V12l3 2\"/></svg><span>Agenda</span></a><a href=\"#servicos\" class=\"ds-barra-item\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"4\" y=\"4.5\" width=\"16\" height=\"4.2\" rx=\"1\"/><rect x=\"4\" y=\"9.9\" width=\"16\" height=\"4.2\" rx=\"1\"/><rect x=\"4\" y=\"15.3\" width=\"16\" height=\"4.2\" rx=\"1\"/><circle cx=\"7\" cy=\"6.6\" r=\"0.6\" class=\"ds-cheio\"/><circle cx=\"7\" cy=\"12\" r=\"0.6\" class=\"ds-cheio\"/><circle cx=\"7\" cy=\"17.4\" r=\"0.6\" class=\"ds-cheio\"/></svg><span>Serviços</span></a><a href=\"#mais\" class=\"ds-barra-item\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"6.5\" cy=\"12\" r=\"1.4\" class=\"ds-cheio\"/><circle cx=\"12\" cy=\"12\" r=\"1.4\" class=\"ds-cheio\"/><circle cx=\"17.5\" cy=\"12\" r=\"1.4\" class=\"ds-cheio\"/></svg><span>Mais</span><b class=\"ds-contagem\">3</b></a></nav>",
+      "css": ".ds-barra{display:grid;grid-template-columns:repeat(5,1fr);gap:.35rem;padding:.45rem .55rem;background:var(--chassi-2, #d6d8d4);border-top:1px solid var(--risco-forte, #9da09b);max-width:30rem}.ds-barra-item{position:relative;display:grid;justify-items:center;align-content:center;gap:.2rem;min-height:3.3rem;padding:.3rem .2rem;border-radius:var(--raio-tecla, 5px);color:var(--tinta-2, #585b57);text-decoration:none;border:1px solid transparent;font:650 .6rem var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:112%;text-transform:uppercase;letter-spacing:.12em}.ds-barra-item:hover{color:var(--tinta, #161716)}.ds-barra-item:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px}.ds-barra-item .ds-picto{width:1.4rem;height:1.4rem;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}.ds-picto .ds-cheio{fill:currentColor;stroke:none}.ds-barra-item.ds-ativa{color:var(--tinta, #161716);background:var(--poco, #d3d5d1);border-color:var(--risco, #c3c6c1);box-shadow:inset 0 1px 3px rgb(0 0 0 / .14)}.ds-barra-item.ds-ativa::before{content:\"\";position:absolute;top:.32rem;right:.45rem;width:.38rem;height:.38rem;border-radius:50%;background:var(--amarelo, #ffc400);box-shadow:0 0 5px rgb(255 196 0 / .7)}.ds-contagem{position:absolute;top:.2rem;left:calc(50% + .45rem);min-width:1.1rem;height:1.1rem;padding:0 .3rem;border-radius:.6rem;background:var(--amarelo, #ffc400);color:var(--amarelo-tinta, #141414);border:1px solid var(--amarelo-borda, #c99a00);font:700 .62rem/1rem var(--mono, \"Martian Mono\", ui-monospace, monospace);text-align:center;letter-spacing:0}"
+    },
+    {
+      "name": "Selo de estado",
+      "kind": "chip",
+      "refersTo": "selo",
+      "description": "O LED com a legenda do lado: o único jeito de dizer estado (verde ok, vermelho falha, azul em andamento).",
+      "html": "<span class=\"ds-selo ds-ok\">no ar</span><span class=\"ds-selo ds-ruim\">parado</span><span class=\"ds-selo ds-neutro\">rodando</span>",
+      "css": ".ds-selo{display:inline-flex;align-items:center;gap:.4rem;margin-right:.9rem;color:var(--tinta-2, #585b57);white-space:nowrap;font:650 .62rem var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:112%;text-transform:uppercase;letter-spacing:.14em}.ds-selo::before{content:\"\";width:.46rem;height:.46rem;border-radius:50%;background:var(--led-apagado, #aeb1ac);box-shadow:inset 0 1px 1px rgb(0 0 0 / .35)}.ds-selo.ds-ok{color:var(--verde, #12773a)}.ds-selo.ds-ok::before{background:var(--led-verde, #2bd46a);box-shadow:0 0 6px rgb(43 212 106 / .55)}.ds-selo.ds-ruim{color:var(--vermelho, #c42b1e)}.ds-selo.ds-ruim::before{background:var(--led-vermelho, #ff4433);box-shadow:0 0 6px rgb(255 68 51 / .55)}.ds-selo.ds-neutro{color:var(--azul, #2559c4)}.ds-selo.ds-neutro::before{background:var(--led-azul, #3e8bff);box-shadow:0 0 6px rgb(62 139 255 / .5)}"
+    },
+    {
+      "name": "Módulo com etiqueta",
+      "kind": "card",
+      "refersTo": "modulo",
+      "description": "A placa aparafusada de toda tela: régua na borda, parafusos nos cantos, título em versalete, código do que mede e a peça posicional.",
+      "html": "<section class=\"ds-modulo\"><header class=\"ds-modulo-topo\"><h2>Servidor</h2><span class=\"ds-etiqueta\"><span class=\"ds-codigo\">12 núcleos · 16 GB</span><span class=\"ds-peca\">IN-01</span></span></header><div class=\"ds-linha\"><span class=\"ds-rotulo\">Disco /</span><span>180 GB livres de 480 GB</span></div><div class=\"ds-medidor\"><span></span></div></section>",
+      "css": ".ds-modulo{position:relative;max-width:26rem;padding:1rem 1.05rem 1.05rem;color:var(--tinta, #161716);font:400 1rem/1.45 var(--fonte, \"Archivo\", system-ui, sans-serif);border:1px solid var(--risco, #c3c6c1);border-radius:var(--raio, 7px);box-shadow:var(--sombra-modulo, 0 1px 0 rgb(255 255 255 / .7) inset, 0 1px 2px rgb(0 0 0 / .07), 0 6px 16px -6px rgb(0 0 0 / .12));background:var(--parafuso, url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.7' fill='%23d0d2ce' stroke='%23919490' stroke-width='.8'/%3E%3Cpath d='M3.1 6.9 6.9 3.1' stroke='%23727571' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E\")) left 5px top 5px / 9px 9px no-repeat, var(--parafuso, url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.7' fill='%23d0d2ce' stroke='%23919490' stroke-width='.8'/%3E%3Cpath d='M3.1 6.9 6.9 3.1' stroke='%23727571' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E\")) right 5px top 5px / 9px 9px no-repeat, var(--parafuso, url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.7' fill='%23d0d2ce' stroke='%23919490' stroke-width='.8'/%3E%3Cpath d='M3.1 6.9 6.9 3.1' stroke='%23727571' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E\")) left 5px bottom 5px / 9px 9px no-repeat, var(--parafuso, url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.7' fill='%23d0d2ce' stroke='%23919490' stroke-width='.8'/%3E%3Cpath d='M3.1 6.9 6.9 3.1' stroke='%23727571' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E\")) right 5px bottom 5px / 9px 9px no-repeat, var(--modulo, #f1f2ef)}.ds-modulo::before{content:\"\";position:absolute;left:1.4rem;right:1.4rem;top:0;height:7px;pointer-events:none;opacity:.8;background:repeating-linear-gradient(90deg, var(--risco-forte, #9da09b) 0 1px, transparent 1px 40px) top left / 100% 7px no-repeat, repeating-linear-gradient(90deg, var(--risco-forte, #9da09b) 0 1px, transparent 1px 8px) top left / 100% 4px no-repeat}.ds-modulo-topo{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem;margin:0 .35rem .8rem;padding-bottom:.55rem;border-bottom:1px solid var(--risco, #c3c6c1)}.ds-modulo-topo h2,.ds-rotulo{margin:0;font-weight:650;font-size:.69rem;font-stretch:112%;text-transform:uppercase;letter-spacing:.14em}.ds-rotulo{color:var(--tinta-2, #585b57)}.ds-etiqueta{display:inline-flex;align-items:baseline;gap:.6rem;margin-left:auto;flex:none;max-width:60%}.ds-codigo{font:500 .64rem var(--mono, \"Martian Mono\", ui-monospace, monospace);color:var(--tinta-2, #585b57);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.ds-peca{flex:none;font:700 .62rem var(--mono, \"Martian Mono\", ui-monospace, monospace);color:var(--tinta, #161716);letter-spacing:.04em;padding:.05rem .3rem;border:1px solid var(--risco-forte, #9da09b);border-radius:2px}.ds-linha{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem 1rem;margin:.4rem 0;flex-wrap:wrap;font-variant-numeric:tabular-nums}.ds-medidor{height:.55rem;margin:.15rem 0 .65rem;border-radius:2px;overflow:hidden;background:repeating-linear-gradient(90deg, var(--led-apagado, #aeb1ac) 0 5px, transparent 5px 7px)}.ds-medidor span{display:block;width:62%;height:100%;background:repeating-linear-gradient(90deg, var(--led-verde, #2bd46a) 0 5px, transparent 5px 7px)}"
+    },
+    {
+      "name": "Visor",
+      "kind": "custom",
+      "refersTo": "visor-vidro",
+      "description": "A assinatura do aparelho: vidro preto em moldura, com desenhos vivos e números em 7 segmentos com os segmentos apagados visíveis.",
+      "html": "<div class=\"ds-visor\"><div class=\"ds-visor-vidro\"><div class=\"ds-celula\"><span class=\"ds-celula-rotulo\">temp cpu</span><div class=\"ds-celula-corpo\"><svg viewBox=\"0 0 24 60\" class=\"ds-desenho\" aria-hidden=\"true\"><rect x=\"8\" y=\"3\" width=\"8\" height=\"44\" rx=\"4\" class=\"ds-traco\"/><circle cx=\"12\" cy=\"51\" r=\"6.5\" class=\"ds-traco\"/><circle cx=\"12\" cy=\"51\" r=\"4\" class=\"ds-nivel\"/><rect x=\"10.2\" y=\"24.13\" width=\"3.6\" height=\"23.87\" class=\"ds-nivel\"/><line x1=\"18\" y1=\"11\" x2=\"21\" y2=\"11\" class=\"ds-traco ds-fino\"/><line x1=\"18\" y1=\"21\" x2=\"21\" y2=\"21\" class=\"ds-traco ds-fino\"/><line x1=\"18\" y1=\"31\" x2=\"21\" y2=\"31\" class=\"ds-traco ds-fino\"/><line x1=\"18\" y1=\"41\" x2=\"21\" y2=\"41\" class=\"ds-traco ds-fino\"/></svg><div class=\"ds-celula-leitura\"><svg viewBox=\"-1 0 44.5 22\" class=\"ds-sete\" role=\"img\" aria-label=\"48,6\"><g transform=\"skewX(-7) translate(2 0)\"><g transform=\"translate(0 0)\"><polygon points=\"2.05,1.5 3.25,0.3 8.75,0.3 9.95,1.5 8.75,2.7 3.25,2.7\" class=\"ds-apagado\"/><polygon points=\"2.05,11 3.25,9.8 8.75,9.8 9.95,11 8.75,12.2 3.25,12.2\" class=\"ds-aceso\"/><polygon points=\"2.05,20.5 3.25,19.3 8.75,19.3 9.95,20.5 8.75,21.7 3.25,21.7\" class=\"ds-apagado\"/><polygon points=\"1.5,2.05 2.7,3.25 2.7,9.25 1.5,10.45 0.3,9.25 0.3,3.25\" class=\"ds-aceso\"/><polygon points=\"10.5,2.05 11.7,3.25 11.7,9.25 10.5,10.45 9.3,9.25 9.3,3.25\" class=\"ds-aceso\"/><polygon points=\"1.5,11.55 2.7,12.75 2.7,18.75 1.5,19.95 0.3,18.75 0.3,12.75\" class=\"ds-apagado\"/><polygon points=\"10.5,11.55 11.7,12.75 11.7,18.75 10.5,19.95 9.3,18.75 9.3,12.75\" class=\"ds-aceso\"/><circle cx=\"12.8\" cy=\"20.5\" r=\"1.05\" class=\"ds-apagado\"/></g><g transform=\"translate(14.5 0)\"><polygon points=\"2.05,1.5 3.25,0.3 8.75,0.3 9.95,1.5 8.75,2.7 3.25,2.7\" class=\"ds-aceso\"/><polygon points=\"2.05,11 3.25,9.8 8.75,9.8 9.95,11 8.75,12.2 3.25,12.2\" class=\"ds-aceso\"/><polygon points=\"2.05,20.5 3.25,19.3 8.75,19.3 9.95,20.5 8.75,21.7 3.25,21.7\" class=\"ds-aceso\"/><polygon points=\"1.5,2.05 2.7,3.25 2.7,9.25 1.5,10.45 0.3,9.25 0.3,3.25\" class=\"ds-aceso\"/><polygon points=\"10.5,2.05 11.7,3.25 11.7,9.25 10.5,10.45 9.3,9.25 9.3,3.25\" class=\"ds-aceso\"/><polygon points=\"1.5,11.55 2.7,12.75 2.7,18.75 1.5,19.95 0.3,18.75 0.3,12.75\" class=\"ds-aceso\"/><polygon points=\"10.5,11.55 11.7,12.75 11.7,18.75 10.5,19.95 9.3,18.75 9.3,12.75\" class=\"ds-aceso\"/><circle cx=\"12.8\" cy=\"20.5\" r=\"1.05\" class=\"ds-aceso\"/></g><g transform=\"translate(29 0)\"><polygon points=\"2.05,1.5 3.25,0.3 8.75,0.3 9.95,1.5 8.75,2.7 3.25,2.7\" class=\"ds-aceso\"/><polygon points=\"2.05,11 3.25,9.8 8.75,9.8 9.95,11 8.75,12.2 3.25,12.2\" class=\"ds-aceso\"/><polygon points=\"2.05,20.5 3.25,19.3 8.75,19.3 9.95,20.5 8.75,21.7 3.25,21.7\" class=\"ds-aceso\"/><polygon points=\"1.5,2.05 2.7,3.25 2.7,9.25 1.5,10.45 0.3,9.25 0.3,3.25\" class=\"ds-aceso\"/><polygon points=\"10.5,2.05 11.7,3.25 11.7,9.25 10.5,10.45 9.3,9.25 9.3,3.25\" class=\"ds-apagado\"/><polygon points=\"1.5,11.55 2.7,12.75 2.7,18.75 1.5,19.95 0.3,18.75 0.3,12.75\" class=\"ds-aceso\"/><polygon points=\"10.5,11.55 11.7,12.75 11.7,18.75 10.5,19.95 9.3,18.75 9.3,12.75\" class=\"ds-aceso\"/><circle cx=\"12.8\" cy=\"20.5\" r=\"1.05\" class=\"ds-apagado\"/></g></g></svg><span class=\"ds-celula-unidade\">°C</span></div></div></div><div class=\"ds-celula\"><span class=\"ds-celula-rotulo\">ram</span><div class=\"ds-celula-corpo\"><svg viewBox=\"0 0 34 54\" class=\"ds-desenho\" aria-hidden=\"true\"><rect x=\"3\" y=\"3\" width=\"28\" height=\"48\" rx=\"2\" class=\"ds-traco\"/><rect x=\"6\" y=\"22.7\" width=\"22\" height=\"25.3\" class=\"ds-nivel\"/><line x1=\"6\" y1=\"8\" x2=\"28\" y2=\"8\" class=\"ds-risca\"/><line x1=\"6\" y1=\"12\" x2=\"28\" y2=\"12\" class=\"ds-risca\"/><line x1=\"6\" y1=\"16\" x2=\"28\" y2=\"16\" class=\"ds-risca\"/><line x1=\"6\" y1=\"20\" x2=\"28\" y2=\"20\" class=\"ds-risca\"/><line x1=\"6\" y1=\"24\" x2=\"28\" y2=\"24\" class=\"ds-risca\"/><line x1=\"6\" y1=\"28\" x2=\"28\" y2=\"28\" class=\"ds-risca\"/><line x1=\"6\" y1=\"32\" x2=\"28\" y2=\"32\" class=\"ds-risca\"/><line x1=\"6\" y1=\"36\" x2=\"28\" y2=\"36\" class=\"ds-risca\"/><line x1=\"6\" y1=\"40\" x2=\"28\" y2=\"40\" class=\"ds-risca\"/><line x1=\"6\" y1=\"44\" x2=\"28\" y2=\"44\" class=\"ds-risca\"/><line x1=\"6\" y1=\"48\" x2=\"28\" y2=\"48\" class=\"ds-risca\"/></svg><div class=\"ds-celula-leitura\"><svg viewBox=\"-1 0 30 22\" class=\"ds-sete\" role=\"img\" aria-label=\"8,8\"><g transform=\"skewX(-7) translate(2 0)\"><g transform=\"translate(0 0)\"><polygon points=\"2.05,1.5 3.25,0.3 8.75,0.3 9.95,1.5 8.75,2.7 3.25,2.7\" class=\"ds-aceso\"/><polygon points=\"2.05,11 3.25,9.8 8.75,9.8 9.95,11 8.75,12.2 3.25,12.2\" class=\"ds-aceso\"/><polygon points=\"2.05,20.5 3.25,19.3 8.75,19.3 9.95,20.5 8.75,21.7 3.25,21.7\" class=\"ds-aceso\"/><polygon points=\"1.5,2.05 2.7,3.25 2.7,9.25 1.5,10.45 0.3,9.25 0.3,3.25\" class=\"ds-aceso\"/><polygon points=\"10.5,2.05 11.7,3.25 11.7,9.25 10.5,10.45 9.3,9.25 9.3,3.25\" class=\"ds-aceso\"/><polygon points=\"1.5,11.55 2.7,12.75 2.7,18.75 1.5,19.95 0.3,18.75 0.3,12.75\" class=\"ds-aceso\"/><polygon points=\"10.5,11.55 11.7,12.75 11.7,18.75 10.5,19.95 9.3,18.75 9.3,12.75\" class=\"ds-aceso\"/><circle cx=\"12.8\" cy=\"20.5\" r=\"1.05\" class=\"ds-aceso\"/></g><g transform=\"translate(14.5 0)\"><polygon points=\"2.05,1.5 3.25,0.3 8.75,0.3 9.95,1.5 8.75,2.7 3.25,2.7\" class=\"ds-aceso\"/><polygon points=\"2.05,11 3.25,9.8 8.75,9.8 9.95,11 8.75,12.2 3.25,12.2\" class=\"ds-aceso\"/><polygon points=\"2.05,20.5 3.25,19.3 8.75,19.3 9.95,20.5 8.75,21.7 3.25,21.7\" class=\"ds-aceso\"/><polygon points=\"1.5,2.05 2.7,3.25 2.7,9.25 1.5,10.45 0.3,9.25 0.3,3.25\" class=\"ds-aceso\"/><polygon points=\"10.5,2.05 11.7,3.25 11.7,9.25 10.5,10.45 9.3,9.25 9.3,3.25\" class=\"ds-aceso\"/><polygon points=\"1.5,11.55 2.7,12.75 2.7,18.75 1.5,19.95 0.3,18.75 0.3,12.75\" class=\"ds-aceso\"/><polygon points=\"10.5,11.55 11.7,12.75 11.7,18.75 10.5,19.95 9.3,18.75 9.3,12.75\" class=\"ds-aceso\"/><circle cx=\"12.8\" cy=\"20.5\" r=\"1.05\" class=\"ds-apagado\"/></g></g></svg><span class=\"ds-celula-unidade\">GB</span></div></div><div class=\"ds-celula-extra\">de 16,0 GB</div></div></div></div>",
+      "css": ".ds-visor{display:inline-block;padding:5px;border-radius:9px;background:var(--moldura, #2a2c2b);box-shadow:0 0 0 1px var(--borda-visor, transparent), 0 1px 0 rgb(255 255 255 / .35), inset 0 1px 1px rgb(0 0 0 / .6)}.ds-visor-vidro{display:flex;flex-wrap:wrap;gap:1rem 2.2rem;padding:.9rem 1rem 1rem;border-radius:5px;color:var(--visor-traco, #e6efe9);background:var(--visor, #070908);box-shadow:inset 0 0 0 1px rgb(255 255 255 / .035), inset 0 10px 28px rgb(0 0 0 / .7)}.ds-celula{display:grid;gap:.4rem;align-content:start}.ds-celula-rotulo{color:var(--visor-fraco, #7d8a83);font:650 .6rem var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:112%;text-transform:uppercase;letter-spacing:.18em}.ds-celula-corpo{display:flex;align-items:flex-end;gap:.7rem}.ds-celula-leitura{display:flex;align-items:flex-end;gap:.3rem}.ds-celula-unidade{font:500 .66rem var(--mono, \"Martian Mono\", ui-monospace, monospace);color:var(--visor-fraco, #7d8a83);padding-bottom:.15rem}.ds-celula-extra{font:400 .66rem/1.35 var(--mono, \"Martian Mono\", ui-monospace, monospace);color:var(--visor-fraco, #7d8a83)}.ds-sete{height:2.15rem;width:auto;overflow:visible}.ds-sete .ds-aceso{fill:currentColor}.ds-sete .ds-apagado{fill:var(--visor-apagado, #17211c)}.ds-desenho{height:3.4rem;width:auto;flex:none;overflow:visible}.ds-desenho .ds-traco{fill:none;stroke:var(--visor-traco, #e6efe9);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.ds-desenho .ds-traco.ds-fino{stroke-width:1;opacity:.55}.ds-desenho .ds-nivel{fill:var(--led-verde, #2bd46a)}.ds-desenho .ds-risca{stroke:var(--visor, #070908);stroke-width:1.5}"
+    },
+    {
+      "name": "Faixa de aprovações",
+      "kind": "custom",
+      "refersTo": "faixa",
+      "description": "A tecla larga amarela no topo da tela quando há pedido esperando; pulsa duas vezes quando chega um novo.",
+      "html": "<a href=\"#aprovacoes\" class=\"ds-faixa ds-pulsa\"><strong><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"2.5\"/><path d=\"m8.2 12.3 2.6 2.6 5-5.6\"/></svg> 3 aprovações esperando você</strong><span class=\"ds-faixa-ver\">ver<svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m9.5 6.5 5.5 5.5-5.5 5.5\"/></svg></span></a>",
+      "css": ".ds-faixa{display:flex;align-items:center;justify-content:space-between;gap:.75rem 1rem;flex-wrap:wrap;padding:.8rem 1rem;border-radius:var(--raio, 7px);text-decoration:none;background:var(--amarelo, #ffc400);color:var(--amarelo-tinta, #141414);border:1px solid var(--amarelo-borda, #c99a00);border-bottom:3px solid var(--amarelo-lado, #9a7600);box-shadow:var(--sombra-tecla, 0 2px 5px -1px rgb(0 0 0 / .18));font-family:var(--fonte, \"Archivo\", system-ui, sans-serif)}.ds-faixa:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px}.ds-faixa strong{display:inline-flex;align-items:center;gap:.55rem;font-weight:700;font-size:1rem}.ds-faixa-ver{display:inline-flex;align-items:center;gap:.3rem;opacity:.8;font-weight:650;font-size:.69rem;font-stretch:112%;text-transform:uppercase;letter-spacing:.14em}.ds-faixa .ds-picto{width:1.2rem;height:1.2rem;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}.ds-faixa.ds-pulsa{animation:ds-chamar 1.2s ease-out 2}@keyframes ds-chamar{0%{box-shadow:0 0 0 0 rgb(255 196 0 / .65), 0 2px 5px -1px rgb(0 0 0 / .18)}100%{box-shadow:0 0 0 16px rgb(255 196 0 / 0), 0 2px 5px -1px rgb(0 0 0 / .18)}}@media (prefers-reduced-motion: reduce){.ds-faixa{animation:none;transition:none}}"
+    },
+    {
+      "name": "Aviso",
+      "kind": "custom",
+      "refersTo": "aviso",
+      "description": "O aviso passageiro: um vidro preto pequeno com moldura, texto em mono e o LED do resultado; some em 4 s (8 s se for erro).",
+      "html": "<div class=\"ds-aviso ds-ok\">Pedido aprovado. O executor já está rodando.</div><div class=\"ds-aviso ds-erro\">O pedido já tinha vencido; nada foi feito.</div>",
+      "css": ".ds-aviso{display:flex;align-items:baseline;gap:.55rem;max-width:30rem;margin:0 0 .6rem;padding:.65rem .85rem;border-radius:6px;background:var(--visor, #070908);color:var(--visor-traco, #e6efe9);font:400 .78rem/1.4 var(--mono, \"Martian Mono\", ui-monospace, monospace);box-shadow:0 0 0 3px var(--moldura, #2a2c2b), 0 10px 24px -8px rgb(0 0 0 / .5)}.ds-aviso::before{content:\"\";flex:none;width:.45rem;height:.45rem;border-radius:50%;background:var(--led-azul, #3e8bff);box-shadow:0 0 6px rgb(62 139 255 / .7)}.ds-aviso.ds-ok::before{background:var(--led-verde, #2bd46a);box-shadow:0 0 6px rgb(43 212 106 / .7)}.ds-aviso.ds-erro::before{background:var(--led-vermelho, #ff4433);box-shadow:0 0 6px rgb(255 68 51 / .7)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "O Aparelho de Mesa",
+    "overview": "O painel é um aparelho de mesa da família Braun e Teenage Engineering, feito para um servidor caseiro: um chassi de alumínio (tema claro) ou grafite (tema escuro) onde se aparafusam módulos com etiqueta de engenharia, uma fileira de teclas físicas e um visor preto que desenha o estado da máquina em tempo real. O tema segue o aparelho do dono (`prefers-color-scheme`); só o chassi muda: o visor é o mesmo e as teclas continuam grafite nos dois.\n\nA densidade é de instrumento, não de site. Os títulos são rótulos pequenos em versalete espaçado, e quem carrega a hierarquia é o visor, com números em 7 segmentos e desenhos vivos (carretéis de fita que giram na velocidade da CPU, termômetros, o tanque da RAM, a torre do PC, o mostrador de 24 h). O estado se lê pelos LEDs, sempre com o texto do lado. Uma tecla amarela por módulo diz qual é a ação principal; todas as outras são grafite.\n\nO sistema recusa duas coisas, confirmadas pelo dono: a cara de SaaS genérico (cartões cinza iguais com ícones de biblioteca) e o temático demais (ficção científica, cara de jogo). A \"cena\" existe, mas só nos momentos que importam: entrar, chegar uma aprovação, um agendamento rodar, o PC ligar. O uso de todo dia é rápido e quieto.",
+    "keyCharacteristics": [
+      "Chassi de alumínio ou grafite que segue o tema do aparelho; visor sempre preto.",
+      "Teclas grafite com lado de 3px que afundam ao toque; amarelo sinal só na ação principal.",
+      "LEDs verde, âmbar, vermelho e azul como único vocabulário de estado, sempre com legenda.",
+      "Módulos com parafusos nos cantos, régua na borda e etiqueta de engenharia (título em versalete, código em mono, peça posicional como IN-01).",
+      "Placa de modelo \"ATENA AT-1\" na marca.",
+      "Números medidos em 7 segmentos com os segmentos apagados visíveis.",
+      "Pictogramas próprios numa grade de 24 com traço de 1,75.",
+      "Archivo (largura variável) e Martian Mono, servidas pelo próprio painel."
+    ],
+    "rules": [
+      {
+        "name": "A Regra da Tecla Amarela",
+        "body": "Entre as teclas, só a ação principal é amarela, uma por módulo ou janela; todas as outras são grafite, nos dois temas. Fora das teclas, o amarelo só aponta para o dono e para onde ele está: a faixa e a contagem de aprovações, o ponto da tela ativa, o sublinhado dos links, a seleção de texto, os marcadores do mostrador da agenda, o tampo da placa sob o ponteiro na vista explodida e a varredura dos LEDs ao entrar.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do LED com Legenda",
+        "body": "Estado só se diz com os quatro LEDs (verde ok, âmbar perto do limite, vermelho falha, azul informação ou em andamento), e sempre com o texto do lado. Cor sozinha não é estado, e nenhum outro matiz entra nesse vocabulário.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra do Visor Sempre Preto",
+        "body": "O visor é vidro preto nos dois temas. O tema troca o chassi, nunca o visor.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra da Etiqueta",
+        "body": "Título de módulo é rótulo, não manchete: Archivo 650 a .69rem, largura 112, caixa alta com .14em de espaço. A hierarquia vem do visor e dos números, nunca do tamanho dos títulos.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Número de Máquina",
+        "body": "Número medido no visor sai em 7 segmentos, com os segmentos apagados visíveis por trás. Códigos, unidades, registros e chaves saem em Martian Mono. Números em linhas de texto usam algarismos tabulares.",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra das Colunas de Jornal",
+        "body": "No PC, a tela é um fluxo de colunas CSS: duas colunas, e colunas automáticas de 21rem no Início e nas Aprovações. Cada módulo leva `break-inside: avoid`; os módulos largos e a faixa de aprovações atravessam todas as colunas com `column-span: all`. Os módulos têm a altura do que mostram.",
+        "section": "layout"
+      },
+      {
+        "name": "A Regra do Polegar",
+        "body": "No celular, as telas de todo dia ficam na barra de baixo, em teclas de 3.3rem de altura; com toque grosso (`pointer: coarse`), toda tecla tem no mínimo 2.75rem.",
+        "section": "layout"
+      },
+      {
+        "name": "A Regra da Tecla com Lado",
+        "body": "A profundidade de uma tecla é a borda de baixo de 3px, o lado dela, não uma sombra deslocada. Ao apertar, a tecla desce 1px e o lado vira 2px.",
+        "section": "elevation"
+      },
+      {
+        "name": "A Regra da Placa e do Poço",
+        "body": "O que está montado sobe (módulo: realce no topo e sombra ambiente); o que está selecionado ou recebe dado afunda (sombra interna de 1px por 3px). Nada flutua além das janelas.",
+        "section": "elevation"
+      },
+      {
+        "name": "A Regra do Parafuso",
+        "body": "Toda placa montada leva os quatro parafusos: o módulo também leva a régua na borda; a frente de entrada, só os parafusos. Janelas, visor, faixa e avisos não levam parafuso.",
+        "section": "shapes"
+      },
+      {
+        "name": "A Regra da Cena nos Momentos",
+        "body": "Movimento de cena só em quatro momentos: a varredura dos LEDs das zonas ao entrar (cada LED acende em amarelo por .5s, 70ms depois do anterior), o pulso da faixa quando chega aprovação (anel amarelo de 16px, 1.2s, duas vezes), a ventoinha que acelera no primeiro minuto depois de o PC ligar e o ponteiro do mostrador que gira quando um agendamento roda (1.4s, duas voltas). Os carretéis e as ventoinhas do visor giram na velocidade medida, porque ali o movimento é a leitura. Com `prefers-reduced-motion`, nada se move: animações e transições são desligadas.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "**Do** montar todo módulo com o cabeçalho de etiqueta: título em Rótulo, o código do que ele mede em Martian Mono e a peça posicional (IN-01), que o painel numera sozinho.",
+      "**Do** usar uma única tecla amarela (principal) por módulo ou janela; as outras são grafite, discretas ou de perigo.",
+      "**Do** dizer todo estado com um LED e o texto do lado (selo), nas cores verde, âmbar, vermelho e azul.",
+      "**Do** desenhar número medido em 7 segmentos no visor preto, com os segmentos apagados visíveis, e só com dado de verdade do executor.",
+      "**Do** desenhar pictogramas novos no próprio painel, na grade de 24 com traço de 1,75, pontas redondas e `currentColor`.",
+      "**Do** pegar cor, raio e fonte das custom properties (`var(--tecla)`, `var(--raio)`, `var(--mono)`) e mudar o tema só trocando valores sob `prefers-color-scheme: dark`.",
+      "**Do** passar valores dinâmicos (largura do medidor, velocidade dos carretéis, atraso da varredura) pelo CSSOM, com `style.setProperty`.",
+      "**Do** manter os alvos de toque em 2.75rem no toque grosso e a barra de baixo no celular.",
+      "**Do** desligar toda animação nova sob `prefers-reduced-motion`."
+    ],
+    "donts": [
+      "**Don't** pintar de amarelo uma tecla que não seja a ação principal, nem usar o amarelo como enfeite.",
+      "**Don't** dizer estado só com cor, nem criar um quinto matiz de estado.",
+      "**Don't** clarear o visor no tema claro.",
+      "**Don't** usar biblioteca de ícones nem caractere Unicode fazendo papel de ícone.",
+      "**Don't** carregar fonte, script, estilo ou imagem de outro endereço, nem usar o atributo `style` inline: a CSP é `default-src 'self'` e o container não tem rede.",
+      "**Don't** pôr movimento contínuo que não seja leitura de dado; a cena fica nos quatro momentos.",
+      "**Don't** fazer cara de SaaS genérico (cartões cinza iguais com ícones de biblioteca) nem de ficção científica ou jogo.",
+      "**Don't** escrever texto abaixo de .6rem.",
+      "**Don't** dar sombra deslocada às teclas: a profundidade é o lado de 3px."
+    ]
+  }
+}

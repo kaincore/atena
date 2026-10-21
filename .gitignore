@@ -28,3 +28,6 @@ dist/
 
 # Cache do Python (testes)
 __pycache__/
+
+# capturas da revisão de design (fora do repositório)
+stacks/core/painel/.impeccable/review/
