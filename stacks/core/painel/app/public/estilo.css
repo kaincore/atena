@@ -124,6 +124,7 @@ button.discreto.perigo { background: transparent; color: var(--ruim); }
 .lista.arquivos a { text-decoration: none; overflow-wrap: anywhere; }
 .lista.arquivos a.pasta { font-weight: 600; }
 .janela-avisos { display: grid; gap: .5rem; margin-top: .5rem; position: sticky; bottom: 0; }
+input[type=number] { width: 5rem; }
 button:disabled { opacity: .5; cursor: wait; }
 
 .entrada { min-height: 100dvh; display: grid; place-items: center; padding: 1rem; }
