@@ -1,0 +1,9 @@
+# ruff: roda só no CI e no tools/ci-local.sh (não é dependência do servidor). Procura erros de verdade
+# (nome indefinido, import ou variável sem uso, sintaxe, armadilhas comuns), não estilo.
+target-version = "py312"
+line-length = 120
+
+[lint]
+select = ["E9", "F", "B"]
+# o Erro do executor dentro de um except vira a resposta HTTP; o "raise ... from" não chega a ninguém
+ignore = ["B904"]

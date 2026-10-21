@@ -50,6 +50,13 @@ shellcheck_sh() (
     host/lab/atena-tela $(grep -l '^#!/bin/sh' host/sbin/* tools/hooks/* hermes/*.sh)
 )
 
+# shellcheck disable=SC2046
+ruff() (
+  cd "$copia"
+  docker run --rm -v "$copia:/repo:ro" -w /repo ghcr.io/astral-sh/ruff:0.16.10 check --no-cache \
+    $(grep -l '^#!.*python' host/sbin/*) host/lab hermes/scripts tests
+)
+
 composes() (
   cd "$copia"
   set -a
@@ -93,6 +100,7 @@ gitleaks() {
 
 job "shellcheck (bash)" shellcheck_bash
 job "shellcheck (sh)" shellcheck_sh
+job "ruff" ruff
 job "composes válidos" composes
 job "testes do painel" testes_painel
 job "testes (executor, Hermes e lab)" testes_python

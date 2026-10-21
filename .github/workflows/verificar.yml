@@ -24,6 +24,16 @@ jobs:
           docker run --rm -v "$PWD:/mnt:ro" -w /mnt koalaman/shellcheck:v0.10.0 -s sh \
             host/lab/atena-tela $(grep -l '^#!/bin/sh' host/sbin/* tools/hooks/* hermes/*.sh)
 
+  python:
+    name: ruff
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: erros no Python (regras no ruff.toml)
+        run: |
+          docker run --rm -v "$PWD:/repo:ro" -w /repo ghcr.io/astral-sh/ruff:0.16.10 check --no-cache \
+            $(grep -l '^#!.*python' host/sbin/*) host/lab hermes/scripts tests
+
   composes:
     name: composes válidos
     runs-on: ubuntu-24.04
