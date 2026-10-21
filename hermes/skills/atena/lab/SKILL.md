@@ -1,7 +1,7 @@
 ---
 name: lab
 description: "Programar no lab do servidor Atena: mandar trabalhos de programação ao Claude Code (apps, scripts, sites), repassar as perguntas dele ao dono, programar você mesma nos projetos do lab pelo terminal e cuidar dos apps do lab (publicar na rede de casa, rodar comandos dentro deles, reiniciar, parar, cancelar, apagar e restaurar). Use sempre que o dono pedir um programa, app, script ou site, falar de um projeto do lab ou de um app publicado, e quando a ronda trouxer uma linha do Claude Code."
-version: 1.0.0
+version: 1.1.0
 author: Atena
 license: MIT
 platforms: [linux]
@@ -32,8 +32,8 @@ recebe pedido de permissão para `git push`, páginas web e edição de arquivo 
 
 | Ação | Params | O que faz |
 |---|---|---|
-| `claude.trabalhos` | — | As contas do Claude Code (`contas`), as que têm login (`contas_com_login`) e os 10 últimos trabalhos, com estado |
-| `claude.tarefa` | `pedido`, `projeto`, `conta?` (uma de `contas`; com uma conta só, ela vale sozinha), `modelo?` (`fable`, `opus`, `sonnet`, `haiku`), `esforco?` (`low`, `medium`, `high`, `xhigh`, `max`), `minutos?` (5 a 600, padrão 60), `somente_plano?`, `continuar?`, `publicar?` | Começa um trabalho; responde 202 com o id. Com `publicar: true`, publica a versão nova sozinho quando terminar bem |
+| `claude.trabalhos` | — | As contas do Claude Code (`contas`), as que têm login (`contas_com_login`), as `skills` (só se o dono ligou as skills no servidor) e os 10 últimos trabalhos, com estado |
+| `claude.tarefa` | `pedido`, `projeto`, `conta?` (uma de `contas`; com uma conta só, ela vale sozinha), `modelo?` (`fable`, `opus`, `sonnet`, `haiku`), `esforco?` (`low`, `medium`, `high`, `xhigh`, `max`), `minutos?` (5 a 600, padrão 60), `skill?` (uma de `skills`; veja Skills do Claude Code), `somente_plano?`, `continuar?`, `publicar?` | Começa um trabalho; responde 202 com o id. Com `publicar: true`, publica a versão nova sozinho quando terminar bem |
 | `claude.cancelar` | `pedido` (id do trabalho) | Interrompe um trabalho em andamento (a conversa fica guardada) |
 | `claude.perguntas` | — | Perguntas do Claude Code esperando resposta: `id`, `projeto`, `pergunta`, `opcoes`, `por_que`, `esperando_min` |
 | `claude.responder` | `pergunta` (id), `resposta`, `quem` (`dono` ou `atena`) | Manda a resposta ao Claude Code, que estava parado esperando |
@@ -57,8 +57,10 @@ Como fazer:
    projeto que já existe, use o mesmo nome.
 3. Escreva o `pedido` completo e claro, com tudo o que o dono disse e decidiu (o que fazer, porta,
    linguagem, as respostas das perguntas, o estilo visual se ele falou): é tudo o que o Claude Code
-   vai saber. Mande `claude.tarefa`.
-4. Responda ao dono que começou (id e pasta) e PARE. Não acompanhe com `GET /pedido` nem
+   vai saber. Se `claude.trabalhos` trouxe `skills`, escolha a `skill` pela tabela de Skills do
+   Claude Code (ou deixe de fora). Mande `claude.tarefa`.
+4. Responda ao dono que começou (id, pasta e, se usou, a skill em palavras simples: "com o polish do
+   Impeccable") e PARE. Não acompanhe com `GET /pedido` nem
    `claude.trabalhos` enquanto ele trabalha: cada consulta gasta. O dono recebe no celular o aviso
    de início (com Cancelar) e os pedidos de permissão.
 5. Quando o trabalho terminar, a ronda te acorda (veja Ronda) e você manda o resumo.
@@ -79,6 +81,42 @@ Continuar e trocar:
 - Até 3 trabalhos rodam ao mesmo tempo (e mais 2 esperam na fila), um por projeto.
 - Erro 409 "ainda não tem login": diga ao dono para rodar no servidor
   `sudo atena-claude-conta entrar <conta>`. Erro 503: o lab não está instalado neste servidor.
+
+### Skills do Claude Code (só se `claude.trabalhos` trouxer `skills`)
+
+Com as skills ligadas, o Claude Code do lab já usa sozinho: frontend-design (direção visual de tela
+nova), impeccable (refinar telas), tdd, diagnosing-bugs (bug difícil), prototype e revisão do
+próprio diff; e confere as telas com prints (`atena-tela`). O campo `skill` serve para FORÇAR um
+caminho quando o pedido do dono pede isso. Uma skill por trabalho; na dúvida, deixe de fora. O dono
+não precisa saber os nomes.
+
+| O dono pede | `skill` |
+|---|---|
+| App ou site novo com tela | `frontend-design` |
+| "deixa mais bonito", "capricha", "dá um acabamento" | `impeccable polish` |
+| "o que está ruim nessa tela?", "dá uma olhada no visual" (só avaliar, sem mudar) | `impeccable critique` |
+| "revisa acessibilidade, contraste, celular, desempenho" (relatório técnico) | `impeccable audit` |
+| "mais discreto/sóbrio" / "mais chamativo, com personalidade" | `impeccable quieter` / `impeccable bolder` |
+| cores / fontes e textos / organização e espaçamento | `impeccable colorize` / `impeccable typeset` / `impeccable layout` |
+| "funciona bem no celular?", responsivo | `impeccable adapt` |
+| animações, movimento | `impeccable animate` |
+| simplificar a tela / textos confusos | `impeccable distill` / `impeccable clarify` |
+| telas de erro, vazio, casos estranhos | `impeccable harden` |
+| primeiro uso, boas-vindas, tutorial | `impeccable onboard` |
+| "está lento" (front-end) | `impeccable optimize` |
+| "cria a identidade visual do projeto" | `impeccable init` (gera PRODUCT.md e DESIGN.md; faz perguntas ao dono pelo celular) |
+| "o código está bagunçado", "organiza", "melhora a arquitetura" | `improve-codebase-architecture` |
+| Projeto grande, de várias partes | `to-spec`, depois `implement-spec` (veja abaixo) |
+
+Projeto grande (várias telas ou funções, mais de uma noite de trabalho):
+1. Faça as perguntas do passo 1 e mande `claude.tarefa` com `skill: "to-spec"` e o pedido com tudo
+   o que foi decidido. Ele escreve a especificação em `.scratch/` no projeto, sem programar.
+2. Quando terminar, mande ao dono o resumo da especificação em poucas linhas e, na mesma hora,
+   `claude.tarefa` com `continuar` (o id do to-spec), `skill: "implement-spec"`, `minutos` maior
+   (ex.: 240) e o pedido "Implemente a especificação". Não espere ok: ele pode cancelar pelo celular.
+3. Muito grande (dias): entre os dois passos, `skill: "to-tickets"` quebra em tarefas pequenas.
+Depois de um trabalho longo que deu problemas, `skill: "retro"` com `continuar` faz uma retrospectiva
+curta do que aprender (só se o dono pedir ou se o trabalho falhou mais de uma vez).
 
 ## Perguntas do Claude Code
 
