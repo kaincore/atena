@@ -135,7 +135,8 @@ O instalador mostra o endereço: `https://<servidor>.<tailnet>.ts.net:3100`. No 
 
 - **Trocar a senha:** `sudo atena-painel-senha` de novo. Todos os aparelhos saem.
 - **Aparelhos conectados:** na aba Ajustes, com o botão Desconectar.
-- **Registros:** `docker logs painel` (o painel) e `journalctl -u atena-executor` (cada pedido dele, com o cliente `painel`).
+- **Registros:** `docker logs painel` (o painel e o agendador) e `journalctl -u atena-executor` (cada pedido dele, com o cliente `painel` e a origem `agendamento` nos agendados).
+- **Agendamentos:** ficam no banco do painel (`/srv/core/painel/painel.db`). Com o painel parado, nada roda; ao voltar, ele roda o que atrasou até a tolerância de cada um e marca o resto como perdido.
 - **Tirar do ar:**
   ```bash
   sudo tailscale serve --https=3100 off

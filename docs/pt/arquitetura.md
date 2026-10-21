@@ -104,21 +104,24 @@ App pronto ──> app.publicar ──> stack lab-<projeto> na zona lab (porta 8
 
 ## O painel
 
-Opcional (`./install.sh --painel`). O servidor no navegador do PC e do celular, instalável como app (PWA): estado, serviços, sensores, processos, rede e registro do systemd, o PC da rede de casa, os apps do lab e o Claude Code, o gasto de IA e o histórico do que você mandou fazer.
+Opcional (`./install.sh --painel`). O servidor no navegador do PC e do celular, instalável como app (PWA): estado, serviços, sensores, processos, rede e registro do systemd, o PC da rede de casa, os apps do lab e o Claude Code, a agenda, os arquivos, o gasto de IA e o histórico do que você mandou fazer.
 
 ```text
 Celular ou PC (Tailscale) ──HTTPS :3100──> tailscale serve ──socket──> painel (zona core, sem rede)
-painel ──socket──> executor (token próprio: 30 ações; só apaga apps do lab, nada que edite)
+painel ──socket──> executor (token próprio: 38 ações; só apaga apps do lab e só edita stacks de apps)
 ```
 
 - **Sem rede.** O container tem `network_mode: none`: não alcança a internet, a rede de casa nem outros containers, e nada alcança ele pela rede. As visitas chegam pelo `tailscale serve`, que entrega no socket `/srv/core/painel/run/painel.sock`, e os pedidos vão ao executor pelo socket dele.
 - **Só pelo Tailscale**, inclusive em casa. O HTTPS do Tailscale é o que deixa instalar o app e manter o cookie seguro.
 - **Uma conta, com senha.** O hash (scrypt) fica em `/srv/core/painel/senha`, gravado pelo `atena-painel-senha`. A sessão dura 30 dias e renova a cada uso; trocar a senha desconecta todos os aparelhos.
-- **Duas listas fechadas.** O painel só pede as ações dele, e o token dele no executor só aceita essas, nas zonas core, apps, ai, agents e lab: consultas, logs, gasto, reiniciar serviço, ligar e desligar o PC, os apps do lab e o Claude Code. Nada de editar stacks, ler arquivos ou apagar fora do lab.
+- **Duas listas fechadas.** O painel só pede as ações dele, e o token dele no executor só aceita essas, nas zonas core, apps, ai, agents e lab: consultas, logs, gasto, reiniciar serviço, ligar e desligar o PC, os apps do lab e o Claude Code, as stacks de apps e a leitura de arquivos. Nada de apagar fora do lab nem editar stacks de outras zonas.
 - **Confirmação na tela.** Reiniciar, desligar, parar, publicar e apagar pedem confirmação no próprio painel, e apagar os dados de um app exige digitar o nome dele; por isso o token não pede o celular.
 - **Central de aprovações.** O que a Atena e o Claude Code pedem e espera por você aparece no painel com o texto que foi ao celular: Aprovar, Recusar ou responder a pergunta. Vale o mesmo que o toque no celular, os dois continuam funcionando, e quem decidir primeiro decide. O painel nunca decide um pedido dele mesmo; a exceção são as permissões e as perguntas do Claude Code nos trabalhos que ele mandou, porque quem pede é o Claude Code.
 - **Atividade.** O registro do executor (cada pedido de cada cliente, cada decisão e os eventos), com filtro por cliente e só os erros.
-- **Lab e Claude Code.** Os apps do lab: publicar, reiniciar, parar, cancelar o que está em andamento, apagar (container e imagem, o código para a lixeira por 30 dias, ou os dados), restaurar da lixeira e rodar um comando dentro do app. Manda trabalhos ao Claude Code (conta, modelo, esforço, tempo, só planejar, publicar quando terminar) e mostra os trabalhos de todos os clientes, inclusive os da Atena, com o resumo; dá para cancelar qualquer um.
+- **Agenda.** O agendador fica no próprio painel (criar timers do systemd exigiria root): uma vez, toda semana ou todo mês, rodando só as ações da lista de agendáveis (ligar, desligar e reiniciar o PC, reiniciar um serviço, reiniciar, parar e publicar um app do lab). Com o painel fora do ar na hora marcada, ao voltar ele roda o que atrasou até a tolerância (15 min por padrão); passou disso, a vez fica perdida. O aviso no celular (sempre, só se falhar ou nunca) sai pelo executor, porque o painel não tem rede.
+- **Stacks de apps e arquivos.** O editor das stacks da zona apps grava pelo executor, que guarda uma foto antes de cada edição e recusa um compose com erro; o arquivo chega com os segredos ocultos, e o trecho que você muda não pode ter um segredo oculto. A aba Arquivos navega, procura e baixa texto do servidor, menos os segredos, como a Atena.
+- **Pendências.** Uma lista no Início com as suas pendências e, quando o servidor tem `/opt/atena/README.md`, as da seção "Pendências conhecidas", que ficam resolvidas quando saem de lá.
+- **Lab e Claude Code.** Os apps do lab: publicar, reiniciar, parar, cancelar o que está em andamento, apagar (container e imagem, o código para a lixeira por 30 dias, ou os dados), restaurar da lixeira e rodar um comando dentro do app. Manda trabalhos ao Claude Code (conta, modelo, esforço, tempo, só planejar, publicar quando terminar) e mostra os trabalhos de todos os clientes, inclusive os da Atena, com o resumo; dá para cancelar ou continuar qualquer um.
 - **Sistema.** Temperaturas, ventoinhas e GPU; os processos que mais usam CPU ou RAM; os endereços e as portas abertas, cada uma com o alcance (só o servidor, containers, rede de casa, Tailscale ou todas as redes); e o registro do systemd por unidade, gravidade e período. Só leitura, com os segredos ocultos.
 - **Sem dependências.** Node 22, que já roda TypeScript e traz o SQLite: nenhum pacote do npm. O código fica na stack (`stacks/core/painel/app`), e o instalador atualiza a cada execução.
 - **Dados.** Banco SQLite em `/srv/core/painel/painel.db`: as sessões (só o hash do token), as tentativas de entrada e o histórico de 90 dias das ações que mudam algo.
