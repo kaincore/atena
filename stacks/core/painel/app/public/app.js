@@ -1,4 +1,8 @@
 // Interface do painel: telas montadas com elementos (nunca innerHTML com dados do servidor).
+// O visual é o de um aparelho (estilo.css); os desenhos do visor ficam em visor.js.
+import { iniciarPaleta } from "./paleta.js";
+import { picto } from "./pictos.js";
+import { seteSegmentos, vistaExplodida, visorAgenda, visorInicio, visorPC, visorSistema } from "./visor.js";
 
 const NOMES = {
   "servico.reiniciar": "Reiniciar serviço",
@@ -111,8 +115,39 @@ function medidor(fracao, alerta = 0.85) {
   return h("div", { class: `medidor${pct >= alerta ? " alto" : ""}` }, barra);
 }
 
+// um módulo do aparelho: o título e, à direita, a etiqueta com o que ele mede (sempre dado de verdade)
+function modulo(titulo, codigo, ...conteudo) {
+  return h("section", { class: "modulo" },
+    h("header", { class: "modulo-topo" }, h("h2", null, titulo),
+      h("span", { class: "etiqueta" }, codigo && h("span", { class: "codigo" }, codigo))), ...conteudo);
+}
+
+// o código de peça de cada módulo: a tela e a posição dele no painel (IN-01 é o primeiro do Início),
+// refeito sempre que um módulo entra, sai ou se refaz sozinho
+const PREFIXOS = {
+  inicio: "IN", aprovacoes: "AP", agenda: "AG", servicos: "SV", sistema: "SY", arquivos: "AR",
+  pc: "PC", lab: "LB", atividade: "AT", historico: "HI", ajustes: "AJ",
+};
+
+function numerarModulos() {
+  const prefixo = PREFIXOS[$("#tela").dataset.tela] ?? "AT";
+  [...document.querySelectorAll("#tela > .modulo")].forEach((m, i) => {
+    const etiqueta = m.querySelector(".modulo-topo .etiqueta");
+    if (!etiqueta) return;
+    const codigo = `${prefixo}-${String(i + 1).padStart(2, "0")}`;
+    const peca = etiqueta.querySelector(".peca") ?? etiqueta.appendChild(h("span", { class: "peca" }));
+    if (peca.textContent !== codigo) peca.textContent = codigo;
+  });
+}
+new MutationObserver(numerarModulos).observe($("#tela"), { childList: true });
+
 function cartao(titulo, ...conteudo) {
-  return h("section", { class: "cartao" }, h("h2", null, titulo), ...conteudo);
+  return modulo(titulo, null, ...conteudo);
+}
+
+// um número em 7 segmentos num visorzinho dentro do módulo
+function mostrador(texto, unidade) {
+  return h("div", { class: "mostrador-numero" }, seteSegmentos(texto), unidade && h("span", { class: "celula-unidade" }, unidade));
 }
 
 function falha(r) {
@@ -123,9 +158,45 @@ function linha(rotulo, valor, extra) {
   return h("div", { class: "linha" }, h("span", { class: "rotulo" }, rotulo), h("span", null, valor), extra);
 }
 
+const containerOk = (c) => c.estado === "running" && !/unhealthy/.test(c.status);
+
+
 function estadoContainer(c) {
-  const ok = c.estado === "running" && !/unhealthy/.test(c.status);
+  const ok = containerOk(c);
   return h("span", { class: `selo ${ok ? "ok" : "ruim"}` }, ok ? "no ar" : c.estado === "running" ? "com problema" : c.estado);
+}
+
+// --- as zonas: a vista explodida e os LEDs do topo ---
+
+let stacksVistas = []; // a paleta oferece logs e reiniciar dessas
+let zonaEmFoco = null;
+
+function resumirZonas(lista) {
+  const zonas = new Map();
+  for (const c of lista) {
+    if (!zonas.has(c.zona)) zonas.set(c.zona, { zona: c.zona, total: 0, problemas: [] });
+    const z = zonas.get(c.zona);
+    z.total++;
+    if (!containerOk(c)) z.problemas.push(c.container);
+  }
+  stacksVistas = [...new Set(lista.map((c) => `${c.zona}/${c.stack}`))];
+  return [...zonas.values()].sort((a, b) => ORDEM_ZONAS.indexOf(a.zona) - ORDEM_ZONAS.indexOf(b.zona));
+}
+
+function marcarZonas(zonas) {
+  for (const caixa of document.querySelectorAll(".leds-zonas")) {
+    caixa.replaceChildren(...zonas.map((z, i) => {
+      const led = h("span", { class: `led ${z.problemas.length ? "ruim" : "ok"}` });
+      led.style.setProperty("--i", i);
+      return h("span", { class: "led-zona", title: `${z.zona}: ${z.total - z.problemas.length} de ${z.total} no ar` }, led, h("span", null, z.zona));
+    }));
+  }
+}
+
+function abrirZona(zona) {
+  zonaEmFoco = zona;
+  if (telaAtual() === "servicos") atualizar();
+  else location.hash = "#servicos";
 }
 
 // --- telas ------------------------------------------------------------------------------------
@@ -191,37 +262,34 @@ async function telaInicio() {
   if (recursos.ok === false) cartoes.push(cartao("Servidor", falha(recursos)));
   else {
     const r = recursos.resultado;
-    const usada = r.ram_total_mb - r.ram_disponivel_mb;
-    cartoes.push(cartao("Servidor",
-      linha("CPU (carga)", `${r.carga[0].toFixed(2)} / ${r.nucleos} núcleos`), medidor(r.carga[0] / r.nucleos),
-      linha("RAM", `${gb(usada)} de ${gb(r.ram_total_mb)}`), medidor(usada / r.ram_total_mb),
-      ...Object.entries(r.discos).map(([ponto, d]) => [
+    const servidor = modulo("Servidor", `${r.nucleos} núcleos · ${gb(r.ram_total_mb)}`,
+      visorInicio(r),
+      h("div", { class: "discos" }, Object.entries(r.discos).map(([ponto, d]) => [
         linha(`Disco ${ponto}`, `${d.livre_gb} GB livres de ${d.total_gb} GB`), medidor(1 - d.livre_gb / d.total_gb, 0.9),
-      ]),
-      r.gpu && [linha("GPU", `${r.gpu.uso_pct}% · ${r.gpu.vram_usada_mb} de ${r.gpu.vram_total_mb} MB · ${r.gpu.temperatura_c} °C`),
-        medidor(r.gpu.vram_usada_mb / r.gpu.vram_total_mb)],
-      linha("Temperatura", [r.temperaturas.cpu_c != null && `CPU ${r.temperaturas.cpu_c} °C`,
-        r.temperaturas.nvme_c != null && `NVMe ${r.temperaturas.nvme_c} °C`].filter(Boolean).join(" · ") || "sem leitura"),
-    ));
+      ])));
+    servidor.classList.add("largo");
+    cartoes.push(servidor);
   }
 
-  if (servicos.ok === false) cartoes.push(cartao("Serviços", falha(servicos)));
+  if (servicos.ok === false) cartoes.push(cartao("Zonas", falha(servicos)));
   else {
     const lista = servicos.resultado;
-    const ruins = lista.filter((c) => c.estado !== "running" || /unhealthy/.test(c.status));
-    cartoes.push(cartao("Serviços",
-      h("p", { class: "destaque" }, `${lista.length - ruins.length} de ${lista.length} containers no ar`),
+    const zonas = resumirZonas(lista);
+    marcarZonas(zonas);
+    const ruins = lista.filter((c) => !containerOk(c));
+    const desenho = modulo("Zonas", `${lista.length - ruins.length} de ${lista.length} no ar`,
+      vistaExplodida(zonas, abrirZona),
       ruins.length ? h("ul", { class: "lista" }, ruins.map((c) => h("li", null, estadoContainer(c), ` ${c.container} `, h("small", null, c.status))))
-        : h("p", { class: "fraco" }, "Tudo funcionando."),
-      h("a", { href: "#servicos" }, "Ver todos"),
-    ));
+        : h("p", { class: "fraco" }, "Todos os containers no ar. Toque numa zona para ver os serviços dela."),
+      h("a", { href: "#servicos" }, "Ver os serviços"));
+    cartoes.push(desenho);
   }
 
   if (gasto.ok === false) cartoes.push(cartao("Gasto de IA", falha(gasto)));
   else {
     const g = gasto.resultado;
-    cartoes.push(cartao(`Gasto de IA em ${g.mes}`,
-      h("p", { class: "destaque" }, dinheiro(g.total_usd)),
+    cartoes.push(modulo("Gasto de IA", g.mes,
+      mostrador(Number(g.total_usd).toFixed(2), "US$ no mês"),
       g.por_modelo.filter((m) => m.gasto_usd > 0 || m.teto_usd).map((m) => [
         linha(m.modelo, `${dinheiro(m.gasto_usd)}${m.teto_usd ? ` de ${dinheiro(m.teto_usd)}` : ""} · ${m.chamadas} chamadas`),
         m.teto_usd ? medidor(m.gasto_usd / m.teto_usd) : null,
@@ -233,7 +301,7 @@ async function telaInicio() {
   if (sistema.ok === false) cartoes.push(cartao("Sistema", falha(sistema)));
   else {
     const s = sistema.resultado;
-    cartoes.push(cartao("Sistema",
+    cartoes.push(modulo("Sistema", s.falhas.length ? `${s.falhas.length} com falha` : `${s.timers.length} timers`,
       s.falhas.length ? h("ul", { class: "lista" }, s.falhas.map((u) => h("li", null, h("span", { class: "selo ruim" }, "falhou"), ` ${u}`)))
         : h("p", { class: "fraco" }, "Nenhuma unidade do systemd com falha."),
       h("details", null, h("summary", null, `Timers (${s.timers.length})`),
@@ -295,7 +363,7 @@ function janelaEditor(stack) {
     if (r.ok === false) return lista.replaceChildren(falha(r), semAcao(r, "arquivo.ler") ?? "");
     const itens = r.resultado.itens ?? [];
     lista.replaceChildren(h("ul", { class: "lista arquivos" },
-      sub && h("li", null, h("a", { href: "#servicos", onclick: (e) => { e.preventDefault(); listar(sub.replace(/\/?[^/]+$/, "")); } }, "↑ pasta de cima")),
+      sub && h("li", null, h("a", { href: "#servicos", onclick: (e) => { e.preventDefault(); listar(sub.replace(/\/?[^/]+$/, "")); } }, "Pasta de cima")),
       itens.map((n) => {
         const pasta = n.endsWith("/");
         const rel = (sub ? `${sub}/` : "") + n.replace(/\/$/, "");
@@ -318,7 +386,7 @@ function janelaEditor(stack) {
     const original = r.resultado.texto;
     const area = h("textarea", { class: "codigo", rows: "18", spellcheck: "false", autocapitalize: "off" }, original);
     editor.replaceChildren(h("h3", null, rel), area,
-      h("div", { class: "botoes" }, h("button", { type: "button", onclick: async () => {
+      h("div", { class: "botoes" }, h("button", { type: "button", class: "principal", onclick: async () => {
         const troca = trocaDoEditor(original, area.value);
         if (!troca) return avisar("Nada mudou.");
         if (troca.erro) return avisar(troca.erro, "erro");
@@ -367,7 +435,16 @@ async function telaServicos() {
   const zonas = {};
   for (const c of servicos.resultado) ((zonas[c.zona] ??= {})[c.stack] ??= []).push(c);
   const ordem = Object.keys(zonas).sort((a, b) => ORDEM_ZONAS.indexOf(a) - ORDEM_ZONAS.indexOf(b));
-  return ordem.map((zona) => cartao(`Zona ${zona}`,
+  const resumo = resumirZonas(servicos.resultado);
+  marcarZonas(resumo);
+  const desenho = modulo("Vista explodida", `${resumo.length} zonas · ${servicos.resultado.length} containers`, vistaExplodida(resumo, abrirZona));
+  const foco = zonaEmFoco;
+  zonaEmFoco = null;
+  if (foco) requestAnimationFrame(() => document.getElementById(`zona-${foco}`)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  return [desenho, ordem.map((zona) => {
+    const stacks = Object.keys(zonas[zona]).length;
+    const containers = Object.values(zonas[zona]).flat().length;
+    const m = modulo(`Zona ${zona}`, `${stacks} ${stacks === 1 ? "stack" : "stacks"} · ${containers} containers`,
     Object.entries(zonas[zona]).sort(([a], [b]) => a.localeCompare(b)).map(([stack, containers]) =>
       h("div", { class: "stack" },
         h("div", { class: "stack-topo" },
@@ -381,26 +458,34 @@ async function telaServicos() {
         h("ul", { class: "lista" }, containers.map((c) => h("li", null,
           estadoContainer(c), ` ${c.container} `,
           h("small", null, [c.status, consumo[c.container] && `CPU ${consumo[c.container].cpu} · RAM ${consumo[c.container].ram}`].filter(Boolean).join(" · "))))),
-      )),
-  ));
+      )));
+    m.id = `zona-${zona}`;
+    return m;
+  })];
 }
+
+let pcLigadoEm = 0; // a cena da ventoinha acelerando vale no primeiro minuto depois de ligar
 
 async function telaPC() {
   const r = await consultar("pc.estado");
   if (r.ok === false) return [cartao("PC gamer", falha(r))];
   const { ligado, lm_studio } = r.resultado;
   const depois = async (resposta) => { if (resposta) setTimeout(atualizar, 3000); };
-  return [cartao("PC gamer",
-    linha("Estado", h("span", { class: `selo ${ligado ? "ok" : "neutro"}` }, ligado ? "ligado" : "desligado")),
-    linha("LM Studio", lm_studio ? "respondendo" : "fora do ar"),
+  const pc = modulo("PC gamer", ligado ? "ligado" : "desligado",
+    visorPC(r.resultado, ligado && Date.now() - pcLigadoEm < 60_000),
     h("div", { class: "botoes grandes" },
-      !ligado && h("button", { type: "button", onclick: async () => depois(await mudar("pc.ligar", {})) }, "Ligar"),
+      !ligado && h("button", { type: "button", class: "principal", onclick: async () => {
+        const x = await mudar("pc.ligar", {});
+        if (x && x.ok !== false) pcLigadoEm = Date.now();
+        depois(x);
+      } }, picto("pc"), "Ligar"),
       ligado && h("button", { type: "button", onclick: async () => depois(await mudar("pc.desligar", {}, "Desligar o PC gamer? Ele desliga em 60 s.")) }, "Desligar"),
       ligado && h("button", { type: "button", onclick: async () => depois(await mudar("pc.reiniciar", {}, "Reiniciar o PC gamer? Ele reinicia em 60 s.")) }, "Reiniciar"),
       ligado && h("button", { type: "button", class: "discreto", onclick: async () => depois(await mudar("pc.cancelar", {})) }, "Cancelar desligamento"),
     ),
     h("p", { class: "fraco" }, "Ligar leva uns 25 s; o LM Studio sobe uns 25 s depois."),
-  )];
+  );
+  return [pc];
 }
 
 // --- lab: os apps que o Claude Code fez e os trabalhos dele ------------------------------------------
@@ -445,7 +530,7 @@ function janelaComando(projeto) {
         h("pre", { class: "log" }, r.resultado.saida || "(sem saída)"),
         r.resultado.dica && h("p", { class: "fraco" }, r.resultado.dica),
       ].filter(Boolean)));
-    } }, campo, h("button", { type: "submit" }, "Rodar")),
+    } }, campo, h("button", { type: "submit", class: "principal" }, "Rodar")),
     saida);
   campo.focus();
 }
@@ -547,7 +632,7 @@ function cartaoNovoTrabalho(trabalhos, projetos) {
       h("div", { class: "filtros" },
         marcar("somente_plano", "só planejar (não muda nada)"),
         marcar("publicar", "publicar quando terminar bem")),
-      h("button", { type: "submit", disabled: !contas.length }, continuando ? "Continuar" : "Mandar")),
+      h("button", { type: "submit", class: "principal", disabled: !contas.length }, continuando ? "Continuar" : "Mandar")),
     h("p", { class: "fraco" }, "O Claude Code trabalha sozinho na pasta do projeto, sem sudo e sem Docker. As permissões e perguntas dele aparecem em Aprovações e no celular."));
   return c;
 }
@@ -595,7 +680,7 @@ async function telaHistorico() {
     r = await api("GET", "/api/historico");
   }
   if (r.ok === false) return [cartao("Histórico", falha(r))];
-  return [cartao("Histórico (90 dias)", r.historico.length ? h("ul", { class: "lista historico" }, r.historico.map((x) => {
+  const historico = cartao("Histórico (90 dias)", r.historico.length ? h("ul", { class: "lista historico" }, r.historico.map((x) => {
     const params = Object.values(JSON.parse(x.params)).join(", ");
     const ok = x.estado === "concluido";
     return h("li", null,
@@ -603,7 +688,9 @@ async function telaHistorico() {
       ` ${NOMES[x.acao] ?? x.acao}${params ? ` (${params})` : ""} `,
       h("small", null, data(x.quando)),
       x.resumo && h("div", { class: "fraco resumo" }, x.resumo));
-  })) : h("p", { class: "fraco" }, "Nenhuma ação feita pelo painel ainda."))];
+  })) : h("p", { class: "fraco" }, "Nenhuma ação feita pelo painel ainda."));
+  historico.classList.add("largo");
+  return [historico];
 }
 
 async function telaAjustes() {
@@ -640,10 +727,29 @@ function semCentral(r) {
   return h("p", { class: "fraco" }, "A central precisa do executor novo e das ações aprovacoes.lista, aprovacoes.decidir e atividade.lista no token do painel (rode o instalador com --painel).");
 }
 
+let pendentes = 0;
+
+// a contagem vai para a tecla das Aprovações (trilho e "Mais"), para o "Mais" da barra e para o título;
+// quando cresce, a faixa amarela aparece (ou pulsa) na tela aberta
 function marcarPendentes(n) {
-  const aba = document.querySelector('.abas a[href="#aprovacoes"]');
-  if (aba) aba.textContent = n ? `Aprovações (${n})` : "Aprovações";
+  const cresceu = n > pendentes;
+  pendentes = n;
+  for (const el of document.querySelectorAll('[data-tela="aprovacoes"], [data-tela="mais"]')) {
+    el.querySelector(".contagem")?.remove();
+    if (n) el.append(h("span", { class: "contagem", "aria-label": `${n} esperando` }, String(n)));
+  }
   document.title = n ? `(${n}) Atena` : "Atena";
+  const atual = $("#tela .faixa");
+  const nova = faixaAprovacoes(cresceu);
+  if (atual) atual.replaceWith(nova ?? "");
+  else if (nova && $("#entrada").hidden) $("#tela").prepend(nova);
+}
+
+function faixaAprovacoes(pulsar = false) {
+  if (!pendentes || telaAtual() === "aprovacoes") return null;
+  return h("a", { class: `faixa${pulsar ? " pulsa" : ""}`, href: "#aprovacoes" },
+    h("strong", null, picto("aprovacoes"), ` ${pendentes} ${pendentes === 1 ? "aprovação esperando" : "aprovações esperando"} você`),
+    h("span", { class: "rotulo" }, "ver", picto("seguir")));
 }
 
 async function contarPendentes() {
@@ -672,7 +778,7 @@ function cartaoPendente(p) {
       h("form", { class: "resposta", onsubmit: (evento) => {
         evento.preventDefault();
         if (campo.value.trim()) decidirPedido(p, "responder", campo.value.trim());
-      } }, campo, h("button", { type: "submit" }, "Responder")));
+      } }, campo, h("button", { type: "submit", class: "principal" }, "Responder")));
   }
   const params = Object.entries(p.params ?? {});
   return cartao(p.titulo ?? p.acao, meta,
@@ -680,7 +786,7 @@ function cartaoPendente(p) {
     params.length > 0 && h("details", null, h("summary", null, "Parâmetros"),
       h("ul", { class: "lista" }, params.map(([k, v]) => h("li", null, h("span", { class: "rotulo" }, `${k}: `), v)))),
     h("div", { class: "botoes grandes" },
-      h("button", { type: "button", onclick: () => decidirPedido(p, "aprovar") }, "Aprovar"),
+      h("button", { type: "button", class: "principal", onclick: () => decidirPedido(p, "aprovar") }, "Aprovar"),
       h("button", { type: "button", class: "discreto", onclick: () => decidirPedido(p, "recusar") }, "Recusar")));
 }
 
@@ -769,7 +875,8 @@ async function cartaoSensores() {
   const c = r.ok === false ? cartao("Sensores", falha(r), semAcao(r, "sistema.sensores")) : (() => {
     const s = r.resultado;
     const placa = s.placa ?? {};
-    return cartao("Sensores",
+    const m = modulo("Sensores", s.avaliacao,
+      visorSistema(s),
       linha("Avaliação", h("span", { class: `selo ${s.avaliacao === "normal" ? "ok" : "ruim"}` }, s.avaliacao)),
       grau("CPU", s.cpu.temperatura_c, s.cpu.quente_a_partir_de_c),
       s.cpu.nucleos_c && linha("Núcleos", Object.entries(s.cpu.nucleos_c).map(([n, t]) => `${n} ${t} °C`).join(" · ")),
@@ -782,6 +889,8 @@ async function cartaoSensores() {
         h("ul", { class: "lista" }, Object.entries(placa.temperaturas_c).map(([n, t]) => h("li", null, `${n}: ${t} °C`)))),
       placa.obs && h("p", { class: "fraco" }, placa.obs),
       s.cpu.quente_a_partir_de_c && h("p", { class: "fraco" }, `As barras enchem até o ponto de alerta (CPU ${s.cpu.quente_a_partir_de_c} °C).`));
+    m.classList.add("largo");
+    return m;
   })();
   c.append(botaoAtualizar(async () => c.replaceWith(await cartaoSensores())));
   return c;
@@ -922,7 +1031,6 @@ async function cartaoRegistro() {
     r.ok === false ? [falha(r), semAcao(r, "servico.journal")]
       : log || h("p", { class: "fraco" }, "Nada no registro com esse filtro."),
     h("p", { class: "fraco" }, "As linhas mais novas ficam embaixo. Segredos saem ocultos."));
-  c.classList.add("largo");
   if (log) requestAnimationFrame(() => { log.scrollTop = log.scrollHeight; }); // já na tela: rola até o mais novo
   return c;
 }
@@ -1016,15 +1124,16 @@ function cartaoNovoAgendamento(agendaveis, stacks, projetos) {
         a.tipo === "mes" && h("label", null, "dia ", h("input", { type: "number", name: "dia", min: "1", max: "31", value: String(a.dia), required: true })),
         a.tipo !== "uma_vez" && h("label", null, "às ", h("input", { type: "time", name: "hora", value: a.hora, required: true }))),
       a.tipo === "semana" && h("div", { class: "filtros" },
-        DIAS.map((d, i) => h("label", { class: "opcao" }, h("input", { type: "checkbox", name: "dias", value: String(i), checked: a.dias.includes(i) }), ` ${d}`)),
-        h("button", { type: "button", class: "discreto", onclick: dias([1, 2, 3, 4, 5]) }, "dias úteis"),
-        h("button", { type: "button", class: "discreto", onclick: dias([0, 1, 2, 3, 4, 5, 6]) }, "todo dia")),
+        DIAS.map((d, i) => h("label", { class: "opcao" }, h("input", { type: "checkbox", name: "dias", value: String(i), checked: a.dias.includes(i) }), ` ${d}`))),
+      a.tipo === "semana" && h("div", { class: "botoes" },
+        h("button", { type: "button", class: "discreto", onclick: dias([1, 2, 3, 4, 5]) }, "Dias úteis"),
+        h("button", { type: "button", class: "discreto", onclick: dias([0, 1, 2, 3, 4, 5, 6]) }, "Todo dia")),
       h("div", { class: "filtros" },
         h("label", null, "Aviso no celular ", opcoes("aviso", Object.entries(NOMES_AVISO))),
         h("label", null, "Se o painel estiver fora do ar, roda até ", opcoes("tolerancia", [[5, "5 min"], [15, "15 min"], [60, "1 h"], [240, "4 h"]]), " depois")),
       h("label", null, "Nome ", h("input", { name: "nome", value: a.nome, maxlength: "80", placeholder: "automático", autocomplete: "off" })),
       h("div", { class: "botoes" },
-        h("button", { type: "submit" }, a.id ? "Gravar" : "Agendar"),
+        h("button", { type: "submit", class: "principal" }, a.id ? "Gravar" : "Agendar"),
         a.id && h("button", { type: "button", class: "discreto", onclick: () => { agenda = agendaVazia(); refazer(); } }, "Cancelar edição"))),
     h("p", { class: "fraco" }, "Passou da tolerância, a vez fica perdida e o celular fica sabendo: um \"ligar o PC às 19h\" não roda às 3h da manhã."));
   return c;
@@ -1041,6 +1150,7 @@ function itemAgendamento(a) {
     const r = await api("POST", caminho, corpo);
     if (r.ok === false) return avisar(r.erro, "erro");
     if (caminho.endsWith("/rodar")) {
+      agendaRodouEm = Date.now();
       avisar(`${a.nome}: começou`, "ok");
       setTimeout(atualizar, 3000);
     } else atualizar();
@@ -1067,13 +1177,18 @@ function itemAgendamento(a) {
         x.resumo && h("div", { class: "fraco resumo" }, x.resumo))))));
 }
 
+let agendaRodouEm = 0;
+
 async function telaAgenda() {
   const [r, servicos, apps] = await Promise.all([api("GET", "/api/agendamentos"), consultar("status.servicos"), consultar("app.lista")]);
   if (r.ok === false) return [cartao("Agenda", falha(r))];
   // reiniciar o próprio painel no meio de um agendamento cortaria o agendador
   const stacks = servicos.ok === false ? [] : [...new Set(servicos.resultado.map((c) => c.stack))].filter((s) => s !== "painel").sort();
   const projetos = apps.ok === false ? [] : apps.resultado.projetos.map((p) => p.projeto);
+  const rodando = Date.now() - agendaRodouEm < 8000 || r.agendamentos.some((a) => a.execucoes[0]?.estado === "executando");
+  const mostradorAgenda = modulo("Agenda", `${r.agendamentos.filter((a) => a.ativo).length} ativos`, visorAgenda(r.agendamentos, rodando));
   return [
+    mostradorAgenda,
     cartaoNovoAgendamento(r.agendaveis, stacks, projetos),
     cartao("Agendamentos", r.agendamentos.length ? h("ul", { class: "lista" }, r.agendamentos.map(itemAgendamento))
       : h("p", { class: "fraco" }, "Nada agendado ainda.")),
@@ -1157,7 +1272,7 @@ async function telaArquivos() {
   const pai = pasta === "/" ? null : pasta.replace(/\/[^/]+$/, "") || "/";
   const lista = cartao("Arquivos", barra,
     h("ul", { class: "lista arquivos" },
-      pai && h("li", null, h("a", { href: "#arquivos", onclick: (e) => { e.preventDefault(); navegar(pai); } }, "↑ pasta de cima")),
+      pai && h("li", null, h("a", { href: "#arquivos", onclick: (e) => { e.preventDefault(); navegar(pai); } }, "Pasta de cima")),
       r.resultado.itens.map((n) => {
         const ehPasta = n.endsWith("/");
         const caminho = `${pasta === "/" ? "" : pasta}/${n.replace(/\/$/, "")}`;
@@ -1179,7 +1294,63 @@ const TELAS = {
 // de quantos em quantos tiques (10 s) cada tela se atualiza sozinha
 const ATUALIZAM_SOZINHAS = { aprovacoes: 1, inicio: 3, servicos: 3, pc: 3 };
 
-// --- navegação --------------------------------------------------------------------------------
+// --- navegação: uma lista só para o trilho (PC), a barra e o "Mais" (celular) e a paleta -----------
+
+const NAV = [
+  { tela: "inicio", nome: "Início", grupo: "hoje", barra: true },
+  { tela: "aprovacoes", nome: "Aprovações", grupo: "hoje" },
+  { tela: "agenda", nome: "Agenda", grupo: "hoje", barra: true },
+  { tela: "servicos", nome: "Serviços", grupo: "servidor", barra: true },
+  { tela: "sistema", nome: "Sistema", grupo: "servidor" },
+  { tela: "arquivos", nome: "Arquivos", grupo: "servidor" },
+  { tela: "pc", nome: "PC", grupo: "máquina", barra: true },
+  { tela: "lab", nome: "Lab", grupo: "máquina" },
+  { tela: "atividade", nome: "Atividade", grupo: "registro" },
+  { tela: "historico", nome: "Histórico", grupo: "registro" },
+  { tela: "ajustes", nome: "Ajustes", grupo: "conta" },
+];
+const ORDEM_BARRA = ["inicio", "pc", "agenda", "servicos"];
+
+const tecla = (n, classe) => h("a", { href: `#${n.tela}`, "data-tela": n.tela, class: classe }, picto(n.tela), h("span", null, n.nome));
+
+function montarNavegacao() {
+  const grupos = [...new Set(NAV.map((n) => n.grupo))];
+  $("#trilho-grupos").replaceChildren(...grupos.map((g) => h("div", { class: "trilho-grupo" },
+    h("h2", null, g), NAV.filter((n) => n.grupo === g).map((n) => tecla(n)))));
+  $("#barra").replaceChildren(
+    ...ORDEM_BARRA.map((t) => tecla(NAV.find((n) => n.tela === t))),
+    h("button", { type: "button", "data-tela": "mais", onclick: () => $("#mais").showModal() }, picto("mais"), h("span", null, "Mais")));
+  $("#mais-teclas").replaceChildren(
+    ...NAV.filter((n) => !n.barra).map((n) => tecla(n)),
+    h("a", { href: "#", onclick: (e) => { e.preventDefault(); $("#mais").close(); abrirPaleta(); } }, picto("buscar"), h("span", null, "Buscar")));
+  $("#mais-teclas").addEventListener("click", (e) => { if (e.target.closest("a[data-tela]")) $("#mais").close(); });
+  $("#mais-fechar").addEventListener("click", () => $("#mais").close());
+}
+
+function marcarAtiva(nome) {
+  for (const el of document.querySelectorAll("[data-tela]")) el.classList.toggle("ativa", el.dataset.tela === nome);
+  const naBarra = ORDEM_BARRA.includes(nome);
+  document.querySelector('#barra [data-tela="mais"]')?.classList.toggle("ativa", !naBarra);
+}
+
+// Ctrl+K: as telas, as ações do PC e, por stack que o painel já viu, logs e reiniciar
+const abrirPaleta = iniciarPaleta($("#paleta"), () => [
+  ...NAV.map((n) => ({ titulo: n.nome, grupo: "tela", picto: n.tela, acao: () => { location.hash = `#${n.tela}`; } })),
+  { titulo: "Ligar o PC", grupo: "pc", picto: "pc", acao: () => mudar("pc.ligar", {}).then((x) => { if (x && x.ok !== false) pcLigadoEm = Date.now(); }) },
+  { titulo: "Desligar o PC", grupo: "pc", picto: "pc", acao: () => mudar("pc.desligar", {}, "Desligar o PC gamer? Ele desliga em 60 s.") },
+  { titulo: "Reiniciar o PC", grupo: "pc", picto: "pc", acao: () => mudar("pc.reiniciar", {}, "Reiniciar o PC gamer? Ele reinicia em 60 s.") },
+  { titulo: "Novo agendamento", grupo: "agenda", picto: "agenda", acao: () => { location.hash = "#agenda"; } },
+  { titulo: "Novo trabalho do Claude Code", grupo: "lab", picto: "lab", acao: () => { location.hash = "#lab"; } },
+  ...stacksVistas.flatMap((zs) => {
+    const [zona, stack] = zs.split("/");
+    return [
+      { titulo: `Logs de ${stack}`, grupo: zona, picto: "servicos", acao: () => verLogs(stack) },
+      { titulo: `Reiniciar ${stack}`, grupo: zona, picto: "servicos", acao: () => mudar("servico.reiniciar", { stack }, `Reiniciar ${stack}?`) },
+      zona === "apps" && { titulo: `Editar a stack ${stack}`, grupo: zona, picto: "servicos", acao: () => janelaEditor(stack) },
+    ].filter(Boolean);
+  }),
+  { titulo: "Sair deste aparelho", grupo: "conta", picto: "sair", acao: async () => { await api("POST", "/api/sair", {}); mostrarEntrada(); } },
+]);
 
 let geracao = 0;
 
@@ -1191,7 +1362,7 @@ function telaAtual() {
 async function atualizar() {
   const nome = telaAtual();
   const minha = ++geracao;
-  for (const a of document.querySelectorAll(".abas a")) a.classList.toggle("ativa", a.getAttribute("href") === `#${nome}`);
+  marcarAtiva(nome);
   const tela = $("#tela");
   if (!tela.dataset.tela || tela.dataset.tela !== nome) {
     tela.dataset.tela = nome;
@@ -1199,7 +1370,7 @@ async function atualizar() {
   }
   const conteudo = await TELAS[nome]();
   if (minha !== geracao || !$("#entrada").hidden) return; // outra tela foi aberta enquanto esta carregava
-  tela.replaceChildren(...conteudo.flat(Infinity).filter(Boolean));
+  tela.replaceChildren(...[faixaAprovacoes(), conteudo].flat(Infinity).filter(Boolean));
 }
 
 function abrirJanela(titulo, ...conteudo) {
@@ -1209,18 +1380,23 @@ function abrirJanela(titulo, ...conteudo) {
 }
 
 function mostrarEntrada() {
-  $(".topo").hidden = true;
+  $(".aparelho").hidden = true;
   $("#tela").replaceChildren();
   delete $("#tela").dataset.tela;
   $("#entrada").hidden = false;
   $("#senha").focus();
 }
 
-function mostrarPainel() {
+// ao entrar, os LEDs das zonas varrem uma vez: o único momento de abertura
+async function mostrarPainel() {
   $("#entrada").hidden = true;
-  $(".topo").hidden = false;
+  $(".aparelho").hidden = false;
   atualizar();
   if (telaAtual() !== "aprovacoes") contarPendentes();
+  const servicos = await consultar("status.servicos");
+  if (servicos.ok !== false) marcarZonas(resumirZonas(servicos.resultado));
+  $(".aparelho").classList.add("ligando");
+  setTimeout(() => $(".aparelho").classList.remove("ligando"), 1400);
 }
 
 $("#form-entrada").addEventListener("submit", async (evento) => {
@@ -1239,6 +1415,8 @@ $("#form-entrada").addEventListener("submit", async (evento) => {
 });
 
 $("#janela-fechar").addEventListener("click", () => $("#janela").close());
+$("#abrir-paleta").addEventListener("click", () => abrirPaleta());
+montarNavegacao();
 addEventListener("hashchange", atualizar);
 let tiques = 0;
 setInterval(() => {
