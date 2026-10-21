@@ -235,3 +235,48 @@ export function visorSistema(sens) {
   }
   return visor(...celulas);
 }
+
+// --- vista explodida: cada zona é uma placa do aparelho, com um LED por container ----------------------------
+
+const ALTURA_PLACA = 50;
+
+export function vistaExplodida(zonas, aoEscolher) {
+  const largura = 360;
+  const altura = 26 + zonas.length * ALTURA_PLACA;
+  const total = zonas.reduce((n, z) => n + z.total, 0);
+  const placas = zonas.map((z, i) => {
+    const y = 34 + i * ALTURA_PLACA;
+    const ruins = z.problemas.length;
+    const topo = `M14 ${y} L134 ${y} L162 ${y - 16} L42 ${y - 16} Z`;
+    const frente = `M14 ${y} L134 ${y} L134 ${y + 8} L14 ${y + 8} Z`;
+    const lado = `M134 ${y} L162 ${y - 16} L162 ${y - 8} L134 ${y + 8} Z`;
+    const leds = Array.from({ length: Math.min(z.total, 12) }, (_, k) => s("circle", {
+      cx: 22 + k * 9.5, cy: y + 4, r: 2.1, class: `led-desenho ${k < z.total - ruins ? "ok" : "ruim"}`,
+    }));
+    const grupo = s("g", { class: `placa ${ruins ? "com-problema" : ""}`, tabindex: 0, role: "link", "aria-label": `zona ${z.zona}: ${z.total - ruins} de ${z.total} no ar` },
+      s("path", { d: topo, class: "face tampo" }),
+      s("path", { d: lado, class: "face lado" }),
+      s("path", { d: frente, class: "face borda" }),
+      leds,
+      z.total > 12 && s("text", { x: 22 + 12 * 9.5, y: y + 6.5, class: "mais" }, `+${z.total - 12}`),
+      // linha de chamada até o rótulo
+      s("path", { d: `M162 ${y - 12} L186 ${y - 12} L194 ${y - 4} L206 ${y - 4}`, class: "chamada" }),
+      s("circle", { cx: 162, cy: y - 12, r: 1.6, class: "ponta" }),
+      s("text", { x: 210, y: y - 6, class: "rotulo-zona" }, z.zona.toUpperCase()),
+      s("text", { x: 210, y: y + 7, class: "conta" }, `${z.total - ruins}/${z.total}`),
+      ruins > 0 && s("text", { x: 248, y: y + 7, class: "problema" },
+        z.problemas.slice(0, 2).map((n) => (n.length > 13 ? n.slice(0, 12) + "…" : n)).join(", ") + (ruins > 2 ? ` +${ruins - 2}` : "")));
+    if (aoEscolher) {
+      grupo.addEventListener("click", () => aoEscolher(z.zona));
+      grupo.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); aoEscolher(z.zona); } });
+    }
+    return grupo;
+  });
+  // as guias tracejadas do desenho explodido, ligando os cantos das placas
+  const guias = zonas.length > 1 ? [
+    s("line", { x1: 14, y1: 34, x2: 14, y2: 34 + (zonas.length - 1) * ALTURA_PLACA, class: "guia" }),
+    s("line", { x1: 162, y1: 18, x2: 162, y2: 18 + (zonas.length - 1) * ALTURA_PLACA, class: "guia" }),
+  ] : [];
+  return s("svg", { viewBox: `0 0 ${largura} ${altura}`, class: "explodida", role: "group", "aria-label": `vista explodida: ${zonas.length} zonas, ${total} containers` },
+    guias, placas);
+}
