@@ -137,7 +137,7 @@ test("consulta vai ao executor com o token do painel e não entra no histórico"
 test("ação fora da lista do painel nem chega ao executor", async () => {
   const cookie = await entrar();
   recebidos.length = 0;
-  for (const nome of ["stack.editar", "stack.aplicar", "arquivo.ler", "arca.guardar", "claude.responder"]) {
+  for (const nome of ["arquivo.entregar", "local.processar", "arca.guardar", "claude.responder", "aviso.celular"]) {
     const r = await pedir("POST", `/api/acao/${nome}`, { params: {} }, cookie);
     assert.equal(r.status, 403, nome);
   }

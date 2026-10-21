@@ -27,6 +27,10 @@ export const ACOES: Record<string, { muda: boolean }> = {
   "gasto.api": { muda: false },
   "servico.logs": { muda: false },
   "servico.journal": { muda: false },
+  "stack.fotos": { muda: false },
+  "arquivo.ler": { muda: false },
+  "arquivo.procurar": { muda: false },
+  "arquivo.buscar": { muda: false },
   "pc.estado": { muda: false },
   "app.lista": { muda: false },
   "claude.trabalhos": { muda: false },
@@ -47,10 +51,13 @@ export const ACOES: Record<string, { muda: boolean }> = {
   "app.comando": { muda: true },
   "claude.tarefa": { muda: true },
   "claude.cancelar": { muda: true },
+  "stack.editar": { muda: true },
+  "stack.aplicar": { muda: true },
+  "stack.desfazer": { muda: true },
 };
 
 const COOKIE = "atena_sessao";
-const LIMITE_CORPO = 64 * 1024;
+const LIMITE_CORPO = 512 * 1024; // o editor de stacks manda o trecho antes e depois da troca
 const TERMINADOS = new Set(["concluido", "falhou", "recusado", "expirado", "cancelado"]);
 const TIPOS: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
