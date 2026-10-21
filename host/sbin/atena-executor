@@ -39,6 +39,8 @@ fila/<trabalho>-<n>.permissao; o executor manda para o celular com Aprovar/Recus
 decisão em fila/<trabalho>-<n>.resposta. Perguntas do Claude Code chegam como
 fila/<trabalho>-q<n>.pergunta: o celular é avisado na hora (com botões, se houver opções) e a
 resposta volta por claude.responder (do dono, ou da Atena se ele não responder em 10 min).
+Com ATENA_CLAUDE_SKILLS=sim, claude.tarefa aceita uma skill do catálogo do lab (skills.json), que o
+runner chama no começo do pedido.
 app.publicar constrói o projeto pelo Dockerfile e o põe no ar como a stack
 /opt/atena/stacks/lab/lab-<projeto> (porta 8000-8999 na rede de casa e, com Tailscale, também fora
 de casa, pela unidade atena-lab-tailscale-on@<porta>, que o polkit libera ao executor).
@@ -110,6 +112,7 @@ NTFY_TOKEN = "/etc/atena/executor/ntfy-servidor.token"         # publica pedidos
 NTFY_TOKEN_BOTAO = "/etc/atena/executor/ntfy-aprovador.token"  # vai dentro dos botões do celular
 PEDIDOS = "/var/lib/atena-executor/pedidos.json"
 CLAUDE = "/var/lib/atena-claude"              # fila, resultados e contas do Claude Code do lab
+SKILLS_CLAUDE = "/usr/local/lib/atena-claude/skills.json"   # catálogo das skills (o runner lê o mesmo)
 PC_CHAVE = "/etc/atena/executor/pc-chave"     # no Windows, essa chave só desliga, reinicia ou cancela
 PC_HOSTS = "/etc/atena/executor/pc-known-hosts"
 VALIDADE = 10 * 60          # um pedido espera a aprovação por 10 min
@@ -464,6 +467,30 @@ def contas_prontas():
     except (OSError, ValueError, AttributeError):
         return set()
     return prontas & set(contas_claude())
+
+
+def skills_claude():
+    """As skills que a Atena pode mandar o Claude Code rodar no começo do pedido, na ordem do catálogo;
+    nenhuma sem ATENA_CLAUDE_SKILLS=sim (o instalador põe os plugins nas contas)."""
+    if ler_conf().get("ATENA_CLAUDE_SKILLS") != "sim":
+        return []
+    try:
+        with open(SKILLS_CLAUDE) as f:
+            catalogo = json.load(f)
+    except (OSError, ValueError):
+        return []
+    return [n for n, c in catalogo.items() if isinstance(c, str)] if isinstance(catalogo, dict) else []
+
+
+def descrever_skills(nomes):
+    """frontend-design, to-spec ou impeccable <init|polish>: as variações de uma skill juntas."""
+    grupos = {}
+    for nome in nomes:
+        base, _, variacao = nome.partition(" ")
+        grupos.setdefault(base, []).append(variacao)
+    partes = [base if variacoes == [""] else f"{base} <{'|'.join(v for v in variacoes if v)}>"
+              for base, variacoes in grupos.items()]
+    return ", ".join(partes[:-1]) + " ou " + partes[-1] if len(partes) > 1 else partes[0]
 
 
 def enfileirar(p, fase, **extra):
@@ -1994,6 +2021,12 @@ def preparar_claude_tarefa(cliente, params):
         raise Erro(400, "modelo deve ser fable, opus, sonnet ou haiku (ou ficar de fora)")
     if params.get("esforco") is not None and params["esforco"] not in ESFORCOS_CLAUDE:
         raise Erro(400, "esforco deve ser low, medium, high, xhigh ou max (ou ficar de fora)")
+    if params.get("skill") is not None:   # não vem do continuar: cada trabalho escolhe a sua
+        skills = skills_claude()
+        if not skills:
+            raise Erro(400, "as skills do Claude Code não estão ligadas neste servidor (ATENA_CLAUDE_SKILLS)")
+        if params["skill"] not in skills:
+            raise Erro(400, f"skill deve ser {descrever_skills(skills)} (ou ficar de fora)")
     contas = contas_claude()
     if not params.get("conta") and len(contas) == 1:
         params["conta"] = contas[0]
@@ -2011,6 +2044,8 @@ def preparar_claude_tarefa(cliente, params):
     if mesmo_projeto:
         raise Erro(409, f"o projeto {projeto} já tem um trabalho em andamento ({mesmo_projeto[0]['id']})")
     tipo = "plano" if params["somente_plano"] else "trabalho"
+    if params.get("skill"):
+        tipo += f" com a skill {params['skill']}"
     if params["publicar"]:
         tipo += " e publicar"
     return f"Claude Code ({params['conta']}) em {projeto}: {tipo}", f"Pedido: {params['pedido']}"
@@ -2026,11 +2061,13 @@ def acao_claude_tarefa(p):
                pedido=pedido, minutos=params["minutos"], projeto=params["projeto"],
                **({"modelo": params["modelo"]} if params.get("modelo") else {}),
                **({"esforco": params["esforco"]} if params.get("esforco") else {}),
+               **({"skill": params["skill"]} if params.get("skill") else {}),
                **({"sessao": params["sessao"], "sessao_conta": params["sessao_conta"]} if params.get("sessao") else {}))
     segredo = secrets.token_urlsafe(18)
     mudar(p, segredo=segredo)
     avisar(f"Claude Code ({params['conta']}) começou: trabalho {p['id']}",
            f"Projeto: /srv/lab/projetos/{params['projeto']}\n"
+           + (f"Skill: {params['skill']}\n" if params.get("skill") else "")
            + f"\n{params['pedido'][:3000]}\n\n"
            + ("Só vai planejar; nada muda." if params["somente_plano"] else "Toque em Cancelar para interromper."),
            tags=["robot"], acoes=[botao("Cancelar", "cancelar", p, segredo)])
@@ -2044,10 +2081,12 @@ def acao_claude_trabalhos(cliente, params):
                       key=lambda p: p["criado"], reverse=True)[:10]
         esperando = {q["params"]["trabalho"] for q in ESTADO["pedidos"].values()
                      if q["acao"] == "claude.permissao" and q["estado"] == "aguardando"}
-    return {"contas": contas_claude(), "contas_com_login": sorted(contas_prontas()), "trabalhos": [
+    skills = skills_claude()
+    return {"contas": contas_claude(), "contas_com_login": sorted(contas_prontas()),
+            **({"skills": skills} if skills else {}), "trabalhos": [
         {"id": p["id"], "estado": p["estado"], "projeto": p["params"].get("projeto"),
          "conta": p.get("conta_final") or p["params"].get("conta"), "modelo": p["params"].get("modelo"),
-         "esforco": p["params"].get("esforco"),
+         "esforco": p["params"].get("esforco"), "skill": p["params"].get("skill"),
          "pedido": p["params"]["pedido"][:150],
          **({"cliente": p["cliente"], "resumo": curto(p["resumo"], 2000) if p.get("resumo") else None,
              "commits": len(p.get("commits") or []),
@@ -2742,7 +2781,8 @@ ACOES = {
     "claude.tarefa":     (acao_claude_tarefa,
                           "Claude Code trabalha sozinho numa pasta do lab (pedido, projeto, conta? = uma de "
                           "claude.trabalhos, modelo? fable|opus|sonnet|haiku, esforco? low|medium|high|xhigh|max, "
-                          "minutos? 5-600, somente_plano?, continuar?, publicar? = publica quando terminar bem)",
+                          "minutos? 5-600, skill? = uma de claude.trabalhos, somente_plano?, continuar?, "
+                          "publicar? = publica quando terminar bem)",
                           preparar_claude_tarefa),
     "claude.trabalhos":  (acao_claude_trabalhos, "trabalhos do Claude Code (10 últimos), as contas e as que têm login", None),
     "claude.perguntas":  (acao_claude_perguntas, "perguntas do Claude Code esperando resposta do dono", None),

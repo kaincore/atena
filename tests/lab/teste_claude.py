@@ -1,10 +1,11 @@
 """O Claude Code no executor, sem root, sem ntfy e sem runner: validação do pedido, fila, permissões e
-perguntas pelo celular, fim do trabalho, cancelar, continuar (inclusive em outra conta) e as contas."""
+perguntas pelo celular, fim do trabalho, cancelar, continuar (inclusive em outra conta), as contas e as
+skills."""
 import json
 import os
 import time
 
-from comum import SESSAO, botao, confere, erro, esperar, executor, fim, ligar, pedir, token, uma_volta
+from comum import RAIZ, SESSAO, botao, confere, erro, esperar, executor, fim, ligar, pedir, token, uma_volta
 
 ex, tmp, avisos = executor()
 for d in ("lista-compras", "outro", "terceiro", "quarto"):
@@ -243,6 +244,32 @@ confere("uma conta só no atena.conf: vale ela", params["conta"] == "principal")
 ex2.CLAUDE = f"{tmp2}/nao-instalado"
 confere("lab não instalado: 503", erro(ex2, ex2.preparar_claude_tarefa, cliente, dict(params))[0] == 503)
 confere("sem lab, consultar não quebra", ex2.acao_claude_trabalhos(cliente, {})["trabalhos"] == [])
+
+# --- skills (ATENA_CLAUDE_SKILLS) ---
+ex4, tmp4, avisos4 = executor(contas="principal", prontas=("principal",))
+os.makedirs(f"{ex4.PROJETOS_LAB}/site")
+ex4.SKILLS_CLAUDE = os.path.join(RAIZ, "host", "lab", "skills.json")
+polish = {"pedido": "capricha no site", "projeto": "site", "skill": "impeccable polish"}
+status, msg = erro(ex4, ex4.preparar_claude_tarefa, cliente, dict(polish))
+confere("skill com as skills desligadas: 400, com a chave do atena.conf", status == 400 and "ATENA_CLAUDE_SKILLS" in msg, msg)
+confere("skills desligadas: claude.trabalhos sem a lista", "skills" not in ex4.acao_claude_trabalhos(cliente, {}))
+with open(ex4.CONF, "a") as f:
+    f.write("ATENA_CLAUDE_SKILLS=sim\n")
+status, msg = erro(ex4, ex4.preparar_claude_tarefa, cliente, {**polish, "skill": "impeccable rm"})
+confere("skill fora do catálogo: 400 com as opções", status == 400 and msg.startswith("skill deve ser frontend-design, ")
+        and " ou impeccable <init|shape|" in msg, msg)
+params = dict(polish)
+titulo, _ = ex4.preparar_claude_tarefa(cliente, params)
+confere("skill no título da aprovação", titulo.endswith("site: trabalho com a skill impeccable polish"), titulo)
+p = ex4.criar_pedido(cliente, "claude.tarefa", params, "chat", titulo)
+ex4.mudar(p, estado="executando")
+ex4.executar(p)
+fila = ler_json(f"{tmp4}/fila/{p['id']}.executar.json")
+confere("skill vai para a fila e para o aviso de início", fila["skill"] == "impeccable polish"
+        and "Skill: impeccable polish" in avisos4[-1]["texto"], fila)
+lista = ex4.acao_claude_trabalhos(cliente, {})
+confere("claude.trabalhos: as skills do catálogo, na ordem, e a de cada trabalho", lista["skills"][0] == "frontend-design"
+        and "impeccable polish" in lista["skills"] and lista["trabalhos"][0]["skill"] == "impeccable polish", lista)
 
 # --- pelo socket: 202 com o pedido ---
 ex3, tmp3, _ = executor()
