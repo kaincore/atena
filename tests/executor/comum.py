@@ -1,7 +1,6 @@
-"""Ajudantes dos testes do executor: carrega o script, fala com ele pelo socket e confere."""
+"""Ajudantes dos testes do executor: carrega o pacote, fala com ele pelo socket e confere."""
 import grp
 import http.client
-import importlib.machinery
 import json
 import os
 import socket
@@ -10,14 +9,15 @@ import tempfile
 import threading
 
 RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, os.path.join(RAIZ, "tests"))
+from pacote_executor import carregar_executor  # noqa: E402
 FALHAS = []
 
 
 def carregar():
-    """O executor como módulo, apontando para uma pasta temporária (sem root, sem /etc).
-    ATENA_EXECUTOR=<caminho> testa outro arquivo (ex.: o instalado num servidor)."""
-    caminho = os.environ.get("ATENA_EXECUTOR") or os.path.join(RAIZ, "host", "sbin", "atena-executor")
-    ex = importlib.machinery.SourceFileLoader("executor", caminho).load_module()
+    """O executor como um módulo só, apontando para uma pasta temporária (sem root, sem /etc).
+    ATENA_EXECUTOR=<pasta> testa outro pacote (ex.: /usr/local/lib/atena-executor, o instalado)."""
+    ex = carregar_executor()
     tmp = tempfile.mkdtemp(prefix="teste-executor-")
     ex.SOCKET, ex.TOKENS, ex.CONF = f"{tmp}/executor.sock", f"{tmp}/tokens.json", f"{tmp}/atena.conf"
     ex.GRUPO_CLIENTES = grp.getgrgid(os.getgid()).gr_name

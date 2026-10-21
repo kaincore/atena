@@ -5,7 +5,7 @@ import subprocess
 import threading
 import time
 
-from comum import RAIZ, carregar, confere, erro as erro_ex, executor, fim
+from comum import RAIZ, carregar_executor, confere, erro as erro_ex, executor, fim
 
 ex, tmp, _ = executor(contas="pro", prontas=("pro",))
 ex.log = lambda **campos: None
@@ -270,7 +270,7 @@ confere("publicação cancelada: estado cancelado, sem derrubar o que estava no 
 confere("depois do cancelamento, a marca some (a próxima publicação não é cancelada)", "loja" not in ex.CANCELAR)
 
 # rodar(cancelavel=...) de verdade: interrompe um processo real
-real = carregar("executor_real", "host", "sbin", "atena-executor")
+real = carregar_executor()
 inicio = time.monotonic()
 threading.Timer(0.3, lambda: real.PROCESSOS["teste"].terminate()).start()
 codigo, _ = real.rodar(["sleep", "30"], 60, cancelavel="teste")

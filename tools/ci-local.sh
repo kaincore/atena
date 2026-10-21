@@ -54,7 +54,7 @@ shellcheck_sh() (
 ruff() (
   cd "$copia"
   docker run --rm -v "$copia:/repo:ro" -w /repo ghcr.io/astral-sh/ruff:0.16.10 check --no-cache \
-    $(grep -l '^#!.*python' host/sbin/*) host/lab hermes/scripts tests
+    $(grep -l '^#!.*python' host/sbin/*) host/executor host/lab hermes/scripts tests
 )
 
 composes() (
@@ -80,7 +80,8 @@ testes_python() {
     mkdir -p /srv && useradd -m runner && cp -r /repo /home/runner/repo && chown -R runner /home/runner/repo
     su runner -c "cd /home/runner/repo
       for f in host/sbin/atena-executor host/sbin/atena-telegram host/sbin/atena-claude-runner \
-               host/sbin/atena-painel-senha host/lab/dono.py host/lab/guarda_escopo.py hermes/scripts/ronda.py; do
+               host/sbin/atena-painel-senha host/lab/dono.py host/lab/guarda_escopo.py hermes/scripts/ronda.py \
+               host/executor/atena_executor/*.py; do
         python3 -c \"import ast, sys; ast.parse(open(sys.argv[1]).read(), sys.argv[1])\" \$f || exit 1
       done
       falharam=

@@ -1,13 +1,14 @@
 """As habilidades da Atena (servidor-atena e lab) documentam exatamente as ações que o executor tem."""
 import glob
-import importlib.machinery
 import os
 import re
 import sys
 
 RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-sys.dont_write_bytecode = True
-ex = importlib.machinery.SourceFileLoader("executor", os.path.join(RAIZ, "host", "sbin", "atena-executor")).load_module()
+sys.path.insert(0, os.path.join(RAIZ, "tests"))
+from pacote_executor import carregar_executor  # noqa: E402
+
+ex = carregar_executor()
 texto = ""
 for caminho in sorted(glob.glob(os.path.join(RAIZ, "hermes", "skills", "atena", "*", "SKILL.md"))):
     with open(caminho) as f:

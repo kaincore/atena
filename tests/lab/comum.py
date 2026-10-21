@@ -12,6 +12,8 @@ import threading
 import time
 
 RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+sys.path.insert(0, os.path.join(RAIZ, "tests"))
+from pacote_executor import carregar_executor  # noqa: E402
 FALHAS = []
 SESSAO = "11111111-2222-3333-4444-555555555555"
 
@@ -41,7 +43,7 @@ def runner(contas="pessoal trabalho", troca=None):
 def executor(contas="pessoal trabalho", prontas=("pessoal",), conf=""):
     """O executor como módulo, com a fila do Claude Code, o lab e o atena.conf numa pasta temporária.
     Devolve (executor, pasta, avisos mandados ao celular)."""
-    ex = carregar("executor", "host", "sbin", "atena-executor")
+    ex = carregar_executor()
     tmp = tempfile.mkdtemp(prefix="teste-lab-ex-")
     for d in ("fila", "resultados", "projetos", "lixeira", "stacks/lab"):
         os.makedirs(f"{tmp}/{d}")

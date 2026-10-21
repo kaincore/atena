@@ -12,6 +12,14 @@ usermod -aG docker,atena-acoes atena-exec
 ok "usuário atena-exec (sem login) e grupo atena-acoes"
 
 install -d -m 750 -o root -g atena-exec /etc/atena/executor
+# o código do executor (o pacote atena_executor, um módulo por assunto): troca inteira, sem sobrar módulo velho
+L=/usr/local/lib/atena-executor
+install -d -m 755 "$L"
+rm -rf "$L/atena_executor.novo"
+install -d -m 755 "$L/atena_executor.novo"
+install -m 644 -o root -g root "$RAIZ"/host/executor/atena_executor/*.py "$L/atena_executor.novo/"
+rm -rf "$L/atena_executor"
+mv "$L/atena_executor.novo" "$L/atena_executor"
 for s in atena-executor atena-avisar; do
   instalar_arquivo "$RAIZ/host/sbin/$s" "/usr/local/sbin/$s" 755
 done
