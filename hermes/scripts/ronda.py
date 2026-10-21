@@ -1,7 +1,8 @@
 """Ronda da Atena: fonte barata do monitor do cron do Hermes.
 
 Imprime só o que está fora do normal, sem horários nem números que mudam à toa. O Hermes compara a
-saída com a anterior e só acorda a Atena (e gasta API) quando ela muda.
+saída com a anterior e só acorda a Atena (e gasta API) quando ela muda. Toda vez que acorda, ela lê a
+lista inteira: por isso uma linha que já foi dita não pode ficar nela esperando a próxima mudança.
 """
 import http.client
 import json
@@ -95,13 +96,17 @@ def problemas(estado):
     return achados
 
 
-def claude_code():
-    """O último trabalho do Claude Code que terminou: muda só quando outro termina."""
+def claude_code(estado):
+    """O trabalho do Claude Code que acabou de terminar, numa volta só: a que acorda a Atena para o resumo.
+    Na volta seguinte a linha sai da lista, e a Atena não repete o resumo a cada outra mudança."""
     terminados = {"concluido", "falhou", "recusado", "expirado", "cancelado"}
-    for t in acao("claude.trabalhos")["trabalhos"]:   # do mais novo para o mais velho
-        if t["estado"] in terminados:
-            return [f"Claude Code: último trabalho terminado = {t['id']} ({t['estado']}, projeto {t['projeto']})"]
-    return []
+    ultimo = next((t for t in acao("claude.trabalhos")["trabalhos"]   # do mais novo para o mais velho
+                   if t["estado"] in terminados), None)
+    novo = ultimo is not None and "claude_avisado" in estado and ultimo["id"] != estado["claude_avisado"]
+    estado["claude_avisado"] = ultimo and ultimo["id"]   # na primeira volta, só guarda: não avisa o que já havia
+    if not novo:
+        return []
+    return [f"Claude Code: último trabalho terminado = {ultimo['id']} ({ultimo['estado']}, projeto {ultimo['projeto']})"]
 
 
 def perguntas_claude():
@@ -121,7 +126,7 @@ try:
 except Exception as e:
     lista = [f"a ronda não conseguiu falar com o executor ({type(e).__name__})"]
 try:
-    trabalhos = claude_code()
+    trabalhos = claude_code(estado)
 except Exception:
     trabalhos = []   # sem Claude Code liberado no token: a ronda segue só com o servidor
 try:
@@ -130,7 +135,7 @@ except Exception:
     pass
 erro = gravar_estado(estado)
 if erro:
-    lista.append(f"a ronda não conseguiu guardar o estado em {ESTADO} ({erro})")
+    lista.append(f"a ronda não conseguiu guardar o que já avisou em {ESTADO} ({erro})")
 print("\n".join(sorted(lista)) if lista else "tudo normal")
 if trabalhos:
     print("\n".join(trabalhos))

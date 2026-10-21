@@ -127,10 +127,19 @@ CENARIO["trabalhos"] = [t("aaaa0001", "concluido")]
 saida = ronda()
 confere("trabalho terminou: aparece a linha", saida == "tudo normal\nClaude Code: último trabalho terminado = aaaa0001 "
         "(concluido, projeto loja)\n", saida)
+confere("na volta seguinte a linha sai (a Atena já resumiu)", ronda() == "tudo normal\n")
+CENARIO["falhas"] = ["fwupd-refresh.service"]
+saida = ronda()
+confere("outra mudança no servidor não traz o trabalho de volta", "Claude Code" not in saida, saida)
+CENARIO["falhas"] = []
+passar_minutos(16)
 CENARIO["trabalhos"] = [t("bbbb0002", "executando"), t("aaaa0001", "concluido")]
-confere("outro começou: a linha não muda (não acorda a Atena à toa)", ronda() == saida)
+confere("outro começou: nada muda", ronda() == "tudo normal\n")
 CENARIO["trabalhos"] = [t("bbbb0002", "falhou", "outro"), t("aaaa0001", "concluido")]
-confere("outro terminou: a linha muda", "bbbb0002 (falhou, projeto outro)" in ronda())
+confere("outro terminou: aparece a linha dele", "bbbb0002 (falhou, projeto outro)" in ronda())
+os.remove(ESTADO)
+CENARIO["trabalhos"] = [t("dddd0004", "concluido")]
+confere("sem estado guardado (primeira volta): não avisa o que já tinha terminado", ronda() == "tudo normal\n")
 CENARIO["perguntas"] = [{"id": "cccc0003", "projeto": "loja", "esperando_min": 2}]
 confere("pergunta esperando o dono", "Claude Code pergunta cccc0003 (projeto loja): esperando o dono" in ronda())
 CENARIO["perguntas"][0]["esperando_min"] = 12
@@ -139,7 +148,7 @@ CENARIO["perguntas"] = []
 os.chmod(tmp, 0o500)
 saida = ronda()
 os.chmod(tmp, 0o700)
-confere("sem conseguir guardar o estado: a ronda avisa", "a ronda não conseguiu guardar o estado" in saida
+confere("sem conseguir guardar o estado: a ronda avisa", "a ronda não conseguiu guardar o que já avisou" in saida
         or os.geteuid() == 0, saida)
 CENARIO.update(trabalhos=None, fora=True)
 saida = ronda()
