@@ -1,5 +1,16 @@
 # Mudanças
 
+## 0.8.0 (2026-10-21)
+
+O lab e o Claude Code pelo painel (painel 0.4.0).
+
+- **Apps do lab:** publicar (ou publicar de novo), reiniciar, parar, cancelar o que estiver em andamento, restaurar da lixeira e rodar um comando dentro do app, com a saída na tela. Apagar abre uma janela para escolher o que sai: o container e a imagem (publicar de novo reconstrói), o código (vai para a lixeira por 30 dias) ou os dados, que não têm volta e só saem digitando o nome do app.
+- **Claude Code:** um trabalho novo com conta, modelo, esforço, tempo, só planejar e publicar quando terminar bem. O rascunho fica guardado se a tela atualizar. A lista mostra os trabalhos de todos os clientes, inclusive os da Atena, com o resumo, os commits, o aviso quando um espera a sua permissão e o botão Cancelar.
+- **Executor:** quem decide pelo dono (o token com `aprovacoes.decidir`, ou seja, o painel) vê e cancela os trabalhos do Claude Code dos clientes no alcance dele, e decide as permissões e as perguntas dos trabalhos que ele mesmo mandou, porque quem pede é o Claude Code. Para a Atena nada muda.
+- **Histórico:** o que ficou em andamento quando a tela fechou é conferido ao abrir o histórico, e uma ação demorada não diz mais "feito" antes de terminar.
+- O instalador refaz o token do painel com as 30 ações. A habilidade da Atena (servidor-atena 1.4.0) sabe que o dono vê e cancela os trabalhos dela pelo painel.
+- Testado no CI e no servidor de origem: o executor novo entrou no lugar do anterior conferindo o hash, o token da Atena ficou igual, o painel 0.4.0 subiu saudável e, pelo token novo, viu os trabalhos da Atena. O ensaio da interface no navegador, no tamanho de celular e de PC, com um executor falso, passou por mandar trabalho, apagar com os dados, rodar comando, cancelar, restaurar e publicar de novo; achou um defeito (a saída do comando não aparecia), corrigido antes do commit. Sem VM nesta versão: o instalador só ganhou nomes no token.
+
 ## 0.7.0 (2026-10-21)
 
 A aba Sistema do painel (painel 0.3.0).
