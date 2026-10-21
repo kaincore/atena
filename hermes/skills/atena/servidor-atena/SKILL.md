@@ -1,7 +1,7 @@
 ---
 name: servidor-atena
 description: "Enxergar e operar o servidor Atena pelo executor de ações: qualquer arquivo, pasta, log ou serviço (menos segredos), busca em arquivos, achar e trazer fotos e arquivos do servidor (para olhar, ler ou mandar ao dono), arquivos do Arca (listar, pegar, guardar), processos, portas, estado dos containers, CPU/RAM/disco/GPU, temperaturas e ventoinhas, gasto de API do mês, reiniciar serviços, editar e aplicar stacks de apps (Arca, Open WebUI) com foto e desfazer, ligar/desligar o PC da rede de casa e processar texto privado num modelo de casa. Use sempre que o dono perguntar do servidor, de temperatura, de gastos, de erros, de arquivos ou pedir algo que mexa no servidor, e na ronda."
-version: 1.5.0
+version: 1.6.0
 author: Atena
 license: MIT
 platforms: [linux]
@@ -15,6 +15,8 @@ metadata:
 
 Tudo o que você vê e faz no servidor passa pelo executor: um serviço com uma lista fechada de
 ações e parâmetros validados. Você não tem sudo nem Docker. Não tente outros caminhos.
+A exceção, se o servidor tiver o lab, são os projetos do lab: `/srv/lab/projetos` está montado no seu
+terminal (habilidade lab).
 
 ## Como chamar
 
@@ -54,13 +56,16 @@ Nunca mostre o token na resposta nem o copie para outro lugar.
 | `pc.estado` | — | PC da rede de casa ligado? LM Studio respondendo? |
 
 Temperatura e ventoinhas: `sistema.sensores` (não tente ler `/sys`: responde 403). Na resposta ao dono,
-dê CPU, GPU e NVMe em °C e diga se está normal; CPU e GPU só preocupam perto de 85 °C. Campo `None`:
+dê CPU, GPU e NVMe em °C e diga se está normal; CPU e GPU só preocupam perto de 85 °C, e o NVMe perto
+de 70 °C (o campo `avaliacao` já diz o que está quente). Campo `None`:
 a máquina não tem aquele sensor (numa VM, por exemplo). Sem ventoinhas: o chip da placa precisa de um
 módulo do kernel (`ATENA_SENSORES_MODULO`), coisa que o dono configura.
 
 Mapa rápido: stacks em `/opt/atena/stacks/<zona>/<stack>` (compose.yaml), dados em `/srv/<zona>/...`,
-scripts do servidor em `/usr/local/sbin/atena-*`, firewall em `/etc/ufw/user.rules` e
-`/usr/local/sbin/atena-docker-firewall`, configuração geral em `/etc/atena/atena.conf`.
+documentos em `/opt/atena/docs`, a descrição do servidor em `/opt/atena/README.md` (se o dono escreveu
+uma), scripts do servidor em `/usr/local/sbin/atena-*` e `/opt/atena/bin`, firewall em
+`/etc/ufw/user.rules` e `/usr/local/sbin/atena-docker-firewall`, configuração geral em
+`/etc/atena/atena.conf`.
 
 Segredos não saem do executor: `.env`, chaves, tokens, históricos de shell e áreas do sistema
 (`/proc`, `/run`, `/var/lib/docker`...) respondem 403, e linhas com senha, token ou chave chegam
@@ -78,12 +83,16 @@ conteúdo, traga uma cópia com `arquivo.entregar` e:
 - "Me manda as fotos de ontem do Arca": `arca.lista` (veja "Arca"), escolha pela `data` e pelo `tipo`
   (`image/...`), depois `arca.pegar` em cada uma e um `MEDIA:` por foto.
 - "Me manda o contrato": `arquivo.procurar` pelo `nome`, em pastas certeiras primeiro
-  (`/srv/apps`, `/opt/atena/docs`, `/opt/data/notas/anexos`). Se achar mais de um, mande a lista
+  (`/srv/apps`, `/opt/atena/docs`, `/srv/lab/projetos` se o servidor tiver o lab,
+  `/opt/data/notas/anexos`). Se achar mais de um, mande a lista
   curta (nome, data, tamanho) e pergunte qual.
 - Mais de 10 arquivos: mande os 10 mais novos e diga quantos sobraram.
 - Antes de afirmar o que tem num arquivo, leia ou olhe a cópia. Nome de arquivo não é conteúdo.
 - Arquivos das suas notas já estão no seu espaço: mande direto com `MEDIA:` (habilidade notas).
 - Arquivos de clientes (zona prod) e segredos respondem 403: diga que estão fora do seu alcance.
+
+Onde ficam documentos e anexos: `/opt/atena/docs` (documentos que o dono guarda no servidor, em
+markdown e PDF) e o Arca (arquivos que o dono sobe pelo navegador, inclusive PDFs).
 
 ## Arca: os arquivos do dono
 
@@ -118,6 +127,8 @@ volta para você, então peça só o necessário ("extraia valor, vencimento e p
   Se der 409, ligue o PC com `pc.ligar` e tente de novo em 1 minuto.
 - Texto grande vem em partes (`partes` > 1): chame de novo com `parte` 2, 3... e junte as respostas.
 - Foto de documento privado: a visão é na nuvem. Avise o dono antes de olhar.
+- Para dado privado, só `local.processar`: não mande o texto a um modelo do LiteLLM, que pode cair para
+  a nuvem.
 
 ## Equipe: subagentes e modelo de casa
 
@@ -150,7 +161,9 @@ Fluxo do PC (pedidos do dono sobre ligar, desligar ou reiniciar):
 3. `pc.cancelar` só funciona enquanto o PC ainda responde pela rede. Se voltar `"cancelado": false` ("o PC já está desligado"), ele já desligou: não insista e avise o dono.
 4. Para afirmar que o PC reiniciou, compare com `pc.estado` depois de passada a contagem e de o PC voltar (~1 a 2 min). Sem essa conferência, diga só que o pedido foi enviado.
 5. Ligar sozinho sem o dono pedir, ou desligar um PC que já estava ligado antes de você, é destrutivo: pergunte antes.
-6. Ações `pc.*` com 404 "não configurado": o dono não tem PC ligado à Atena. Diga isso e não tente de novo.
+6. Ações `pc.*` com 404: sem o PC configurado, todas respondem assim; com só o ligar configurado,
+   `pc.desligar`, `pc.reiniciar` e `pc.cancelar` dizem que o controle ainda não foi configurado no
+   Windows. Diga isso ao dono e não tente de novo.
 
 Reiniciar e ligar/desligar o PC são reversíveis: faça direto. Se `/acoes` marcar uma ação com
 "[precisa de aprovação no celular]", ela responde HTTP 202 com `{"pedido": "<id>"}` e só roda
@@ -226,4 +239,5 @@ está fora do normal. Você só é acordada quando essa lista muda. Quando for a
 - HTTP 404: stack, ação ou caminho inexistente. Liste as stacks com `status.servicos`.
 - HTTP 422: a mudança numa stack fere uma regra da zona (a mensagem diz qual); nada foi gravado ou aplicado.
 - HTTP 429: pedidos demais esperando. Espere os que estão em andamento.
+- HTTP 504: a ação passou do tempo. Confira o estado antes de repetir.
 - HTTP 503: o ntfy (avisos do celular) está fora do ar. Avise o dono.
