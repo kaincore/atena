@@ -178,6 +178,15 @@ confere("painel com zonas menores não cancela (404)",
         erro(ex, ex.acao_claude_cancelar, {**dono, "zonas": ["lab"]}, {"pedido": d["id"]})[0] == 404)
 ex.acao_claude_cancelar(dono, {"pedido": d["id"]})
 confere("o painel cancela um trabalho da Atena", d["estado"] == "cancelado")
+item = next(t for t in ex.acao_claude_trabalhos(dono, {})["trabalhos"] if t["id"] == p["id"])
+confere("o painel sabe que dá para continuar o trabalho terminado", item["continuavel"] is True, item)
+titulo, _ = ex.preparar_claude_tarefa(dono, {"pedido": "agora com testes", "continuar": p["id"]})
+confere("o painel continua um trabalho da Atena (mesma conta e projeto)", "lista-compras" in titulo, titulo)
+alheio = {**p, "id": "feed0001", "cliente": "painel", "params": {**p["params"]}}
+ex.ESTADO["pedidos"][alheio["id"]] = alheio
+confere("a Atena não continua um trabalho do painel (404)",
+        erro(ex, ex.preparar_claude_tarefa, cliente, {"pedido": "continua", "continuar": alheio["id"]})[0] == 404)
+del ex.ESTADO["pedidos"][alheio["id"]]
 q, _ = comecar({**base, "projeto": "outro"})
 ex.acao_claude_cancelar(cliente, {"pedido": q["id"]})
 confere("cancelar trabalho ainda na fila: sai da fila", q["estado"] == "cancelado"

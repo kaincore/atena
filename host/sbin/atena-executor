@@ -1965,7 +1965,8 @@ def preparar_claude_tarefa(cliente, params):
     if continuar is not None:   # continua a conversa de um trabalho anterior
         with TRAVA:
             anterior = ESTADO["pedidos"].get(continuar) if isinstance(continuar, str) else None
-        if not anterior or anterior["cliente"] != cliente["cliente"] or not anterior.get("sessao"):
+        if (not anterior or anterior["acao"] != "claude.tarefa" or not alcanca(cliente, anterior)
+                or not anterior.get("sessao")):
             raise Erro(404, "não achei um trabalho anterior com esse id para continuar")
         if anterior["estado"] not in TERMINADOS:
             raise Erro(409, "o trabalho anterior ainda não terminou")
@@ -2044,7 +2045,8 @@ def acao_claude_trabalhos(cliente, params):
          "esforco": p["params"].get("esforco"),
          "pedido": p["params"]["pedido"][:150],
          **({"cliente": p["cliente"], "resumo": curto(p["resumo"], 2000) if p.get("resumo") else None,
-             "commits": len(p.get("commits") or [])} if pelo_dono(cliente) else {}),
+             "commits": len(p.get("commits") or []),
+             "continuavel": bool(p.get("sessao")) and p["estado"] in TERMINADOS} if pelo_dono(cliente) else {}),
          "criado": time.strftime("%Y-%m-%d %H:%M", time.localtime(p["criado"])),
          "esperando_permissao_no_celular": p["id"] in esperando}
         for p in meus]}
