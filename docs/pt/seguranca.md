@@ -61,7 +61,7 @@ São três camadas para nenhuma porta escapar por engano:
 - **Senha difícil de adivinhar por força bruta:** scrypt (N=2^15, 32 MB por tentativa), 5 erros em 15 minutos bloqueiam a entrada, e uma conferência por vez.
 - **Cookie** HttpOnly, Secure e SameSite=Strict. Todo POST exige JSON e um cabeçalho próprio, o que barra formulários de outros sites (CSRF).
 - **CSP** que só aceita o próprio painel, sem frames. As telas são montadas sem `innerHTML`, então um nome de container ou uma linha de log nunca vira código.
-- **Token próprio, sem aprovação no celular:** 19 ações, nenhuma que apague ou edite.
+- **Token próprio, sem aprovação no celular:** 22 ações, nenhuma que apague ou edite.
 - **Decidir pelo painel vale o toque no celular.** Só o token do painel tem `aprovacoes.decidir`; ele não decide pedidos dele mesmo, e só enxerga pedidos de clientes das zonas dele (sem `prod`). Quem tem a senha do painel aprova o que a Atena pedir: é mais um motivo para uma senha só dele.
 
 ## O que foi testado no servidor original

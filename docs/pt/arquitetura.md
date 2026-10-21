@@ -104,11 +104,11 @@ App pronto ──> app.publicar ──> stack lab-<projeto> na zona lab (porta 8
 
 ## O painel
 
-Opcional (`./install.sh --painel`). O servidor no navegador do PC e do celular, instalável como app (PWA): estado, serviços, o PC da rede de casa, os apps do lab, o gasto de IA e o histórico do que você mandou fazer.
+Opcional (`./install.sh --painel`). O servidor no navegador do PC e do celular, instalável como app (PWA): estado, serviços, sensores, processos, rede e registro do systemd, o PC da rede de casa, os apps do lab, o gasto de IA e o histórico do que você mandou fazer.
 
 ```text
 Celular ou PC (Tailscale) ──HTTPS :3100──> tailscale serve ──socket──> painel (zona core, sem rede)
-painel ──socket──> executor (token próprio: 19 ações, nenhuma que apague ou edite)
+painel ──socket──> executor (token próprio: 22 ações, nenhuma que apague ou edite)
 ```
 
 - **Sem rede.** O container tem `network_mode: none`: não alcança a internet, a rede de casa nem outros containers, e nada alcança ele pela rede. As visitas chegam pelo `tailscale serve`, que entrega no socket `/srv/core/painel/run/painel.sock`, e os pedidos vão ao executor pelo socket dele.
@@ -118,6 +118,7 @@ painel ──socket──> executor (token próprio: 19 ações, nenhuma que apa
 - **Confirmação na tela.** Reiniciar, desligar e parar pedem confirmação no próprio painel; por isso o token dele não pede o celular.
 - **Central de aprovações.** O que a Atena e o Claude Code pedem e espera por você aparece no painel com o texto que foi ao celular: Aprovar, Recusar ou responder a pergunta. Vale o mesmo que o toque no celular, os dois continuam funcionando, e quem decidir primeiro decide. O painel nunca decide um pedido dele mesmo.
 - **Atividade.** O registro do executor (cada pedido de cada cliente, cada decisão e os eventos), com filtro por cliente e só os erros.
+- **Sistema.** Temperaturas, ventoinhas e GPU; os processos que mais usam CPU ou RAM; os endereços e as portas abertas, cada uma com o alcance (só o servidor, containers, rede de casa, Tailscale ou todas as redes); e o registro do systemd por unidade, gravidade e período. Só leitura, com os segredos ocultos.
 - **Sem dependências.** Node 22, que já roda TypeScript e traz o SQLite: nenhum pacote do npm. O código fica na stack (`stacks/core/painel/app`), e o instalador atualiza a cada execução.
 - **Dados.** Banco SQLite em `/srv/core/painel/painel.db`: as sessões (só o hash do token), as tentativas de entrada e o histórico de 90 dias das ações que mudam algo.
 
