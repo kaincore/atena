@@ -1,7 +1,7 @@
 ---
 name: lab
 description: "Programar no lab do servidor Atena: mandar trabalhos de programação ao Claude Code (apps, scripts, sites), repassar as perguntas dele ao dono, programar você mesma nos projetos do lab pelo terminal e cuidar dos apps do lab (publicar na rede de casa, rodar comandos dentro deles, reiniciar, parar, cancelar, apagar e restaurar). Use sempre que o dono pedir um programa, app, script ou site, falar de um projeto do lab ou de um app publicado, e quando a ronda trouxer uma linha do Claude Code."
-version: 1.1.0
+version: 1.2.0
 author: Atena
 license: MIT
 platforms: [linux]
@@ -181,7 +181,8 @@ Cuidados:
 
 `app.comando` é para olhar e conferir. Ele roda dentro do container (disco só de leitura, menos
 `/data` e `/tmp`): mudanças de código vão no projeto, não no container. Apagar dados em `/data` pelo
-comando é destrutivo: só com o ok do dono.
+comando é destrutivo: só com o ok do dono. Erro 504: passou de `segundos`; o comando pode seguir
+rodando dentro do app (`app.reiniciar` zera).
 
 O que cada parte de `app.apagar` faz:
 - `docker`: tira do ar e apaga o container e a imagem. Os dados (volume) ficam.
@@ -193,6 +194,8 @@ Qual usar, conforme o que o dono disser:
 - "sobe", "publica", "deixa no ar": `app.publicar`. Erro 409 "ainda não tem Dockerfile": mande antes
   um `claude.tarefa` com `continuar` (o id do último trabalho do projeto), `publicar: true` e o pedido
   "Deixe o projeto pronto para publicar, seguindo as regras do lab (Dockerfile, PORT e DATA_DIR)".
+  Erro 409 "ainda está trabalhando": espere o trabalho terminar ou use `claude.tarefa` com
+  `publicar: true`.
 - Mudança pequena e clara num app que já existe (um texto, uma cor, um bug óbvio): faça você no lab,
   faça commit e, se o app estiver no ar, `app.publicar`.
 - "muda", "edita", "corrige", "adiciona X" maior num app que já existe: `claude.tarefa` no mesmo
@@ -214,16 +217,19 @@ Qual usar, conforme o que o dono disser:
   voltar o commit (o lab usa git; cada trabalho lista os commits).
 
 `app.publicar` e `app.apagar` costumam pedir Aprovar no celular (`/acoes` mostra "[precisa de
-aprovação no celular]"). Nesse caso a notificação lista o que vai acontecer e o toque em Aprovar é o
+aprovação no celular]"). Nesse caso a notificação lista o que vai acontecer (no `app.apagar`,
+exatamente o que sai e o que fica) e o toque em Aprovar é o
 ok do dono: não peça outro ok no chat, avise que está no celular e PARE. Quando ele aprovar, o
 executor constrói (pode levar alguns minutos) e o celular recebe "Feito" com o endereço, ou "Falhou"
 com o fim do registro. Se o dono contar que falhou, veja o erro com `GET /pedido/<id>` e mande o
 Claude Code consertar (`claude.tarefa` com `continuar`, o erro no pedido e `publicar: true`).
+Sem a marca, `app.publicar` responde 202 e segue sozinho (acompanhe com `GET /pedido/<id>?esperar=170`),
+e `app.apagar` roda na hora: com `dados`, peça o ok no chat antes.
 
 O app publicado vira a stack `lab-<projeto>`: `servico.logs` e `status.servicos` funcionam com ela.
 Ele fica em `endereco` (rede de casa) e, se o servidor tiver Tailscale, também em `fora_de_casa`
-(de qualquer lugar, com o app do Tailscale ligado no aparelho). Dê ao dono os endereços copiados do
-resultado ou de `app.lista`. Parar ou apagar o app desliga o link de fora de casa; reiniciar religa.
+(de qualquer lugar, com o app do Tailscale ligado no aparelho). Sempre dê ao dono os endereços que
+vierem (os dois, se houver `fora_de_casa`), copiados do resultado ou de `app.lista`. Parar ou apagar o app desliga o link de fora de casa; reiniciar religa.
 
 ## Ronda
 
