@@ -135,7 +135,8 @@ The installer prints the address: `https://<server>.<tailnet>.ts.net:3100`. On t
 
 - **Change the password:** run `sudo atena-painel-senha` again. Every device is signed out.
 - **Connected devices:** in the Ajustes (settings) tab, with the Desconectar button.
-- **Logs:** `docker logs painel` (the panel) and `journalctl -u atena-executor` (each of its requests, with the `painel` client).
+- **Logs:** `docker logs painel` (the panel and the scheduler) and `journalctl -u atena-executor` (each of its requests, with the `painel` client and the `agendamento` origin for scheduled ones).
+- **Schedules:** they live in the panel database (`/srv/core/painel/painel.db`). With the panel stopped, nothing runs; when it comes back, it runs what's late up to each one's tolerance and marks the rest as missed.
 - **Take it down:**
   ```bash
   sudo tailscale serve --https=3100 off
