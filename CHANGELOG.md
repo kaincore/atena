@@ -1,5 +1,17 @@
 # Mudanças
 
+## 0.7.0 (2026-10-21)
+
+A aba Sistema do painel (painel 0.3.0).
+
+- **Sensores:** temperatura da CPU (e dos núcleos, quando o chip mostra), do NVMe e da GPU; uso, watts e ventoinha da GPU; as ventoinhas e os sensores da placa. Cada barra enche até o ponto de alerta.
+- **Processos:** os 25 que mais usam CPU ou RAM, com usuário, memória e há quanto tempo rodam. Tocar no comando mostra ele inteiro.
+- **Rede:** os endereços de cada interface (as veth dos containers ficam de fora) e as portas abertas, cada uma com o alcance: só o servidor, containers, rede de casa, Tailscale ou todas as redes.
+- **Registro do systemd:** por unidade, gravidade e período (de 30 min a 7 dias), com os segredos ocultos.
+- No celular, as abas quebram em linhas em vez de sumir pela direita.
+- O instalador refaz o token do painel com as 22 ações. O executor não muda: as três ações que o painel ganhou (`sistema.processos`, `sistema.rede` e `servico.journal`) já existiam para a Atena.
+- Testado no CI e no servidor de origem: o token foi refeito, o painel 0.3.0 subiu saudável e as três ações responderam pelo token novo. O ensaio da interface no navegador, no tamanho de celular e de PC, com um executor falso, achou um defeito (o registro vazio não dizia nada), corrigido antes do commit. Sem VM nesta versão: o instalador só ganhou três nomes no token, num caminho que a VM da 0.6.0 já testou.
+
 ## 0.6.0 (2026-10-20)
 
 A central de aprovações e a atividade do executor no painel (painel 0.2.0).
