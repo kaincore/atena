@@ -1,5 +1,15 @@
 # Mudanças
 
+## 0.12.0 (2026-10-21)
+
+O executor em módulos.
+
+- **O pacote `atena_executor`:** o executor de 3000 linhas num arquivo só virou 17 módulos, um por assunto (base, segredos, inventario, celular, tokens, pedidos, sistema, arquivos, pc, local, arca, stacks, lab, claude, central, acoes e servidor). Um módulo só importa dos que vêm antes dele; nos 4 lugares em que um de baixo precisa de um de cima, o import fica dentro da função, com o motivo ao lado. O mapa está no `__init__.py`.
+- **Nada mudou no que ele faz:** a divisão foi feita por um programa, não à mão, e as 236 definições são idênticas às do arquivo antigo (comparadas pela árvore do Python). O `/usr/local/sbin/atena-executor` agora só chama o pacote, que o instalador põe em `/usr/local/lib/atena-executor` (trocando a pasta inteira, sem sobrar módulo velho).
+- **Testes:** veem o pacote como um módulo só (`tests/pacote_executor.py`), então nenhuma conferência mudou; cada carga é um pacote com nome próprio, para dois executores no mesmo teste não dividirem estado.
+- **ruff no CI:** erros de verdade no Python (nome indefinido, import e variável sem uso, sintaxe, as armadilhas do bugbear), não estilo. Também roda no `tools/ci-local.sh`.
+- Testado: a bateria inteira e o CI pelo `ci-local.sh`; o pacote instalado do jeito do instalador num Ubuntu 26.04 limpo, em container (carrega as 45 ações, e uma reinstalação não deixa módulo velho); e, no servidor de origem, as consultas do painel e da Atena com o executor em módulos.
+
 ## 0.11.0 (2026-10-21)
 
 Skills no Claude Code do lab, e o servidor de origem roda o executor deste repositório.
