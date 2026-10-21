@@ -993,6 +993,8 @@ def ler_texto(real, limite):
 def acao_arquivo_ler(cliente, params):
     """Lê qualquer arquivo ou pasta do servidor, menos segredos."""
     real = caminho_legivel(params.get("caminho"))
+    if fora_da_zona(cliente, real):
+        raise Erro(403, "arquivos de clientes (zona prod) estão fora do seu alcance")
     try:
         if os.path.isdir(real):
             nomes = sorted(os.listdir(real))
@@ -1020,9 +1022,12 @@ def acao_arquivo_buscar(cliente, params):
         raise Erro(400, "texto deve ter de 2 a 200 caracteres")
     if not os.path.isdir(raiz):
         raise Erro(400, "a pasta não existe")
+    if fora_da_zona(cliente, raiz):
+        raise Erro(403, "arquivos de clientes (zona prod) estão fora do seu alcance")
     alvo, achados, vistos, prazo = texto.lower(), [], 0, time.time() + 20
     for pasta, subpastas, arquivos in os.walk(raiz):
-        subpastas[:] = sorted(p for p in subpastas if permitido(os.path.join(pasta, p)))
+        subpastas[:] = sorted(p for p in subpastas if permitido(os.path.join(pasta, p))
+                              and not fora_da_zona(cliente, os.path.join(pasta, p)))
         for nome in sorted(arquivos):
             vistos += 1
             if vistos > 20000 or time.time() > prazo or len(achados) >= 100:

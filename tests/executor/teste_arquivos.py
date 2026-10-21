@@ -40,6 +40,9 @@ confere("segredos não aparecem na procura (.ssh, .pem)", "id_ed25519" not in no
 confere("tipo inválido: 400", erro(ex.acao_arquivo_procurar, c, {"pasta": fotos, "tipo": "exe"})[0] == 400)
 confere("pasta de clientes: 403", erro(ex.acao_arquivo_procurar, c, {"pasta": prod})[0] == 403)
 confere("com a zona prod, pode", ex.acao_arquivo_procurar({**c, "zonas": c["zonas"] + ["prod"]}, {"pasta": prod})["total"] == 1)
+confere("ler arquivo de cliente: 403", erro(ex.acao_arquivo_ler, c, {"caminho": f"{prod}/cliente.pdf"})[0] == 403)
+confere("listar a pasta de clientes: 403", erro(ex.acao_arquivo_ler, c, {"caminho": prod})[0] == 403)
+confere("com a zona prod, lê", ex.acao_arquivo_ler({**c, "zonas": c["zonas"] + ["prod"]}, {"caminho": f"{prod}/cliente.pdf"})["binario"] is True)
 
 r = ex.acao_arquivo_entregar(c, {"caminho": f"{fotos}/praia.jpg"})
 copia = os.path.join(ex.ENTREGAS, os.path.basename(r["copia"]))
@@ -70,5 +73,14 @@ for n in antigas:
     os.utime(os.path.join(ex.ENTREGAS, n), (velho, velho))
 ex.acao_arquivo_entregar(c, {"caminho": f"{fotos}/praia.jpg"})
 confere("cópias com mais de 24 h somem", not set(antigas) & set(os.listdir(ex.ENTREGAS)) and len(os.listdir(ex.ENTREGAS)) == 1)
+
+# buscar texto também não entra na pasta de clientes
+open(f"{prod}/pedido.txt", "w").write("maracujá do cliente\n")
+open(f"{docs}/feira.txt", "w").write("maracujá da feira\n")
+r = ex.acao_arquivo_buscar(c, {"pasta": tmp, "texto": "maracujá"})
+confere("buscar texto pula a pasta de clientes", [os.path.basename(a["arquivo"]) for a in r["achados"]] == ["feira.txt"], r)
+confere("buscar dentro da pasta de clientes: 403", erro(ex.acao_arquivo_buscar, c, {"pasta": prod, "texto": "maracujá"})[0] == 403)
+r = ex.acao_arquivo_buscar({**c, "zonas": c["zonas"] + ["prod"]}, {"pasta": tmp, "texto": "maracujá"})
+confere("com a zona prod, acha os dois", sorted(os.path.basename(a["arquivo"]) for a in r["achados"]) == ["feira.txt", "pedido.txt"], r)
 
 fim()
