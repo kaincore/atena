@@ -171,6 +171,23 @@ test("a central: consultas não entram no histórico, a decisão entra", async (
   assert.equal(banco.historico().filter((x) => x.acao === "aprovacoes.lista" || x.acao === "atividade.lista").length, 0);
 });
 
+test("a aba Sistema: sensores, processos, rede e journal vão ao executor e não entram no histórico", async () => {
+  const cookie = await entrar();
+  const antes = banco.historico().length;
+  const pedidos = {
+    "sistema.sensores": {},
+    "sistema.processos": { ordem: "ram", quantos: 25 },
+    "sistema.rede": {},
+    "servico.journal": { linhas: 100, prioridade: "err", desde: "6h", unidade: "docker.service" },
+  };
+  for (const [nome, params] of Object.entries(pedidos)) {
+    const r = await pedir("POST", `/api/acao/${nome}`, { params }, cookie);
+    assert.equal(r.status, 200, nome);
+    assert.deepEqual(recebidos.at(-1)!.corpo, { params, origem: "painel" });
+  }
+  assert.equal(banco.historico().length, antes);
+});
+
 test("esperar do pedido tem teto de 60 s", async () => {
   const cookie = await entrar();
   await pedir("GET", "/api/pedido/abcd1234?esperar=999", undefined, cookie);

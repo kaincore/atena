@@ -75,7 +75,13 @@ main {
 .lista { list-style: none; padding: 0; margin: .25rem 0; }
 .lista li { padding: .35rem 0; border-top: 1px solid var(--borda); overflow-wrap: anywhere; }
 .lista li:first-child { border-top: 0; }
-.historico .resumo, .atividade .resumo { font-family: ui-monospace, monospace; font-size: .8rem; overflow-wrap: anywhere; }
+.historico .resumo, .atividade .resumo, .lista .resumo { font-family: ui-monospace, monospace; font-size: .8rem; overflow-wrap: anywhere; }
+.processos .comando {
+  font: .85rem ui-monospace, monospace; cursor: pointer;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.processos .comando.aberto { white-space: pre-wrap; overflow-wrap: anywhere; }
+.lista .selo { margin-left: .25rem; }
 .texto-pedido {
   font: .85rem/1.45 ui-monospace, monospace; background: var(--fundo); padding: .6rem; border-radius: .5rem;
   white-space: pre-wrap; overflow-wrap: anywhere; margin: .5rem 0;
@@ -141,6 +147,8 @@ dialog::backdrop { background: rgb(0 0 0 / .5); }
 .aviso.erro { background: var(--ruim); color: #fff; }
 
 @media (max-width: 40rem) {
-  .topo { flex-direction: column; align-items: stretch; gap: .4rem; }
+  /* no celular as abas quebram em linhas (rolando de lado, as últimas sumiam) e o topo não fica preso */
+  .topo { position: static; flex-direction: column; align-items: stretch; gap: .4rem; }
+  .abas { flex-wrap: wrap; overflow-x: visible; }
   main { padding: .75rem; gap: .75rem; }
 }
