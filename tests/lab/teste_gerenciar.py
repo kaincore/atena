@@ -227,6 +227,12 @@ ex.acao_app_cancelar(hermes, {"projeto": "loja"})
 confere("trabalho já rodando: deixa o aviso para o runner parar", os.path.exists(f"{ex.CLAUDE}/fila/cccc0004.cancelar")
         and t2.get("cancelando"))
 t2["estado"] = "cancelado"
+dono = {"cliente": "painel", "zonas": ["core", "apps", "ai", "agents", "lab"], "acoes": ["aprovacoes.decidir"]}
+t3 = pedido(hermes, "claude.tarefa", {"projeto": "loja", "pedido": "x"}, "executando", "cccc0006")
+r = ex.acao_app_cancelar(dono, {"projeto": "loja"})
+confere("o painel (fala pelo dono) cancela o trabalho da Atena no projeto",
+        os.path.exists(f"{ex.CLAUDE}/fila/cccc0006.cancelar") and t3.get("cancelando") and len(r["cancelado"]) == 1, r)
+t3["estado"] = "cancelado"
 
 # cancelar uma publicação no meio da construção
 class Processo:

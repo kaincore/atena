@@ -165,7 +165,7 @@ confere("claude.trabalhos: contas, as com login e o trabalho", lista["contas"] =
 confere("cancelar trabalho terminado: 409", erro(ex, ex.acao_claude_cancelar, cliente, {"pedido": p["id"]})[0] == 409)
 confere("cancelar trabalho de outro cliente: 404",
         erro(ex, ex.acao_claude_cancelar, {**cliente, "cliente": "painel"}, {"pedido": p["id"]})[0] == 404)
-# o painel fala pelo dono (tem aprovacoes.decidir): vê os trabalhos dos outros clientes no alcance
+# o painel fala pelo dono (tem aprovacoes.decidir): vê e cancela os trabalhos dos outros clientes no alcance
 dono = {"cliente": "painel", "zonas": ["core", "apps", "ai", "agents", "lab"], "acoes": ["aprovacoes.decidir"]}
 item = next((t for t in ex.acao_claude_trabalhos(dono, {})["trabalhos"] if t["id"] == p["id"]), None)
 confere("o painel vê o trabalho da Atena, com quem pediu, o resumo e os commits", item and item["cliente"] == "hermes"
@@ -173,6 +173,11 @@ confere("o painel vê o trabalho da Atena, com quem pediu, o resumo e os commits
 confere("a Atena não ganha os campos do painel", "resumo" not in ex.acao_claude_trabalhos(cliente, {})["trabalhos"][0])
 confere("painel com zonas menores que as do trabalho não vê",
         all(t["id"] != p["id"] for t in ex.acao_claude_trabalhos({**dono, "zonas": ["lab"]}, {})["trabalhos"]))
+d, _ = comecar({**base, "projeto": "quarto"})
+confere("painel com zonas menores não cancela (404)",
+        erro(ex, ex.acao_claude_cancelar, {**dono, "zonas": ["lab"]}, {"pedido": d["id"]})[0] == 404)
+ex.acao_claude_cancelar(dono, {"pedido": d["id"]})
+confere("o painel cancela um trabalho da Atena", d["estado"] == "cancelado")
 q, _ = comecar({**base, "projeto": "outro"})
 ex.acao_claude_cancelar(cliente, {"pedido": q["id"]})
 confere("cancelar trabalho ainda na fila: sai da fila", q["estado"] == "cancelado"

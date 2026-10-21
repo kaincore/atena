@@ -2054,7 +2054,7 @@ def acao_claude_cancelar(cliente, params):
     alvo = params.get("pedido")
     with TRAVA:
         p = ESTADO["pedidos"].get(alvo) if isinstance(alvo, str) else None
-        if not p or p["cliente"] != cliente["cliente"] or p["acao"] != "claude.tarefa":
+        if not p or p["acao"] != "claude.tarefa" or not alcanca(cliente, p):
             raise Erro(404, "não achei um trabalho do Claude Code com esse id")
         if p["estado"] not in ("planejando", "executando"):
             raise Erro(409, f"o trabalho não está rodando (estado: {p['estado']})")
@@ -2376,7 +2376,7 @@ def acao_app_cancelar(cliente, params):
     feito = []
     with TRAVA:
         for p in list(ESTADO["pedidos"].values()):
-            if p["cliente"] != cliente["cliente"] or p["params"].get("projeto") != projeto:
+            if not alcanca(cliente, p) or p["params"].get("projeto") != projeto:
                 continue
             if p["acao"] == "claude.tarefa" and p["estado"] in ("planejando", "executando"):
                 cancelar_claude(p)
