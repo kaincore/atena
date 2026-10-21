@@ -3,7 +3,9 @@
 // o painel fala com o executor por outro. Sem socket do Docker, sem root, sistema de arquivos só leitura.
 import { chmodSync, rmSync } from "node:fs";
 import { join } from "node:path";
+import { Agendador } from "./agendador.ts";
 import { Banco } from "./banco.ts";
+import { pedirExecutor } from "./executor.ts";
 import { criarServidor } from "./servidor.ts";
 
 const dados = process.env.PAINEL_DADOS ?? "/dados";
@@ -14,15 +16,16 @@ const banco = new Banco(join(dados, "painel.db"));
 banco.limpar();
 setInterval(() => banco.limpar(), 3600_000).unref();
 
-const servidor = criarServidor(
-  {
-    publico: new URL("../public", import.meta.url).pathname,
-    arquivoSenha: join(dados, "senha"),
-    arquivoToken: join(dados, "executor.token"),
-    socketExecutor: process.env.EXECUTOR_SOCKET ?? "/run/atena-executor/executor.sock",
-  },
-  banco,
-);
+const config = {
+  publico: new URL("../public", import.meta.url).pathname,
+  arquivoSenha: join(dados, "senha"),
+  arquivoToken: join(dados, "executor.token"),
+  socketExecutor: process.env.EXECUTOR_SOCKET ?? "/run/atena-executor/executor.sock",
+};
+const agendador = new Agendador(banco, (metodo, caminho, corpo) =>
+  pedirExecutor(config.socketExecutor, config.arquivoToken, metodo, caminho, corpo));
+const servidor = criarServidor(config, banco, agendador);
+agendador.iniciar();
 
 if (porta) {
   servidor.listen(Number(porta), "127.0.0.1", () => console.log(`painel em http://127.0.0.1:${porta}`));
@@ -36,6 +39,7 @@ if (porta) {
 
 for (const sinal of ["SIGTERM", "SIGINT"] as const) {
   process.on(sinal, () => {
+    agendador.parar();
     servidor.close();
     servidor.closeAllConnections();
     banco.db.close();

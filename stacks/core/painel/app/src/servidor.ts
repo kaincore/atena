@@ -3,6 +3,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { readdirSync, readFileSync } from "node:fs";
 import { extname, join } from "node:path";
+import { AGENDAVEIS, Agendador, EntradaInvalida, ler, proxima, validar } from "./agendador.ts";
 import type { Banco } from "./banco.ts";
 import { DURACAO_SESSAO } from "./banco.ts";
 import { pedirExecutor, SemToken } from "./executor.ts";
@@ -151,13 +152,35 @@ export function aparelho(agente: string): string {
   return `${sistema} · ${navegador}`;
 }
 
+// as pendências conhecidas do servidor ficam numa seção do README dele (quando existe)
+export const README_SERVIDOR = "/opt/atena/README.md";
+
+export function pendenciasDoReadme(texto: string): string[] {
+  const linhas = texto.split("\n");
+  const inicio = linhas.findIndex((l) => /^##\s+Pendências conhecidas/i.test(l));
+  if (inicio < 0) return [];
+  const itens: string[] = [];
+  for (const l of linhas.slice(inicio + 1)) {
+    if (/^#{1,2}\s/.test(l)) break;
+    if (/^[-*]\s+/.test(l)) itens.push(l.replace(/^[-*]\s+/, "").trim());
+    else if (/^\s+\S/.test(l) && itens.length) itens[itens.length - 1] += " " + l.trim();
+  }
+  return itens.filter(Boolean);
+}
+
+const numero = (valor: unknown) => {
+  const n = Number(valor);
+  if (!Number.isInteger(n) || n < 1) throw new ErroHttp(400, "id inválido");
+  return n;
+};
+
 function resumir(corpo: Record<string, unknown>): string {
   if (corpo.ok === false) return String(corpo.erro ?? "erro");
   const texto = JSON.stringify(corpo.resultado ?? corpo.mensagem ?? "");
   return texto.length > 300 ? texto.slice(0, 300) + "…" : texto;
 }
 
-export function criarServidor(config: Config, banco: Banco): Server {
+export function criarServidor(config: Config, banco: Banco, agendador?: Agendador): Server {
   const publico = carregarPublico(config.publico);
   let conferindo = false; // scrypt usa 32 MB: uma conferência de senha por vez
 
@@ -240,7 +263,81 @@ export function criarServidor(config: Config, banco: Banco): Server {
       return responder(res, 200, { ok: true });
     }
     if (rota === "/api/historico" && req.method === "GET") {
-      return responder(res, 200, { ok: true, historico: banco.historico() });
+      const agendamento = url.searchParams.get("agendamento");
+      return responder(res, 200, { ok: true, historico: banco.historico(100, agendamento ? numero(agendamento) : null) });
+    }
+
+    // --- agendamentos (o agendador roda as ações; veja agendador.ts)
+    if (rota === "/api/agendamentos" && req.method === "GET") {
+      const agendamentos = banco.agendamentos().map((l) => ({ ...ler(l), execucoes: banco.historico(5, l.id) }));
+      return responder(res, 200, { ok: true, agendaveis: AGENDAVEIS, agendamentos });
+    }
+    if (rota === "/api/agendamentos/salvar" && req.method === "POST") {
+      let entrada;
+      try {
+        entrada = validar(await lerCorpo(req));
+      } catch (e) {
+        if (e instanceof EntradaInvalida) throw new ErroHttp(400, e.message);
+        throw e;
+      }
+      if (entrada.id && !banco.agendamento(entrada.id)) throw new ErroHttp(404, "agendamento não encontrado");
+      const seguinte = proxima(entrada.quando, Date.now());
+      if (seguinte === null) throw new ErroHttp(400, "essa data e hora já passaram");
+      const id = banco.salvarAgendamento({ ...entrada, ativo: true, proxima: seguinte });
+      return responder(res, 200, { ok: true, agendamento: ler(banco.agendamento(id)!) });
+    }
+    const operacao = rota.match(/^\/api\/agendamentos\/(ativar|apagar|rodar)$/);
+    if (operacao && req.method === "POST") {
+      const corpo = await lerCorpo(req);
+      const linha = banco.agendamento(numero(corpo.id));
+      if (!linha) throw new ErroHttp(404, "agendamento não encontrado");
+      const a = ler(linha);
+      if (operacao[1] === "apagar") banco.apagarAgendamento(a.id);
+      else if (operacao[1] === "ativar") {
+        if (corpo.ativo) {
+          const seguinte = proxima(a.quando, Date.now());
+          if (seguinte === null) throw new ErroHttp(400, "essa data e hora já passaram; edite o agendamento");
+          banco.marcarAgendamento(a.id, { ativo: true, proxima: seguinte });
+        } else banco.marcarAgendamento(a.id, { ativo: false });
+      } else {
+        if (!agendador) throw new ErroHttp(503, "o agendador não está ligado");
+        if (agendador.rodando.has(a.id)) throw new ErroHttp(409, "esse agendamento já está rodando");
+        agendador.rodar(a).catch((e) => console.error("agendador:", e)); // pode levar minutos
+        return responder(res, 202, { ok: true });
+      }
+      return responder(res, 200, { ok: true });
+    }
+
+    // --- pendências: as do README do servidor e as suas
+    if (rota === "/api/pendencias" && req.method === "GET") {
+      let readme: string | null = null;
+      try {
+        const r = await executor("POST", "/acao/arquivo.ler", { params: { caminho: README_SERVIDOR }, origem: "painel" });
+        const texto = (r.corpo.resultado as { texto?: unknown } | undefined)?.texto;
+        if (r.status === 200 && typeof texto === "string") {
+          banco.sincronizarReadme(pendenciasDoReadme(texto));
+          readme = README_SERVIDOR;
+        }
+      } catch {
+        // sem executor: mostra o que já está no banco
+      }
+      return responder(res, 200, { ok: true, readme, pendencias: banco.pendencias() });
+    }
+    if (rota === "/api/pendencias/nova" && req.method === "POST") {
+      const { texto } = await lerCorpo(req);
+      if (typeof texto !== "string" || !texto.trim() || texto.length > 300) throw new ErroHttp(400, "escreva a pendência (até 300 letras)");
+      banco.novaPendencia(texto.trim());
+      return responder(res, 200, { ok: true });
+    }
+    if (rota === "/api/pendencias/marcar" && req.method === "POST") {
+      const { id, feita } = await lerCorpo(req);
+      if (!banco.marcarPendencia(numero(id), Boolean(feita))) throw new ErroHttp(404, "pendência não encontrada");
+      return responder(res, 200, { ok: true });
+    }
+    if (rota === "/api/pendencias/apagar" && req.method === "POST") {
+      const { id } = await lerCorpo(req);
+      if (!banco.apagarPendencia(numero(id))) throw new ErroHttp(404, "só dá para apagar as que você criou (as do README somem quando saem de lá)");
+      return responder(res, 200, { ok: true });
     }
 
     const acao = rota.match(/^\/api\/acao\/([a-z.]+)$/);

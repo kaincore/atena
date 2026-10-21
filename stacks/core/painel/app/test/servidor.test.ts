@@ -6,8 +6,10 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import type { AddressInfo } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { Agendador } from "../src/agendador.ts";
 import { Banco } from "../src/banco.ts";
-import { criarServidor } from "../src/servidor.ts";
+import { pedirExecutor } from "../src/executor.ts";
+import { criarServidor, pendenciasDoReadme } from "../src/servidor.ts";
 import { gerar } from "../src/senha.ts";
 
 const pasta = mkdtempSync(join(tmpdir(), "painel-"));
@@ -18,10 +20,12 @@ const config = {
   socketExecutor: join(pasta, "executor.sock"),
 };
 const TOKEN = "atx-token-de-teste";
+let README = "# Servidor\n\n## Pendências conhecidas\n\n- **Backup:** não existe.\n- **Diun:** não instalado,\n  falta a regra 4.\n\n## Outra seção\n\n- não é pendência\n";
 const recebidos: { metodo: string; caminho: string; token: string; corpo: any }[] = [];
 let executor: Server;
 let painel: Server;
 let banco: Banco;
+let agendador: Agendador;
 let base: string;
 
 before(async () => {
@@ -43,6 +47,8 @@ before(async () => {
         return responder(200, { ok: true, pedido: { id: "abcd1234", estado: "concluido", resultado: { reiniciados: ["arca"] } } });
       if (req.url === "/acao/pc.ligar") return responder(500, { ok: false, erro: "falhou de propósito" });
       if (req.url === "/acao/claude.tarefa") return responder(202, { ok: true, pedido: "beef0001", estado: "executando" });
+      if (req.url === "/acao/arquivo.ler" && corpo?.params?.caminho === "/opt/atena/README.md")
+        return responder(200, { ok: true, resultado: { arquivo: "/opt/atena/README.md", texto: README, cortado: false } });
       if (req.url?.startsWith("/pedido/beef0001"))
         return responder(200, { ok: true, pedido: { id: "beef0001", estado: "concluido", resumo: "Fiz o app de lista de compras" } });
       responder(200, { ok: true, acao: req.url, resultado: { eco: corpo } });
@@ -50,12 +56,15 @@ before(async () => {
   });
   await new Promise<void>((r) => executor.listen(config.socketExecutor, r));
   banco = new Banco(":memory:");
-  painel = criarServidor(config, banco);
+  agendador = new Agendador(banco, (metodo, caminho, corpo) =>
+    pedirExecutor(config.socketExecutor, config.arquivoToken, metodo, caminho, corpo), Date.now, 0);
+  painel = criarServidor(config, banco, agendador);
   await new Promise<void>((r) => painel.listen(0, "127.0.0.1", r));
   base = `http://127.0.0.1:${(painel.address() as AddressInfo).port}`;
 });
 
 after(() => {
+  agendador.parar();
   painel.close();
   executor.close();
   rmSync(pasta, { recursive: true, force: true });
@@ -212,6 +221,58 @@ test("o lab e o Claude Code: consultas fora do histórico; o resto entra, e o tr
   await pedir("GET", "/api/pedido/beef0001", undefined, cookie);
   assert.equal(banco.historico()[0].estado, "concluido");
   assert.match(banco.historico()[0].resumo, /Fiz o app de lista de compras/);
+});
+
+test("agendamentos: salvar, listar, pausar, retomar, rodar agora e apagar", async () => {
+  const cookie = await entrar();
+  const daquiAUmaHora = new Date(Date.now() + 3600_000);
+  const hora = `${String(daquiAUmaHora.getHours()).padStart(2, "0")}:${String(daquiAUmaHora.getMinutes()).padStart(2, "0")}`;
+  const novo = { acao: "servico.reiniciar", params: { stack: "arca" }, quando: { tipo: "semana", dias: [0, 1, 2, 3, 4, 5, 6], hora } };
+  const r = await pedir("POST", "/api/agendamentos/salvar", novo, cookie);
+  assert.equal(r.status, 200);
+  const id = r.corpo.agendamento.id;
+  assert.equal(r.corpo.agendamento.nome, "Reiniciar arca");
+  assert.ok(r.corpo.agendamento.proxima > Date.now());
+  assert.equal((await pedir("POST", "/api/agendamentos/salvar", { ...novo, acao: "app.apagar" }, cookie)).status, 400);
+  assert.match((await pedir("POST", "/api/agendamentos/salvar", { acao: "pc.ligar", quando: { tipo: "uma_vez", em: Date.now() - 1000 } }, cookie)).corpo.erro, /já passaram/);
+  const lista = await pedir("GET", "/api/agendamentos", undefined, cookie);
+  assert.ok(lista.corpo.agendaveis["pc.ligar"] === null);
+  assert.deepEqual(lista.corpo.agendamentos.find((a: { id: number }) => a.id === id).execucoes, []);
+
+  await pedir("POST", "/api/agendamentos/ativar", { id, ativo: false }, cookie);
+  assert.equal(banco.agendamento(id)!.ativo, 0);
+  await pedir("POST", "/api/agendamentos/ativar", { id, ativo: true }, cookie);
+  assert.equal(banco.agendamento(id)!.ativo, 1);
+
+  recebidos.length = 0;
+  assert.equal((await pedir("POST", "/api/agendamentos/rodar", { id }, cookie)).status, 202);
+  for (let i = 0; i < 50 && banco.historico(5, id)[0]?.estado !== "concluido"; i++) await new Promise((p) => setTimeout(p, 20));
+  assert.deepEqual(recebidos[0].corpo, { params: { stack: "arca" }, origem: "agendamento" });
+  assert.equal(banco.historico(5, id)[0].estado, "concluido");
+  const historico = await pedir("GET", `/api/historico?agendamento=${id}`, undefined, cookie);
+  assert.equal(historico.corpo.historico.length, 1);
+
+  assert.equal((await pedir("POST", "/api/agendamentos/apagar", { id }, cookie)).status, 200);
+  assert.equal((await pedir("POST", "/api/agendamentos/apagar", { id }, cookie)).status, 404);
+});
+
+test("pendências: as do README entram, as suas também; a que sai do README fica resolvida", async () => {
+  assert.deepEqual(pendenciasDoReadme(README), ["**Backup:** não existe.", "**Diun:** não instalado, falta a regra 4."]);
+  const cookie = await entrar();
+  let r = await pedir("GET", "/api/pendencias", undefined, cookie);
+  assert.equal(r.corpo.readme, "/opt/atena/README.md");
+  assert.equal(r.corpo.pendencias.filter((p: { feita: number | null }) => !p.feita).length, 2);
+  assert.equal((await pedir("POST", "/api/pendencias/nova", { texto: "trocar a pasta térmica" }, cookie)).status, 200);
+  r = await pedir("GET", "/api/pendencias", undefined, cookie);
+  const minha = r.corpo.pendencias.find((p: { origem: string }) => p.origem === "manual");
+  const doReadme = r.corpo.pendencias.find((p: { origem: string }) => p.origem === "readme");
+  assert.equal((await pedir("POST", "/api/pendencias/marcar", { id: minha.id, feita: true }, cookie)).status, 200);
+  assert.equal((await pedir("POST", "/api/pendencias/apagar", { id: doReadme.id }, cookie)).status, 404);
+  assert.equal((await pedir("POST", "/api/pendencias/apagar", { id: minha.id }, cookie)).status, 200);
+  README = README.replace("- **Backup:** não existe.\n", "");
+  r = await pedir("GET", "/api/pendencias", undefined, cookie);
+  const backup = r.corpo.pendencias.find((p: { texto: string }) => p.texto.startsWith("**Backup"));
+  assert.ok(backup.feita, "saiu do README: resolvida");
 });
 
 test("esperar do pedido tem teto de 60 s", async () => {
