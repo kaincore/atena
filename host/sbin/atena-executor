@@ -2668,6 +2668,20 @@ def acao_atividade_lista(cliente, params):
     return {"itens": itens}
 
 
+def acao_aviso_celular(cliente, params):
+    """Aviso no celular do dono, pelo ntfy. O painel não tem rede: os agendamentos dele avisam por aqui."""
+    titulo, texto = params.get("titulo"), params.get("texto", "")
+    if not isinstance(titulo, str) or not 1 <= len(titulo.strip()) <= 120:
+        raise Erro(400, "titulo deve ter de 1 a 120 caracteres")
+    if not isinstance(texto, str) or len(texto) > 3000:
+        raise Erro(400, "texto deve ter até 3000 caracteres")
+    try:
+        ntfy("aprovacoes", ocultar(titulo.strip()), ocultar(texto) or titulo.strip(), tags=["calendar"])
+    except (OSError, urllib.error.URLError) as e:
+        raise Erro(502, f"o ntfy não recebeu o aviso: {e}")
+    return {"avisado": True}
+
+
 # nome: (função, descrição, preparar). Sem preparar, a ação roda na hora: função(cliente, params).
 # Com preparar, vira um pedido: preparar(cliente, params) valida e descreve, e função(pedido) roda
 # depois da aprovação no celular (se o token do cliente exigir) ou na hora.
@@ -2679,6 +2693,7 @@ ACOES = {
                            "(pedido, decisao: aprovar|recusar|responder, resposta? para pergunta)", None),
     "atividade.lista":   (acao_atividade_lista, "registro do executor, do mais novo ao mais velho "
                           "(linhas? 1-1000, cliente?, so_erros?)", None),
+    "aviso.celular":     (acao_aviso_celular, "manda um aviso ao celular do dono (titulo, texto?)", None),
     "status.servicos":   (acao_status_servicos, "estado dos containers das zonas do cliente", None),
     "status.recursos":   (acao_status_recursos, "CPU, RAM, discos, GPU e temperaturas agora", None),
     "status.containers": (acao_status_containers, "CPU e RAM de cada container agora", None),

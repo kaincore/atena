@@ -201,6 +201,28 @@ confere("responder pelo painel devolve a resposta à ponte", r["resultado"]["res
 status, r = decidir(id2, "responder", "x")
 confere("aprovação não se responde (400)", status == 400, r)
 
+# --- aviso no celular (os agendamentos do painel avisam por aqui) ---
+painel_cliente = {"cliente": "painel", "zonas": ["core", "apps", "lab"]}
+r = ex.acao_aviso_celular(painel_cliente, {"titulo": "Agendamento falhou", "texto": "ligar o PC falhou\ntoken=abc123def"})
+confere("aviso.celular manda ao ntfy, com os segredos ocultos", r == {"avisado": True}
+        and ENVIADOS[-1]["titulo"] == "Agendamento falhou" and "abc123def" not in ENVIADOS[-1]["texto"], ENVIADOS[-1])
+for params, nome in (({}, "sem título"), ({"titulo": "x" * 121}, "título longo"), ({"titulo": "a", "texto": 5}, "texto que não é texto")):
+    try:
+        ex.acao_aviso_celular(painel_cliente, params)
+        confere(f"aviso {nome}: recusado", False)
+    except ex.Erro as e:
+        confere(f"aviso {nome}: recusado (400)", e.status == 400)
+ntfy_antes = ex.ntfy
+def ntfy_fora(*a, **k):
+    raise OSError("conexão recusada")
+ex.ntfy = ntfy_fora
+try:
+    ex.acao_aviso_celular(painel_cliente, {"titulo": "teste"})
+    confere("ntfy fora do ar: 502", False)
+except ex.Erro as e:
+    confere("ntfy fora do ar: 502 (quem pediu fica sabendo)", e.status == 502)
+ex.ntfy = ntfy_antes
+
 # --- o botão do celular continua igual ---
 status, r = reiniciar(hermes)
 segredo = ex.ESTADO["pedidos"][r["pedido"]]["segredo"]
