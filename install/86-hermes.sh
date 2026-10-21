@@ -90,16 +90,17 @@ docker exec -u hermes hermes /opt/data/ferramentas/py/bin/pip install -q --disab
 
 docker restart hermes >/dev/null
 sleep 10
-# confere no arquivo, e não pelo "hermes cron list": logo depois do restart ele ainda não responde
-tem_ronda() {
-  python3 -c 'import json, sys
-sys.exit(0 if any(j.get("name") == "ronda" for j in json.load(open(sys.argv[1])).get("jobs", [])) else 1)' \
-    "$D/cron/jobs.json" 2>/dev/null
-}
-if ! tem_ronda; then
-  docker exec -u hermes hermes hermes cron create "every 3m" \
-    "Ronda do servidor. O bloco MONITOR CHANGE DETECTED mostra o que mudou na lista de problemas (\"tudo normal\" quando não há nenhum). Siga a seção Ronda da habilidade servidor-atena: investigue, resolva o que for reversível (reiniciar uma vez o que caiu) e mande ao dono um resumo curto, no seu tom. Se agora está tudo normal, avise em uma linha. Nada destrutivo." \
-    --name ronda --monitor-script ronda.py --skill servidor-atena --deliver telegram >/dev/null \
+# a ronda: criada uma vez e, nas atualizações, com o texto e as habilidades de agora (com o lab, a
+# habilidade lab também, por causa das linhas do Claude Code)
+skills_ronda=(--skill servidor-atena)
+if [ -f "$D/skills/atena/lab/SKILL.md" ]; then skills_ronda+=(--skill lab); fi
+id=$(ronda_id)
+if [ -z "$id" ]; then
+  docker exec -u hermes hermes hermes cron create "every 3m" "$RONDA" \
+    --name ronda --monitor-script ronda.py "${skills_ronda[@]}" --deliver telegram >/dev/null \
     || aviso "não consegui criar a ronda; crie depois (veja docs/pt/operacao.md)"
+else
+  docker exec -u hermes hermes hermes cron edit "$id" --prompt "$RONDA" "${skills_ronda[@]}" >/dev/null \
+    || aviso "não consegui atualizar a ronda (docker exec -u hermes hermes hermes cron list)"
 fi
 ok "ronda de 3 em 3 minutos (só gasta API quando algo muda)"

@@ -196,5 +196,11 @@ if [ -d "$D" ] && id hermes >/dev/null 2>&1; then
   instalar_arquivo "$RAIZ/host/lab/hermes-compose.override.yaml" "$S/compose.override.yaml"
   chown "$ADMIN:$ADMIN" "$S/compose.override.yaml"
   ( cd "$S" && docker compose up -d --quiet-pull >/dev/null 2>&1 ) || erro "o Hermes não subiu com os projetos do lab (cd $S && docker compose up)"
+  # a ronda lê a habilidade lab também (as linhas do Claude Code)
+  id=$(ronda_id)
+  if [ -n "$id" ]; then
+    docker exec -u hermes hermes hermes cron edit "$id" --prompt "$RONDA" --skill servidor-atena --skill lab >/dev/null \
+      || aviso "não consegui pôr a habilidade lab na ronda (docker exec -u hermes hermes hermes cron list)"
+  fi
   ok "Atena no lab: habilidade lab, ações no token e /srv/lab/projetos no terminal dela"
 fi

@@ -96,11 +96,12 @@ journalctl -u atena-executor -f                               # cada pedido, com
 - Terminal: `docker exec -it -u hermes hermes hermes`.
 - Personalidade e habilidades: `/srv/agents/hermes/SOUL.md` e `/srv/agents/hermes/skills/atena/`. O instalador guarda uma cópia antes de sobrescrever um arquivo que você mudou.
 - Configuração: `docker exec -u hermes hermes hermes config set <chave> <valor>`. Para voltar ao padrão do modelo: `sudo sh hermes/configurar.sh` e `docker restart hermes`.
-- Tarefas agendadas: `docker exec -u hermes hermes hermes cron list`. Se a ronda sumir, crie de novo:
+- Tarefas agendadas: `docker exec -u hermes hermes hermes cron list`. Se a ronda sumir, rode o instalador de novo (com as mesmas opções): ele cria a ronda e, nas atualizações, deixa o texto e as habilidades dela iguais aos do modelo (com o lab, `servidor-atena` e `lab`). À mão:
   ```bash
-  docker exec -u hermes hermes hermes cron create "every 3m" "Ronda do servidor. Siga a seção Ronda da habilidade servidor-atena." \
-    --name ronda --monitor-script ronda.py --skill servidor-atena --deliver telegram
+  docker exec -u hermes hermes hermes cron create "every 3m" "Ronda do servidor. Siga a seção Ronda das habilidades servidor-atena e lab." \
+    --name ronda --monitor-script ronda.py --skill servidor-atena --skill lab --deliver telegram
   ```
+  (sem o lab, tire o `--skill lab`)
 - Gasto: pergunte a ela ("quanto gastamos este mês?").
 - Atualizar o Hermes: leia as notas da versão, troque a imagem no compose e confira o `config.yaml` gerado. A documentação no GitHub é da versão em desenvolvimento, que pode ser mais nova que a sua.
 

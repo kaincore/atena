@@ -33,6 +33,17 @@ instalar_arquivo() {
   install -D -m "$modo" -o root -g root "$src" "$dst"
 }
 
+# a ronda da Atena: o texto da tarefa agendada (as regras ficam na seção Ronda das habilidades)
+RONDA="Ronda do servidor (e do Claude Code, se houver o lab). O bloco MONITOR CHANGE DETECTED mostra o que mudou na lista (ela diz tudo normal quando o servidor não tem problema; as linhas do Claude Code vêm no fim). Siga a seção Ronda das habilidades servidor-atena e lab: investigue e resolva o que for reversível no servidor (reiniciar uma vez o que caiu), repasse ao dono as perguntas do Claude Code e resuma os trabalhos que terminaram. Escreva curto e limpo, no seu tom. Quando a habilidade disser que não há nada a dizer, responda exatamente [SILENT]. Nada destrutivo."
+
+# o id da tarefa "ronda" no Hermes, ou nada se ela não existe. Lê o arquivo, e não o "hermes cron list":
+# logo depois de reiniciar, o Hermes ainda não responde.
+ronda_id() {
+  python3 -c 'import json, sys
+print(next((j["id"] for j in json.load(open(sys.argv[1])).get("jobs", []) if j.get("name") == "ronda"), ""))' \
+    /srv/agents/hermes/cron/jobs.json 2>/dev/null || true
+}
+
 # token do executor para a Atena (/srv/agents/hermes/executor.token). Refaz o token quando ele não
 # existe, quando o do arquivo não vale mais ou quando falta alguma das ações exigidas. Um token refeito
 # mantém as zonas e a regra de aprovação que você tiver ajustado; as ações de aprovar_novas entram na

@@ -96,11 +96,12 @@ journalctl -u atena-executor -f                               # every request, w
 - Terminal: `docker exec -it -u hermes hermes hermes`.
 - Personality and skills: `/srv/agents/hermes/SOUL.md` and `/srv/agents/hermes/skills/atena/`. The installer keeps a copy before overwriting a file you changed.
 - Configuration: `docker exec -u hermes hermes hermes config set <key> <value>`. To go back to the template defaults: `sudo sh hermes/configurar.sh` and `docker restart hermes`.
-- Scheduled tasks: `docker exec -u hermes hermes hermes cron list`. If the patrol is gone, create it again:
+- Scheduled tasks: `docker exec -u hermes hermes hermes cron list`. If the patrol is gone, run the installer again (with the same options): it creates the patrol and, on updates, keeps its text and skills identical to the template's (with the lab, `servidor-atena` and `lab`). By hand:
   ```bash
-  docker exec -u hermes hermes hermes cron create "every 3m" "Ronda do servidor. Siga a seção Ronda da habilidade servidor-atena." \
-    --name ronda --monitor-script ronda.py --skill servidor-atena --deliver telegram
+  docker exec -u hermes hermes hermes cron create "every 3m" "Ronda do servidor. Siga a seção Ronda das habilidades servidor-atena e lab." \
+    --name ronda --monitor-script ronda.py --skill servidor-atena --skill lab --deliver telegram
   ```
+  (without the lab, drop `--skill lab`)
 - Spending: ask her ("how much did we spend this month?").
 - Upgrading Hermes: read the release notes, change the image in the compose file and check the generated `config.yaml`. The docs on GitHub describe the development version, which may be newer than yours.
 
