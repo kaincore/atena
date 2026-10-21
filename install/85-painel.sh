@@ -1,6 +1,6 @@
 # Etapa 85 (só com --painel): o painel do servidor no navegador e no celular (PWA), só pelo Tailscale.
 # O container não tem rede: o tailscale serve entrega as visitas por um socket, e o painel pede as
-# ações ao executor por outro, com um token só dele (30 ações; só apaga apps do lab, confirmando na tela).
+# ações ao executor por outro, com um token só dele (38 ações; só apaga apps do lab e só edita stacks de apps, confirmando na tela).
 # O código do painel é atualizado a cada execução. Depois, falta você: sudo atena-painel-senha.
 
 [ "$INSTALAR_PAINEL" = sim ] || return 0
@@ -18,6 +18,8 @@ ACOES_PAINEL=$ACOES_PAINEL,aprovacoes.lista,aprovacoes.decidir,atividade.lista  
 ACOES_PAINEL=$ACOES_PAINEL,sistema.processos,sistema.rede,servico.journal        # a aba Sistema
 ACOES_PAINEL=$ACOES_PAINEL,app.publicar,app.cancelar,app.apagar,app.restaurar,app.comando   # o lab
 ACOES_PAINEL=$ACOES_PAINEL,claude.tarefa,claude.trabalhos,claude.cancelar                   # o Claude Code
+ACOES_PAINEL=$ACOES_PAINEL,stack.editar,stack.aplicar,stack.fotos,stack.desfazer            # o editor de stacks
+ACOES_PAINEL=$ACOES_PAINEL,arquivo.ler,arquivo.procurar,arquivo.buscar,aviso.celular        # arquivos e os avisos da agenda
 ZONAS_PAINEL=core,apps,ai,agents,lab
 
 # atena-painel: sem login, sem sudo, sem Docker; o grupo atena-acoes dá acesso ao socket do executor
