@@ -55,20 +55,24 @@ const consultar = (nome, params = {}) => api("POST", `/api/acao/${nome}`, { para
 // ações que mudam algo: confirma, pede, acompanha o pedido (202) e avisa o resultado
 async function mudar(nome, params, pergunta) {
   if (pergunta && !confirm(pergunta)) return null;
-  avisar(`${NOMES[nome] ?? nome}…`);
+  const titulo = NOMES[nome] ?? nome;
+  avisar(`${titulo}…`);
   let r = await consultar(nome, params);
+  let terminou = r.status !== 202;
   if (r.status === 202 && r.pedido) {
     for (let i = 0; i < 10 && r.ok !== false; i++) {
       const p = await api("GET", `/api/pedido/${r.pedido}?esperar=30`);
-      if (p.ok === false) { r = p; break; }
+      if (p.ok === false) { r = p; terminou = true; break; }
       if (TERMINADOS.has(p.pedido.estado)) {
         r = p.pedido.estado === "concluido" ? { ok: true, resultado: p.pedido.resultado } : { ok: false, erro: p.pedido.erro ?? p.pedido.estado };
+        terminou = true;
         break;
       }
     }
   }
-  if (r.ok === false) avisar(`${NOMES[nome] ?? nome}: ${r.erro}`, "erro");
-  else avisar(`${NOMES[nome] ?? nome}: feito`, "ok");
+  if (r.ok === false) avisar(`${titulo}: ${r.erro}`, "erro");
+  else if (!terminou) avisar(`${titulo}: ainda em andamento; o Histórico mostra quando terminar`);
+  else avisar(`${titulo}: feito`, "ok");
   return r;
 }
 
