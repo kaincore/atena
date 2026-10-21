@@ -119,6 +119,10 @@ button.perigo { background: var(--ruim); border-color: var(--ruim); }
 button.discreto.perigo { background: transparent; color: var(--ruim); }
 .opcao { display: flex; gap: .4rem; align-items: flex-start; }
 .opcao input { margin-top: .3rem; }
+.codigo { width: 100%; font: .8rem/1.45 ui-monospace, monospace; min-height: 40dvh; white-space: pre; overflow: auto; }
+.lista.arquivos li { padding: .25rem 0; }
+.lista.arquivos a { text-decoration: none; overflow-wrap: anywhere; }
+.lista.arquivos a.pasta { font-weight: 600; }
 .janela-avisos { display: grid; gap: .5rem; margin-top: .5rem; position: sticky; bottom: 0; }
 button:disabled { opacity: .5; cursor: wait; }
 
