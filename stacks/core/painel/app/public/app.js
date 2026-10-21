@@ -13,6 +13,8 @@ const NOMES = {
   "app.apagar": "Apagar do lab",
   "app.restaurar": "Restaurar da lixeira",
   "app.comando": "Comando no app",
+  "claude.tarefa": "Trabalho do Claude Code",
+  "claude.cancelar": "Cancelar trabalho do Claude Code",
   "aprovacoes.decidir": "Decisão",
 };
 const ORDEM_ZONAS = ["core", "ai", "agents", "apps", "lab", "prod"];
@@ -57,12 +59,17 @@ async function api(metodo, caminho, corpo) {
 
 const consultar = (nome, params = {}) => api("POST", `/api/acao/${nome}`, { params });
 
-// ações que mudam algo: confirma, pede, acompanha o pedido (202) e avisa o resultado
-async function mudar(nome, params, pergunta) {
+// ações que mudam algo: confirma, pede, acompanha o pedido (202) e avisa o resultado.
+// acompanhar = false: só avisa que começou (o trabalho do Claude Code leva de minutos a horas)
+async function mudar(nome, params, pergunta, acompanhar = true) {
   if (pergunta && !confirm(pergunta)) return null;
   const titulo = NOMES[nome] ?? nome;
   avisar(`${titulo}…`);
   let r = await consultar(nome, params);
+  if (r.status === 202 && r.pedido && !acompanhar) {
+    avisar(`${titulo}: começou (pedido ${r.pedido})`, "ok");
+    return r;
+  }
   let terminou = r.status !== 202;
   if (r.status === 202 && r.pedido) {
     for (let i = 0; i < 10 && r.ok !== false; i++) {
@@ -231,8 +238,10 @@ async function telaPC() {
   )];
 }
 
-// --- lab: os apps que o Claude Code fez -------------------------------------------------------------
+// --- lab: os apps que o Claude Code fez e os trabalhos dele ------------------------------------------
 
+const NOME_PROJETO = "[a-z0-9][a-z0-9\\-]{0,39}";
+const rascunho = { projeto: "", pedido: "", conta: "", modelo: "", esforco: "", minutos: "60", somente_plano: false, publicar: false };
 
 // os botões de um app; cada um confirma, pede e recarrega a tela
 function botoesApp(p) {
@@ -299,9 +308,79 @@ function janelaApagar(p) {
   abrirJanela(`Apagar ${p.projeto}`, form);
 }
 
+const ESTADOS_TRABALHO = { planejando: "planejando", executando: "rodando", aguardando: "esperando o celular" };
+
+function itemTrabalho(t) {
+  const rodando = t.estado === "planejando" || t.estado === "executando";
+  const quem = t.cliente && t.cliente !== "painel" ? (t.cliente === "hermes" ? "pela Atena" : `por ${t.cliente}`) : null;
+  return h("li", null,
+    h("div", { class: "stack-topo" },
+      h("span", null,
+        h("span", { class: `selo ${t.estado === "concluido" ? "ok" : ESTADOS_TRABALHO[t.estado] ? "neutro" : "ruim"}` }, ESTADOS_TRABALHO[t.estado] ?? t.estado),
+        ` ${t.projeto ?? "?"} `),
+      rodando && h("button", { type: "button", class: "discreto", onclick: async () => {
+        if (await mudar("claude.cancelar", { pedido: t.id }, `Interromper o trabalho ${t.id} em ${t.projeto}? A conversa fica guardada.`)) atualizar();
+      } }, "Cancelar")),
+    h("div", null, t.pedido),
+    h("small", null, [quem, t.conta, t.modelo, t.esforco, t.criado, `trabalho ${t.id}`, t.commits ? `${t.commits} commits` : null].filter(Boolean).join(" · ")),
+    t.esperando_permissao_no_celular && h("div", null, h("a", { href: "#aprovacoes" }, "Esperando a sua permissão: ver em Aprovações")),
+    t.resumo && h("details", null, h("summary", null, "Resumo"), h("pre", { class: "texto-pedido" }, t.resumo)));
+}
+
+function cartaoNovoTrabalho(trabalhos, projetos) {
+  const contas = trabalhos.contas_com_login ?? [];
+  if (!rascunho.conta || !contas.includes(rascunho.conta)) rascunho.conta = contas[0] ?? "";
+  const guardar = (evento) => {
+    const f = evento.currentTarget;
+    Object.assign(rascunho, {
+      projeto: f.projeto.value, pedido: f.pedido.value, conta: f.conta.value, modelo: f.modelo.value, esforco: f.esforco.value,
+      minutos: f.minutos.value, somente_plano: f.somente_plano.checked, publicar: f.publicar.checked,
+    });
+  };
+  const opcoes = (nome, lista) => h("select", { name: nome }, lista.map(([v, t]) => h("option", { value: v, selected: v === rascunho[nome] }, t)));
+  const marcar = (nome, texto) => h("label", { class: "opcao" }, h("input", { type: "checkbox", name: nome, checked: rascunho[nome] }), ` ${texto}`);
+  return cartao("Novo trabalho do Claude Code",
+    contas.length ? null : h("p", { class: "erro" }, "Nenhuma conta do Claude Code com login no servidor (sudo atena-claude-conta entrar <conta>)."),
+    h("form", { class: "resposta", oninput: guardar, onchange: guardar, onsubmit: async (evento) => {
+      evento.preventDefault();
+      guardar(evento);
+      const params = { projeto: rascunho.projeto.trim(), pedido: rascunho.pedido.trim(), conta: rascunho.conta, minutos: Number(rascunho.minutos),
+        ...(rascunho.modelo ? { modelo: rascunho.modelo } : {}), ...(rascunho.esforco ? { esforco: rascunho.esforco } : {}),
+        ...(rascunho.somente_plano ? { somente_plano: true } : {}), ...(rascunho.publicar ? { publicar: true } : {}) };
+      const r = await mudar("claude.tarefa", params, null, false);
+      if (r && r.ok !== false) {
+        Object.assign(rascunho, { projeto: "", pedido: "", somente_plano: false, publicar: false });
+        atualizar();
+      }
+    } },
+      h("label", null, "Projeto ", h("input", { name: "projeto", list: "projetos-lab", required: true, pattern: NOME_PROJETO,
+        value: rascunho.projeto, placeholder: "lista-compras", autocomplete: "off", title: "minúsculas, números e hífen" })),
+      h("datalist", { id: "projetos-lab" }, projetos.map((p) => h("option", { value: p.projeto }))),
+      h("textarea", { name: "pedido", rows: "4", minlength: "3", maxlength: "4000", required: true,
+        placeholder: "O que o Claude Code deve fazer (um nome de projeto novo cria a pasta)" }, rascunho.pedido),
+      h("div", { class: "filtros" },
+        h("label", null, "Conta ", opcoes("conta", contas.map((c) => [c, c]))),
+        h("label", null, "Modelo ", opcoes("modelo", [["", "padrão"], ["fable", "fable"], ["opus", "opus"], ["sonnet", "sonnet"], ["haiku", "haiku"]])),
+        h("label", null, "Esforço ", opcoes("esforco", [["", "padrão"], ...["low", "medium", "high", "xhigh", "max"].map((e) => [e, e])])),
+        h("label", null, "Tempo ", opcoes("minutos", [["15", "15 min"], ["30", "30 min"], ["60", "1 h"], ["120", "2 h"], ["240", "4 h"], ["600", "10 h"]]))),
+      h("div", { class: "filtros" },
+        marcar("somente_plano", "só planejar (não muda nada)"),
+        marcar("publicar", "publicar quando terminar bem")),
+      h("button", { type: "submit", disabled: !contas.length }, "Mandar")),
+    h("p", { class: "fraco" }, "O Claude Code trabalha sozinho na pasta do projeto, sem sudo e sem Docker. As permissões e perguntas dele aparecem em Aprovações e no celular."));
+}
+
+async function cartaoTrabalhos(trabalhos) {
+  const c = trabalhos.ok === false ? cartao("Trabalhos do Claude Code", falha(trabalhos), semAcao(trabalhos, "claude.trabalhos"))
+    : cartao("Trabalhos do Claude Code", trabalhos.resultado.trabalhos.length
+      ? h("ul", { class: "lista" }, trabalhos.resultado.trabalhos.map(itemTrabalho))
+      : h("p", { class: "fraco" }, "Nenhum trabalho ainda."));
+  c.append(botaoAtualizar(async () => c.replaceWith(await cartaoTrabalhos(await consultar("claude.trabalhos")))));
+  return c;
+}
 
 async function telaLab() {
-  const r = await consultar("app.lista");
+  const [r, trabalhos] = await Promise.all([consultar("app.lista"), consultar("claude.trabalhos")]);
   if (r.ok === false) return [cartao("Lab", falha(r))];
   const { projetos, lixeira } = r.resultado;
   const apps = cartao("Apps do lab", projetos.length ? projetos.map((p) => h("div", { class: "stack" },
@@ -311,8 +390,10 @@ async function telaLab() {
     p.endereco && linha("Na rede de casa", h("a", { href: p.endereco, target: "_blank", rel: "noopener" }, p.endereco)),
     linha("Guardado", [p.codigo ? "código" : "sem código", p.dados_guardados ? "dados" : "sem dados"].join(" · ")),
     p.em_andamento && linha("Em andamento", `pedido ${p.em_andamento}`),
-  )) : h("p", { class: "fraco" }, "Nenhum projeto no lab ainda."));
+  )) : h("p", { class: "fraco" }, "Nenhum projeto no lab ainda. Mande um trabalho ao Claude Code para começar."));
   return [
+    trabalhos.ok === false ? null : cartaoNovoTrabalho(trabalhos.resultado, projetos),
+    await cartaoTrabalhos(trabalhos),
     apps,
     lixeira.length ? cartao("Lixeira", h("ul", { class: "lista" }, lixeira.map((l) => h("li", null,
       h("div", { class: "stack-topo" },
