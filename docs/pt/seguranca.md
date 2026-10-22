@@ -57,9 +57,9 @@ São três camadas para nenhuma porta escapar por engano:
 
 ### Painel
 - **Sem rede, sem root e sem Docker.** `network_mode: none`, disco só de leitura, sem capacidades, `no-new-privileges`, 256 MB. O usuário `atena-painel` só está no grupo `atena-acoes`; o instalador para se ele estiver no grupo `docker`.
-- **Entrada só pelo Tailscale**, por um socket que só o root e o painel abrem (`/srv/core/painel` é 700).
+- **Entrada pelo Tailscale**, por um socket que só o root e o painel abrem (`/srv/core/painel` é 700). A da rede de casa (`ATENA_PAINEL_CASA=sim`) é um segundo socket ao lado, aberto pelo repassador do systemd, que roda como `atena-painel`, sem rede própria e sem capacidades.
 - **Senha difícil de adivinhar por força bruta:** scrypt (N=2^15, 32 MB por tentativa), 5 erros em 15 minutos bloqueiam a entrada, e uma conferência por vez.
-- **Cookie** HttpOnly, Secure e SameSite=Strict. Todo POST exige JSON e um cabeçalho próprio, o que barra formulários de outros sites (CSRF).
+- **Cookie** HttpOnly, Secure (pelo Tailscale) e SameSite=Strict. Todo POST exige JSON e um cabeçalho próprio, o que barra formulários de outros sites (CSRF).
 - **CSP** que só aceita o próprio painel, sem frames. As telas são montadas sem `innerHTML`, então um nome de container ou uma linha de log nunca vira código.
 - **Token próprio, sem aprovação no celular:** 38 ações. A única que apaga é `app.apagar`, só no lab: o código vai para a lixeira por 30 dias, e apagar os dados exige digitar o nome do app. Edita só as stacks da zona apps, sempre com foto antes, e lê o servidor menos os segredos, como a Atena. Quem tem a senha do painel tem esse alcance: é mais um motivo para uma senha só dele.
 - **Agenda:** o agendador só roda as ações da lista de agendáveis (PC, reiniciar serviço, apps do lab), e a vez que passou da tolerância não roda depois.
@@ -82,7 +82,7 @@ São três camadas para nenhuma porta escapar por engano:
 | Projeto com `core.fsmonitor` no `.git/config` | Trabalho recusado, sem abrir o Claude Code |
 | Painel: ação fora da lista dele, POST sem o cabeçalho próprio, formulário de outro site | Recusado (403, 415), sem chegar ao executor |
 | Painel: senha errada 5 vezes, depois a certa | Bloqueado por 15 min |
-| Painel: `docker inspect` do container e a porta 3100 pela rede de casa | Sem rede, sem o socket do Docker; nada responde na rede de casa |
+| Painel: `docker inspect` do container e a porta 3100 pela rede de casa | Sem rede, sem o socket do Docker; nada responde na rede de casa (com `ATENA_PAINEL_CASA=nao`, o padrão) |
 
 Os testes automáticos do executor, da ronda e do lab ficam em `tests/`, os do painel em `stacks/core/painel/app/test/`, e todos rodam a cada envio ao GitHub.
 
@@ -96,6 +96,7 @@ Os testes automáticos do executor, da ronda e do lab ficam em `tests/`, os do p
 - **O executor tem acesso ao Docker.** Isso equivale a root. A proteção é a lista fechada: um defeito no executor seria um defeito de segurança do servidor inteiro.
 - **O filtro de segredos é por nome e por formato.** Um segredo num formato desconhecido, dentro de um arquivo de nome comum, pode passar. Guarde segredos em `.env`, `*.key` ou `*.token`.
 - **O que a Atena lê vai para o modelo na nuvem** (Anthropic), menos o que passa por `local.processar`.
+- **Painel na rede de casa (`ATENA_PAINEL_CASA=sim`) é HTTP.** Quem escuta o Wi-Fi pode ler a senha e o cookie da sessão, e com o cookie entra como você até a sessão vencer. O cookie também vai junto para os outros serviços do mesmo IP (Dockge, Beszel, ntfy), porque o cookie não separa portas. Prefira o Tailscale, e troque a senha (`sudo atena-painel-senha`, que derruba as sessões) se desconfiar de alguém na rede.
 - **ntfy sem HTTPS na rede de casa.** Com `http://`, quem escuta o Wi-Fi pode ver o código de um pedido e aprovar antes de você. Fora de casa, use o endereço `https://` do Tailscale em `ATENA_NTFY_URL`.
 - **Injeção de instruções** (um texto que tenta mandar na IA) é reduzida pelas regras e pela aprovação, não eliminada. Por isso a Atena só faz sem aprovação o que tem volta.
 - **O Claude Code do lab baixa pacotes da internet** (npm, PyPI, GitHub). Um pacote malicioso roda dentro do sandbox, só na pasta do projeto, mas pode ir parar num app publicado. Leia o que ele instalou antes de publicar algo importante.

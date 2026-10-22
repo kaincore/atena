@@ -109,11 +109,12 @@ Optional (`./install.sh --painel`). The server in your PC and phone browser, ins
 
 ```text
 Phone or PC (Tailscale) ──HTTPS :3100──> tailscale serve ──socket──> panel (core zone, no network)
+Phone or PC (home network, optional) ──HTTP <home IP>:3100──> atena-painel-casa.socket ──socket──> panel
 panel ──socket──> executor (own token: 38 actions; only deletes lab apps and only edits app stacks)
 ```
 
 - **No network.** The container runs with `network_mode: none`: it can't reach the internet, the home network or other containers, and nothing reaches it over the network. Visits arrive through `tailscale serve`, which delivers to the socket `/srv/core/painel/run/painel.sock`, and requests go to the executor through its socket.
-- **Tailscale only**, at home too. Tailscale's HTTPS is what makes the app installable and keeps the cookie secure.
+- **Through Tailscale**, over HTTPS: that's what makes the app installable and keeps the cookie secure. With `ATENA_PAINEL_CASA=sim`, the panel also opens on the home network, without Tailscale, at `http://<ATENA_LAN_IP>:3100`: systemd listens only on the home IP and hands each visit to a second panel socket (`painel-casa.sock`), where the cookie goes out without `Secure`. There the password crosses the Wi-Fi in the clear and the app can't be installed; turned off (the default), nothing answers on the home network.
 - **One account, with a password.** The hash (scrypt) lives in `/srv/core/painel/senha`, written by `atena-painel-senha`. A session lasts 30 days and renews on every use; changing the password signs out every device.
 - **Two closed lists.** The panel only asks for its own actions, and its executor token only accepts those, in the core, apps, ai, agents and lab zones: queries, logs, spending, restart a service, turn the PC on and off, the lab apps and Claude Code, the app stacks and reading files. No deleting outside the lab and no editing stacks in other zones.
 - **Confirmation on screen.** Restart, shut down, stop, publish and delete ask for confirmation in the panel itself, and deleting an app's data requires typing its name; that's why its token doesn't ask the phone.
@@ -148,7 +149,7 @@ Each zone is a systemd slice under `atena.slice`. Containers join the slice with
 - **Containers going out:** the internet and the router's DNS, yes. The home network, Tailscale devices and the server itself, no.
 - **Coming in from the home network:** any home device reaches whatever is published on the server's IP.
 - **Coming in from away:** only through Tailscale, with `tailscale serve` per service.
-- **The panel:** only through Tailscale, at home and away. It has no port on the home network.
+- **The panel:** through Tailscale, at home and away. On the home network, only with `ATENA_PAINEL_CASA=sim` (HTTP on port 3100 of the home IP).
 - **Internet:** nothing is exposed.
 
 Details and tests in [security](security.md).

@@ -109,11 +109,12 @@ Opcional (`./install.sh --painel`). O servidor no navegador do PC e do celular, 
 
 ```text
 Celular ou PC (Tailscale) ──HTTPS :3100──> tailscale serve ──socket──> painel (zona core, sem rede)
+Celular ou PC (rede de casa, opcional) ──HTTP <IP de casa>:3100──> atena-painel-casa.socket ──socket──> painel
 painel ──socket──> executor (token próprio: 38 ações; só apaga apps do lab e só edita stacks de apps)
 ```
 
 - **Sem rede.** O container tem `network_mode: none`: não alcança a internet, a rede de casa nem outros containers, e nada alcança ele pela rede. As visitas chegam pelo `tailscale serve`, que entrega no socket `/srv/core/painel/run/painel.sock`, e os pedidos vão ao executor pelo socket dele.
-- **Só pelo Tailscale**, inclusive em casa. O HTTPS do Tailscale é o que deixa instalar o app e manter o cookie seguro.
+- **Pelo Tailscale**, em HTTPS: é o que deixa instalar o app e manter o cookie seguro. Com `ATENA_PAINEL_CASA=sim`, o painel também abre na rede de casa, sem o Tailscale, em `http://<ATENA_LAN_IP>:3100`: o systemd escuta só no IP de casa e entrega cada visita a um segundo socket do painel (`painel-casa.sock`), por onde o cookie sai sem `Secure`. Lá a senha passa aberta no Wi-Fi e o app não instala; desligado (o padrão), nada responde na rede de casa.
 - **Uma conta, com senha.** O hash (scrypt) fica em `/srv/core/painel/senha`, gravado pelo `atena-painel-senha`. A sessão dura 30 dias e renova a cada uso; trocar a senha desconecta todos os aparelhos.
 - **Duas listas fechadas.** O painel só pede as ações dele, e o token dele no executor só aceita essas, nas zonas core, apps, ai, agents e lab: consultas, logs, gasto, reiniciar serviço, ligar e desligar o PC, os apps do lab e o Claude Code, as stacks de apps e a leitura de arquivos. Nada de apagar fora do lab nem editar stacks de outras zonas.
 - **Confirmação na tela.** Reiniciar, desligar, parar, publicar e apagar pedem confirmação no próprio painel, e apagar os dados de um app exige digitar o nome dele; por isso o token não pede o celular.
@@ -148,7 +149,7 @@ O `atena.slice` tem `MemoryLow=5G`, porque a proteção de memória de um slice 
 - **Saída dos containers:** internet e DNS do roteador, sim. Rede de casa, aparelhos do Tailscale e o próprio servidor, não.
 - **Entrada pela rede de casa:** qualquer aparelho da rede de casa acessa o que estiver publicado no IP do servidor.
 - **Entrada de fora de casa:** só pelo Tailscale, com `tailscale serve` em cada serviço.
-- **O painel:** só pelo Tailscale, em casa e fora. Ele não tem porta na rede de casa.
+- **O painel:** pelo Tailscale, em casa e fora. Na rede de casa, só com `ATENA_PAINEL_CASA=sim` (HTTP na porta 3100 do IP de casa).
 - **Internet:** nada fica exposto.
 
 Detalhes e testes em [segurança](seguranca.md).

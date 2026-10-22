@@ -57,9 +57,9 @@ Three layers keep a port from leaking by mistake:
 
 ### Panel
 - **No network, no root, no Docker.** `network_mode: none`, read-only disk, no capabilities, `no-new-privileges`, 256 MB. The `atena-painel` user is only in the `atena-acoes` group; the installer stops if it's in the `docker` group.
-- **Tailscale-only entry**, through a socket only root and the panel can open (`/srv/core/painel` is 700).
+- **Entry through Tailscale**, through a socket only root and the panel can open (`/srv/core/painel` is 700). The home-network one (`ATENA_PAINEL_CASA=sim`) is a second socket next to it, opened by the systemd forwarder, which runs as `atena-painel` with no network of its own and no capabilities.
 - **A password that's hard to brute-force:** scrypt (N=2^15, 32 MB per attempt), 5 mistakes in 15 minutes lock the login, and one check at a time.
-- **Cookie** HttpOnly, Secure and SameSite=Strict. Every POST requires JSON and a custom header, which blocks forms from other sites (CSRF).
+- **Cookie** HttpOnly, Secure (through Tailscale) and SameSite=Strict. Every POST requires JSON and a custom header, which blocks forms from other sites (CSRF).
 - **CSP** that only allows the panel itself, no frames. Screens are built without `innerHTML`, so a container name or a log line never becomes code.
 - **Own token, no phone approval:** 38 actions. The only one that deletes is `app.apagar`, lab only: the code goes to the trash for 30 days, and deleting the data requires typing the app's name. It edits only the apps zone stacks, always with a snapshot first, and reads the server except secrets, like Atena. Whoever has the panel password has this reach: one more reason for a password used only there.
 - **Schedule:** the scheduler only runs actions on the schedulable list (PC, restart a service, lab apps), and a run past its tolerance doesn't run later.
@@ -82,7 +82,7 @@ Three layers keep a port from leaking by mistake:
 | A project with `core.fsmonitor` in `.git/config` | Job refused, without starting Claude Code |
 | Panel: an action outside its list, a POST without the custom header, a form from another site | Refused (403, 415), never reaching the executor |
 | Panel: wrong password 5 times, then the right one | Locked for 15 min |
-| Panel: `docker inspect` of the container, and port 3100 from the home network | No network, no Docker socket; nothing answers on the home network |
+| Panel: `docker inspect` of the container, and port 3100 from the home network | No network, no Docker socket; nothing answers on the home network (with `ATENA_PAINEL_CASA=nao`, the default) |
 
 The automated tests for the executor, the patrol and the lab live in `tests/`, the panel's in `stacks/core/painel/app/test/`, and all of them run on every push to GitHub.
 
@@ -96,6 +96,7 @@ The automated tests for the executor, the patrol and the lab live in `tests/`, t
 - **The executor has Docker access.** That is equivalent to root. The protection is the closed list: a bug in the executor would be a security bug for the whole server.
 - **The secret filter works by name and by format.** A secret in an unknown format, inside a file with an ordinary name, can get through. Keep secrets in `.env`, `*.key` or `*.token` files.
 - **What Atena reads goes to the cloud model** (Anthropic), except what goes through `local.processar`.
+- **The panel on the home network (`ATENA_PAINEL_CASA=sim`) is HTTP.** Someone sniffing the Wi-Fi can read the password and the session cookie, and with the cookie they get in as you until the session expires. The cookie is also sent to the other services on the same IP (Dockge, Beszel, ntfy), because cookies don't separate ports. Prefer Tailscale, and change the password (`sudo atena-painel-senha`, which ends every session) if you suspect someone on the network.
 - **ntfy without HTTPS on the home network.** With `http://`, someone sniffing the Wi-Fi could see a request's code and approve it before you. Away from home, use the Tailscale `https://` address in `ATENA_NTFY_URL`.
 - **Prompt injection** (text that tries to command the AI) is reduced by the rules and the approvals, not eliminated. That's why Atena only acts without approval on what can be undone.
 - **The lab's Claude Code downloads packages from the internet** (npm, PyPI, GitHub). A malicious package runs inside the sandbox, only in the project folder, but it can end up in a published app. Look at what it installed before publishing anything important.

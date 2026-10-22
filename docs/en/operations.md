@@ -135,6 +135,7 @@ sudo atena-painel-senha    # the login password (in a terminal; it isn't shown)
 
 The installer prints the address: `https://<server>.<tailnet>.ts.net:3100`. On the phone, with Tailscale on, open it in Chrome and use the ⋮ menu → **Install app**.
 
+- **On the home network, without Tailscale:** set `ATENA_PAINEL_CASA=sim` in `atena.conf` and run `sudo ./install.sh --painel` again. The panel then also opens at `http://<ATENA_LAN_IP>:3100`, over plain HTTP: the password crosses the Wi-Fi in the clear, and there it can't be installed as an app. To remove it, set it back to `nao` and run the installer again (the `atena-painel-casa` units and the ufw rule are removed).
 - **Change the password:** run `sudo atena-painel-senha` again. Every device is signed out.
 - **Connected devices:** in the Ajustes (settings) tab, with the Desconectar button.
 - **Logs:** `docker logs painel` (the panel and the scheduler) and `journalctl -u atena-executor` (each of its requests, with the `painel` client and the `agendamento` origin for scheduled ones).
@@ -142,6 +143,7 @@ The installer prints the address: `https://<server>.<tailnet>.ts.net:3100`. On t
 - **Take it down:**
   ```bash
   sudo tailscale serve --https=3100 off
+  sudo systemctl disable --now atena-painel-casa.socket 2>/dev/null   # if it was on the home network
   cd /opt/atena/stacks/core/painel && docker compose down
   sudo atena-executor token-remover painel
   ```
