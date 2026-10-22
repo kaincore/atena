@@ -1,9 +1,25 @@
-// Início: o servidor no visor, as zonas, o gasto, os próximos agendamentos e as pendências.
+// Início: o servidor nos medalhões, a crepidoma das zonas, o gasto, os próximos agendamentos e as pendências.
 import { api, avisar, cartao, consultar, containerOk, dinheiro, falha, gb, h, item, itens, linha, medidor, modulo,
-  mostrador, num, plural, statusDocker } from "../comum.js";
+  num, numeroGrande, plural, statusDocker } from "../comum.js";
 import { quandoTexto } from "./agenda.js";
 import { abrirZona, marcarZonas, resumirZonas } from "../zonas.js";
-import { visorInicio, vistaExplodida } from "../visor.js";
+import { crepidoma, medalhao, medalhoes } from "../desenhos.js";
+
+// a CPU, a temperatura dela, a RAM e a GPU: o meandro da borda pintado até onde cada uma chega
+function medalhoesServidor(r) {
+  const carga = r.carga[0] / r.nucleos;
+  const usada = (r.ram_total_mb - r.ram_disponivel_mb) / 1024;
+  const total = r.ram_total_mb / 1024;
+  const cpu = r.temperaturas.cpu_c;
+  return medalhoes(
+    medalhao({ rotulo: "CPU", numero: num(Math.min(99.9, carga * 100), carga < 0.1 ? 1 : 0), unidade: "%", fracao: carga,
+      nota: `carga ${num(r.carga[0], 2)} em ${r.nucleos} núcleos` }),
+    cpu != null && medalhao({ rotulo: "Temperatura", numero: num(cpu, 1), unidade: "°C", fracao: cpu / 85, nota: "da CPU" }),
+    medalhao({ rotulo: "RAM", numero: num(usada, 1), unidade: "GB", fracao: usada / total, alerta: 0.95, nota: `de ${num(total, 1)}\u00a0GB` }),
+    r.gpu && medalhao({ rotulo: "GPU", numero: num(r.gpu.temperatura_c), unidade: "°C", fracao: r.gpu.temperatura_c / 85,
+      nota: `uso ${num(r.gpu.uso_pct)}% · VRAM ${num(r.gpu.vram_usada_mb / 1024, 1)} de ${num(r.gpu.vram_total_mb / 1024, 1)}\u00a0GB` }),
+  );
+}
 
 // "**negrito**" e "`código`" do README, sem innerHTML
 function marcado(texto) {
@@ -66,7 +82,7 @@ export async function telaInicio() {
   else {
     const r = recursos.resultado;
     const servidor = modulo("Servidor", `${r.nucleos} núcleos · ${gb(r.ram_total_mb)}`,
-      visorInicio(r),
+      medalhoesServidor(r),
       h("div", { class: "discos" }, Object.entries(r.discos).map(([ponto, d]) => [
         linha(`Disco ${ponto}`, `${num(d.livre_gb, 1)}\u00a0GB livres de ${num(d.total_gb, 1)}\u00a0GB`), medidor(1 - d.livre_gb / d.total_gb, 0.9),
       ])));
@@ -81,7 +97,7 @@ export async function telaInicio() {
     marcarZonas(zonas);
     const ruins = lista.filter((c) => !containerOk(c));
     const desenho = modulo("Zonas", `${lista.length - ruins.length} de ${lista.length} no ar`,
-      vistaExplodida(zonas, abrirZona),
+      crepidoma(zonas, abrirZona),
       ruins.length ? itens(ruins.map((c) => item({ led: "ruim", nome: c.container, detalhe: statusDocker(c.status) })))
         : h("p", { class: "fraco" }, "Todos os containers no ar. Toque numa zona para ver os serviços dela."),
       h("p", null, h("a", { href: "#servicos" }, "Ver os serviços")));
@@ -92,7 +108,7 @@ export async function telaInicio() {
   else {
     const g = gasto.resultado;
     cartoes.push(modulo("Gasto de IA", g.mes,
-      mostrador(num(g.total_usd, 2), "US$ no mês"),
+      numeroGrande(dinheiro(g.total_usd), "no mês"),
       g.por_modelo.filter((m) => m.gasto_usd > 0 || m.teto_usd).map((m) => [
         linha(m.modelo, [`${dinheiro(m.gasto_usd)}${m.teto_usd ? ` de ${dinheiro(m.teto_usd)}` : ""}`, h("small", null, ` · ${plural(m.chamadas, "chamada", "chamadas")}`)]),
         m.teto_usd ? medidor(m.gasto_usd / m.teto_usd) : null,

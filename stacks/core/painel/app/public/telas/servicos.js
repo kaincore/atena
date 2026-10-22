@@ -2,7 +2,7 @@
 import { ORDEM_ZONAS, abrirJanela, atualizar, avisar, cartao, consultar, containerOk, falha, h, item, itens, modulo, mudar,
   plural, porcento, semAcao, statusDocker, tamanhoDocker } from "../comum.js";
 import { abrirZona, marcarZonas, resumirZonas, tirarFoco } from "../zonas.js";
-import { vistaExplodida } from "../visor.js";
+import { crepidoma } from "../desenhos.js";
 
 export async function verLogs(stack) {
   abrirJanela(`Logs de ${stack}`, h("p", { class: "fraco" }, "Carregando…"));
@@ -164,7 +164,7 @@ export async function telaServicos() {
   const ordem = Object.keys(zonas).sort((a, b) => ORDEM_ZONAS.indexOf(a) - ORDEM_ZONAS.indexOf(b));
   const resumo = resumirZonas(servicos.resultado);
   marcarZonas(resumo);
-  const desenho = modulo("Vista explodida", `${resumo.length} zonas · ${servicos.resultado.length} containers`, vistaExplodida(resumo, abrirZona));
+  const desenho = modulo("Zonas", `${resumo.length} zonas · ${servicos.resultado.length} containers`, crepidoma(resumo, abrirZona));
   const foco = tirarFoco();
   if (foco) requestAnimationFrame(() => document.getElementById(`zona-${foco}`)?.scrollIntoView({ behavior: "smooth", block: "start" }));
   return [desenho, ordem.map((zona) => {

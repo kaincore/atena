@@ -19,7 +19,8 @@ function marcarPendentes(n) {
     el.querySelector(".contagem")?.remove();
     if (n) el.append(h("span", { class: "contagem", "aria-label": `${n} esperando` }, String(n)));
   }
-  document.title = n ? `(${n}) Atena` : "Atena";
+  const base = document.title.replace(/^\(\d+\) /, ""); // o nome da tela fica; a contagem vai na frente
+  document.title = n ? `(${n}) ${base}` : base;
   const atual = $("#tela .faixa");
   const nova = faixaAprovacoes(cresceu);
   if (atual) atual.replaceWith(nova ?? "");
@@ -30,7 +31,7 @@ export function faixaAprovacoes(pulsar = false) {
   if (!pendentes || telaAtual() === "aprovacoes") return null;
   const faixa = h("a", { class: `faixa${pulsar ? " pulsa" : ""}`, href: "#aprovacoes" },
     h("strong", null, picto("aprovacoes"), ` ${pendentes} ${pendentes === 1 ? "aprovação esperando" : "aprovações esperando"} você`),
-    h("span", { class: "rotulo" }, "ver", picto("seguir")));
+    h("span", { class: "rotulo" }, "Ver", picto("seguir")));
   // a luz passa uma vez: a faixa fica na tela entre as trocas, e não pode chamar de novo a cada uma
   if (pulsar) setTimeout(() => faixa.classList.remove("pulsa"), 2200);
   return faixa;

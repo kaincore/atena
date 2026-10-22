@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Atena</title>
   <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#e3e4e1" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#141514" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f7f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1320" media="(prefers-color-scheme: dark)">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" href="/icone.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/icone-192.png">
@@ -15,17 +15,17 @@
   <script type="module" src="/app.js"></script>
 </head>
 <body>
-  <div class="aparelho" hidden>
+  <div class="painel" hidden>
     <nav class="trilho" aria-label="Telas">
-      <div class="trilho-marca"><div><span class="marca">ATENA<span class="modelo">AT-1</span></span></div><div class="leds-zonas" aria-label="Zonas"></div></div>
+      <div class="trilho-marca"><span class="marca"><span aria-hidden="true">ΑΘΗΝΑ</span><span class="so-leitor">Atena</span></span><div class="zonas-pontos" aria-label="Zonas"></div></div>
       <div id="trilho-grupos"></div>
-      <button type="button" class="tecla busca" id="abrir-paleta">
+      <button type="button" class="busca" id="abrir-paleta">
         <span class="busca-rotulo">Buscar</span><kbd>Ctrl</kbd><kbd>K</kbd>
       </button>
     </nav>
     <header class="topo">
-      <span class="marca">ATENA<span class="modelo">AT-1</span></span>
-      <div class="leds-zonas" aria-label="Zonas"></div>
+      <span class="marca"><span aria-hidden="true">ΑΘΗΝΑ</span><span class="so-leitor">Atena</span></span>
+      <div class="zonas-pontos" aria-label="Zonas"></div>
     </header>
     <main id="tela"></main>
     <nav class="barra" id="barra" aria-label="Telas principais"></nav>
@@ -33,13 +33,10 @@
 
   <section id="entrada" class="entrada" hidden>
     <form id="form-entrada" class="frente">
-      <div class="frente-topo">
-        <span class="marca">ATENA<span class="modelo">AT-1</span></span>
-        <span class="leds-entrada" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
-      </div>
+      <h1 class="marca"><span aria-hidden="true">ΑΘΗΝΑ</span><span class="so-leitor">Atena</span></h1>
       <label for="senha" class="rotulo">Senha do painel</label>
       <input id="senha" name="senha" type="password" autocomplete="current-password" required autofocus>
-      <button type="submit" class="tecla principal">Entrar</button>
+      <button type="submit" class="principal">Entrar</button>
       <p id="msg-entrada" class="erro" role="alert"></p>
     </form>
   </section>
@@ -47,7 +44,7 @@
   <dialog id="janela">
     <div class="janela-topo">
       <strong id="janela-titulo"></strong>
-      <button type="button" id="janela-fechar" class="tecla discreta">Fechar</button>
+      <button type="button" id="janela-fechar" class="discreto">Fechar</button>
     </div>
     <div id="janela-corpo"></div>
     <div id="janela-avisos" class="janela-avisos" aria-live="polite"></div>
@@ -56,7 +53,7 @@
   <dialog id="mais" class="folha" aria-label="Mais telas">
     <div class="janela-topo">
       <strong>Mais</strong>
-      <button type="button" id="mais-fechar" class="tecla discreta">Fechar</button>
+      <button type="button" id="mais-fechar" class="discreto">Fechar</button>
     </div>
     <div id="mais-teclas" class="teclado"></div>
   </dialog>

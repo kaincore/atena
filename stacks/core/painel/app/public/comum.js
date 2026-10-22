@@ -1,6 +1,6 @@
 // O que todas as telas usam: montar elementos, falar com a API, os textos de estado e os módulos do
-// aparelho. As três funções da casca (atualizar, telaAtual, mostrarEntrada) o app.js liga ao começar.
-import { seteSegmentos } from "./visor.js";
+// painel. As três funções da casca (atualizar, telaAtual, mostrarEntrada) o app.js liga ao começar.
+import { chave, faixa } from "./desenhos.js";
 
 export const NOMES = {
   "servico.reiniciar": "Reiniciar serviço",
@@ -138,53 +138,36 @@ export function porcento(texto) {
   return Number.isFinite(n) ? `${num(n, n >= 10 ? 0 : 1)}%` : texto;
 }
 
+// a faixa de meandro pintada até a fração; perto do limite fica ocre, passado dele, cinábrio
 export function medidor(fracao, alerta = 0.85) {
   const pct = Math.max(0, Math.min(1, fracao || 0));
   const barra = h("span");
   barra.style.width = `${(pct * 100).toFixed(0)}%`; // pelo CSSOM: a CSP barra o atributo style
-  return h("div", { class: `medidor${pct >= alerta ? " alto" : ""}` }, barra);
+  return h("div", { class: `medidor${pct >= alerta ? " alto" : pct >= alerta * 0.85 ? " perto" : ""}`, role: "img", "aria-label": `${Math.round(pct * 100)}%` }, barra);
 }
 
-// um módulo do aparelho: o título e, à direita, a etiqueta com o que ele mede (sempre dado de verdade)
+// um módulo: a chave do meandro, o título em letra de inscrição e, à direita, o que ele mede (sempre
+// dado de verdade)
 export function modulo(titulo, codigo, ...conteudo) {
   return h("section", { class: "modulo" },
-    h("header", { class: "modulo-topo" }, h("h2", null, titulo),
-      h("span", { class: "etiqueta" }, codigo && h("span", { class: "codigo" }, codigo))), ...conteudo);
+    h("header", { class: "modulo-topo" }, chave(), h("h2", null, titulo), h("span", { class: "regua" }),
+      codigo && h("span", { class: "codigo" }, codigo)), ...conteudo);
 }
-
-// o código de peça de cada módulo: a tela e a posição dele no painel (IN-01 é o primeiro do Início),
-// refeito sempre que um módulo entra, sai ou se refaz sozinho
-const PREFIXOS = {
-  inicio: "IN", aprovacoes: "AP", agenda: "AG", servicos: "SV", sistema: "SY", arquivos: "AR",
-  pc: "PC", lab: "LB", atividade: "AT", historico: "HI", ajustes: "AJ",
-};
-
-function numerarModulos() {
-  const prefixo = PREFIXOS[$("#tela").dataset.tela] ?? "AT";
-  [...document.querySelectorAll("#tela > .modulo")].forEach((m, i) => {
-    const etiqueta = m.querySelector(".modulo-topo .etiqueta");
-    if (!etiqueta) return;
-    const codigo = `${prefixo}-${String(i + 1).padStart(2, "0")}`;
-    const peca = etiqueta.querySelector(".peca") ?? etiqueta.appendChild(h("span", { class: "peca" }));
-    if (peca.textContent !== codigo) peca.textContent = codigo;
-  });
-}
-new MutationObserver(numerarModulos).observe($("#tela"), { childList: true });
 
 export function cartao(titulo, ...conteudo) {
   return modulo(titulo, null, ...conteudo);
 }
 
-// a tela que ainda não chegou: placas vazias no lugar dos módulos (sem movimento; o LED de rede pisca)
+// a tela que ainda não chegou: as placas postas e o pintor fazendo o meandro enquanto o dado chega
 export function esqueleto() {
-  return [3, 5].map((linhas) => h("section", { class: "modulo esqueleto", "aria-hidden": "true" },
-    h("header", { class: "modulo-topo" }, h("span", { class: "marca-vazia curta" })),
-    Array.from({ length: linhas }, (_, i) => h("span", { class: `marca-vazia${i % 3 === 2 ? " curta" : ""}` }))));
+  return [3, 5].map((linhas, i) => h("section", { class: "modulo esqueleto", "aria-hidden": "true" },
+    i === 0 ? faixa() : h("span", { class: "marca-vazia curta" }),
+    Array.from({ length: linhas }, (_, k) => h("span", { class: `marca-vazia${k % 3 === 2 ? " curta" : ""}` }))));
 }
 
-// um número em 7 segmentos num visorzinho dentro do módulo
-export function mostrador(texto, unidade) {
-  return h("div", { class: "mostrador-numero" }, seteSegmentos(texto), unidade && h("span", { class: "celula-unidade" }, unidade));
+// um número na letra de pedra, com a unidade ao lado (o gasto do mês, a próxima vez da agenda)
+export function numeroGrande(texto, unidade) {
+  return h("p", { class: "numero-grande" }, texto, unidade && h("small", null, unidade));
 }
 
 export function falha(r) {

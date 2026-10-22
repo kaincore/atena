@@ -1,6 +1,22 @@
 // Sistema: sensores, processos, rede e o registro do systemd.
 import { botaoAtualizar, campo, cartao, consultar, falha, gb, h, item, itens, linha, medidor, modulo, num, semAcao } from "../comum.js";
-import { visorSistema } from "../visor.js";
+import { medalhao, medalhoes, roseta } from "../desenhos.js";
+
+// as temperaturas (o meandro pintado até o ponto de alerta de cada uma) e a ventoinha da placa, que gira
+function medalhoesSensores(sens) {
+  const lista = [];
+  if (sens.cpu.temperatura_c != null)
+    lista.push(medalhao({ rotulo: "CPU", numero: num(sens.cpu.temperatura_c, 1), unidade: "°C", fracao: sens.cpu.temperatura_c / sens.cpu.quente_a_partir_de_c }));
+  if (sens.nvme.temperatura_c != null)
+    lista.push(medalhao({ rotulo: "NVMe", numero: num(sens.nvme.temperatura_c, 1), unidade: "°C", fracao: sens.nvme.temperatura_c / sens.nvme.alerta_c }));
+  if (sens.gpu?.temperatura_c != null)
+    lista.push(medalhao({ rotulo: "GPU", numero: num(sens.gpu.temperatura_c), unidade: "°C", fracao: sens.gpu.temperatura_c / sens.gpu.quente_a_partir_de_c,
+      nota: sens.gpu.consumo_w != null ? `${num(sens.gpu.consumo_w, 1)}\u00a0W · ventoinha ${sens.gpu.ventoinha_pct ?? "?"}%` : null }));
+  const [fan, rpm] = Object.entries(sens.placa?.ventoinhas_rpm ?? {})[0] ?? [];
+  // 2000 RPM: uma volta em 0,4 s; devagar, até 4 s
+  if (rpm) lista.push(medalhao({ rotulo: `Ventoinha ${fan}`, numero: num(rpm), unidade: "RPM", desenho: roseta(Math.max(0.4, Math.min(4, 800 / rpm))) }));
+  return medalhoes(lista);
+}
 
 function grau(rotulo, c, quente) {
   if (c == null) return linha(rotulo, "sem leitura");
@@ -13,7 +29,7 @@ async function cartaoSensores() {
     const s = r.resultado;
     const placa = s.placa ?? {};
     const m = modulo("Sensores", s.avaliacao,
-      visorSistema(s),
+      medalhoesSensores(s),
       linha("Avaliação", h("span", { class: `selo ${s.avaliacao === "normal" ? "ok" : "ruim"}` }, s.avaliacao)),
       grau("CPU", s.cpu.temperatura_c, s.cpu.quente_a_partir_de_c),
       s.cpu.nucleos_c && linha("Núcleos", Object.entries(s.cpu.nucleos_c).map(([n, t]) => `${n} ${num(t, 1)}\u00a0°C`).join(" · ")),

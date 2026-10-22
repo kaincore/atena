@@ -123,7 +123,7 @@ test("o sw.js sai com a versão dos arquivos e a lista inteira da casca", async 
 test("a interface sai comprimida, e o que não mudou volta como 304", async () => {
   const r = await fetch(base + "/estilo.css", { headers: { "Accept-Encoding": "gzip" } });
   assert.equal(r.headers.get("content-encoding"), "gzip");
-  assert.match(await r.text(), /--amarelo/);
+  assert.match(await r.text(), /--azul/);
   const etag = r.headers.get("etag")!;
   assert.match(etag, /^"[\w-]{22}"$/);
   const igual = await fetch(base + "/estilo.css", { headers: { "If-None-Match": etag } });

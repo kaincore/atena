@@ -1,6 +1,7 @@
 // Agenda: o agendador do painel roda as ações na hora marcada.
-import { api, atualizar, avisar, campo, cartao, consultar, data, estadoTexto, falha, h, item, itens, ledEstado, modulo } from "../comum.js";
-import { visorAgenda } from "../visor.js";
+import { api, atualizar, avisar, campo, cartao, consultar, data, estadoTexto, falha, h, item, itens, ledEstado, modulo, num,
+  numeroGrande, plural } from "../comum.js";
+import { relogioDeSol } from "../desenhos.js";
 
 const DIAS = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
 const NOMES_AGENDAVEIS = {
@@ -142,6 +143,20 @@ function itemAgendamento(a) {
 
 let agendaRodouEm = 0;
 
+// o relógio de sol (a sombra gira uma volta quando um agendamento roda), a próxima vez e as das 24 h
+function relogioAgenda(agendamentos, girando) {
+  const proximos = agendamentos.filter((a) => a.ativo && a.proxima).sort((a, b) => a.proxima - b.proxima);
+  const nas24h = proximos.filter((a) => a.proxima - Date.now() < 24 * 3600_000).length;
+  const proxima = proximos[0];
+  return h("div", { class: "agenda-mostrador" }, relogioDeSol(agendamentos, girando),
+    h("div", { class: "agenda-leituras" },
+      h("div", { class: "leitura" }, h("span", { class: "rotulo" }, "Próxima vez"),
+        numeroGrande(proxima ? new Date(proxima.proxima).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) : "—"),
+        h("span", { class: "fraco" }, proxima ? `${proxima.nome} · ${quandoTexto(proxima.proxima)}` : "nada agendado")),
+      h("div", { class: "leitura" }, h("span", { class: "rotulo" }, "Nas próximas 24 h"),
+        numeroGrande(num(nas24h), nas24h === 1 ? "agendamento" : "agendamentos"))));
+}
+
 export async function telaAgenda() {
   const [r, servicos, apps] = await Promise.all([api("GET", "/api/agendamentos"), consultar("status.servicos"), consultar("app.lista")]);
   if (r.ok === false) return [cartao("Agenda", falha(r))];
@@ -149,7 +164,7 @@ export async function telaAgenda() {
   const stacks = servicos.ok === false ? [] : [...new Set(servicos.resultado.map((c) => c.stack))].filter((s) => s !== "painel").sort();
   const projetos = apps.ok === false ? [] : apps.resultado.projetos.map((p) => p.projeto);
   const rodando = Date.now() - agendaRodouEm < 8000 || r.agendamentos.some((a) => a.execucoes[0]?.estado === "executando");
-  const mostradorAgenda = modulo("Agenda", `${r.agendamentos.filter((a) => a.ativo).length} ativos`, visorAgenda(r.agendamentos, rodando));
+  const mostradorAgenda = modulo("Agenda", `${plural(r.agendamentos.filter((a) => a.ativo).length, "ativo", "ativos")}`, relogioAgenda(r.agendamentos, rodando));
   mostradorAgenda.classList.add("largo");
   return [
     mostradorAgenda,

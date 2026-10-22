@@ -1,6 +1,9 @@
-/* Painel Atena: um aparelho de mesa (Teenage Engineering, Dieter Rams/Braun, calculadora ET66).
-   Chassi de alumínio ou grafite (segue o aparelho), módulos com etiqueta de engenharia, teclas
-   físicas (amarelo sinal só na ação principal), LEDs como vocabulário de estado e um visor preto. */
+/* Painel Atena: a policromia contida. Os templos gregos eram pintados, mas aqui a pintura é pouca e
+   precisa: mármore e tinta de dia, a noite azul-escura à noite; o azul egípcio é o único acento, e os
+   pigmentos antigos (malaquita, ocre e cinábrio) só aparecem para dizer o estado. O meandro é o
+   ornamento e também a medida; as zonas são a crepidoma do templo, em 3D. A letra é a Commissioner,
+   de um tipógrafo grego, com as serifas de pedra (os eixos FLAR e VOLM) nos títulos e números. O
+   movimento é fluido: ease-out nas transições do dia a dia, uma mola suave só onde algo se assenta. */
 
 @font-face {
   font-family: "Commissioner";
@@ -19,91 +22,85 @@
 
 :root {
   color-scheme: light dark;
-  /* alumínio */
-  --chassi: #e3e4e1;
-  --chassi-2: #d6d8d4;
-  --modulo: #f1f2ef;
-  --modulo-claro: #fafaf8;
-  --poco: #d3d5d1;
-  --tinta: #161716;
-  --tinta-2: #585b57;
-  --risco: #c3c6c1;
-  --risco-forte: #9da09b;
-  --moldura: #2a2c2b;
-  --parafuso: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.7' fill='%23d0d2ce' stroke='%23919490' stroke-width='.8'/%3E%3Cpath d='M3.1 6.9 6.9 3.1' stroke='%23727571' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E");
-  --seta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23585b57' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  /* as teclas são grafite nos dois temas; só a da ação principal é amarela */
-  --tecla: #2c2f2d;
-  --tecla-borda: #1f2120;
-  --tecla-lado: #0b0c0b;
-  --tecla-tinta: #f1f2ef;
-  --tecla-perigo: #ff8a7f;
-  /* a tecla clara (as cinzas da ET66): ações de linha e secundárias, um degrau abaixo da grafite */
-  --tecla-clara: #f8f8f5;
-  --tecla-clara-borda: #a4a7a1;
-  --tecla-clara-lado: #868983;
-  --borda-visor: transparent;
-  --amarelo: #ffc400;
-  --amarelo-borda: #c99a00;
-  --amarelo-lado: #9a7600;
-  --amarelo-tinta: #141414;
-  /* texto de estado (escuro o bastante para ler sobre o alumínio) */
-  --verde: #12773a;
-  --ambar: #965400;
-  --vermelho: #c42b1e;
-  --azul: #2559c4;
-  /* a luz dos LEDs */
-  --led-verde: #2bd46a;
-  --led-ambar: #ffa51f;
-  --led-vermelho: #ff4433;
-  --led-azul: #3e8bff;
-  --led-apagado: #aeb1ac;
-  /* o visor é sempre escuro */
-  --visor: #070908;
-  --visor-traco: #e6efe9;
-  --visor-fraco: #7d8a83;
-  --visor-apagado: #17211c;
-  --foco: #2559c4;
-  --sombra-modulo: 0 1px 0 rgb(255 255 255 / .7) inset, 0 1px 2px rgb(0 0 0 / .07), 0 6px 16px -6px rgb(0 0 0 / .12);
-  --sombra-tecla: 0 2px 5px -1px rgb(0 0 0 / .18);
-  --raio: 7px;
-  --raio-tecla: 5px;
-  --fonte: "Commissioner", system-ui, sans-serif;
+  /* mármore, de dia */
+  --chao: #f0f1ef;
+  --casca: #f6f7f6;
+  --placa: #fcfcfb;
+  --placa-2: #f4f5f4;
+  --veio: #e1e4e2;
+  --veio-forte: #b8bfbb;
+  --tinta: #151b27;
+  --tinta-2: #556070;
+  --tinta-3: #9aa3ad;   /* só para ornamento (o meandro fino), nunca para texto */
+  /* o acento: azul egípcio */
+  --azul: #24418f;
+  --azul-forte: #1a3275;
+  --azul-claro: #e9edf7;
+  --azul-tinta: #f7f8fc;
+  /* os pigmentos de estado */
+  --ocre: #b07c1e;
+  --ocre-claro: #f7f1e4;
+  --ocre-tinta: #6e4706;
+  --cinabrio: #c23a26;
+  --cinabrio-claro: #f9e8e4;
+  --cinabrio-tinta: #a22d1b;
+  --malaquita: #2b8059;
+  --malaquita-tinta: #1c6946;
+  --pedra: #c6ccc9;
+  /* os textos de máquina (registros, avisos) */
+  --noite: #141a27;
+  --noite-tinta: #e4e8ee;
+  --foco: #24418f;
+  --sombra: 0 1px 1px rgb(21 27 39 / .03), 0 12px 32px -20px rgb(21 27 39 / .22);
+  --sombra-alta: 0 30px 80px -24px rgb(10 14 26 / .45);
+  --raio: 6px;
+  --letra: "Commissioner", system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Roboto Mono", Menlo, monospace;
+  --pedra-letra: "FLAR" 100, "VOLM" 50;
+  --titulo-letra: "FLAR" 100, "VOLM" 100;
   --barra-altura: 4.4rem;
+  /* o dia a dia: sai rápido e assenta devagar */
+  --suave: cubic-bezier(.22, 1, .36, 1);
+  /* uma mola amortecida (passa 1,5% do alvo e assenta), para o que se assenta no lugar */
+  --mola: linear(0, 0.0273, 0.0955, 0.1875, 0.2909, 0.3965, 0.4982, 0.5921, 0.6759, 0.7488, 0.8104, 0.8615, 0.9028, 0.9355, 0.9607, 0.9796, 0.9933, 1.0029, 1.0091, 1.0129, 1.0147, 1.0152, 1.0147, 1.0136, 1.0122, 1.0107, 1.0091, 1.0075, 1.0061, 1.0048, 1.0038, 1.0028, 1.0021, 1.0014, 1.001, 1.0006, 1.0003, 1.0001, 0.9999, 0.9999, 1);
+  /* o traço que se desenha: sai devagar, corre e assenta */
+  --traco: cubic-bezier(.65, 0, .25, 1);
+  /* uma volta do meandro, que se repete nas faixas (como máscara: a cor vem de quem usa) */
+  --meandro: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 14'%3E%3Cpath d='M0 13H1V1H13V9H9V5H5V13H16' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E");
+  --meandro-em-pe: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 16'%3E%3Cpath d='M13 0V1H1V13H9V9H5V5H13V16' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E");
+  --seta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23556070' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --seta-lado: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M4.5 2.5 8 6l-3.5 3.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* grafite */
-    --chassi: #151615;
-    --chassi-2: #0f100f;
-    --modulo: #1d1f1e;
-    --modulo-claro: #242625;
-    --poco: #0d0e0d;
-    --tinta: #ecedea;
-    --tinta-2: #a3a6a1;
-    --risco: #2e312f;
-    --risco-forte: #424643;
-    --moldura: #090a09;
-    --parafuso: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.7' fill='%2333373a' stroke='%23505552' stroke-width='.8'/%3E%3Cpath d='M3.1 6.9 6.9 3.1' stroke='%23121312' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E");
-    --seta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23a3a6a1' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    --tecla: #353937;
-    --tecla-borda: #444946;
-    --tecla-lado: #080908;
-    --tecla-tinta: #ecedea;
-    --tecla-clara: #262927;
-    --tecla-clara-borda: #3b3f3c;
-    --tecla-clara-lado: #0a0b0a;
-    --borda-visor: #343835;
-    --verde: #3ddc7a;
-    --ambar: #ffb347;
-    --vermelho: #ff6a5c;
-    --azul: #6aa4ff;
-    --led-apagado: #3a3e3b;
-    --foco: #6aa4ff;
-    --sombra-modulo: 0 1px 0 rgb(255 255 255 / .04) inset, 0 1px 2px rgb(0 0 0 / .5), 0 8px 20px -8px rgb(0 0 0 / .6);
-    --sombra-tecla: 0 2px 5px -1px rgb(0 0 0 / .6);
+    /* a noite: um azul-escuro quase preto, sem brilho */
+    --chao: #0b0f1a;
+    --casca: #0e1320;
+    --placa: #121827;
+    --placa-2: #0e1320;
+    --veio: #1f2738;
+    --veio-forte: #374157;
+    --tinta: #e7e9ee;
+    --tinta-2: #a3acba;
+    --tinta-3: #4f5a72;
+    --azul: #a3b5f3;
+    --azul-forte: #bfcdf7;
+    --azul-claro: #1b2441;
+    --azul-tinta: #0b0f1a;
+    --ocre: #d6a24a;
+    --ocre-claro: #231d10;
+    --ocre-tinta: #e8bf74;
+    --cinabrio: #e8705c;
+    --cinabrio-claro: #2d1714;
+    --cinabrio-tinta: #f19a8a;
+    --malaquita: #57b98a;
+    --malaquita-tinta: #7fd0a8;
+    --pedra: #343d52;
+    --noite: #06090f;
+    --foco: #a3b5f3;
+    --sombra: 0 1px 1px rgb(0 0 0 / .3), 0 14px 36px -20px rgb(0 0 0 / .8);
+    --seta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23a3acba' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
 }
 
@@ -111,211 +108,244 @@
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; } /* senão o display das classes vence o atributo */
-html { scrollbar-color: var(--risco-forte) transparent; }
+html { scrollbar-color: var(--veio-forte) transparent; -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
-  font: 400 1rem/1.45 var(--fonte);
-  font-stretch: 100%;
-  background: var(--chassi);
+  font: 400 1rem/1.5 var(--letra);
+  font-variation-settings: "FLAR" 0, "VOLM" 0;
+  background: var(--chao);
   color: var(--tinta);
-  caret-color: var(--tinta);
+  caret-color: var(--azul);
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
 }
-::selection { background: var(--amarelo); color: var(--amarelo-tinta); }
-a { color: inherit; text-decoration-color: var(--amarelo-borda); text-decoration-thickness: 2px; text-underline-offset: 3px; }
-a:hover { text-decoration-color: var(--tinta); }
+::selection { background: var(--azul); color: var(--azul-tinta); }
+a { color: var(--azul); text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); text-decoration-thickness: 1px; text-underline-offset: 3px; transition: text-decoration-color .2s var(--suave); }
+a:hover { text-decoration-color: currentColor; }
 :focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
-h1, h2, h3 { margin: 0; line-height: 1.2; }
+h1, h2, h3 { margin: 0; line-height: 1.2; font-weight: inherit; }
 p { margin: .35rem 0; }
 small, .fraco { color: var(--tinta-2); }
 .fraco { font-size: .875rem; }
-.erro { color: var(--vermelho); margin: 0; min-height: 1.2em; }
-code { font: .85em var(--mono); }
-kbd {
-  font: 500 .66rem var(--mono); padding: .1rem .35rem; border-radius: 3px;
-  background: var(--modulo-claro); border: 1px solid var(--tecla-borda); border-bottom-width: 2px; color: var(--tinta-2);
-}
+.erro { color: var(--cinabrio-tinta); margin: 0; min-height: 1.2em; }
+code { font: .86em var(--mono); }
+kbd { font: 600 .66rem var(--mono); padding: .08rem .34rem; border-radius: 3px; border: 1px solid var(--veio-forte); color: var(--tinta-2); }
+.so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-/* o rótulo pequeno do aparelho: versalete espaçado */
-.rotulo, .modulo-topo h2, h3, .celula-rotulo, .selo, .trilho-grupo h2 {
-  font-weight: 650; font-size: .69rem; font-stretch: 112%; text-transform: uppercase; letter-spacing: .14em;
+/* os rótulos: a letra com a serifa de pedra, em caixa comum (a caixa-alta fica só nas inscrições gregas) */
+.rotulo, .modulo-topo h2, h3, .selo, .trilho-grupo h2, .medalhao-rotulo, .crepidoma-nome, .barra a, .barra button,
+.janela-topo strong, .teclado a, .paleta .comando-grupo, .zonas-pontos span span {
+  font-variation-settings: var(--pedra-letra); font-weight: 550; font-size: .8rem; letter-spacing: .005em;
 }
 .rotulo { color: var(--tinta-2); }
-h3 { color: var(--tinta-2); margin: 1.1rem 0 .5rem; }
-.marca { font-weight: 800; font-size: 1.05rem; font-stretch: 125%; letter-spacing: .18em; }
-.versao { font: 500 .62rem var(--mono); color: var(--tinta-2); }
+h3 { color: var(--tinta-2); font-size: .9rem; margin: 1.2rem 0 .55rem; }
+.marca { font-variation-settings: var(--titulo-letra); font-weight: 500; font-size: 1.1rem; letter-spacing: .28em; line-height: 1; }
 
-/* --- a casca: trilho no PC, topo e barra no celular --- */
+/* o desenho que se faz: cada traço (pathLength 1) aparece do começo ao fim, num movimento contínuo */
+@keyframes tracar { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.desenhando .traco { stroke-dasharray: 1 1; stroke-dashoffset: 1; animation: tracar var(--duracao, .9s) var(--traco) var(--atraso, 0s) forwards; }
 
-.aparelho { min-height: 100dvh; }
+/* --- a casca: o trilho no PC, o topo e a barra no celular; o meandro fino é a borda --- */
+
+.painel { min-height: 100dvh; }
 .topo {
-  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-  padding: max(.85rem, env(safe-area-inset-top)) 1rem .6rem;
+  position: relative; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: max(.95rem, env(safe-area-inset-top)) 1.1rem 1.15rem; background: var(--casca);
 }
-.leds-zonas { display: flex; gap: .55rem; align-items: center; }
-.leds-zonas .led-zona { display: grid; justify-items: center; gap: .2rem; }
-.leds-zonas .led-zona span { font: 600 .6rem var(--fonte); font-stretch: 112%; letter-spacing: .1em; text-transform: uppercase; color: var(--tinta-2); }
+.topo::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: .42rem; background: var(--tinta-3);
+  mask: var(--meandro) repeat-x left center / auto 100%;
+}
+.zonas-pontos { display: flex; gap: .75rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.zonas-pontos .zona-ponto { display: grid; justify-items: center; gap: .28rem; }
+.zonas-pontos span span { font-size: .72rem; color: var(--tinta-2); }
 
 main {
-  display: grid; gap: .85rem; align-content: start; align-items: start; width: 100%;
+  display: grid; gap: .9rem; align-content: start; align-items: start; width: 100%;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr));
   max-width: 82rem; margin: 0 auto;
-  padding: .25rem .75rem calc(var(--barra-altura) + env(safe-area-inset-bottom) + 1.25rem);
+  padding: 1.1rem .75rem calc(var(--barra-altura) + env(safe-area-inset-bottom) + 1.25rem);
+  view-transition-name: tela;
 }
+
+/* trocar de tela: a velha se apaga e a nova chega de leve, do desfoque para o nítido. A barra de baixo e
+   os avisos têm camada própria, por cima da tela, e não se mexem */
+::view-transition-old(root), ::view-transition-old(barra), ::view-transition-old(avisos) { animation: none; opacity: 0; }
+::view-transition-new(root), ::view-transition-new(barra), ::view-transition-new(avisos) { animation: none; }
+::view-transition-group(barra), ::view-transition-group(avisos) { animation: none; }
+::view-transition-group(tela) { animation: none; }
+::view-transition-old(tela) { animation: sair-tela .16s cubic-bezier(.4, 0, 1, 1) both; }
+::view-transition-new(tela) { animation: chegar-tela .46s var(--suave) both; }
+@keyframes sair-tela { to { opacity: 0; filter: blur(3px); transform: translateY(-4px); } }
+@keyframes chegar-tela { from { opacity: 0; filter: blur(8px); transform: translateY(14px); } }
 
 .trilho { display: none; }
 .barra {
   position: fixed; inset: auto 0 0 0; z-index: 4;
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: .35rem;
-  padding: .45rem .55rem calc(.45rem + env(safe-area-inset-bottom));
-  background: var(--chassi-2); border-top: 1px solid var(--risco-forte);
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: .2rem;
+  padding: .35rem .45rem calc(.35rem + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--placa) 94%, transparent); border-top: 1px solid var(--veio);
+  backdrop-filter: blur(14px) saturate(1.1); view-transition-name: barra;
 }
 .barra a, .barra button {
-  position: relative; display: grid; justify-items: center; align-content: center; gap: .2rem;
-  min-height: 3.3rem; padding: .3rem .2rem; border-radius: var(--raio-tecla);
-  color: var(--tinta-2); text-decoration: none; background: transparent; border: 1px solid transparent;
-  box-shadow: none; font: 650 .6rem var(--fonte); font-stretch: 112%; text-transform: uppercase; letter-spacing: .12em;
+  position: relative; z-index: 1; display: grid; justify-items: center; align-content: center; gap: .3rem;
+  min-height: 3.5rem; padding: .3rem .1rem; color: var(--tinta-2); text-decoration: none;
+  background: transparent; border: 0; box-shadow: none; font-size: .72rem;
+  transition: color .25s var(--suave);
 }
+.barra a:hover, .barra button:hover { background: transparent; color: var(--tinta); }
 .barra .picto { width: 1.4rem; height: 1.4rem; }
-.barra .ativa { color: var(--tinta); background: var(--poco); border-color: var(--risco); box-shadow: inset 0 1px 3px rgb(0 0 0 / .14); }
-.barra .ativa::before, .trilho a.ativa::before {
-  content: ""; position: absolute; top: .32rem; right: .45rem; width: .38rem; height: .38rem; border-radius: 50%;
-  background: var(--amarelo); box-shadow: 0 0 5px rgb(255 196 0 / .7);
+.barra .ativa { color: var(--azul); }
+/* o marcador atrás da tela ativa: o app.js põe a posição, e ele desliza numa mola */
+.pincel {
+  position: absolute; left: 0; top: 0; width: var(--largura, 0); height: var(--altura, 0); z-index: 0; pointer-events: none;
+  transform: translate(var(--x, 0), var(--y, 0)); background: var(--azul-claro); border-radius: 12px; opacity: 0;
+  transition: transform .62s var(--mola), width .45s var(--suave), height .45s var(--suave), opacity .3s var(--suave);
 }
-/* enquanto a tela lê do servidor, o ponto da tela ativa pisca, como o LED de leitura de um disco */
-.aparelho:has(#tela[aria-busy]) .ativa::before { animation: lendo .8s step-end infinite; }
-@keyframes lendo { 50% { opacity: .2; box-shadow: none; } }
+.pincel.posto { opacity: 1; }
+.pincel.parado { transition: none; }
 .contagem {
-  position: absolute; top: .2rem; left: calc(50% + .45rem); min-width: 1.1rem; height: 1.1rem; padding: 0 .3rem;
-  border-radius: .6rem; background: var(--amarelo); color: var(--amarelo-tinta); border: 1px solid var(--amarelo-borda);
-  font: 700 .62rem/1rem var(--mono); text-align: center; letter-spacing: 0;
+  position: absolute; top: .15rem; left: calc(50% + .5rem); min-width: 1.15rem; height: 1.15rem; padding: 0 .3rem;
+  border-radius: .6rem; background: var(--ocre); color: #fff; font: 700 .64rem/1.15rem var(--letra);
+  text-align: center; letter-spacing: 0; font-variant-numeric: tabular-nums;
 }
+/* enquanto a tela lê do servidor, o ícone ativo respira de leve */
+.painel:has(#tela[aria-busy]) .ativa .picto { animation: respirar 1.1s ease-in-out infinite alternate; }
+@keyframes respirar { to { opacity: .45; } }
 
 @media (min-width: 60rem) {
-  .aparelho { display: grid; grid-template-columns: 15.5rem minmax(0, 1fr); }
+  .painel { display: grid; grid-template-columns: 15.5rem minmax(0, 1fr); }
   .topo, .barra { display: none; }
   .trilho {
     position: sticky; top: 0; height: 100dvh; overflow-y: auto;
-    display: flex; flex-direction: column; gap: 1.1rem; padding: 1.2rem .85rem 1rem;
-    background: var(--chassi-2); border-right: 1px solid var(--risco-forte);
+    display: flex; flex-direction: column; gap: 1.3rem; padding: 1.6rem 1.5rem 1.1rem 1rem; background: var(--casca);
   }
-  .trilho-marca { display: grid; gap: .55rem; padding: 0 .45rem .9rem; border-bottom: 1px solid var(--risco-forte); }
-  .trilho-marca > div:first-child { display: flex; align-items: baseline; justify-content: space-between; }
-  #trilho-grupos { display: grid; gap: 1.1rem; }
-  .trilho-grupo { display: grid; gap: .15rem; }
-  .trilho-grupo h2 { color: var(--tinta-2); font-size: .6rem; padding: 0 .55rem .3rem; }
+  /* o meandro fino descendo pela borda do trilho */
+  .trilho::after {
+    content: ""; position: absolute; top: 0; right: 0; width: .42rem; height: 100%; background: var(--tinta-3);
+    mask: var(--meandro-em-pe) repeat-y center top / 100% auto; pointer-events: none;
+  }
+  .trilho-marca { display: grid; gap: .85rem; padding: .2rem .55rem 1.1rem; border-bottom: 1px solid var(--veio); }
+  .trilho-marca .marca { font-size: 1.3rem; }
+  .trilho .zonas-pontos { justify-content: flex-start; }
+  #trilho-grupos { display: grid; gap: 1.15rem; }
+  .trilho-grupo { display: grid; gap: .1rem; }
+  .trilho-grupo h2 { color: var(--tinta-2); font-size: .74rem; padding: 0 .6rem .3rem; text-transform: capitalize; }
   .trilho a {
-    position: relative; display: flex; align-items: center; gap: .65rem; padding: .5rem .6rem; border-radius: var(--raio-tecla);
-    color: var(--tinta-2); text-decoration: none; font-weight: 550; font-size: .9rem; border: 1px solid transparent;
+    position: relative; z-index: 1; display: flex; align-items: center; gap: .7rem; padding: .52rem .65rem; border-radius: var(--raio);
+    color: var(--tinta-2); text-decoration: none; font-weight: 500; font-size: .92rem; transition: color .25s var(--suave);
   }
-  .trilho a:hover { color: var(--tinta); background: color-mix(in srgb, var(--poco) 55%, transparent); }
-  .trilho a.ativa { color: var(--tinta); background: var(--poco); border-color: var(--risco); box-shadow: inset 0 1px 3px rgb(0 0 0 / .14); }
-  .trilho a.ativa::before { top: 50%; right: .7rem; margin-top: -.19rem; }
-  .trilho .picto { width: 1.15rem; height: 1.15rem; flex: none; }
-  .trilho .contagem { position: static; margin-left: auto; margin-right: 1.1rem; }
-  .trilho .busca { margin-top: auto; justify-content: flex-start; gap: .35rem; }
+  .trilho a:hover { color: var(--tinta); }
+  .trilho a.ativa { color: var(--azul); font-weight: 600; }
+  .trilho .pincel { border-radius: var(--raio); }
+  .trilho .picto { width: 1.2rem; height: 1.2rem; flex: none; }
+  .trilho .contagem { position: static; margin-left: auto; }
+  .trilho .busca { margin-top: auto; justify-content: flex-start; gap: .4rem; }
   .busca-rotulo { margin-right: auto; }
-  main { padding: 1.4rem 1.6rem 2.5rem; gap: 1rem; }
+  main { padding: 1.8rem 2.2rem 2.5rem; gap: 1rem; }
 }
 
-.picto { fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.picto { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
 .picto .cheio { fill: currentColor; stroke: none; }
-.picto .tampa { fill: var(--chassi-2); }
-.picto .tinta { display: none; } /* a área pintada dos ícones novos acende no visual novo */
+.picto .fino { stroke-width: 1.05; }
+.picto .tampa { fill: var(--placa); }
+.trilho .picto .tampa { fill: var(--casca); }
+.picto .tinta { fill: currentColor; fill-opacity: 0; stroke: none; transition: fill-opacity .4s var(--suave); }
+.ativa .picto .tinta { fill-opacity: .16; }
+/* a tela que fica ativa redesenha o ícone dela (o tracejado só vale enquanto se desenha) */
+.picto.redesenha :not(.tinta, .cheio, .tampa) { stroke-dasharray: 1 1; animation: tracar .6s var(--traco) both; }
 
-/* --- módulos: placas do aparelho, com parafusos nos cantos e etiqueta de engenharia --- */
+/* --- o cabeçalho de cada tela: o nome na letra de pedra e a faixa de meandro que se desenha --- */
+
+.cabecalho-tela { grid-column: 1 / -1; column-span: all; display: grid; gap: .6rem; margin: .1rem .15rem .4rem; }
+.cabecalho-tela h1 {
+  font-variation-settings: var(--titulo-letra); font-weight: 400; font-size: clamp(1.7rem, 1.2rem + 1.7vw, 2.5rem);
+  letter-spacing: -.015em; line-height: 1.05; text-wrap: balance;
+}
+.faixa-meandro { display: block; height: .5rem; width: min(100%, 15rem); color: var(--tinta-3); overflow: hidden; }
+.faixa-meandro .traco { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linejoin: miter; }
+
+/* --- módulos: placas de mármore, com a chave do meandro antes do título --- */
 
 .modulo {
-  position: relative; min-width: 0; padding: 1rem 1.05rem 1.05rem; container: modulo / inline-size;
-  border: 1px solid var(--risco); border-radius: var(--raio); box-shadow: var(--sombra-modulo);
-  background:
-    var(--parafuso) left 5px top 5px / 9px 9px no-repeat, var(--parafuso) right 5px top 5px / 9px 9px no-repeat,
-    var(--parafuso) left 5px bottom 5px / 9px 9px no-repeat, var(--parafuso) right 5px bottom 5px / 9px 9px no-repeat,
-    var(--modulo);
+  position: relative; min-width: 0; padding: 1.15rem 1.25rem 1.25rem; container: modulo / inline-size;
+  background: var(--placa); border: 1px solid var(--veio); border-radius: var(--raio); box-shadow: var(--sombra);
 }
 .modulo.largo { grid-column: 1 / -1; }
 @media (min-width: 60rem) {
-  /* duas colunas largas nas telas de listas e formulários; colunas de 21rem no Início e nas Aprovações (três num PC comum) */
+  /* duas colunas largas nas telas de listas e formulários; colunas de 21rem no Início e nas Aprovações */
   main { display: block; columns: 2; column-gap: 1rem; }
   main[data-tela="inicio"], main[data-tela="aprovacoes"] { columns: 21rem; }
   main > * { break-inside: avoid; margin: 0 0 1rem; }
-  main > .largo, main > .faixa { column-span: all; }
+  main > .largo, main > .faixa, main > .cabecalho-tela { column-span: all; }
   main[data-tela="pc"] { columns: 1; max-width: 46rem; }
-  /* no módulo largo, o visor é o foco: instrumentos maiores numa linha só */
-  .largo .visor-vidro { padding: 1.3rem 1.8rem 1.4rem; gap: 1.4rem 3.5rem; justify-content: space-between; }
-  .largo .desenho { height: 4.6rem; }
-  .largo .sete { height: 3rem; }
-  .largo .celula-unidade { font-size: .74rem; }
 }
-.modulo-topo {
-  display: flex; align-items: baseline; justify-content: space-between; gap: .75rem;
-  margin: 0 .35rem .8rem; padding-bottom: .55rem; border-bottom: 1px solid var(--risco);
-}
-.modulo-topo h2 { flex: 1 1 auto; min-width: 0; text-wrap: balance; }
-.modulo-topo .etiqueta { display: inline-flex; align-items: baseline; gap: .6rem; margin-left: auto; flex: none; max-width: 60%; }
-.modulo-topo .peca { font: 700 .62rem var(--mono); color: var(--tinta); letter-spacing: .04em; padding: .05rem .3rem; border: 1px solid var(--risco-forte); border-radius: 2px; }
-.modulo-topo .codigo { font: 500 .64rem var(--mono); color: var(--tinta-2); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.modulo-topo .peca { flex: none; }
-/* módulo estreito (celular, colunas do PC): o código do que ele mede desce para baixo do título, inteiro */
-@container modulo (max-width: 30rem) {
-  .modulo-topo { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .3rem .75rem; align-items: baseline; }
-  .modulo-topo .etiqueta { display: contents; }
-  .modulo-topo .peca { grid-area: 1 / 2; }
-  .modulo-topo .codigo { grid-area: 2 / 1 / 3 / 3; white-space: normal; overflow: visible; }
-}
-.modelo { font: 700 .6rem var(--mono); letter-spacing: .06em; padding: .08rem .32rem; border-radius: 2px; color: var(--chassi); background: var(--tinta); vertical-align: .2em; margin-left: .45rem; }
-/* régua na borda de cima de todo módulo: marcas a cada 8 px, maiores a cada 40 */
-.modulo::before {
-  content: ""; position: absolute; left: 1.4rem; right: 1.4rem; top: 0; height: 7px; pointer-events: none;
-  background:
-    repeating-linear-gradient(90deg, var(--risco-forte) 0 1px, transparent 1px 40px) top left / 100% 7px no-repeat,
-    repeating-linear-gradient(90deg, var(--risco-forte) 0 1px, transparent 1px 8px) top left / 100% 4px no-repeat;
-  opacity: .8;
+.modulo-topo { display: flex; align-items: center; gap: .6rem; margin: 0 0 1rem; min-width: 0; }
+.chave { flex: none; width: .95rem; height: .72rem; color: var(--azul); overflow: visible; }
+.chave .traco { fill: none; stroke: currentColor; stroke-width: 1.5; }
+.modulo-topo h2 { flex: 0 1 auto; min-width: 0; color: var(--tinta); font-size: 1.02rem; font-variation-settings: var(--titulo-letra); font-weight: 500; text-wrap: balance; }
+.modulo-topo .regua { flex: 1 1 1.5rem; min-width: 1.5rem; height: 1px; background: var(--veio); }
+.modulo-topo .codigo { flex: none; max-width: 55%; font-size: .8rem; color: var(--tinta-2); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* módulo estreito: o que ele mede desce para baixo do título, inteiro */
+@container modulo (max-width: 26rem) {
+  .modulo-topo { flex-wrap: wrap; row-gap: .2rem; }
+  .modulo-topo .codigo { order: 3; flex-basis: 100%; max-width: none; padding-left: 1.55rem; white-space: normal; }
 }
 
-/* o esqueleto: a placa já montada, com as marcas do que vai aparecer */
-.esqueleto .marca-vazia {
-  display: block; height: .7rem; margin: .8rem .35rem; border-radius: 2px;
-  background: var(--poco); box-shadow: inset 0 1px 2px rgb(0 0 0 / .1);
-}
-.esqueleto .modulo-topo .marca-vazia { width: 7rem; height: .6rem; margin: 0; }
+/* o esqueleto: a placa já posta, e o meandro se fazendo enquanto o dado chega */
+.esqueleto .faixa-meandro { width: 8rem; margin: .2rem 0 1rem; }
+.esqueleto .faixa-meandro .traco { stroke-dasharray: 1 1; animation: refazer 2s var(--traco) infinite; }
+@keyframes refazer { 0% { stroke-dashoffset: 1; } 55% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -1; } }
+.esqueleto .marca-vazia { display: block; height: .6rem; margin: .9rem 0; border-radius: 3px; background: var(--placa-2); }
 .esqueleto .marca-vazia.curta { width: 55%; }
 
-.destaque { font-weight: 700; font-size: 1.45rem; font-variant-numeric: tabular-nums; margin: 0 0 .4rem; }
-.linha { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem 1rem; margin: .4rem 0; flex-wrap: wrap; }
+/* o conteúdo que chega no lugar do esqueleto só aparece, todo junto; o que se mexe é o que mede (o anel
+   se pinta, a escada se assenta). backwards: nada da animação fica no módulo depois que ela acaba (uma
+   opacidade ou um filtro que ficasse achataria o 3D da crepidoma) */
+.surge { animation: surgir .35s ease-out backwards; animation-delay: calc(0ms - var(--ja, 0ms)); }
+@keyframes surgir { from { opacity: 0; } }
+
+.destaque { font-weight: 600; font-size: 1.45rem; font-variant-numeric: tabular-nums; margin: 0 0 .4rem; }
+.numero-grande {
+  display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; margin: 0 0 .75rem;
+  font-variation-settings: var(--titulo-letra); font-weight: 350; font-size: 2.4rem; line-height: 1; letter-spacing: -.025em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.numero-grande small { font-variation-settings: "FLAR" 0, "VOLM" 0; font-size: .82rem; letter-spacing: 0; font-weight: 400; }
+.linha { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem 1rem; margin: .45rem 0; flex-wrap: wrap; }
 .linha > span:last-child, .linha > span:nth-child(2) { font-variant-numeric: tabular-nums; }
 .linha .rotulo { flex: none; }
 .lista { list-style: none; padding: 0; margin: .25rem 0; }
-.lista li { padding: .55rem 0; border-top: 1px solid var(--risco); overflow-wrap: anywhere; }
+.lista li { padding: .55rem 0; border-top: 1px solid var(--veio); overflow-wrap: anywhere; }
 .lista li:first-child { border-top: 0; }
 .lista .resumo { font: .76rem/1.5 var(--mono); overflow-wrap: anywhere; }
 .stack-topo { display: flex; justify-content: space-between; align-items: center; gap: .5rem; flex-wrap: wrap; }
-/* um campo e a tecla dele na mesma linha (nova pendência) */
+/* um campo e a tecla dele na mesma linha (nova pendência, o caminho dos arquivos) */
 .nova { display: flex; gap: .5rem; margin-top: .75rem; }
 .nova input { flex: 1; min-width: 0; }
 
-/* --- linhas de lista: o LED, o nome com o detalhe embaixo e as teclas à direita --- */
+/* --- linhas de lista: o ponto do estado, o nome com o detalhe embaixo e as teclas à direita --- */
 
 .itens { list-style: none; margin: 0; padding: 0; }
 .item {
   /* o nome tem sempre ao menos 13rem; as teclas ficam com o que sobra e quebram de linha se precisar */
   display: grid; grid-template-columns: .5rem minmax(min(13rem, 100%), 1fr) minmax(0, max-content);
   grid-template-areas: "led texto acoes" ". extra extra";
-  align-items: center; gap: .35rem .75rem; padding: .7rem 0; border-top: 1px solid var(--risco);
+  align-items: center; gap: .35rem .85rem; padding: .75rem 0; border-top: 1px solid var(--veio);
 }
 .item:first-child { border-top: 0; padding-top: .15rem; }
 .item:last-child { padding-bottom: .15rem; }
 .item.sem-led { grid-template-columns: minmax(min(13rem, 100%), 1fr) minmax(0, max-content); grid-template-areas: "texto acoes" "extra extra"; }
-.item > .led { grid-area: led; align-self: start; margin-top: .48rem; }
+.item > .led { grid-area: led; align-self: start; margin-top: .52rem; }
 .item-texto { grid-area: texto; min-width: 0; }
 .item-nome { overflow-wrap: anywhere; }
-.item-nome strong { font-weight: 650; }
-.item-detalhe { margin-top: .1rem; font-size: .8rem; line-height: 1.4; color: var(--tinta-2); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.item-nome strong { font-weight: 600; }
+.item-detalhe { margin-top: .12rem; font-size: .82rem; line-height: 1.4; color: var(--tinta-2); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .item-acoes { grid-area: acoes; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .4rem; }
 .item-extra { grid-area: extra; min-width: 0; }
 .item-extra > details { margin-top: 0; }
 .item-nome .selo, .item-nome .selo:first-child { margin-left: .5rem; }
-/* quatro teclas ou mais, ou mais de uma num módulo estreito: elas descem para baixo do nome, alinhadas com ele */
+/* quatro teclas ou mais, ou mais de uma num módulo estreito: elas descem para baixo do nome */
 .item:is([data-acoes="4"], [data-acoes="5"], [data-acoes="6"]) { grid-template-areas: "led texto texto" ". acoes acoes" ". extra extra"; }
 .item.sem-led:is([data-acoes="4"], [data-acoes="5"], [data-acoes="6"]) { grid-template-areas: "texto texto" "acoes acoes" "extra extra"; }
 .item:is([data-acoes="4"], [data-acoes="5"], [data-acoes="6"]) .item-acoes { justify-content: flex-start; margin-top: .2rem; }
@@ -324,9 +354,9 @@ main {
   .item.sem-led[data-acoes]:not([data-acoes="1"]) { grid-template-areas: "texto texto" "acoes acoes" "extra extra"; }
   .item[data-acoes]:not([data-acoes="1"]) .item-acoes { justify-content: flex-start; margin-top: .2rem; }
 }
-/* os containers de uma stack, presos a ela pela guia tracejada da vista explodida */
-.itens.sub { margin: .15rem 0 0 .2rem; padding-left: .85rem; border-left: 1px dashed var(--risco-forte); }
-.itens.sub .item { border-top: 0; padding: .3rem 0; }
+/* os containers de uma stack, presos a ela por um fio */
+.itens.sub { margin: .2rem 0 0 .2rem; padding-left: .9rem; border-left: 1px solid var(--veio); }
+.itens.sub .item { border-top: 0; padding: .32rem 0; }
 /* registros: uma linha por evento; no módulo largo, o nome e o detalhe lado a lado */
 .item.compacto { padding: .45rem 0; content-visibility: auto; contain-intrinsic-size: auto 2.6rem; }
 .item.compacto .item-nome { font: 500 .78rem/1.5 var(--mono); }
@@ -336,119 +366,111 @@ main {
 }
 
 details { margin-top: .5rem; }
-summary { cursor: pointer; color: var(--tinta-2); font-size: .875rem; }
-summary::marker { color: var(--risco-forte); }
-
-/* --- LEDs: o único vocabulário de estado (sempre com o texto do lado) --- */
-
-.led {
-  display: inline-block; flex: none; width: .5rem; height: .5rem; border-radius: 50%;
-  background: var(--led-apagado); box-shadow: inset 0 1px 1px rgb(0 0 0 / .35);
+summary { display: inline-flex; align-items: center; gap: .45rem; cursor: pointer; color: var(--tinta-2); font-size: .875rem; list-style: none; transition: color .2s var(--suave); }
+summary::-webkit-details-marker { display: none; }
+summary::before {
+  content: ""; flex: none; width: .72rem; height: .72rem; background: currentColor;
+  mask: var(--seta-lado) center / contain no-repeat; transition: transform .3s var(--mola);
 }
-.led.ok { background: var(--led-verde); box-shadow: inset 0 -1px 1px rgb(0 0 0 / .2), 0 0 6px rgb(43 212 106 / .55); }
-.led.ruim { background: var(--led-vermelho); box-shadow: inset 0 -1px 1px rgb(0 0 0 / .2), 0 0 6px rgb(255 68 51 / .55); }
-.led.morno { background: var(--led-ambar); box-shadow: inset 0 -1px 1px rgb(0 0 0 / .2), 0 0 6px rgb(255 165 31 / .55); }
-.led.info { background: var(--led-azul); box-shadow: inset 0 -1px 1px rgb(0 0 0 / .2), 0 0 6px rgb(62 139 255 / .55); }
-.selo { display: inline-flex; align-items: center; gap: .4rem; margin-inline: .3rem .45rem; color: var(--tinta-2); font-size: .62rem; white-space: nowrap; vertical-align: .08em; }
+details[open] > summary::before { transform: rotate(90deg); }
+summary:hover { color: var(--tinta); }
+
+/* --- o estado: um ponto de pigmento, sempre com o texto do lado --- */
+
+.led { display: inline-block; flex: none; width: .5rem; height: .5rem; border-radius: 50%; background: var(--pedra); }
+.led.ok { background: var(--malaquita); }
+.led.ruim { background: var(--cinabrio); box-shadow: 0 0 0 3px color-mix(in srgb, var(--cinabrio) 18%, transparent); }
+.led.morno { background: var(--ocre); }
+.led.info { background: var(--azul); }
+.selo { display: inline-flex; align-items: center; gap: .4rem; margin-inline: .3rem .45rem; color: var(--tinta-2); font-size: .76rem; white-space: nowrap; vertical-align: .04em; }
 .selo:first-child { margin-left: 0; }
-.selo::before { content: ""; width: .46rem; height: .46rem; border-radius: 50%; background: var(--led-apagado); box-shadow: inset 0 1px 1px rgb(0 0 0 / .35); }
-.selo.ok { color: var(--verde); }
-.selo.ok::before { background: var(--led-verde); box-shadow: 0 0 6px rgb(43 212 106 / .55); }
-.selo.ruim { color: var(--vermelho); }
-.selo.ruim::before { background: var(--led-vermelho); box-shadow: 0 0 6px rgb(255 68 51 / .55); }
+.selo::before { content: ""; width: .45rem; height: .45rem; border-radius: 50%; background: var(--pedra); }
+.selo.ok { color: var(--malaquita-tinta); }
+.selo.ok::before { background: var(--malaquita); }
+.selo.ruim { color: var(--cinabrio-tinta); }
+.selo.ruim::before { background: var(--cinabrio); }
 .selo.neutro { color: var(--azul); }
-.selo.neutro::before { background: var(--led-azul); box-shadow: 0 0 6px rgb(62 139 255 / .5); }
+.selo.neutro::before { background: var(--azul); }
 
-/* medidor segmentado, como a barra de LEDs de um VU */
+/* o medidor: uma faixa fina de meandro, pintada até onde vai a medida */
 .medidor {
-  height: .55rem; margin: .15rem 0 .65rem; border-radius: 2px; overflow: hidden;
-  background: repeating-linear-gradient(90deg, var(--led-apagado) 0 5px, transparent 5px 7px);
+  position: relative; height: .5rem; margin: .25rem 0 .8rem; background: var(--veio-forte);
+  mask: var(--meandro) repeat-x left center / auto 100%;
 }
-.medidor span { display: block; height: 100%; background: repeating-linear-gradient(90deg, var(--led-verde) 0 5px, transparent 5px 7px); }
-.medidor.alto span { background: repeating-linear-gradient(90deg, var(--led-vermelho) 0 5px, transparent 5px 7px); }
+.medidor span { display: block; height: 100%; background: var(--azul); transition: width .8s var(--suave); }
+.medidor.alto span { background: var(--cinabrio); }
+.medidor.perto span { background: var(--ocre); }
 
-/* --- teclas: a borda de baixo é o lado da tecla; ao apertar, ela afunda --- */
+/* --- as teclas: o azul só na ação principal; as outras, um fio na cor do texto --- */
 
 button, .tecla {
   display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
-  min-height: 2.5rem; padding: .5rem .95rem; cursor: pointer;
-  font: 600 .84rem/1.1 var(--fonte); font-stretch: 106%; letter-spacing: .01em; text-decoration: none;
-  color: var(--tecla-tinta); background: var(--tecla);
-  border: 1px solid var(--tecla-borda); border-bottom: 3px solid var(--tecla-lado); border-radius: var(--raio-tecla);
-  box-shadow: var(--sombra-tecla);
-  transition: transform .08s ease-out, border-bottom-width .08s ease-out, box-shadow .08s ease-out;
+  min-height: 2.5rem; padding: .5rem 1rem; cursor: pointer;
+  font: 550 .86rem/1.1 var(--letra); letter-spacing: .01em; text-decoration: none;
+  color: var(--tinta); background: var(--placa); border: 1px solid var(--veio-forte); border-radius: var(--raio);
+  transition: background-color .2s var(--suave), color .2s var(--suave), border-color .2s var(--suave), transform .16s var(--suave), box-shadow .2s var(--suave);
 }
-button:hover { filter: brightness(1.03); }
-button:active:not(:disabled) { transform: translateY(1px); border-bottom-width: 2px; box-shadow: 0 1px 2px rgb(0 0 0 / .2); }
+button:hover, .tecla:hover { background: var(--placa-2); border-color: var(--tinta-2); }
+button:active:not(:disabled), .tecla:active { transform: scale(.97); }
 button:disabled { opacity: .45; cursor: not-allowed; }
 button.principal, .tecla.principal {
-  background: var(--amarelo); color: var(--amarelo-tinta); border-color: var(--amarelo-borda); border-bottom-color: var(--amarelo-lado);
+  color: var(--azul-tinta); background: var(--azul); border-color: var(--azul);
+  box-shadow: 0 1px 0 rgb(255 255 255 / .12) inset, 0 6px 16px -8px color-mix(in srgb, var(--azul) 70%, transparent);
 }
-/* tecla clara: as ações de cada linha e as secundárias; a grafite fica para a ação do módulo */
-button.discreto, .tecla.discreta {
-  min-height: 2.2rem; padding: .4rem .72rem; font-size: .78rem;
-  color: var(--tinta); background: var(--tecla-clara);
-  border-color: var(--tecla-clara-borda); border-bottom-color: var(--tecla-clara-lado); box-shadow: 0 1px 2px rgb(0 0 0 / .08);
-}
-button.discreto:hover, .tecla.discreta:hover { filter: none; border-color: var(--tinta-2); border-bottom-color: var(--tecla-clara-lado); }
-button.discreto.perigo { color: var(--vermelho); }
-@media (max-width: 40rem) { button.discreto { padding: .4rem .6rem; } .botoes { gap: .4rem; } }
+button.principal:hover, .tecla.principal:hover { background: var(--azul-forte); border-color: var(--azul-forte); }
+/* as de linha e as secundárias: menores, sem fundo */
+button.discreto, .tecla.discreta { min-height: 2.2rem; padding: .4rem .78rem; font-size: .8rem; background: transparent; border-color: var(--veio-forte); }
+button.discreto:hover, .tecla.discreta:hover { background: var(--placa-2); }
+button.perigo { color: var(--cinabrio-tinta); border-color: color-mix(in srgb, var(--cinabrio) 45%, var(--veio)); }
+button.perigo:hover { background: var(--cinabrio-claro); border-color: var(--cinabrio); }
+@media (max-width: 40rem) { button.discreto { padding: .4rem .64rem; } .botoes { gap: .4rem; } }
 button .picto { width: 1.15rem; height: 1.15rem; flex: none; }
 .botoes.grandes .picto { width: 1.3rem; height: 1.3rem; }
-button.perigo { color: var(--tecla-perigo); }
-button.perigo::before { content: ""; width: .42rem; height: .42rem; border-radius: 50%; background: var(--led-vermelho); }
 .botoes { display: flex; gap: .45rem; flex-wrap: wrap; }
 .botoes.grandes { margin: 1rem 0 .5rem; }
 .botoes.grandes button { flex: 1; min-height: 3.1rem; font-size: .95rem; }
 @media (pointer: coarse) { button, .tecla { min-height: 2.75rem; } }
 
 input, select, textarea {
-  font: 400 .95rem var(--fonte); color: var(--tinta); background: var(--poco);
-  border: 1px solid var(--risco-forte); border-radius: 4px; padding: .5rem .65rem; min-height: 2.5rem;
-  box-shadow: inset 0 1px 3px rgb(0 0 0 / .14);
+  font: 400 .95rem var(--letra); color: var(--tinta); background: var(--placa-2);
+  border: 1px solid var(--veio-forte); border-radius: var(--raio); padding: .5rem .7rem; min-height: 2.5rem;
+  transition: border-color .2s var(--suave), box-shadow .25s var(--suave), background-color .2s var(--suave);
 }
-textarea { min-height: auto; line-height: 1.45; }
-input::placeholder, textarea::placeholder { color: var(--tinta-2); }
-input[type=checkbox] { accent-color: var(--amarelo); width: 1.05rem; height: 1.05rem; min-height: 0; padding: 0; box-shadow: none; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: var(--azul); background: var(--placa); box-shadow: 0 0 0 4px color-mix(in srgb, var(--azul) 14%, transparent); }
+textarea { min-height: auto; line-height: 1.45; resize: vertical; }
+input::placeholder, textarea::placeholder { color: var(--tinta-2); opacity: .8; }
+input[type=checkbox] { accent-color: var(--azul); width: 1.05rem; height: 1.05rem; min-height: 0; padding: 0; box-shadow: none; }
 input[type=number] { width: 5rem; }
 select { appearance: none; -webkit-appearance: none; padding-right: 2rem; background-image: var(--seta); background-repeat: no-repeat; background-position: right .6rem center; background-size: .75rem; }
 input[list] { padding-right: 2rem; background-image: var(--seta); background-repeat: no-repeat; background-position: right .6rem center; background-size: .75rem; }
 input[list]::-webkit-calendar-picker-indicator { display: none !important; }
 input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]::-webkit-calendar-picker-indicator { opacity: .55; cursor: pointer; }
-textarea { resize: vertical; }
-/* a alça de redimensionar: três riscos na diagonal, da cor das réguas */
-textarea::-webkit-resizer {
-  background: linear-gradient(135deg, transparent 45%, var(--risco-forte) 45% 52%, transparent 52% 64%, var(--risco-forte) 64% 71%, transparent 71% 83%, var(--risco-forte) 83% 90%, transparent 90%);
-}
 .filtros { display: flex; gap: .65rem 1rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: .6rem; }
 .filtros > .campo { flex: 0 1 auto; }
 .filtros > .opcao { min-height: 2.5rem; align-items: center; }
 .filtros > .opcao input { margin-top: 0; }
 .filtros > .campo.cresce { flex: 1 1 12rem; }
 
-/* formulários: o rótulo do aparelho em cima de cada campo, numa grade que vira uma coluna no celular */
-.campos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr)); gap: .85rem 1rem; align-items: end; }
-.campo, .filtros > .campo, .resposta .campo { display: grid; gap: .35rem; min-width: 0; }
+/* formulários: o rótulo da inscrição em cima de cada campo, numa grade que vira uma coluna no celular */
+.campos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr)); gap: .9rem 1rem; align-items: end; }
+.campo, .filtros > .campo, .resposta .campo { display: grid; gap: .4rem; min-width: 0; }
 .campo.largo { grid-column: 1 / -1; }
-.campo > .rotulo { font-size: .62rem; }
+.campo > .rotulo { font-size: .8rem; }
 .campos .campo :is(input:not([type=checkbox]), select, textarea), .campo.cresce input { width: 100%; }
 
-/* teclas de trava (os dias da semana): afundam e acendem o LED quando ligadas */
+/* os dias da semana: teclas que travam; ligadas, ficam no azul claro */
 .travas { display: flex; flex-wrap: wrap; gap: .35rem; }
 .trava { position: relative; display: inline-grid; }
 .trava input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
 .trava span {
-  display: grid; justify-items: center; gap: .3rem; min-width: 2.75rem; padding: .4rem .45rem .45rem;
-  font: 650 .62rem var(--fonte); font-stretch: 112%; letter-spacing: .1em; text-transform: uppercase; color: var(--tinta-2);
-  background: var(--tecla-clara); border: 1px solid var(--tecla-clara-borda); border-bottom: 3px solid var(--tecla-clara-lado);
-  border-radius: var(--raio-tecla);
+  display: grid; justify-items: center; gap: .3rem; min-width: 2.8rem; padding: .45rem .45rem .5rem;
+  font-variation-settings: var(--pedra-letra); font-weight: 550; font-size: .78rem; text-transform: capitalize;
+  color: var(--tinta-2); background: transparent; border: 1px solid var(--veio-forte); border-radius: var(--raio);
+  transition: background-color .25s var(--suave), color .25s var(--suave), border-color .25s var(--suave);
 }
-.trava span::before { content: ""; width: .4rem; height: .4rem; border-radius: 50%; background: var(--led-apagado); box-shadow: inset 0 1px 1px rgb(0 0 0 / .35); }
-.trava input:checked + span {
-  color: var(--tinta); background: var(--poco); border-bottom-width: 1px; margin-top: 2px;
-  box-shadow: inset 0 1px 3px rgb(0 0 0 / .16);
-}
-.trava input:checked + span::before { background: var(--led-verde); box-shadow: 0 0 6px rgb(43 212 106 / .55); }
+.trava span::before { content: ""; width: .38rem; height: .38rem; border-radius: 50%; background: var(--pedra); transition: background-color .25s var(--suave), transform .4s var(--mola); }
+.trava input:checked + span { color: var(--azul); background: var(--azul-claro); border-color: color-mix(in srgb, var(--azul) 45%, var(--veio)); }
+.trava input:checked + span::before { background: var(--azul); transform: scale(1.15); }
 .trava input:focus-visible + span { outline: 2px solid var(--foco); outline-offset: 2px; }
 .filtros label, .resposta label { display: inline-flex; align-items: center; gap: .45rem; flex-wrap: wrap; }
 .filtros input:not([type=checkbox]) { min-width: 0; max-width: 100%; }
@@ -456,205 +478,251 @@ textarea::-webkit-resizer {
 .opcao { display: flex; gap: .45rem; align-items: flex-start; }
 .opcao input { margin-top: .2rem; }
 
-/* --- o visor: vidro preto numa moldura, com desenhos vivos e números em 7 segmentos --- */
+/* --- os medalhões: o número no meio, e o meandro da borda pintado até onde ele chega --- */
 
-.visor { padding: 5px; border-radius: 9px; background: var(--moldura); box-shadow: 0 0 0 1px var(--borda-visor), 0 1px 0 rgb(255 255 255 / .35), inset 0 1px 1px rgb(0 0 0 / .6); }
-/* cada célula com a largura do que mostra; no celular vira uma grade de duas colunas (abaixo) */
-.visor-vidro {
-  display: flex; flex-wrap: wrap; justify-content: flex-start; gap: 1rem 2.2rem;
-  padding: .9rem 1rem 1rem; border-radius: 5px; color: var(--visor-traco); background: var(--visor);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .035), inset 0 10px 28px rgb(0 0 0 / .7);
+.medalhoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.2rem, 1fr)); gap: 1.2rem 1.3rem; margin: .3rem 0 1.1rem; }
+.medalhao { margin: 0; display: grid; justify-items: center; align-content: start; gap: .65rem; text-align: center; min-width: 0; }
+.medalhao-disco { position: relative; width: min(100%, 9.6rem); aspect-ratio: 1; }
+.medalhao-anel { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.medalhao-anel .borda { fill: none; stroke: var(--veio); stroke-width: .6; }
+.medalhao-anel .risco { fill: none; stroke: var(--veio); stroke-width: 1; }
+.medalhao-anel .tinta {
+  fill: none; stroke: var(--azul); stroke-width: 1.7; stroke-dasharray: 1 1;
+  stroke-dashoffset: calc(1 - var(--fracao, 0)); transition: stroke-dashoffset 1s var(--suave);
 }
-.celula { display: grid; gap: .4rem; align-content: start; min-width: 0; flex: 0 1 auto; }
-.celula-rotulo { color: var(--visor-fraco); font-size: .6rem; letter-spacing: .18em; }
-.celula-corpo { display: flex; align-items: flex-end; gap: .7rem; }
-.celula-leitura { display: flex; align-items: flex-end; gap: .3rem; }
-.celula-unidade { font: 500 .66rem var(--mono); color: var(--visor-fraco); padding-bottom: .15rem; }
-.celula-extra { font: 400 .66rem/1.35 var(--mono); color: var(--visor-fraco); overflow-wrap: anywhere; }
-.sete { height: 2.15rem; width: auto; overflow: visible; }
-.sete .aceso { fill: currentColor; }
-.sete .apagado { fill: var(--visor-apagado); }
-.desenho { height: 3.4rem; width: auto; flex: none; overflow: visible; }
-.desenho .traco { fill: none; stroke: var(--visor-traco); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.desenho .traco.fino { stroke-width: 1; opacity: .55; }
-.desenho .nivel { fill: var(--led-verde); }
-.desenho.morno .nivel { fill: var(--led-ambar); }
-.desenho.quente .nivel { fill: var(--led-vermelho); }
-.desenho .risca { stroke: var(--visor); stroke-width: 1.5; }
-.desenho .nucleo { fill: var(--visor-apagado); stroke: var(--visor-traco); stroke-width: 1; }
-.carreteis .fita { fill: none; stroke: var(--led-azul); stroke-width: 1.6; }
-.carreteis .carretel, .ventoinha.gira {
-  transform-box: fill-box; transform-origin: center; animation: girar var(--volta, 1s) linear infinite;
+.medalhao.ocre .tinta { stroke: var(--ocre); }
+.medalhao.cinabrio .tinta { stroke: var(--cinabrio); }
+.medalhao.malaquita .tinta { stroke: var(--malaquita); }
+.surge .medalhao-anel .tinta, .medalhao.pintando .tinta { animation: pintar-anel 1.3s var(--suave) both; animation-delay: calc(var(--i, 0) * 40ms + .1s - var(--ja, 0ms)); }
+@keyframes pintar-anel { from { stroke-dashoffset: 1; } }
+.medalhao-miolo { position: absolute; inset: 21%; display: grid; place-items: center; align-content: center; gap: .15rem; }
+.medalhao-miolo .picto { width: 2.5rem; height: 2.5rem; color: var(--tinta-2); stroke-width: 1.2; }
+.medalhao-miolo .roseta { width: 2.3rem; height: 2.3rem; }
+.medalhao-numero {
+  font-variation-settings: var(--titulo-letra); font-weight: 350; font-size: clamp(1.55rem, 1.15rem + 1.2vw, 2.05rem);
+  font-variant-numeric: tabular-nums lining-nums; letter-spacing: -.025em; line-height: 1; white-space: nowrap;
 }
-.carreteis .carretel { animation-duration: var(--volta, 6s); }
-.ventoinha .pa { fill: var(--visor-traco); opacity: .85; }
-.torre.ligado .botao-energia { fill: var(--led-verde); stroke: none; }
-.torre.desligado .botao-energia { fill: none; stroke: var(--visor-fraco); stroke-width: 1.4; }
-.torre.desligado .ventoinha { opacity: .45; }
-.ventoinha.acelerando { animation: girar .45s linear infinite, acelerar 1.4s ease-out 1; }
-.ventoinha-placa { height: 2.6rem; }
-.mostrador { height: 5.2rem; }
-.mostrador .hora { fill: var(--visor-fraco); font: 600 7px var(--fonte); }
-.mostrador .marcador { fill: var(--amarelo); }
-.mostrador .marcador.proxima { stroke: var(--visor); stroke-width: 1.2; }
-.mostrador .ponteiro { transform-box: view-box; transform-origin: 50px 50px; }
-.mostrador .ponteiro.girando { animation: girar 1.4s cubic-bezier(.2, .7, .2, 1) 2; }
-.chip .nivel { fill: var(--led-azul); opacity: .85; }
+.medalhao-unidade { margin-left: .14em; font-variation-settings: "FLAR" 0, "VOLM" 0; font-size: .42em; font-weight: 500; letter-spacing: 0; color: var(--tinta-2); }
+.medalhao figcaption { display: grid; gap: .2rem; }
+.medalhao-rotulo { color: var(--tinta); font-size: .86rem; }
+.medalhao-nota { font-size: .78rem; line-height: 1.35; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.medalhao-nota .led { margin-right: .4rem; vertical-align: .08em; }
+.medalhao.pc-desligado .medalhao-miolo .picto { opacity: .55; }
+.medalhao.pc-ligado .medalhao-miolo .picto { color: var(--azul); }
+.medalhao.pc-ligado .medalhao-miolo .picto .tinta { fill-opacity: .14; }
+
+/* a roseta (a ventoinha): oito pétalas em traço fino, que giram na velocidade dela */
+.roseta .petala { fill: none; stroke: var(--tinta-2); stroke-width: 1; }
+.roseta .miolo { fill: var(--tinta-2); }
+.roseta .gira { transform-box: fill-box; transform-origin: center; animation: girar var(--volta, 2s) linear infinite; }
 @keyframes girar { to { transform: rotate(360deg); } }
-/* no celular: duas colunas, e a primeira célula (a principal da tela) ocupa a linha toda */
-@media (max-width: 40rem) {
-  .visor-vidro { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; padding: .8rem .85rem .9rem; }
-  .visor-vidro .celula:first-child:not(:only-child) { grid-column: 1 / -1; }
-  .desenho { height: 3rem; }
-  .sete { height: 1.95rem; }
+
+/* --- a crepidoma das zonas: os degraus do templo em 3D, um degrau de mármore por zona --- */
+
+.crepidoma { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: center; gap: .5rem 1rem; margin: .1rem 0 1rem; }
+@container modulo (max-width: 19rem) { .crepidoma { grid-template-columns: 1fr; } }
+.crepidoma-cena {
+  --piso: 1.35rem; --espelho: .85rem;
+  position: relative; height: calc(4.6rem + var(--n, 6) * 1.25rem); perspective: 1100px; perspective-origin: 50% 0%;
 }
-@keyframes acelerar { from { opacity: .5; } to { opacity: 1; } }
-
-/* mostrador pequeno: um número em 7 segmentos dentro de um módulo */
-.mostrador-numero {
-  display: inline-flex; align-items: flex-end; gap: .4rem; padding: .5rem .7rem .55rem; margin: .1rem 0 .5rem;
-  color: var(--visor-traco); background: var(--visor); border-radius: 4px;
-  box-shadow: 0 0 0 4px var(--moldura), inset 0 6px 16px rgb(0 0 0 / .7);
+.crepidoma-pilha {
+  position: absolute; left: 47%; top: 54%; width: 0; height: 0; transform-style: preserve-3d;
+  transform: rotateX(56deg) rotateZ(-30deg); animation: respirar-pilha 12s ease-in-out infinite alternate;
 }
-.mostrador-numero .sete { height: 1.8rem; }
-.mostrador-numero .celula-unidade { padding-bottom: .1rem; }
+@keyframes respirar-pilha { from { transform: rotateX(57deg) rotateZ(-33deg); } to { transform: rotateX(54deg) rotateZ(-25deg); } }
+/* cada degrau: o piso (onde ficam os pontos), o espelho na frente e o lado; o de cima fica mais atrás e mais alto */
+.laje {
+  --y: calc((var(--n) / 2 - var(--i) - .5) * var(--piso)); --z: calc(var(--i) * var(--espelho));
+  position: absolute; left: -3.6rem; top: calc(var(--piso) / -2); width: 7.2rem; height: var(--piso);
+  transform-style: preserve-3d; cursor: pointer;
+  transform: translate3d(var(--dx, 0px), var(--y), calc(var(--z) + var(--dz, 0px)));
+  transition: transform .75s var(--mola);
+}
+.laje-face {
+  position: absolute; inset: 0; display: grid; place-items: center; padding: .2rem .5rem;
+  background: var(--placa); border: 1px solid color-mix(in srgb, var(--tinta) 20%, transparent);
+  transition: background-color .35s var(--suave), border-color .35s var(--suave);
+}
+.laje-frente, .laje-lado { position: absolute; border: 1px solid color-mix(in srgb, var(--tinta) 20%, transparent); }
+.laje-frente { left: 0; bottom: 0; width: 100%; height: var(--espelho); transform-origin: bottom; transform: rotateX(90deg); background: color-mix(in srgb, var(--placa) 86%, var(--tinta)); }
+.laje-lado { right: 0; top: 0; width: var(--espelho); height: 100%; transform-origin: right; transform: rotateY(-90deg); background: color-mix(in srgb, var(--placa) 74%, var(--tinta)); }
+.laje-pontos { display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: .26rem; }
+.laje-pontos i { width: .36rem; height: .36rem; border-radius: 50%; background: var(--malaquita); }
+.laje-pontos i.ruim { background: var(--cinabrio); animation: pulsar 1.8s ease-in-out infinite; }
+@keyframes pulsar { 50% { opacity: .35; } }
+.laje.acesa { --dz: .5rem; }
+.laje.acesa .laje-face { background: var(--azul-claro); border-color: color-mix(in srgb, var(--azul) 50%, transparent); }
+/* a zona com problema escorrega para o lado, como uma pedra deslocada */
+.laje.fora { --dx: .9rem; --dz: .15rem; }
+.laje.fora .laje-face { background: var(--cinabrio-claro); border-color: color-mix(in srgb, var(--cinabrio) 50%, transparent); }
+/* ao entrar, os degraus sobem um a um, de baixo para cima, e assentam */
+.surge .laje { animation: assentar 1s var(--mola) backwards; animation-delay: calc(var(--i) * 75ms + .1s - var(--ja, 0ms)); }
+@keyframes assentar { from { transform: translate3d(0, var(--y), calc(var(--z) - 2.6rem)); opacity: 0; } }
+.crepidoma-legenda { display: grid; gap: .1rem; min-width: 0; }
+.crepidoma-zona {
+  display: grid; grid-template-columns: .5rem minmax(0, 1fr) auto; align-items: center; gap: .1rem .6rem;
+  min-height: 2.3rem; padding: .3rem .5rem; color: var(--tinta); background: transparent; border: 0; border-radius: var(--raio);
+  text-align: left; font: inherit; box-shadow: none;
+}
+.crepidoma-zona:hover, .crepidoma-zona.acesa { background: var(--azul-claro); }
+.crepidoma-zona:active:not(:disabled) { transform: none; }
+.crepidoma-nome { font-size: .86rem; color: var(--tinta-2); }
+.crepidoma-conta { font-variation-settings: var(--titulo-letra); font-weight: 400; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.crepidoma-problema { grid-column: 2 / -1; font-size: .74rem; color: var(--cinabrio-tinta); overflow-wrap: anywhere; }
+.crepidoma-zona.fora .crepidoma-nome { color: var(--cinabrio-tinta); }
 
-/* --- vista explodida: o desenho técnico das zonas --- */
+/* --- o relógio de sol da agenda --- */
 
-.explodida { display: block; width: 100%; height: auto; max-height: 28rem; color: var(--tinta); }
-.explodida .face { stroke: var(--tinta); stroke-width: 1; stroke-linejoin: round; }
-.explodida .face.tampo { fill: var(--modulo-claro); }
-.explodida .face.borda { fill: var(--chassi); }
-.explodida .face.lado { fill: var(--chassi-2); }
-.explodida .guia { stroke: var(--risco-forte); stroke-width: 1; stroke-dasharray: 3 3; }
-.explodida .chamada { fill: none; stroke: var(--tinta-2); stroke-width: .9; }
-.explodida .ponta { fill: var(--tinta); }
-.explodida .rotulo-zona { font: 700 11px var(--fonte); font-stretch: 112%; letter-spacing: .14em; fill: var(--tinta); }
-.explodida .conta { font: 500 10px var(--mono); fill: var(--tinta-2); }
-.explodida .problema { font: 500 9.5px var(--mono); fill: var(--vermelho); }
-.explodida .mais { font: 500 7px var(--mono); fill: var(--tinta-2); }
-.explodida .led-desenho.ok { fill: var(--led-verde); }
-.explodida .led-desenho.ruim { fill: var(--led-vermelho); }
-.explodida .placa { cursor: pointer; outline: none; }
-.explodida .placa:hover .face.tampo { fill: color-mix(in srgb, var(--amarelo) 22%, var(--modulo-claro)); }
-.explodida .placa:focus-visible .face { stroke: var(--foco); stroke-width: 2; }
-.explodida .placa.com-problema { transform: translate(8px, -4px); }
-.explodida .placa.com-problema .face.tampo { fill: color-mix(in srgb, var(--led-vermelho) 14%, var(--modulo-claro)); }
-.legenda-desenho { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: .5rem; font: 500 .62rem var(--mono); color: var(--tinta-2); }
+.agenda-mostrador { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem 2.2rem; margin: .2rem 0 .4rem; }
+.relogio { flex: none; width: min(100%, 12.5rem); height: auto; display: block; overflow: visible; }
+.relogio .borda { fill: none; stroke: var(--veio-forte); stroke-width: .5; }
+.relogio .risco { fill: none; stroke: var(--tinta-3); stroke-width: .6; }
+.relogio .hora { stroke: var(--tinta-2); stroke-width: .5; stroke-linecap: round; }
+.relogio .hora.forte { stroke: var(--tinta); stroke-width: .9; }
+.relogio .numeral { font: 600 5.2px var(--letra); font-variation-settings: var(--pedra-letra); fill: var(--tinta-2); stroke: var(--placa); stroke-width: 2.2px; paint-order: stroke; }
+.relogio .cunha { fill: var(--tinta); opacity: .07; }
+.relogio .gnomon { stroke: var(--tinta); stroke-width: 1; stroke-linecap: round; }
+.relogio .sombra { transform-box: view-box; transform-origin: 50px 50px; }
+.relogio .sombra.girando { animation: girar 2.2s cubic-bezier(.65, 0, .35, 1) 1; }
+.relogio .vez { fill: var(--azul); }
+.relogio .vez.proxima { stroke: var(--placa); stroke-width: 1; }
+.relogio .centro { fill: var(--tinta); }
+.agenda-leituras { display: grid; gap: 1rem; min-width: 0; }
+.leitura { display: grid; gap: .25rem; }
+.leitura .numero-grande { margin: 0; }
 
-/* --- a faixa amarela: aprovação esperando por você --- */
+/* --- a faixa de aprovações: um fio de ocre, a coroa de louros e uma luz que passa quando chega uma --- */
 
 .faixa {
-  grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: .75rem 1rem; flex-wrap: wrap;
-  padding: .8rem 1rem; border-radius: var(--raio); text-decoration: none;
-  background: var(--amarelo); color: var(--amarelo-tinta);
-  border: 1px solid var(--amarelo-borda); border-bottom: 3px solid var(--amarelo-lado); box-shadow: var(--sombra-tecla);
+  grid-column: 1 / -1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: space-between;
+  gap: .75rem 1rem; flex-wrap: wrap; padding: .85rem 1.1rem; border-radius: var(--raio); text-decoration: none;
+  color: var(--tinta); background: var(--ocre-claro); border: 1px solid color-mix(in srgb, var(--ocre) 38%, transparent);
+  transition: border-color .25s var(--suave);
 }
-.faixa strong { display: inline-flex; align-items: center; gap: .55rem; font-weight: 700; font-size: 1rem; }
-.faixa .rotulo { display: inline-flex; align-items: center; gap: .3rem; color: var(--amarelo-tinta); opacity: .8; }
-.faixa .picto { width: 1.2rem; height: 1.2rem; }
-.faixa.pulsa { animation: chamar 1.2s ease-out 2; }
-@keyframes chamar {
-  0% { box-shadow: 0 0 0 0 rgb(255 196 0 / .65), var(--sombra-tecla); }
-  100% { box-shadow: 0 0 0 16px rgb(255 196 0 / 0), var(--sombra-tecla); }
+.faixa strong { display: inline-flex; align-items: center; gap: .65rem; font-weight: 600; font-size: .98rem; }
+.faixa .rotulo { display: inline-flex; align-items: center; gap: .3rem; color: var(--ocre-tinta); }
+.faixa .picto { width: 1.3rem; height: 1.3rem; color: var(--ocre); }
+.faixa .picto .tinta { fill-opacity: .18; }
+.faixa:hover { color: var(--tinta); border-color: var(--ocre); }
+.faixa.pulsa::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .55) 50%, transparent 70%);
+  transform: translateX(-100%); animation: luz 1.6s var(--suave) .15s 1 both;
+}
+@keyframes luz { to { transform: translateX(100%); } }
+.faixa.pulsa .picto-aprovacoes :not(.tinta, .cheio) { stroke-dasharray: 1 1; animation: tracar 1s var(--traco) both; }
+
+/* --- entrar --- */
+
+.entrada { min-height: 100dvh; display: grid; place-items: center; padding: 1.5rem 1rem 2rem; }
+.frente { width: min(100%, 22rem); display: grid; gap: .8rem; }
+.frente .marca { justify-self: center; margin: .5rem -.28em .8rem 0; font-size: 1.7rem; color: var(--tinta); }
+.frente input { min-height: 3rem; font-size: 1.05rem; }
+.frente button { margin-top: .25rem; min-height: 3rem; font-size: .95rem; }
+.frente .erro { text-align: center; }
+/* entrou: a entrada se desfaz e o painel chega */
+.entrada.saindo { animation: afastar .5s var(--suave) forwards; }
+@keyframes afastar { to { opacity: 0; transform: scale(1.02); filter: blur(10px); } }
+.painel.chegando main { animation: chegar-tela .7s var(--suave) backwards; }
+/* no PC, a página da entrada fica emoldurada por uma faixa fina de meandro, em cima e embaixo */
+@media (min-width: 60rem) {
+  .entrada::before, .entrada::after {
+    content: ""; position: fixed; left: 2.5rem; right: 2.5rem; height: .42rem; background: var(--tinta-3);
+    mask: var(--meandro) repeat-x left center / auto 100%; opacity: .7;
+  }
+  .entrada::before { top: 2rem; }
+  .entrada::after { bottom: 2rem; }
 }
 
-/* --- entrar: a frente do aparelho --- */
-
-.entrada { min-height: 100dvh; display: grid; place-items: center; padding: 1rem; }
-.frente {
-  width: min(100%, 22rem); display: grid; gap: .7rem; padding: 1.4rem 1.5rem 1.3rem;
-  border: 1px solid var(--risco); border-radius: 10px; box-shadow: var(--sombra-modulo);
-  background:
-    var(--parafuso) left 7px top 7px / 9px 9px no-repeat, var(--parafuso) right 7px top 7px / 9px 9px no-repeat,
-    var(--parafuso) left 7px bottom 7px / 9px 9px no-repeat, var(--parafuso) right 7px bottom 7px / 9px 9px no-repeat,
-    var(--modulo);
-}
-.frente-topo { display: flex; align-items: center; justify-content: space-between; margin-bottom: .6rem; }
-.leds-entrada { display: flex; gap: .4rem; }
-.leds-entrada i { width: .45rem; height: .45rem; border-radius: 50%; background: var(--led-apagado); box-shadow: inset 0 1px 1px rgb(0 0 0 / .35); }
-.frente button { margin-top: .3rem; min-height: 3rem; font-size: .95rem; }
-
-/* ao entrar, os LEDs varrem uma vez (o único momento de abertura) */
-.aparelho.ligando .leds-zonas .led { animation: varrer .5s ease-out both; animation-delay: calc(var(--i, 0) * 70ms); }
-@keyframes varrer {
-  0% { background: var(--led-apagado); box-shadow: none; }
-  45% { background: var(--amarelo); box-shadow: 0 0 8px rgb(255 196 0 / .8); }
-}
+/* ao chegar no painel, os pontos das zonas aparecem um a um */
+.painel.chegando .zonas-pontos .led { animation: pingar .6s var(--mola) both; animation-delay: calc(var(--i, 0) * 70ms + .25s); }
+@keyframes pingar { from { transform: scale(0); opacity: 0; } }
 
 /* --- janelas, folha "Mais", paleta e avisos --- */
 
 dialog {
-  width: min(100% - 1.5rem, 60rem); max-height: 88dvh; padding: 1rem 1.1rem; color: var(--tinta);
-  background: var(--modulo); border: 1px solid var(--risco-forte); border-radius: 10px;
-  box-shadow: 0 20px 50px -12px rgb(0 0 0 / .45);
+  width: min(100% - 1.5rem, 60rem); max-height: 88dvh; padding: 1.15rem 1.25rem; color: var(--tinta);
+  background: var(--placa); border: 1px solid var(--veio); border-radius: 10px; box-shadow: var(--sombra-alta);
 }
-dialog::backdrop { background: rgb(10 11 10 / .5); }
-.janela-topo { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: .75rem; }
+dialog[open] { animation: abrir-janela .5s var(--mola); }
+@keyframes abrir-janela { from { opacity: 0; transform: translateY(12px) scale(.97); filter: blur(4px); } }
+dialog::backdrop { background: rgb(10 14 26 / .42); backdrop-filter: blur(3px); animation: escurecer .3s var(--suave); }
+@keyframes escurecer { from { opacity: 0; } }
+.janela-topo { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: .9rem; padding-bottom: .75rem; border-bottom: 1px solid var(--veio); }
+.janela-topo strong { display: inline-flex; align-items: center; gap: .55rem; font-size: 1.02rem; font-variation-settings: var(--titulo-letra); font-weight: 500; }
 .janela-avisos { display: grid; gap: .5rem; margin-top: .75rem; position: sticky; bottom: 0; }
-.folha { margin: auto auto 0; width: 100%; max-width: 32rem; border-radius: 14px 14px 0 0; border-bottom: 0; padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+.folha { margin: auto auto 0; width: 100%; max-width: 32rem; border-radius: 18px 18px 0 0; border-bottom: 0; padding-bottom: calc(1rem + env(safe-area-inset-bottom)); }
+.folha[open] { animation: subir-folha .55s var(--mola); }
+@keyframes subir-folha { from { transform: translateY(100%); } }
 .teclado { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
 .teclado a {
-  position: relative; display: grid; justify-items: center; gap: .35rem; padding: .8rem .3rem .7rem; text-decoration: none;
-  background: var(--tecla); color: var(--tecla-tinta); border: 1px solid var(--tecla-borda); border-bottom: 3px solid var(--tecla-lado);
-  border-radius: var(--raio-tecla); box-shadow: var(--sombra-tecla);
-  font: 650 .64rem var(--fonte); font-stretch: 112%; text-transform: uppercase; letter-spacing: .12em;
+  position: relative; display: grid; justify-items: center; gap: .5rem; padding: 1rem .3rem .85rem; text-decoration: none;
+  color: var(--tinta); background: var(--placa-2); border: 1px solid var(--veio); border-radius: 10px; font-size: .78rem;
+  transition: background-color .2s var(--suave), color .2s var(--suave), transform .16s var(--suave);
 }
-.teclado a.ativa { background: var(--poco); box-shadow: inset 0 1px 3px rgb(0 0 0 / .16); border-bottom-width: 1px; }
-.teclado .picto { width: 1.45rem; height: 1.45rem; }
+.teclado a:hover { background: var(--azul-claro); color: var(--azul); }
+.teclado a:active { transform: scale(.97); }
+.teclado a.ativa { color: var(--azul); background: var(--azul-claro); border-color: color-mix(in srgb, var(--azul) 35%, var(--veio)); }
+.teclado .picto { width: 1.55rem; height: 1.55rem; }
 .teclado .contagem { left: auto; right: .4rem; }
 
 .paleta { margin: 12dvh auto auto; width: min(100% - 1.5rem, 36rem); padding: .6rem; }
 .paleta input { width: 100%; font-size: 1.05rem; min-height: 3rem; }
 .paleta ul { list-style: none; margin: .5rem 0 0; padding: 0; max-height: 55dvh; overflow-y: auto; }
-.paleta li { display: flex; align-items: center; gap: .7rem; padding: .6rem .7rem; border-radius: var(--raio-tecla); cursor: pointer; }
-.paleta li[aria-selected=true] { background: var(--poco); box-shadow: inset 0 1px 3px rgb(0 0 0 / .14); }
-.paleta li .picto { width: 1.1rem; height: 1.1rem; color: var(--tinta-2); flex: none; }
+.paleta li { display: flex; align-items: center; gap: .7rem; padding: .62rem .75rem; border-radius: var(--raio); cursor: pointer; transition: background-color .15s var(--suave); }
+.paleta li[aria-selected=true] { background: var(--azul-claro); color: var(--azul); }
+.paleta li .picto { width: 1.15rem; height: 1.15rem; color: var(--tinta-2); flex: none; }
+.paleta li[aria-selected=true] .picto { color: var(--azul); }
+.paleta li[aria-selected=true] .picto .tinta { fill-opacity: .16; }
 .paleta .comando-titulo { flex: 1; }
-.paleta .comando-grupo { font: 650 .6rem var(--fonte); font-stretch: 112%; letter-spacing: .14em; text-transform: uppercase; color: var(--tinta-2); }
+.paleta .comando-grupo { font-size: .76rem; color: var(--tinta-2); }
 .paleta li.vazio { color: var(--tinta-2); cursor: default; }
 
 .avisos {
   position: fixed; left: 50%; transform: translateX(-50%); z-index: 6;
   bottom: calc(var(--barra-altura) + env(safe-area-inset-bottom) + .75rem);
-  display: grid; gap: .45rem; width: min(100% - 1.5rem, 30rem);
+  display: grid; gap: .45rem; width: min(100% - 1.5rem, 30rem); view-transition-name: avisos;
 }
 @media (min-width: 60rem) { .avisos { bottom: 1.25rem; left: auto; right: 1.25rem; transform: none; } }
 .aviso {
-  display: flex; align-items: baseline; gap: .55rem; padding: .65rem .85rem; border-radius: 6px;
-  background: var(--visor); color: var(--visor-traco); font: 400 .78rem/1.4 var(--mono);
-  box-shadow: 0 0 0 3px var(--moldura), 0 10px 24px -8px rgb(0 0 0 / .5);
+  display: flex; align-items: baseline; gap: .6rem; padding: .75rem .95rem; border-radius: 10px;
+  background: var(--noite); color: var(--noite-tinta); font-size: .85rem; line-height: 1.4;
+  box-shadow: 0 18px 40px -16px rgb(0 0 0 / .55); animation: chegar-aviso .55s var(--mola);
 }
-.aviso::before { content: ""; flex: none; width: .45rem; height: .45rem; border-radius: 50%; background: var(--led-azul); box-shadow: 0 0 6px rgb(62 139 255 / .7); }
-.aviso.ok::before { background: var(--led-verde); box-shadow: 0 0 6px rgb(43 212 106 / .7); }
-.aviso.erro::before { background: var(--led-vermelho); box-shadow: 0 0 6px rgb(255 68 51 / .7); }
+@keyframes chegar-aviso { from { opacity: 0; transform: translateY(14px) scale(.98); filter: blur(4px); } }
+.aviso::before { content: ""; flex: none; width: .5rem; height: .5rem; border-radius: 50%; background: #a3b5f3; }
+.aviso.ok::before { background: #57b98a; }
+.aviso.erro::before { background: #e8705c; }
 
 /* --- textos de máquina: registros, pedidos, código --- */
 
 .log {
-  font: .72rem/1.55 var(--mono); color: var(--visor-traco); background: var(--visor); padding: .75rem .85rem; border-radius: 5px;
-  overflow: auto; max-height: 60dvh; white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-color: #3a443f transparent;
+  font: .74rem/1.55 var(--mono); color: var(--noite-tinta); background: var(--noite); padding: .85rem .95rem; border-radius: var(--raio);
+  overflow: auto; max-height: 60dvh; white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-color: #3a4558 transparent;
 }
 .texto-pedido {
-  font: .8rem/1.5 var(--mono); background: var(--poco); padding: .65rem .75rem; border-radius: 5px;
-  white-space: pre-wrap; overflow-wrap: anywhere; margin: .5rem 0;
+  font: .92rem/1.55 var(--letra); background: var(--placa-2); padding: .7rem .8rem; border-radius: var(--raio);
+  border: 1px solid var(--veio); white-space: pre-wrap; overflow-wrap: anywhere; margin: .5rem 0;
 }
 .pergunta { font-size: 1.05rem; margin: .5rem 0; white-space: pre-wrap; }
 textarea.codigo { width: 100%; min-height: 40dvh; font: .8rem/1.5 var(--mono); white-space: pre; overflow: auto; }
 .processo .comando { font: .78rem var(--mono); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .processo .comando.aberto { white-space: pre-wrap; overflow-wrap: anywhere; }
-.item.arquivo { padding: .3rem 0; }
-.item.arquivo a { display: inline-flex; align-items: center; gap: .6rem; text-decoration: none; overflow-wrap: anywhere; }
-.item.arquivo a.pasta { font-weight: 650; }
+.item.arquivo { padding: .32rem 0; }
+.item.arquivo a { display: inline-flex; align-items: center; gap: .6rem; color: var(--tinta); text-decoration: none; overflow-wrap: anywhere; transition: color .15s var(--suave); }
+.item.arquivo a:hover { color: var(--azul); }
+.item.arquivo a.pasta { font-weight: 600; }
 .item.arquivo .picto { width: 1.15rem; height: 1.15rem; flex: none; color: var(--tinta-2); }
-.trilha-caminho { display: flex; flex-wrap: wrap; gap: .1rem .35rem; margin: .75rem 0 .55rem; font: 500 .76rem var(--mono); color: var(--tinta-2); }
-.trilha-caminho a { color: var(--tinta); }
+.trilha-caminho { display: flex; flex-wrap: wrap; gap: .1rem .35rem; margin: .75rem 0 .55rem; font: 500 .78rem var(--mono); color: var(--tinta-2); }
+.trilha-caminho a { color: var(--azul); }
 .trilha-caminho [aria-current] { color: var(--tinta); font-weight: 700; }
 .lista.arquivos li { padding: .35rem 0; }
 .lista.arquivos a { text-decoration: none; overflow-wrap: anywhere; }
-.lista.arquivos a.pasta { font-weight: 650; }
+.lista.arquivos a.pasta { font-weight: 600; }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before { animation: none !important; transition: none !important; }
-  .aparelho:has(#tela[aria-busy]) .ativa::before { opacity: .35; } /* lendo, sem piscar */
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+  .desenhando .traco, .picto.redesenha * { stroke-dashoffset: 0 !important; }
+  .painel:has(#tela[aria-busy]) .ativa .picto { opacity: .6; } /* lendo, sem respirar */
 }

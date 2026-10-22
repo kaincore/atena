@@ -1,4 +1,4 @@
-// As zonas: o resumo de cada uma, os LEDs do topo e a zona em foco na tela de serviços.
+// As zonas: o resumo de cada uma, os pontos do friso (topo e trilho) e a zona em foco na tela de serviços.
 import { ORDEM_ZONAS, atualizar, containerOk, h, telaAtual } from "./comum.js";
 
 export let stacksVistas = []; // a paleta oferece logs e reiniciar dessas
@@ -17,11 +17,11 @@ export function resumirZonas(lista) {
 }
 
 export function marcarZonas(zonas) {
-  for (const caixa of document.querySelectorAll(".leds-zonas")) {
+  for (const caixa of document.querySelectorAll(".zonas-pontos")) {
     caixa.replaceChildren(...zonas.map((z, i) => {
       const led = h("span", { class: `led ${z.problemas.length ? "ruim" : "ok"}` });
       led.style.setProperty("--i", i);
-      return h("span", { class: "led-zona", title: `${z.zona}: ${z.total - z.problemas.length} de ${z.total} no ar` }, led, h("span", null, z.zona));
+      return h("span", { class: "zona-ponto", title: `${z.zona}: ${z.total - z.problemas.length} de ${z.total} no ar` }, led, h("span", null, z.zona));
     }));
   }
 }

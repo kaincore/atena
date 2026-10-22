@@ -1,12 +1,28 @@
 // PC: ligar, desligar e reiniciar o PC da rede de casa.
 import { atualizar, cartao, consultar, falha, h, modulo, mudar } from "../comum.js";
 import { picto } from "../pictos.js";
-import { visorPC } from "../visor.js";
+import { medalhao, medalhoes } from "../desenhos.js";
 
-let pcLigadoEm = 0; // a cena da ventoinha acelerando vale no primeiro minuto depois de ligar
+// a cena do PC ligando: no primeiro minuto depois de ligar, o meandro do medalhão se pinta uma vez
+let pcLigadoEm = 0;
+let pintado = false;
 
 export function marcarPcLigado() {
   pcLigadoEm = Date.now();
+  pintado = false;
+}
+
+function medalhoesPC({ ligado, lm_studio }) {
+  const pintar = ligado && !pintado && Date.now() - pcLigadoEm < 60_000;
+  if (pintar) pintado = true;
+  return medalhoes(
+    medalhao({ rotulo: "PC gamer", desenho: picto("pc"), fracao: ligado ? 1 : null, cor: "azul",
+      nota: [h("span", { class: `led ${ligado ? "ok" : ""}` }), ligado ? "ligado na rede de casa" : "desligado"],
+      classe: `${ligado ? "pc-ligado" : "pc-desligado"}${pintar ? " pintando" : ""}` }),
+    medalhao({ rotulo: "LM Studio", desenho: picto("atividade"), fracao: lm_studio ? 1 : null, cor: "azul",
+      nota: [h("span", { class: `led ${lm_studio ? "ok" : ""}` }), lm_studio ? "respondendo" : "fora do ar"],
+      classe: lm_studio ? "pc-ligado" : "pc-desligado" }),
+  );
 }
 
 export async function telaPC() {
@@ -15,7 +31,7 @@ export async function telaPC() {
   const { ligado, lm_studio } = r.resultado;
   const depois = async (resposta) => { if (resposta) setTimeout(atualizar, 3000); };
   const pc = modulo("PC gamer", ligado ? "ligado" : "desligado",
-    visorPC(r.resultado, ligado && Date.now() - pcLigadoEm < 60_000),
+    medalhoesPC(r.resultado),
     h("div", { class: "botoes grandes" },
       !ligado && h("button", { type: "button", class: "principal", onclick: async () => {
         const x = await mudar("pc.ligar", {});
