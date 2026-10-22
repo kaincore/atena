@@ -171,8 +171,9 @@ function cookie(req: IncomingMessage, nome: string): string | null {
   return null;
 }
 
-const cookieSessao = (token: string, segundos: number) =>
-  `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${segundos}`;
+// Secure só pelo Tailscale, que chega por HTTPS: pela rede de casa, em HTTP, o navegador recusaria o cookie
+const cookieSessao = (token: string, segundos: number, https: boolean) =>
+  `${COOKIE}=${token}; Path=/; HttpOnly;${https ? " Secure;" : ""} SameSite=Strict; Max-Age=${segundos}`;
 
 // "Android · Chrome": só para você reconhecer o aparelho na lista de sessões
 export function aparelho(agente: string): string {
@@ -213,7 +214,9 @@ function resumir(corpo: Record<string, unknown>): string {
   return texto.length > 300 ? texto.slice(0, 300) + "…" : texto;
 }
 
-export function criarServidor(config: Config, banco: Banco, agendador?: Agendador): Server {
+// Duas entradas com a mesma memória (a fila do scrypt; o bloqueio da senha errada fica no banco): o próprio
+// servidor, para o Tailscale, que entrega por HTTPS, e o .casa, para a rede de casa, em HTTP puro
+export function criarServidor(config: Config, banco: Banco, agendador?: Agendador): Server & { casa: Server } {
   const publico = carregarPublico(config.publico);
   let conferindo = false; // scrypt usa 32 MB: uma conferência de senha por vez
 
@@ -234,7 +237,7 @@ export function criarServidor(config: Config, banco: Banco, agendador?: Agendado
     }
   }
 
-  async function api(req: IncomingMessage, res: ServerResponse, url: URL) {
+  async function api(req: IncomingMessage, res: ServerResponse, url: URL, https: boolean) {
     const rota = url.pathname;
     if (req.method === "POST") {
       // cookie SameSite=Strict + cabeçalho próprio: outro site não consegue mandar ações em seu nome
@@ -268,7 +271,7 @@ export function criarServidor(config: Config, banco: Banco, agendador?: Agendado
       }
       banco.acertou();
       const token = banco.criarSessao(senha.id, aparelho(String(req.headers["user-agent"] ?? "")));
-      return responder(res, 200, { ok: true }, { "Set-Cookie": cookieSessao(token, DURACAO_SESSAO / 1000) });
+      return responder(res, 200, { ok: true }, { "Set-Cookie": cookieSessao(token, DURACAO_SESSAO / 1000, https) });
     }
 
     const { sessao, senha, token } = exigirSessao(req);
@@ -276,11 +279,11 @@ export function criarServidor(config: Config, banco: Banco, agendador?: Agendado
     if (rota === "/api/eu" && req.method === "GET") {
       // renova o cookie: enquanto o app for aberto, a sessão não vence
       return responder(res, 200, { ok: true, sessao: sessao.id.slice(0, 12), acoes: ACOES },
-        { "Set-Cookie": cookieSessao(token, DURACAO_SESSAO / 1000) });
+        { "Set-Cookie": cookieSessao(token, DURACAO_SESSAO / 1000, https) });
     }
     if (rota === "/api/sair" && req.method === "POST") {
       banco.encerrarToken(token);
-      return responder(res, 200, { ok: true }, { "Set-Cookie": cookieSessao("", 0) });
+      return responder(res, 200, { ok: true }, { "Set-Cookie": cookieSessao("", 0, https) });
     }
     if (rota === "/api/sessoes" && req.method === "GET") {
       const sessoes = banco.sessoes(senha.id).map((s) => ({
@@ -405,11 +408,11 @@ export function criarServidor(config: Config, banco: Banco, agendador?: Agendado
     throw new ErroHttp(404, "rota desconhecida");
   }
 
-  return createServer(async (req, res) => {
+  const atender = (https: boolean) => async (req: IncomingMessage, res: ServerResponse) => {
     const url = new URL(req.url ?? "/", "http://painel");
     try {
       if (url.pathname === "/saude") return responder(res, 200, { ok: true });
-      if (url.pathname.startsWith("/api/")) return await api(req, res, url);
+      if (url.pathname.startsWith("/api/")) return await api(req, res, url, https);
       if (req.method !== "GET" && req.method !== "HEAD") throw new ErroHttp(405, "método não permitido");
       const arquivo = publico.get(url.pathname === "/" ? "/index.html" : url.pathname);
       if (!arquivo) throw new ErroHttp(404, "não encontrado");
@@ -432,5 +435,6 @@ export function criarServidor(config: Config, banco: Banco, agendador?: Agendado
       console.error(e);
       responder(res, 500, { ok: false, erro: "erro interno do painel (docker logs painel)" });
     }
-  });
+  };
+  return Object.assign(createServer(atender(true)), { casa: createServer(atender(false)) });
 }

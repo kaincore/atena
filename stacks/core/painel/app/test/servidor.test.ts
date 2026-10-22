@@ -23,7 +23,7 @@ const TOKEN = "atx-token-de-teste";
 let README = "# Servidor\n\n## Pendências conhecidas\n\n- **Backup:** não existe.\n- **Diun:** não instalado,\n  falta a regra 4.\n\n## Outra seção\n\n- não é pendência\n";
 const recebidos: { metodo: string; caminho: string; token: string; corpo: any }[] = [];
 let executor: Server;
-let painel: Server;
+let painel: ReturnType<typeof criarServidor>;
 let banco: Banco;
 let agendador: Agendador;
 let base: string;
@@ -169,6 +169,35 @@ test("login certo dá sessão; sair encerra", async () => {
   assert.ok(eu.corpo.acoes["pc.ligar"]);
   assert.equal((await pedir("POST", "/api/sair", {}, cookie)).status, 200);
   assert.equal((await pedir("GET", "/api/eu", undefined, cookie)).status, 401);
+});
+
+test("pela rede de casa, em HTTP, o cookie sai sem Secure; a senha errada conta nas duas entradas", async () => {
+  await new Promise<void>((r) => painel.casa.listen(0, "127.0.0.1", r));
+  const casa = `http://127.0.0.1:${(painel.casa.address() as AddressInfo).port}`;
+  const entrarEmCasa = (senha: string) => fetch(casa + "/api/entrar", {
+    method: "POST", headers: { "Content-Type": "application/json", "X-Atena": "1" }, body: JSON.stringify({ senha }),
+  });
+  try {
+    const r = await entrarEmCasa("a senha certa");
+    assert.equal(r.status, 200);
+    const setCookie = r.headers.get("set-cookie")!;
+    assert.match(setCookie, /HttpOnly/);
+    assert.match(setCookie, /SameSite=Strict/);
+    assert.doesNotMatch(setCookie, /Secure/);
+    const eu = await fetch(casa + "/api/eu", { headers: { Cookie: setCookie.split(";")[0] } });
+    assert.equal(eu.status, 200);
+    assert.doesNotMatch(eu.headers.get("set-cookie")!, /Secure/);
+    // a mesma sessão vale pelo Tailscale, que continua mandando o cookie com Secure
+    const tailnet = await pedir("GET", "/api/eu", undefined, setCookie.split(";")[0]);
+    assert.equal(tailnet.status, 200);
+    assert.match(tailnet.cabecalhos.get("set-cookie")!, /Secure/);
+
+    assert.match(((await (await entrarEmCasa("errada")).json()) as { erro: string }).erro, /restam 4/);
+    assert.match((await pedir("POST", "/api/entrar", { senha: "errada" })).corpo.erro, /restam 3/);
+    assert.equal((await entrarEmCasa("a senha certa")).status, 200); // a certa zera a conta
+  } finally {
+    painel.casa.close();
+  }
 });
 
 test("consulta vai ao executor com o token do painel e não entra no histórico", async () => {
