@@ -1,564 +1,622 @@
 ---
 name: Painel Atena
-description: O servidor de casa como um aparelho de mesa, com chassi de alumínio ou grafite, teclas físicas, LEDs de estado e um visor preto vivo.
+description: O servidor de casa como um templo grego visto de perto, em mármore e tinta, com o azul egípcio como único acento e o meandro como ornamento e como medida.
 colors:
-  # tema claro (alumínio): os valores de :root em app/public/estilo.css
-  amarelo: "#ffc400"
-  amarelo-borda: "#c99a00"
-  amarelo-lado: "#9a7600"
-  amarelo-tinta: "#141414"
-  tecla: "#2c2f2d"
-  tecla-borda: "#1f2120"
-  tecla-lado: "#0b0c0b"
-  tecla-tinta: "#f1f2ef"
-  tecla-perigo: "#ff8a7f"
-  tecla-clara: "#f8f8f5"
-  tecla-clara-borda: "#a4a7a1"
-  tecla-clara-lado: "#868983"
-  led-verde: "#2bd46a"
-  led-ambar: "#ffa51f"
-  led-vermelho: "#ff4433"
-  led-azul: "#3e8bff"
-  led-apagado: "#aeb1ac"
-  verde: "#12773a"
-  ambar: "#965400"
-  vermelho: "#c42b1e"
-  azul: "#2559c4"
-  foco: "#2559c4"
-  chassi: "#e3e4e1"
-  chassi-2: "#d6d8d4"
-  modulo: "#f1f2ef"
-  modulo-claro: "#fafaf8"
-  poco: "#d3d5d1"
-  tinta: "#161716"
-  tinta-2: "#585b57"
-  risco: "#c3c6c1"
-  risco-forte: "#9da09b"
-  moldura: "#2a2c2b"
-  borda-visor: "transparent"
-  visor: "#070908"
-  visor-traco: "#e6efe9"
-  visor-fraco: "#7d8a83"
-  visor-apagado: "#17211c"
-  # tema escuro (grafite): o mesmo custom property sob @media (prefers-color-scheme: dark)
-  tecla-escuro: "#353937"
-  tecla-borda-escuro: "#444946"
-  tecla-lado-escuro: "#080908"
-  tecla-tinta-escuro: "#ecedea"
-  tecla-clara-escuro: "#262927"
-  tecla-clara-borda-escuro: "#3b3f3c"
-  tecla-clara-lado-escuro: "#0a0b0a"
-  led-apagado-escuro: "#3a3e3b"
-  verde-escuro: "#3ddc7a"
-  ambar-escuro: "#ffb347"
-  vermelho-escuro: "#ff6a5c"
-  azul-escuro: "#6aa4ff"
-  foco-escuro: "#6aa4ff"
-  chassi-escuro: "#151615"
-  chassi-2-escuro: "#0f100f"
-  modulo-escuro: "#1d1f1e"
-  modulo-claro-escuro: "#242625"
-  poco-escuro: "#0d0e0d"
-  tinta-escuro: "#ecedea"
-  tinta-2-escuro: "#a3a6a1"
-  risco-escuro: "#2e312f"
-  risco-forte-escuro: "#424643"
-  moldura-escuro: "#090a09"
-  borda-visor-escuro: "#343835"
+  # tema claro (o mármore, de dia): os valores de :root em app/public/estilo.css
+  azul: "#24418f"
+  azul-forte: "#1a3275"
+  azul-claro: "#e9edf7"
+  azul-tinta: "#f7f8fc"
+  foco: "#24418f"
+  malaquita: "#2b8059"
+  malaquita-tinta: "#1c6946"
+  ocre: "#b07c1e"
+  ocre-claro: "#f7f1e4"
+  ocre-tinta: "#6e4706"
+  cinabrio: "#c23a26"
+  cinabrio-claro: "#f9e8e4"
+  cinabrio-tinta: "#a22d1b"
+  pedra: "#c6ccc9"
+  chao: "#f0f1ef"
+  casca: "#f6f7f6"
+  placa: "#fcfcfb"
+  placa-2: "#f4f5f4"
+  veio: "#e1e4e2"
+  veio-forte: "#b8bfbb"
+  tinta: "#151b27"
+  tinta-2: "#556070"
+  tinta-3: "#9aa3ad"
+  noite: "#141a27"
+  noite-tinta: "#e4e8ee"
+  # tema escuro (a noite azul): o mesmo custom property sob @media (prefers-color-scheme: dark)
+  azul-escuro: "#a3b5f3"
+  azul-forte-escuro: "#bfcdf7"
+  azul-claro-escuro: "#1b2441"
+  azul-tinta-escuro: "#0b0f1a"
+  foco-escuro: "#a3b5f3"
+  malaquita-escuro: "#57b98a"
+  malaquita-tinta-escuro: "#7fd0a8"
+  ocre-escuro: "#d6a24a"
+  ocre-claro-escuro: "#231d10"
+  ocre-tinta-escuro: "#e8bf74"
+  cinabrio-escuro: "#e8705c"
+  cinabrio-claro-escuro: "#2d1714"
+  cinabrio-tinta-escuro: "#f19a8a"
+  pedra-escuro: "#343d52"
+  chao-escuro: "#0b0f1a"
+  casca-escuro: "#0e1320"
+  placa-escuro: "#121827"
+  placa-2-escuro: "#0e1320"
+  veio-escuro: "#1f2738"
+  veio-forte-escuro: "#374157"
+  tinta-escuro: "#e7e9ee"
+  tinta-2-escuro: "#a3acba"
+  tinta-3-escuro: "#4f5a72"
+  noite-escuro: "#06090f"
 typography:
-  marca:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "1.05rem"
-    fontWeight: 800
-    letterSpacing: "0.18em"
-    fontVariation: "'wdth' 125"
-  titulo:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "1rem"
-    fontWeight: 700
+  inscricao:
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "1.1rem"
+    fontWeight: 500
+    lineHeight: 1
+    letterSpacing: "0.28em"
+    fontVariation: "'FLAR' 100, 'VOLM' 100"
+  titulo-tela:
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "clamp(1.7rem, 1.2rem + 1.7vw, 2.5rem)"
+    fontWeight: 400
+    lineHeight: 1.05
+    letterSpacing: "-0.015em"
+    fontVariation: "'FLAR' 100, 'VOLM' 100"
+  numero:
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "2.4rem"
+    fontWeight: 350
+    lineHeight: 1
+    letterSpacing: "-0.025em"
+    fontFeature: "'tnum', 'lnum'"
+    fontVariation: "'FLAR' 100, 'VOLM' 100"
+  numero-medalhao:
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "clamp(1.55rem, 1.15rem + 1.2vw, 2.05rem)"
+    fontWeight: 350
+    lineHeight: 1
+    letterSpacing: "-0.025em"
+    fontFeature: "'tnum', 'lnum'"
+    fontVariation: "'FLAR' 100, 'VOLM' 100"
+  titulo-modulo:
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "1.02rem"
+    fontWeight: 500
     lineHeight: 1.2
+    fontVariation: "'FLAR' 100, 'VOLM' 100"
   corpo:
-    fontFamily: "Archivo, system-ui, sans-serif"
+    fontFamily: "Commissioner, system-ui, sans-serif"
     fontSize: "1rem"
     fontWeight: 400
-    lineHeight: 1.45
-    fontVariation: "'wdth' 100"
+    lineHeight: 1.5
+    fontVariation: "'FLAR' 0, 'VOLM' 0"
+  corpo-fraco:
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "0.875rem"
+    fontWeight: 400
+    lineHeight: 1.5
   detalhe:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "0.8rem"
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "0.82rem"
     fontWeight: 400
     lineHeight: 1.4
     fontFeature: "'tnum'"
-  corpo-fraco:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "0.875rem"
-    fontWeight: 400
-    lineHeight: 1.45
-  campo:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "0.95rem"
-    fontWeight: 400
+  rotulo:
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "0.8rem"
+    fontWeight: 550
+    letterSpacing: "0.005em"
+    fontVariation: "'FLAR' 100, 'VOLM' 50"
   tecla:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "0.84rem"
-    fontWeight: 600
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "0.86rem"
+    fontWeight: 550
     lineHeight: 1.1
     letterSpacing: "0.01em"
-    fontVariation: "'wdth' 106"
   trilho:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "0.9rem"
-    fontWeight: 550
-  rotulo:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "0.69rem"
-    fontWeight: 650
-    letterSpacing: "0.14em"
-    fontVariation: "'wdth' 112"
-  selo:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "0.62rem"
-    fontWeight: 650
-    letterSpacing: "0.14em"
-    fontVariation: "'wdth' 112"
-  rotulo-pequeno:
-    fontFamily: "Archivo, system-ui, sans-serif"
-    fontSize: "0.6rem"
-    fontWeight: 650
-    letterSpacing: "0.12em"
-    fontVariation: "'wdth' 112"
-  codigo:
-    fontFamily: "Martian Mono, ui-monospace, monospace"
-    fontSize: "0.64rem"
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "0.92rem"
     fontWeight: 500
+  campo:
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "0.95rem"
+    fontWeight: 400
+  contagem:
+    fontFamily: "Commissioner, system-ui, sans-serif"
+    fontSize: "0.64rem"
+    fontWeight: 700
+    lineHeight: "1.15rem"
     fontFeature: "'tnum'"
-  peca:
-    fontFamily: "Martian Mono, ui-monospace, monospace"
-    fontSize: "0.62rem"
-    fontWeight: 700
-    letterSpacing: "0.04em"
-  placa-modelo:
-    fontFamily: "Martian Mono, ui-monospace, monospace"
-    fontSize: "0.6rem"
-    fontWeight: 700
-    letterSpacing: "0.06em"
+  mono-registro:
+    fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Menlo, monospace"
+    fontSize: "0.74rem"
+    fontWeight: 400
+    lineHeight: 1.55
   mono-texto:
-    fontFamily: "Martian Mono, ui-monospace, monospace"
+    fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Menlo, monospace"
     fontSize: "0.8rem"
     fontWeight: 400
     lineHeight: 1.5
-  mono-registro:
-    fontFamily: "Martian Mono, ui-monospace, monospace"
-    fontSize: "0.72rem"
-    fontWeight: 400
-    lineHeight: 1.55
+  mono-linha:
+    fontFamily: "ui-monospace, 'SF Mono', 'Cascadia Mono', 'Roboto Mono', Menlo, monospace"
+    fontSize: "0.78rem"
+    fontWeight: 500
+    lineHeight: 1.5
 rounded:
-  etiqueta: "2px"
-  campo: "4px"
-  raio-tecla: "5px"
-  aviso: "6px"
-  raio: "7px"
-  visor: "9px"
+  miudo: "3px"
+  raio: "6px"
   janela: "10px"
-  folha: "14px"
+  marcador: "12px"
+  folha: "18px"
   pilula: "0.6rem"
-  led: "50%"
+  ponto: "50%"
 spacing:
   entre-teclas: "0.45rem"
-  entre-modulos: "0.85rem"
+  entre-modulos: "0.9rem"
   entre-modulos-pc: "1rem"
-  modulo: "1rem 1.05rem 1.05rem"
+  modulo: "1.15rem 1.25rem 1.25rem"
+  item: "0.75rem 0"
   margem-celular: "0.75rem"
-  margem-pc: "1.4rem 1.6rem"
+  margem-pc: "1.8rem 2.2rem 2.5rem"
+  coluna-minima: "21rem"
+  largura-maxima: "82rem"
   trilho-largura: "15.5rem"
   barra-altura: "4.4rem"
 components:
   tecla:
-    backgroundColor: "{colors.tecla}"
-    textColor: "{colors.tecla-tinta}"
+    backgroundColor: "{colors.placa}"
+    textColor: "{colors.tinta}"
     typography: "{typography.tecla}"
-    rounded: "{rounded.raio-tecla}"
-    padding: "0.5rem 0.95rem"
+    rounded: "{rounded.raio}"
+    padding: "0.5rem 1rem"
     height: "2.5rem"
+  tecla-hover:
+    backgroundColor: "{colors.placa-2}"
   tecla-escuro:
-    backgroundColor: "{colors.tecla-escuro}"
-    textColor: "{colors.tecla-tinta-escuro}"
-  tecla-principal:
-    backgroundColor: "{colors.amarelo}"
-    textColor: "{colors.amarelo-tinta}"
-    typography: "{typography.tecla}"
-    rounded: "{rounded.raio-tecla}"
-    padding: "0.5rem 0.95rem"
-    height: "2.5rem"
-  tecla-clara:
-    backgroundColor: "{colors.tecla-clara}"
-    textColor: "{colors.tinta}"
-    typography: "{typography.tecla}"
-    rounded: "{rounded.raio-tecla}"
-    padding: "0.4rem 0.72rem"
-    height: "2.2rem"
-  tecla-clara-escuro:
-    backgroundColor: "{colors.tecla-clara-escuro}"
+    backgroundColor: "{colors.placa-escuro}"
     textColor: "{colors.tinta-escuro}"
-  tecla-trava:
-    backgroundColor: "{colors.tecla-clara}"
-    textColor: "{colors.tinta-2}"
-    typography: "{typography.rotulo-pequeno}"
-    rounded: "{rounded.raio-tecla}"
-    padding: "0.4rem 0.45rem 0.45rem"
-  tecla-trava-ligada:
-    backgroundColor: "{colors.poco}"
-    textColor: "{colors.tinta}"
-  tecla-perigo:
-    backgroundColor: "{colors.tecla}"
-    textColor: "{colors.tecla-perigo}"
+  tecla-principal:
+    backgroundColor: "{colors.azul}"
+    textColor: "{colors.azul-tinta}"
     typography: "{typography.tecla}"
-    rounded: "{rounded.raio-tecla}"
+    rounded: "{rounded.raio}"
+    padding: "0.5rem 1rem"
+    height: "2.5rem"
+  tecla-principal-hover:
+    backgroundColor: "{colors.azul-forte}"
+  tecla-principal-escuro:
+    backgroundColor: "{colors.azul-escuro}"
+    textColor: "{colors.azul-tinta-escuro}"
+  tecla-discreta:
+    backgroundColor: "transparent"
+    textColor: "{colors.tinta}"
+    rounded: "{rounded.raio}"
+    padding: "0.4rem 0.78rem"
+    height: "2.2rem"
+  tecla-perigo:
+    textColor: "{colors.cinabrio-tinta}"
+    rounded: "{rounded.raio}"
+  tecla-perigo-hover:
+    backgroundColor: "{colors.cinabrio-claro}"
   tecla-grande:
     height: "3.1rem"
   campo:
-    backgroundColor: "{colors.poco}"
+    backgroundColor: "{colors.placa-2}"
     textColor: "{colors.tinta}"
     typography: "{typography.campo}"
-    rounded: "{rounded.campo}"
-    padding: "0.5rem 0.65rem"
+    rounded: "{rounded.raio}"
+    padding: "0.5rem 0.7rem"
     height: "2.5rem"
-  linha:
-    textColor: "{colors.tinta}"
-    typography: "{typography.corpo}"
-    padding: "0.7rem 0"
-  linha-detalhe:
+  campo-foco:
+    backgroundColor: "{colors.placa}"
+  trava:
     textColor: "{colors.tinta-2}"
-    typography: "{typography.detalhe}"
+    typography: "{typography.rotulo}"
+    rounded: "{rounded.raio}"
+    padding: "0.45rem 0.45rem 0.5rem"
+  trava-ligada:
+    backgroundColor: "{colors.azul-claro}"
+    textColor: "{colors.azul}"
   modulo:
-    backgroundColor: "{colors.modulo}"
+    backgroundColor: "{colors.placa}"
     textColor: "{colors.tinta}"
     rounded: "{rounded.raio}"
-    padding: "1rem 1.05rem 1.05rem"
+    padding: "1.15rem 1.25rem 1.25rem"
+  modulo-escuro:
+    backgroundColor: "{colors.placa-escuro}"
+    textColor: "{colors.tinta-escuro}"
   modulo-titulo:
     textColor: "{colors.tinta}"
-    typography: "{typography.rotulo}"
+    typography: "{typography.titulo-modulo}"
   modulo-codigo:
     textColor: "{colors.tinta-2}"
-    typography: "{typography.codigo}"
-  peca:
+  cabecalho-tela:
     textColor: "{colors.tinta}"
-    typography: "{typography.peca}"
-    rounded: "{rounded.etiqueta}"
-    padding: "0.05rem 0.3rem"
-  placa-modelo:
-    backgroundColor: "{colors.tinta}"
-    textColor: "{colors.chassi}"
-    typography: "{typography.placa-modelo}"
-    rounded: "{rounded.etiqueta}"
-    padding: "0.08rem 0.32rem"
+    typography: "{typography.titulo-tela}"
+  numero-grande:
+    textColor: "{colors.tinta}"
+    typography: "{typography.numero}"
+  item:
+    textColor: "{colors.tinta}"
+    typography: "{typography.corpo}"
+    padding: "0.75rem 0"
+  item-detalhe:
+    textColor: "{colors.tinta-2}"
+    typography: "{typography.detalhe}"
+  ponto:
+    backgroundColor: "{colors.pedra}"
+    rounded: "{rounded.ponto}"
+    size: "0.5rem"
+  ponto-ok:
+    backgroundColor: "{colors.malaquita}"
+  ponto-morno:
+    backgroundColor: "{colors.ocre}"
+  ponto-ruim:
+    backgroundColor: "{colors.cinabrio}"
+  ponto-info:
+    backgroundColor: "{colors.azul}"
   selo:
     textColor: "{colors.tinta-2}"
-    typography: "{typography.selo}"
+    typography: "{typography.rotulo}"
   selo-ok:
-    textColor: "{colors.verde}"
+    textColor: "{colors.malaquita-tinta}"
   selo-ruim:
-    textColor: "{colors.vermelho}"
+    textColor: "{colors.cinabrio-tinta}"
   selo-neutro:
     textColor: "{colors.azul}"
+  medalhao:
+    textColor: "{colors.tinta}"
+    typography: "{typography.numero-medalhao}"
+    width: "9.6rem"
+  crepidoma-zona:
+    textColor: "{colors.tinta}"
+    rounded: "{rounded.raio}"
+    padding: "0.3rem 0.5rem"
+    height: "2.3rem"
+  crepidoma-zona-acesa:
+    backgroundColor: "{colors.azul-claro}"
+  faixa:
+    backgroundColor: "{colors.ocre-claro}"
+    textColor: "{colors.tinta}"
+    rounded: "{rounded.raio}"
+    padding: "0.85rem 1.1rem"
+  faixa-escuro:
+    backgroundColor: "{colors.ocre-claro-escuro}"
+    textColor: "{colors.tinta-escuro}"
   contagem:
-    backgroundColor: "{colors.amarelo}"
-    textColor: "{colors.amarelo-tinta}"
+    backgroundColor: "{colors.ocre}"
+    textColor: "#1b1307"
+    typography: "{typography.contagem}"
     rounded: "{rounded.pilula}"
     padding: "0 0.3rem"
-    height: "1.1rem"
-  faixa:
-    backgroundColor: "{colors.amarelo}"
-    textColor: "{colors.amarelo-tinta}"
-    typography: "{typography.titulo}"
-    rounded: "{rounded.raio}"
-    padding: "0.8rem 1rem"
-  visor-moldura:
-    backgroundColor: "{colors.moldura}"
-    rounded: "{rounded.visor}"
-    padding: "5px"
-  visor-vidro:
-    backgroundColor: "{colors.visor}"
-    textColor: "{colors.visor-traco}"
-    rounded: "{rounded.raio-tecla}"
-    padding: "0.9rem 1rem 1rem"
-  mostrador-numero:
-    backgroundColor: "{colors.visor}"
-    textColor: "{colors.visor-traco}"
-    rounded: "{rounded.campo}"
-    padding: "0.5rem 0.7rem 0.55rem"
-  aviso:
-    backgroundColor: "{colors.visor}"
-    textColor: "{colors.visor-traco}"
-    rounded: "{rounded.aviso}"
-    padding: "0.65rem 0.85rem"
-  registro:
-    backgroundColor: "{colors.visor}"
-    textColor: "{colors.visor-traco}"
-    typography: "{typography.mono-registro}"
-    rounded: "{rounded.raio-tecla}"
-    padding: "0.75rem 0.85rem"
+    height: "1.15rem"
   barra-item:
     textColor: "{colors.tinta-2}"
-    typography: "{typography.rotulo-pequeno}"
-    rounded: "{rounded.raio-tecla}"
-    padding: "0.3rem 0.2rem"
-    height: "3.3rem"
+    typography: "{typography.rotulo}"
+    padding: "0.3rem 0.1rem"
+    height: "3.5rem"
   barra-item-ativa:
-    backgroundColor: "{colors.poco}"
-    textColor: "{colors.tinta}"
+    textColor: "{colors.azul}"
+  marcador:
+    backgroundColor: "{colors.azul-claro}"
+    rounded: "{rounded.marcador}"
+  marcador-escuro:
+    backgroundColor: "{colors.azul-claro-escuro}"
   trilho-item:
     textColor: "{colors.tinta-2}"
     typography: "{typography.trilho}"
-    rounded: "{rounded.raio-tecla}"
-    padding: "0.5rem 0.6rem"
+    rounded: "{rounded.raio}"
+    padding: "0.52rem 0.65rem"
   trilho-item-ativa:
-    backgroundColor: "{colors.poco}"
-    textColor: "{colors.tinta}"
+    backgroundColor: "{colors.azul-claro}"
+    textColor: "{colors.azul}"
   janela:
-    backgroundColor: "{colors.modulo}"
+    backgroundColor: "{colors.placa}"
     textColor: "{colors.tinta}"
     rounded: "{rounded.janela}"
-    padding: "1rem 1.1rem"
-  paleta-item-marcado:
-    backgroundColor: "{colors.poco}"
+    padding: "1.15rem 1.25rem"
+  folha:
+    backgroundColor: "{colors.placa}"
+    rounded: "{rounded.folha}"
+  teclado-item:
+    backgroundColor: "{colors.placa-2}"
     textColor: "{colors.tinta}"
-    rounded: "{rounded.raio-tecla}"
-    padding: "0.6rem 0.7rem"
+    rounded: "{rounded.janela}"
+    padding: "1rem 0.3rem 0.85rem"
+  teclado-item-ativa:
+    backgroundColor: "{colors.azul-claro}"
+    textColor: "{colors.azul}"
+  paleta-item-marcado:
+    backgroundColor: "{colors.azul-claro}"
+    textColor: "{colors.azul}"
+    rounded: "{rounded.raio}"
+    padding: "0.62rem 0.75rem"
+  aviso:
+    backgroundColor: "{colors.noite}"
+    textColor: "{colors.noite-tinta}"
+    rounded: "{rounded.janela}"
+    padding: "0.75rem 0.95rem"
+  registro:
+    backgroundColor: "{colors.noite}"
+    textColor: "{colors.noite-tinta}"
+    typography: "{typography.mono-registro}"
+    rounded: "{rounded.raio}"
+    padding: "0.85rem 0.95rem"
+  texto-pedido:
+    backgroundColor: "{colors.placa-2}"
+    textColor: "{colors.tinta}"
+    rounded: "{rounded.raio}"
+    padding: "0.7rem 0.8rem"
 ---
 
 # Design System: Painel Atena
 
 ## Overview
 
-**Creative North Star: "O Aparelho de Mesa"**
+**Creative North Star: "A Policromia Contida"**
 
-O painel é um aparelho de mesa da família Braun e Teenage Engineering, feito para um servidor caseiro: um chassi de alumínio (tema claro) ou grafite (tema escuro) onde se aparafusam módulos com etiqueta de engenharia, uma fileira de teclas físicas e um visor preto que desenha o estado da máquina em tempo real. O tema segue o aparelho do dono (`prefers-color-scheme`); só o chassi muda: o visor é o mesmo e as teclas continuam grafite nos dois.
+O painel é um templo grego visto de perto, em mármore e tinta. Os templos eram pintados; aqui a pintura foi reduzida ao essencial: um mármore frio de dia e uma noite azul-escura quase preta, o azul egípcio como único acento e o meandro como ornamento e como medida. O tema segue o aparelho do dono (`prefers-color-scheme`); os dois temas trocam só os valores das mesmas custom properties.
 
-A densidade é de instrumento, não de site. Os títulos são rótulos pequenos em versalete espaçado, e quem carrega a hierarquia é o visor, com números em 7 segmentos e desenhos vivos (carretéis de fita que giram na velocidade da CPU, termômetros, o tanque da RAM, a torre do PC, o mostrador de 24 h). O estado se lê pelos LEDs, sempre com o texto do lado. Uma tecla amarela por módulo diz qual é a ação principal; a ação do módulo é grafite, e as de cada linha são teclas claras.
+A densidade é de ferramenta. A casca é do mesmo mármore, com um meandro fino na borda (embaixo do topo no celular, descendo pelo trilho no PC); cada tela abre com o nome na letra de pedra sobre uma faixa de meandro, e cada módulo é uma placa de mármore com a chave do meandro antes do título. O estado se lê em um olhar pelos medalhões, cujo meandro da borda se pinta de azul até o valor, e pela crepidoma das zonas, a escada do templo em 3D, um degrau por zona e um ponto por container. Os pigmentos antigos (malaquita, ocre e cinábrio) só aparecem para dizer o estado.
 
-O sistema recusa duas coisas, confirmadas pelo dono: a cara de SaaS genérico (cartões cinza iguais com ícones de biblioteca) e o temático demais (ficção científica, cara de jogo). A "cena" existe, mas só nos momentos que importam: entrar, chegar uma aprovação, um agendamento rodar, o PC ligar. O uso de todo dia é rápido e quieto.
+O sistema recusa, por decisão do dono, a cara de SaaS genérico (o dashboard de cartões cinza), a Grécia de souvenir (colunas de enfeite, dourado, creme) e o que pareça desenho animado, jogo ou fantasia. O movimento é fluido e quieto no dia a dia; a cena fica para os momentos que importam: entrar pela coruja de Atena, chegar uma aprovação, um agendamento rodar, o PC ligar, uma zona ter problema.
 
 **Key Characteristics:**
-- Chassi de alumínio ou grafite que segue o tema do aparelho; visor sempre preto.
-- Teclas com lado de 3px que afundam ao toque, em três pesos: amarelo sinal só na ação principal, grafite na ação do módulo e clara (as cinzas da ET66) nas ações de cada linha.
-- LEDs verde, âmbar, vermelho e azul como único vocabulário de estado, sempre com legenda.
-- Módulos com parafusos nos cantos, régua na borda e etiqueta de engenharia (título em versalete, código em mono, peça posicional como IN-01).
-- Placa de modelo "ATENA AT-1" na marca.
-- Números medidos em 7 segmentos com os segmentos apagados visíveis.
-- Pictogramas próprios numa grade de 24 com traço de 1,75.
-- Archivo (largura variável) e Martian Mono, servidas pelo próprio painel.
+- Mármore frio de dia, noite azul-escura à noite; a casca no mesmo mármore, com o meandro fino na borda.
+- O azul egípcio é o único acento: a ação principal, a tela ativa, o foco e o que mede.
+- Malaquita, ocre e cinábrio só como pontos de estado, sempre com o texto do lado; o ocre também na faixa de aprovações.
+- O meandro é ornamento (a borda da casca, a faixa do nome da tela, a chave do módulo) e medida (o anel dos medalhões, o medidor).
+- A crepidoma das zonas em 3D é a assinatura e a única profundidade de verdade.
+- Commissioner, de um tipógrafo grego, com as serifas de pedra nos títulos e números; caixa-alta só nas inscrições ΑΘΗΝΑ e ΑΘΕ.
+- Ícones de traço fino com a área "pintada" que acende na tela ativa.
+- Ease-out no dia a dia, uma mola amortecida só no que assenta; com `prefers-reduced-motion`, nada se move.
+- Sem dependências: fonte, desenhos e ícones servidos pelo próprio painel, sob CSP `default-src 'self'`.
 
 ## Colors
 
-Uma paleta de instrumento: neutros de alumínio ou grafite quase sem croma, uma única cor de ação (o amarelo sinal) e quatro luzes de LED que só falam de estado. Todas as cores são custom properties em `:root`; o tema escuro troca só os valores, sob `@media (prefers-color-scheme: dark)`. As chaves `-escuro` do frontmatter são esses valores do tema escuro.
+Uma paleta de templo pintado, mas contida: neutros de mármore (de dia) ou de noite azul (à noite) quase sem croma, um único acento azul e três pigmentos que só falam de estado. Todas as cores são custom properties em `:root`; o tema escuro troca só os valores, sob `@media (prefers-color-scheme: dark)`. As chaves `-escuro` do frontmatter são esses valores do tema escuro.
 
 ### Primary
-- **Amarelo Sinal** (#ffc400): a face da tecla principal, a faixa de aprovações, a contagem de pedidos esperando, o ponto aceso da tela ativa na navegação, os marcadores do mostrador da agenda e a seleção de texto. É a cor de "isto é com você".
-- **Borda e Lado do Amarelo** (#c99a00, #9a7600): o contorno e o lado de baixo da tecla amarela e da faixa; a Borda também é o sublinhado dos links (2px, 3px abaixo da linha).
-- **Tinta sobre Amarelo** (#141414): todo texto e pictograma em cima do amarelo.
-
-### Secondary
-- **Tecla Grafite** (#2c2f2d; #353937 no escuro): a face de toda tecla que não é a principal, nos dois temas. No alumínio ela contrasta como uma tecla de calculadora escura; no grafite, fica um tom acima do chassi.
-- **Borda e Lado da Tecla** (#1f2120 e #0b0c0b; #444946 e #080908 no escuro): o contorno de 1px e o lado de 3px que dão volume à tecla.
-- **Tinta da Tecla** (#f1f2ef; #ecedea no escuro): o texto das teclas grafite.
-- **Coral de Perigo** (#ff8a7f): o texto da tecla grafite que apaga ou desfaz, acompanhado de um ponto de LED vermelho. Na tecla clara, o perigo usa o Texto de Estado vermelho.
-- **Tecla Clara** (#f8f8f5, contorno #a4a7a1, lado #868983; no escuro #262927, #3b3f3c e #0a0b0a): a face das teclas de cada linha (Logs, Reiniciar, Editar, Desconectar), das secundárias (Atualizar, Cancelar, Fechar) e das teclas de trava. Fica um degrau abaixo da grafite nos dois temas: no alumínio é clara com texto escuro, no grafite fica abaixo da face da tecla grafite.
+- **Azul Egípcio** (#24418f; #a3b5f3 à noite): a face da tecla principal, o texto e o ícone da tela ativa, links, seleção de texto, cursor, a chave do meandro antes de cada título, a tinta do anel dos medalhões e do medidor, a trava ligada, as próximas vezes no relógio de sol, o meandro que fecha na entrada e o ponto de informação (em andamento, este aparelho).
+- **Azul Fundo** (#1a3275; #bfcdf7 à noite): só o hover da tecla principal.
+- **Véu Azul** (#e9edf7; #1b2441 à noite): o fundo do que está escolhido ou sob o dedo: o marcador da tela ativa na barra e no trilho, a tecla do "Mais" ativa, o item marcado da paleta, a trava ligada, o degrau aceso da crepidoma e a linha dele na legenda.
+- **Tinta sobre o Azul** (#f7f8fc; #0b0f1a à noite): o texto da tecla principal e da seleção. À noite o azul clareia e a tinta sobre ele escurece.
+- **Foco** (#24418f; #a3b5f3 à noite): o contorno de foco do teclado; é o próprio azul.
 
 ### Tertiary
-- **Luz Verde** (#2bd46a): no ar, ok, concluído; também o nível dos desenhos do visor e os segmentos acesos do medidor.
-- **Luz Âmbar** (#ffa51f): perto do limite (a partir de 85% nos termômetros e no tanque).
-- **Luz Vermelha** (#ff4433): falha, parado, passou do limite.
-- **Luz Azul** (#3e8bff): informação ou em andamento (rodando, evento, este aparelho); também a fita dos carretéis.
-- **LED Apagado** (#aeb1ac; #3a3e3b no escuro): o LED sem estado e os segmentos vazios do medidor.
-- **Texto de Estado** (verde #12773a, âmbar #965400, vermelho #c42b1e, azul #2559c4; no escuro #3ddc7a, #ffb347, #ff6a5c, #6aa4ff): a legenda escrita ao lado do LED, escura o bastante para ler sobre o alumínio (todas acima de 5:1 sobre o módulo) e clara no grafite.
+- **Malaquita** (#2b8059; #57b98a à noite): o ponto de "no ar", "ok", "concluído", e os pontos dos containers no piso de cada degrau.
+- **Tinta de Malaquita** (#1c6946; #7fd0a8 à noite): o texto do selo ok, ao lado do ponto.
+- **Ocre** (#b07c1e; #d6a24a à noite): o ponto de "perto do limite" e a tinta do anel e do medidor quando a medida chega perto do limite; fora do estado, a contagem de aprovações esperando, o ícone e a borda da faixa de aprovações.
+- **Ocre Claro** (#f7f1e4; #231d10 à noite): o fundo da faixa de aprovações.
+- **Tinta de Ocre** (#6e4706; #e8bf74 à noite): o "Ver" da faixa.
+- **Cinábrio** (#c23a26; #e8705c à noite): o ponto de falha (com um halo de 3px a 18%), a tinta do anel e do medidor que passou do limite, os pontos ruins de um degrau (que pulsam) e a borda da tecla de perigo.
+- **Cinábrio Claro** (#f9e8e4; #2d1714 à noite): a face do degrau com problema e o hover da tecla de perigo.
+- **Tinta de Cinábrio** (#a22d1b; #f19a8a à noite): mensagens de erro, o selo ruim, o texto da tecla de perigo, o nome da zona com problema e a lista dos containers dela.
+- **Pedra** (#c6ccc9; #343d52 à noite): o ponto sem estado (o PC desligado, a trava desligada).
 
 ### Neutral
-- **Alumínio Escovado** (#e3e4e1; Grafite Fundido #151615 no escuro): o chassi, o fundo da página.
-- **Lateral do Chassi** (#d6d8d4; #0f100f no escuro): o trilho do PC e a barra do celular, um degrau abaixo do chassi.
-- **Placa** (#f1f2ef; #1d1f1e no escuro): a face dos módulos, das janelas e da frente de entrada.
-- **Tampo** (#fafaf8; #242625 no escuro): o tampo das placas da vista explodida e o fundo das teclas de atalho (`kbd`).
-- **Poço** (#d3d5d1; #0d0e0d no escuro): tudo que afunda: campos, a tecla ativa da navegação, o item marcado da paleta, o texto de um pedido.
-- **Tinta de Serigrafia** (#161716; #ecedea no escuro): o texto principal e os traços da vista explodida.
-- **Tinta Secundária** (#585b57; #a3a6a1 no escuro): rótulos, textos fracos, códigos e placeholders.
-- **Risco** (#c3c6c1; #2e312f no escuro): bordas dos módulos e divisórias entre itens.
-- **Risco Forte** (#9da09b; #424643 no escuro): as marcas da régua, o contorno dos campos e da peça, as bordas do trilho e da barra, as guias tracejadas.
-- **Moldura** (#2a2c2b; #090a09 no escuro): a moldura em volta do visor, do mostrador pequeno e dos avisos. No escuro ganha um contorno de 1px (#343835) para não sumir no chassi.
-- **Vidro Preto** (#070908): o fundo do visor, dos avisos e dos registros, nos dois temas.
-- **Traço do Visor** (#e6efe9): os segmentos acesos e as linhas dos desenhos.
-- **Legenda do Visor** (#7d8a83): rótulos, unidades e linhas extras dentro do visor (5,5:1 sobre o vidro).
-- **Segmento Fantasma** (#17211c): os segmentos apagados do 7 segmentos, visíveis por trás dos acesos, e o miolo dos desenhos.
-- **Foco** (#2559c4; #6aa4ff no escuro): o contorno de foco do teclado.
+- **Chão de Mármore** (#f0f1ef; Noite Azul #0b0f1a): o fundo da página e o `theme-color` do navegador.
+- **Casca** (#f6f7f6; #0e1320 à noite): o topo do celular e o trilho do PC.
+- **Placa** (#fcfcfb; #121827 à noite): módulos, janelas, teclas, o disco da entrada e as faces dos degraus.
+- **Placa Funda** (#f4f5f4; #0e1320 à noite): campos em repouso, hover de teclas, as teclas do "Mais", as marcas do esqueleto e o texto de um pedido.
+- **Veio** (#e1e4e2; #1f2738 à noite): a borda dos módulos e das janelas, as divisórias entre itens, a régua depois do título do módulo, o fio das sublistas e o meandro apagado dos medalhões.
+- **Veio Forte** (#b8bfbb; #374157 à noite): o contorno das teclas, dos campos e das travas, o fundo apagado do medidor, a borda do relógio de sol e a barra de rolagem.
+- **Tinta** (#151b27; #e7e9ee à noite): o texto principal, o traço da coruja e o gnômon do relógio.
+- **Tinta Segunda** (#556070; #a3acba à noite): rótulos, detalhes, códigos, placeholders, os ícones em repouso e as folhas do ramo de oliveira.
+- **Tinta de Ornamento** (#9aa3ad; #4f5a72 à noite): só o meandro fino da casca, da faixa do nome da tela, do relógio de sol, do anel ainda aberto da entrada e da moldura da entrada no PC, e a íris da coruja (a 45%).
+- **Noite** (#141a27; #06090f no tema escuro) e **Tinta da Noite** (#e4e8ee): o fundo e o texto dos textos de máquina (registros e avisos), escuros nos dois temas.
 
 ### Named Rules
-**A Regra da Tecla Amarela.** Entre as teclas, só a ação principal é amarela, uma por módulo ou janela. As outras são grafite (a ação do módulo que não é a principal, como Recusar, Ver ou Procurar) ou claras (as de cada linha e as secundárias), nos dois temas. Fora das teclas, o amarelo só aponta para o dono e para onde ele está: a faixa e a contagem de aprovações, o ponto da tela ativa, o sublinhado dos links, a seleção de texto, os marcadores do mostrador da agenda, o tampo da placa sob o ponteiro na vista explodida e a varredura dos LEDs ao entrar.
+**A Regra do Azul Único.** O azul egípcio é o único acento. Ele marca a ação principal (uma por módulo ou janela), onde o dono está (a tela ativa, o item marcado, o foco) e o que mede (o anel, o medidor). Nenhum outro matiz entra como enfeite ou como ação.
 
-**A Regra do LED com Legenda.** Estado só se diz com os quatro LEDs (verde ok, âmbar perto do limite, vermelho falha, azul informação ou em andamento), e sempre com o texto do lado. Cor sozinha não é estado, e nenhum outro matiz entra nesse vocabulário.
+**A Regra dos Pigmentos de Estado.** Malaquita, ocre e cinábrio só dizem estado: como pontos, sempre com o texto do lado escrito na tinta deles; na tecla de perigo e no erro; e no anel ou no medidor, que só trocam o azul por ocre perto do limite e por cinábrio passado dele. Fora do estado, só o ocre aparece, e só nas aprovações: a faixa e a contagem.
 
-**A Regra do Visor Sempre Preto.** O visor é vidro preto nos dois temas. O tema troca o chassi, nunca o visor.
+**A Regra do Ornamento Mudo.** A Tinta de Ornamento (2,5:1 sobre a placa) é só para o ornamento (o meandro fino, a íris da coruja), nunca para texto. Todo texto usa Tinta ou Tinta Segunda (6,2:1 sobre a placa de dia, 7,7:1 à noite).
+
+**A Regra da Noite dos Textos de Máquina.** Registros e avisos ficam na Noite nos dois temas. O ponto do aviso usa os pigmentos da noite fixos (#a3b5f3 informação, #57b98a ok, #e8705c erro), porque o fundo dele não muda com o tema.
 
 ## Typography
 
-**Display Font:** Archivo (com system-ui, sans-serif), variável em peso (100 a 900) e largura (62% a 125%)
-**Body Font:** Archivo (com system-ui, sans-serif)
-**Label/Mono Font:** Martian Mono (com ui-monospace, monospace), variável em peso (100 a 800)
+**Display Font:** Commissioner (com system-ui, sans-serif), variável em peso (100 a 900) e nos eixos FLAR (a serifa que se abre) e VOLM
+**Body Font:** Commissioner (com system-ui, sans-serif), com FLAR e VOLM em 0
+**Label/Mono Font:** a monoespaçada do sistema (ui-monospace, SF Mono, Cascadia Mono, Roboto Mono, Menlo), só para textos de máquina
 
-**Character:** Archivo faz o papel da serigrafia do aparelho: larga e espaçada nos rótulos e na marca, normal no texto corrido. Martian Mono é a máquina falando: códigos de peça, unidades, registros e avisos. As duas são arquivos `.woff2` servidos pelo próprio painel (licença OFL), porque a CSP não deixa carregar fonte de fora.
+**Character:** Commissioner é de Kostas Bartsokas, tipógrafo grego, e tem o grego de verdade, não um latim fantasiado. Com os eixos FLAR e VOLM ligados, os traços abrem em serifas de pedra, como letra gravada; desligados, ela é uma sem-serifa calma para ler. Os títulos e os números ficam na letra de pedra; o texto corrido, na letra lisa. Sai de dois arquivos `.woff2` servidos pelo próprio painel (latim e grego, separados por `unicode-range`), com `font-display: swap` e o latino pré-carregado.
 
 ### Hierarchy
-- **Marca** (800, 1.05rem, largura 125, espaço .18em): o "ATENA" do cabeçalho, do trilho e da frente de entrada, sempre seguido da placa de modelo AT-1.
-- **Título** (700, 1rem, altura 1.2): o texto da faixa de aprovações e o título das janelas. Não há manchete maior que essa: a ênfase grande é dos números do visor.
-- **Corpo** (400, 1rem, altura 1.45): o texto corrido e os valores das linhas; a pergunta de um pedido do Claude Code sobe para 1.05rem.
-- **Corpo Fraco** (400, .875rem, Tinta Secundária): explicações, metadados de pedidos, estados vazios.
-- **Detalhe** (400, .8rem, altura 1.4, algarismos tabulares, Tinta Secundária): a linha de baixo de cada item de lista, com o estado escrito primeiro ("no ar há 6 h · saudável · CPU 0,3%").
-- **Tecla** (600, .84rem, largura 106): o texto das teclas; .95rem nas teclas grandes de decisão (Aprovar, Ligar) e na frente de entrada.
-- **Trilho** (550, .9rem): os nomes das telas no trilho do PC.
-- **Rótulo** (650, .69rem, largura 112, espaço .14em, caixa alta): títulos de módulo, rótulos de linha e `h3`. Na versão pequena (650, .6rem, espaço .12em) vira o nome das telas na barra do celular (e, com .14em, o título dos grupos do trilho); o selo de estado usa .62rem.
-- **Código** (Martian Mono 500, .64rem, algarismos tabulares): o que o módulo mede, à direita do título ("12 núcleos · 15.5 GB").
-- **Peça** (Martian Mono 700, .62rem, espaço .04em): o código posicional IN-01; a placa de modelo AT-1 usa 700, .6rem, espaço .06em.
-- **Texto de Máquina** (Martian Mono 400, .8rem, altura 1.5; registros em .72rem, altura 1.55): o texto de um pedido, o editor de stacks e os logs. Avisos usam .78rem, altura 1.4.
+- **Inscrição** (500, 1.1rem; 1.3rem no trilho e 1.7rem na entrada; espaço .28em; altura 1; pedra 100/100): o ΑΘΗΝΑ da marca, em letras gregas, escondido do leitor de tela, que lê "Atena".
+- **Título da Tela** (400, clamp(1.7rem, 1.2rem + 1.7vw, 2.5rem), altura 1.05, espaço -.015em, pedra 100/100): o nome da tela, em cima da faixa de meandro. É a maior letra do painel.
+- **Número** (350, 2.4rem, altura 1, espaço -.025em, algarismos tabulares e alinhados, pedra 100/100): o número de leitura num módulo (o gasto do mês, a próxima vez da agenda), com a unidade ao lado na letra lisa a .82rem. No medalhão, o mesmo número a clamp(1.55rem, 1.15rem + 1.2vw, 2.05rem), com a unidade a .42em, peso 500, na Tinta Segunda.
+- **Título de Módulo** (500, 1.02rem, altura 1.2, pedra 100/100): o título de cada módulo, depois da chave do meandro, e o título das janelas.
+- **Corpo** (400, 1rem, altura 1.5, pedra 0/0): o texto corrido e os valores das linhas. A pergunta de um pedido do Claude Code sobe para 1.05rem; o texto de um pedido fica em .92rem, altura 1.55.
+- **Corpo Fraco** (400, .875rem, Tinta Segunda): explicações, metadados, estados vazios.
+- **Detalhe** (400, .82rem, altura 1.4, algarismos tabulares, Tinta Segunda): a linha de baixo de cada item, com o estado escrito primeiro ("no ar há 6 h · saudável · CPU 0,3%").
+- **Rótulo** (550, .8rem, espaço .005em, pedra 100/50, caixa comum): rótulos de linha e de campo. A mesma letra faz o `h3` (.9rem), o selo (.76rem), os nomes da barra e das zonas (.72rem), os grupos do trilho (.74rem, com inicial maiúscula), o nome do medalhão e da zona na crepidoma (.86rem) e o grupo na paleta (.76rem).
+- **Tecla** (550, .86rem, altura 1.1, espaço .01em): o texto das teclas; .8rem nas discretas; .95rem nas grandes de decisão e na entrada.
+- **Trilho** (500, .92rem; 600 na tela ativa): os nomes das telas no trilho do PC.
+- **Máquina** (monoespaçada do sistema): registros a .74rem, altura 1.55; o editor de stacks a .8rem, altura 1.5; as linhas da Atividade em 500 a .78rem; o caminho dos arquivos em 500 a .78rem; o atalho (`kbd`) em 600 a .66rem.
 
 ### Named Rules
-**A Regra da Etiqueta.** Título de módulo é rótulo, não manchete: Archivo 650 a .69rem, largura 112, caixa alta com .14em de espaço. A hierarquia vem do visor e dos números, nunca do tamanho dos títulos.
+**A Regra da Inscrição.** A caixa-alta só existe nas inscrições gregas: o ΑΘΗΝΑ da marca e o ΑΘΕ da moeda na entrada. Títulos, rótulos, selos, nomes da barra e grupos do trilho ficam em caixa comum; nenhum estilo usa `text-transform: uppercase`.
 
-**A Regra do Número de Máquina.** Número medido no visor sai em 7 segmentos, com os segmentos apagados visíveis por trás. Códigos, unidades, registros e chaves saem em Martian Mono. Números em linhas de texto usam algarismos tabulares e se escrevem como aqui (15,0 GB, US$ 0,98, 1.304 RPM, 0,3%), pelo `num()` do `comum.js`; o que vem do executor em outro formato (o `54.68MiB` do docker stats) é traduzido antes de entrar na tela.
+**A Regra da Serifa de Pedra.** A serifa de pedra (FLAR 100, VOLM 100) é dos títulos, dos números e da inscrição; os rótulos usam a meia pedra (FLAR 100, VOLM 50); o corpo e as unidades ao lado dos números, a letra lisa (FLAR 0, VOLM 0).
+
+**A Regra do Número de Verdade.** Todo número vem do executor e se escreve como aqui (15,0 GB, US$ 0,98, 1.304 RPM, 0,3%), pelo `num()`, `gb()`, `dinheiro()` e `plural()` do `comum.js`, em algarismos tabulares; o que vem em outro formato (o `54.68MiB` do docker stats) é traduzido antes de entrar na tela. A interface nunca inventa um número.
 
 ## Layout
 
 O celular e o PC têm o mesmo peso; nenhum é a versão capada do outro.
 
-**Celular (abaixo de 60rem).** No topo, a marca com a placa AT-1 e a fileira de LEDs das zonas, cada um com o nome da zona embaixo. O conteúdo é uma grade de colunas automáticas de no mínimo 21rem (uma coluna no telefone), com .85rem entre módulos, margem lateral de .75rem e respiro de baixo do tamanho da barra (4.4rem) mais a área segura. A barra fixa embaixo tem cinco teclas: Início, PC, Agenda, Serviços e Mais; o "Mais" abre uma folha de baixo para cima com as outras telas num teclado de três colunas. Abaixo de 40rem, o visor vira uma grade de duas colunas em que a primeira célula ocupa a linha toda.
+**Celular (abaixo de 60rem).** No topo, na Casca, o ΑΘΗΝΑ à esquerda e os pontos das zonas à direita, cada um com o nome embaixo; a borda de baixo do topo é o meandro fino (.42rem de altura, em Tinta de Ornamento). A faixa de aprovações, quando há, vem antes do nome da tela. O conteúdo é uma grade de colunas automáticas de no mínimo 21rem (uma coluna no telefone), com .9rem entre módulos, margem lateral de .75rem e respiro de baixo do tamanho da barra (4.4rem) mais a área segura e 1.25rem. A barra fixa embaixo tem cinco itens (Início, PC, Agenda, Serviços e Mais) sobre a Placa a 94%, com desfoque de 14px e um fio de Veio em cima; o "Mais" abre a folha com as outras telas num teclado de três colunas. Abaixo de 40rem, as teclas discretas estreitam (.4rem por .64rem).
 
-**PC (a partir de 60rem).** O aparelho vira duas colunas: um trilho fixo de 15.5rem à esquerda, com os grupos hoje, servidor, máquina, registro e conta, e a tecla Buscar com o atalho Ctrl K no pé; e a área de trabalho, até 82rem de largura, com margem de 1.4rem por 1.6rem. A tela do PC fica numa coluna só de até 46rem.
+**PC (a partir de 60rem).** Duas colunas: o trilho fixo de 15.5rem à esquerda, na Casca, da altura da tela, com o meandro fino descendo pela borda direita; no alto o ΑΘΗΝΑ (1.3rem) e os pontos das zonas, depois os grupos hoje, servidor, máquina, registro e conta, e a tecla Buscar com Ctrl K no pé. A área de trabalho vai até 82rem, com 1.8rem em cima, 2.2rem nos lados e 2.5rem embaixo. A tela do PC fica numa coluna só de até 46rem.
 
-**Módulo estreito.** Cada módulo é um container de CSS (`container: modulo`). Abaixo de 30rem (o celular e as colunas do PC), o código do que ele mede desce para baixo do título, inteiro, e as linhas de lista com mais de uma tecla põem as teclas embaixo do nome.
+**Módulo estreito.** Cada módulo é um container de CSS (`container: modulo`). Abaixo de 26rem, o que ele mede desce para baixo do título, inteiro, alinhado depois da chave; abaixo de 30rem, as linhas com mais de uma tecla põem as teclas embaixo do nome; abaixo de 19rem, a crepidoma empilha a escada sobre a legenda; a partir de 46rem, as linhas de registro põem o nome (15rem) e o detalhe lado a lado.
 
-**Ritmo.** Teclas ficam a .45rem umas das outras; módulos a 1rem no PC; o conteúdo do módulo tem 1rem de respiro em cima e 1.05rem nos lados e embaixo. O cabeçalho do módulo separa do conteúdo com uma linha de Risco e .8rem.
+**A entrada.** A frente fica no centro da tela, com até 22rem: o medalhão da coruja (min(76vw, 17rem); 19.5rem no PC), o ΑΘΗΝΑ, o rótulo, o campo e a tecla principal, ambos com 3rem de altura. No PC, duas faixas de meandro fino emolduram a página, a 2rem de cima e de baixo e 2.5rem dos lados.
+
+**Ritmo.** Teclas a .45rem umas das outras (.4rem nas linhas); o módulo tem 1.15rem em cima e 1.25rem nos lados e embaixo; o cabeçalho do módulo fica 1rem acima do conteúdo; os itens têm .75rem de respiro e 1px de Veio entre eles; os medalhões ficam numa grade auto-fit de no mínimo 8.2rem, com 1.2rem por 1.3rem de folga.
 
 ### Named Rules
-**A Regra das Colunas de Jornal.** No PC, a tela é um fluxo de colunas CSS: duas colunas, e colunas automáticas de 21rem no Início e nas Aprovações. Cada módulo leva `break-inside: avoid`; os módulos largos e a faixa de aprovações atravessam todas as colunas com `column-span: all`. Os módulos têm a altura do que mostram.
+**A Regra das Colunas de Jornal.** No PC, a tela é um fluxo de colunas CSS: duas colunas, e colunas automáticas de 21rem no Início e nas Aprovações. Cada módulo leva `break-inside: avoid`; o módulo largo, a faixa de aprovações e o cabeçalho da tela atravessam todas as colunas com `column-span: all`. Os módulos têm a altura do que mostram.
 
-**A Regra do Polegar.** No celular, as telas de todo dia ficam na barra de baixo, em teclas de 3.3rem de altura; com toque grosso (`pointer: coarse`), toda tecla tem no mínimo 2.75rem.
+**A Regra do Polegar.** No celular, as telas de todo dia ficam na barra de baixo, em itens de 3.5rem de altura; com toque grosso (`pointer: coarse`), toda tecla tem no mínimo 2.75rem.
 
 ## Elevation & Depth
 
-Profundidade física e discreta, como num aparelho de verdade: o que está montado sobe um pouco, o que é tecla tem lado, o que recebe dado ou está escolhido afunda num poço, e o visor é um vidro fundo dentro de uma moldura. Não há sombra decorativa nem brilho; a única luz é a dos LEDs e do ponto amarelo da tela ativa.
+O mármore é plano. A profundidade vem das camadas de tom (o chão, a casca um pouco acima, a placa por cima) e de uma sombra ambiente quase sem peso embaixo dos módulos; só as janelas sobem de verdade. A única profundidade desenhada é a crepidoma: a escada das zonas em 3D real (perspectiva de 1100px, inclinada a 56° e girada a -30°, com `transform-style: preserve-3d`), cujas faces são a Placa misturada com a Tinta (o espelho a 14%, o lado a 26%) e contornadas pela Tinta a 20%.
 
 ### Shadow Vocabulary
-- **Placa** (`box-shadow: 0 1px 0 rgb(255 255 255 / .7) inset, 0 1px 2px rgb(0 0 0 / .07), 0 6px 16px -6px rgb(0 0 0 / .12)`; no escuro `0 1px 0 rgb(255 255 255 / .04) inset, 0 1px 2px rgb(0 0 0 / .5), 0 8px 20px -8px rgb(0 0 0 / .6)`): módulos e a frente de entrada. O realce de 1px no topo é a quina da chapa.
-- **Tecla** (`box-shadow: 0 2px 5px -1px rgb(0 0 0 / .18)`; no escuro `.6`): teclas e a faixa, junto com o lado de 3px.
-- **Tecla Apertada** (`box-shadow: 0 1px 2px rgb(0 0 0 / .2)`): durante o toque, com a tecla descendo 1px.
-- **Poço** (`box-shadow: inset 0 1px 3px rgb(0 0 0 / .14)`): campos, tecla ativa da barra e do trilho, item marcado da paleta.
-- **Vidro do Visor** (`box-shadow: inset 0 0 0 1px rgb(255 255 255 / .035), inset 0 10px 28px rgb(0 0 0 / .7)`): o fundo do visor; a moldura em volta leva `0 0 0 1px` da borda do visor, um realce de 1px embaixo e uma sombra interna de 1px.
-- **Janela** (`box-shadow: 0 20px 50px -12px rgb(0 0 0 / .45)`, fundo `rgb(10 11 10 / .5)`): janelas, a folha "Mais" e a paleta.
-- **Brilho de LED** (`box-shadow: 0 0 6px` na cor do LED a 55%): só em LEDs acesos.
+- **Sombra do Mármore** (`box-shadow: 0 1px 1px rgb(21 27 39 / .03), 0 12px 32px -20px rgb(21 27 39 / .22)`; à noite `0 1px 1px rgb(0 0 0 / .3), 0 14px 36px -20px rgb(0 0 0 / .8)`): os módulos.
+- **Sombra Alta** (`box-shadow: 0 30px 80px -24px rgb(10 14 26 / .45)`): janelas, a folha "Mais" e a paleta, sobre um fundo de `rgb(10 14 26 / .42)` com desfoque de 3px.
+- **Brilho da Tecla Principal** (`box-shadow: 0 1px 0 rgb(255 255 255 / .12) inset, 0 6px 16px -8px color-mix(in srgb, var(--azul) 70%, transparent)`): só na tecla azul.
+- **Sombra do Aviso** (`box-shadow: 0 18px 40px -16px rgb(0 0 0 / .55)`): os avisos na Noite.
+- **Disco da Entrada** (`filter: drop-shadow(0 14px 28px rgb(21 27 39 / .12))`): o medalhão da coruja.
+- **Anel de Foco do Campo** (`box-shadow: 0 0 0 4px color-mix(in srgb, var(--azul) 14%, transparent)`): o campo em foco, junto com a borda azul.
+- **Halo do Cinábrio** (`box-shadow: 0 0 0 3px color-mix(in srgb, var(--cinabrio) 18%, transparent)`): só o ponto de falha.
 
 ### Named Rules
-**A Regra da Tecla com Lado.** A profundidade de uma tecla é a borda de baixo de 3px, o lado dela, não uma sombra deslocada. Ao apertar, a tecla desce 1px e o lado vira 2px.
-
-**A Regra da Placa e do Poço.** O que está montado sobe (módulo: realce no topo e sombra ambiente); o que está selecionado ou recebe dado afunda (sombra interna de 1px por 3px). Nada flutua além das janelas.
+**A Regra da Única Escada.** A crepidoma é o único 3D do painel. Módulos e teclas ficam planos: nenhuma sombra deslocada, nenhum lado de tecla, nenhum relevo. Nada flutua além das janelas, da folha, da paleta e dos avisos.
 
 ## Shapes
 
-Cantos suavemente arredondados e em escada, do menor para o maior conforme o tamanho da peça: 2px nas etiquetas (peça, placa de modelo, medidor), 4px nos campos e no mostrador pequeno, 5px nas teclas e no vidro do visor, 6px nos avisos, 7px nos módulos e na faixa, 9px na moldura do visor, 10px nas janelas e na frente de entrada, 14px no topo da folha "Mais". LEDs e parafusos são círculos.
+Cantos discretos e quase iguais: 6px em quase tudo (módulos, teclas, campos, travas, a faixa, os itens do trilho e da paleta, registros); 10px nas janelas, nos avisos e nas teclas do "Mais"; 18px nos cantos de cima da folha; 12px no marcador da barra; 3px no atalho e nas marcas do esqueleto. Pontos de estado, medalhões, o relógio de sol e o medalhão da entrada são círculos.
 
-Os módulos levam quatro parafusos de 9px a 5px dos cantos (um círculo com fenda diagonal, desenhado em SVG) e uma régua na borda de cima, recuada 1.4rem dos lados, com marcas a cada 8px e marcas maiores a cada 40px. A frente de entrada leva os parafusos, sem régua. O medidor é uma barra de LEDs de VU: segmentos de 5px com folga de 2px. Os segmentos do 7 segmentos são hexágonos alongados com inclinação de 7 graus. A vista explodida desenha as zonas como placas em perspectiva isométrica, ligadas por guias tracejadas (3 por 3) e com linhas de chamada até o rótulo. Os pictogramas são de traço, com pequenos pontos ou tampas cheios só quando o desenho pede, numa grade de 24, com traço de 1,75 e pontas e quinas arredondadas.
+**O meandro.** Um traço só, que entra na espiral e sai pela base até a volta seguinte; cada volta ocupa 4 unidades de largura por 3 de altura (`desenhos.js`). Ele aparece de cinco jeitos: como máscara repetida (`--meandro` e `--meandro-em-pe`, traço de 1.2 numa célula de 16 por 14) na borda da casca, na moldura da entrada e no medidor; como faixa desenhada (traço de 1.3, quinas em ponta) sob o nome de cada tela e no esqueleto; como chave, uma volta só em azul, de .95rem por .72rem, antes de cada título de módulo; dando a volta num círculo, fechado sem emenda, na borda dos medalhões, do relógio de sol e da entrada; e como medida, pintado até o valor.
+
+**Os medalhões.** Dois aros finos de Veio (.6), o meandro circular apagado em Veio (1) e, por cima, o mesmo meandro em tinta (1.7) pintado até a fração em voltas inteiras (um valor acima de zero pinta ao menos uma). No miolo, o número na letra de pedra ou um desenho (o ícone do PC, a roseta de oito pétalas que gira na velocidade da ventoinha).
+
+**Os ícones.** Desenhados em `pictos.js`, numa grade de 24, com traço de 1.5 (1.05 nos finos), pontas e quinas redondas, em `currentColor`. As coisas gregas entram no lugar das de sempre quando dizem o mesmo: o Início é a frente do templo, as Aprovações uma coroa de louros com o visto, os Serviços uma ânfora, o Sistema a engrenagem de Anticítera, o Histórico uma ampulheta, os Arquivos um pergaminho. A área "tinta" (o tímpano, a faixa da ânfora, o líquido do frasco) fica vazia em repouso e se pinta a 16% na tela ativa.
+
+**A coruja.** A coruja de Atena das moedas de Atenas: cabeça de frente, corpo de perfil, num ramo de oliveira, em traço de gravura de uma cor só (Tinta a 1.35, finos a .85), com as folhas e as azeitonas em Tinta Segunda. Cada traço tem `pathLength` 1, para se desenhar do começo ao fim.
 
 ### Named Rules
-**A Regra do Parafuso.** Toda placa montada leva os quatro parafusos: o módulo também leva a régua na borda; a frente de entrada, só os parafusos. Janelas, visor, faixa e avisos não levam parafuso.
+**A Regra do Meandro que Mede.** O meandro é ornamento e é medida. Uma fração se mostra pintando o meandro (o anel do medalhão, o medidor), nunca numa barra lisa ou num anel liso; e o ornamento é sempre o mesmo traço, nunca um friso de outra forma.
 
 ## Components
 
 ### Buttons
-Teclas físicas de calculadora: firmes, com lado, que afundam ao toque.
-- **Shape:** cantos de 5px; contorno de 1px e lado de 3px embaixo.
-- **Grafite (padrão):** face Tecla Grafite com texto claro, 600 a .84rem, .5rem por .95rem, altura mínima de 2.5rem (2.75rem com toque grosso). Pictogramas de 1.15rem à esquerda do texto, com .45rem de folga.
-- **Principal:** a mesma tecla com face Amarelo Sinal, borda e lado do amarelo e texto quase preto. Uma por módulo ou janela.
-- **Clara (`.discreto`):** face Tecla Clara, texto Tinta, menor (.4rem por .72rem, altura 2.2rem, .78rem de texto), com o mesmo lado de 3px. É a tecla das ações de cada linha (Logs, Reiniciar, Editar) e das secundárias (Atualizar, Cancelar, Fechar). No hover, o contorno escurece.
-- **Perigo:** texto de perigo e um ponto de LED vermelho de .42rem antes do texto: Coral de Perigo na grafite, Texto de Estado vermelho na clara. Toda ação destrutiva pede confirmação antes de rodar.
-- **Grandes:** na fila de decisão (Aprovar e Recusar, Ligar), as teclas dividem a largura e sobem para 3.1rem de altura e .95rem de texto.
-- **Hover / Focus / Active:** no hover, brilho de 3%; no foco do teclado, contorno de 2px na cor de Foco a 2px de distância; ao apertar, desce 1px e o lado vai para 2px em 80ms (ease-out). Desabilitada, fica a 45% de opacidade.
+Teclas de mármore: um fio na cor do texto, sem relevo; o azul só na ação principal.
+- **Shape:** cantos de 6px, contorno de 1px em Veio Forte.
+- **Padrão:** face Placa, texto Tinta, 550 a .86rem, .5rem por 1rem, altura mínima de 2.5rem (2.75rem com toque grosso). Ícone de 1.15rem antes do texto, a .45rem.
+- **Principal:** face e borda Azul Egípcio, texto Tinta sobre o Azul, com o brilho da tecla principal. Uma por módulo ou janela (Entrar, Ligar, Aprovar).
+- **Discreta:** sem fundo, menor (.4rem por .78rem, altura 2.2rem, .8rem de texto). É a tecla das ações de cada linha (Logs, Reiniciar, Editar) e das secundárias (Atualizar, Fechar, Adicionar).
+- **Perigo:** texto em Tinta de Cinábrio e borda de Cinábrio misturado ao Veio (45%); no hover, fundo Cinábrio Claro e borda Cinábrio. Toda ação que não tem volta pede confirmação antes.
+- **Grandes:** na decisão (Aprovar e Recusar, Ligar), as teclas dividem a largura e sobem para 3.1rem, com .95rem de texto e ícone de 1.3rem.
+- **Hover / Focus / Active:** no hover, fundo Placa Funda e borda Tinta Segunda (a principal vai ao Azul Fundo); no foco do teclado, contorno de 2px em Foco a 2px de distância; ao apertar, encolhe a 97%. As transições são de .2s em `--suave` (.16s no aperto). Desabilitada, fica a 45%.
 
 ### Chips
-- **Peça:** o código posicional do módulo (IN-01, AP-02, SY-03...), em Martian Mono 700, com contorno de 1px em Risco Forte e cantos de 2px. É numerado sozinho pela posição do módulo na tela, com o prefixo da tela (IN, AP, AG, SV, SY, AR, PC, LB, AT, HI, AJ).
-- **Placa de Modelo:** "AT-1" em Martian Mono 700, invertida (fundo Tinta, texto Chassi), cantos de 2px, logo depois da marca.
-- **Selo de Estado:** LED de .46rem seguido da legenda em versalete (.62rem), na cor de estado: verde, vermelho ou azul; o texto nunca falta.
-- **Contagem:** pílula amarela de 1.1rem com o número de aprovações esperando, em Martian Mono 700, presa à tecla das Aprovações e do "Mais".
-- **Atalho (`kbd`):** Martian Mono .66rem em fundo Tampo, com borda de tecla e lado de 2px.
+- **Ponto de estado:** um círculo de .5rem em Malaquita (ok), Ocre (perto do limite), Cinábrio (falha, com halo), Azul (informação, em andamento) ou Pedra (sem estado).
+- **Selo:** ponto de .45rem e a legenda em Rótulo a .76rem, na tinta do pigmento (Malaquita, Cinábrio) ou em Azul (neutro, como "este" aparelho).
+- **Contagem:** pílula de 1.15rem em Ocre, com o número de aprovações esperando em 700 a .64rem, presa ao item das Aprovações e do "Mais". O número sai num ocre quase preto (#1b1307), com 5,0:1 sobre o ocre de dia e 8,0:1 à noite; branco ali não chegava a 4,5:1.
+- **Atalho (`kbd`):** monoespaçada 600 a .66rem, contorno de Veio Forte, cantos de 3px, Tinta Segunda.
 
 ### Cards / Containers
-- **Corner Style:** 7px no módulo; 10px nas janelas e na frente de entrada.
-- **Background:** Placa, com os quatro parafusos por cima.
-- **Shadow Strategy:** Placa (ver Elevation & Depth).
-- **Border:** 1px de Risco; régua de marcas na borda de cima.
-- **Internal Padding:** 1rem em cima, 1.05rem nos lados e embaixo.
-- **Cabeçalho:** o título em Rótulo à esquerda e, à direita, a etiqueta: o código do que o módulo mede (Martian Mono, Tinta Secundária, cortado com reticências se não couber) e a peça. Uma linha de Risco separa o cabeçalho do conteúdo.
-- **Linhas e listas:** rótulo em versalete à esquerda e valor com algarismos tabulares à direita; itens de lista separados por 1px de Risco.
-- **Largo:** o módulo largo ocupa a linha toda; no PC, o visor dele cresce (desenhos de 4.6rem, números de 3rem) e as células se espalham numa linha só.
+- **Corner Style:** 6px no módulo; 10px nas janelas.
+- **Background:** Placa.
+- **Shadow Strategy:** Sombra do Mármore (ver Elevation & Depth).
+- **Border:** 1px de Veio.
+- **Internal Padding:** 1.15rem em cima, 1.25rem nos lados e embaixo.
+- **Cabeçalho (`modulo()`):** a chave do meandro em azul, o título de módulo, uma régua de 1px em Veio que ocupa o meio e, à direita, o que o módulo mede (.8rem, Tinta Segunda, algarismos tabulares, cortado com reticências se não couber). Sempre dado de verdade.
+- **Linhas:** rótulo à esquerda e valor com algarismos tabulares à direita (`linha()`); o medidor logo abaixo quando há uma fração.
+- **Largo:** o módulo largo ocupa a linha toda; no PC, os medalhões dele se espalham numa linha só.
+- **Detalhes:** o `summary` leva uma seta de .72rem que gira 90° numa mola ao abrir; o que estava aberto continua aberto quando a tela se refaz.
 
 ### Inputs / Fields
-- **Campo (`campo()`):** o rótulo do aparelho (.62rem, versalete) em cima do controle. Num formulário, os campos ficam numa grade de colunas automáticas de no mínimo 9rem (duas no celular) e os largos (projeto, pedido) ocupam a linha toda; numa fileira de filtros, ficam lado a lado com a tecla alinhada embaixo.
-- **Teclas de trava:** para escolhas que ficam ligadas (os dias da semana), teclas claras pequenas com um LED no alto; ligada, a tecla afunda no poço (o lado vai a 1px) e o LED acende em verde.
-- **Style:** poço (fundo Poço com sombra interna), contorno de 1px em Risco Forte, cantos de 4px, .5rem por .65rem, altura mínima de 2.5rem, Archivo .95rem. Selects e campos com lista levam a seta própria desenhada em SVG, sem a do sistema. Caixas de seleção usam o amarelo como cor de destaque. A alça de redimensionar do textarea são três riscos diagonais em Risco Forte.
-- **Focus:** contorno de 2px na cor de Foco a 2px de distância.
-- **Error / Disabled:** a mensagem de erro sai em texto vermelho de estado logo abaixo, com altura reservada para não pular a tela.
+- **Style:** fundo Placa Funda, contorno de 1px em Veio Forte, cantos de 6px, .5rem por .7rem, altura mínima de 2.5rem, Commissioner .95rem. Selects e campos com lista levam a seta própria em SVG, na Tinta Segunda.
+- **Focus:** a borda vira Azul, o fundo sobe para a Placa e aparece o anel de foco de 4px do azul a 14%.
+- **Campo (`campo()`):** o rótulo em cima do controle; num formulário, os campos ficam numa grade de colunas automáticas de no mínimo 9rem, e os largos ocupam a linha toda.
+- **Travas:** para escolhas que ficam ligadas (os dias da semana), teclas pequenas de no mínimo 2.8rem com um ponto de Pedra no alto; ligadas, ficam no Véu Azul com texto e ponto azuis, e o ponto cresce a 115% numa mola.
+- **Caixa de seleção:** a do sistema, com o azul como cor de destaque.
+- **Error / Disabled:** a mensagem de erro sai em Tinta de Cinábrio logo abaixo, com a altura de uma linha reservada para não pular a tela.
 
 ### Navigation
-- **Barra (celular):** cinco teclas transparentes na Lateral do Chassi, com pictograma de 1.4rem e o nome em rótulo pequeno. A ativa afunda (Poço, borda de Risco, sombra interna) e acende um ponto amarelo de .38rem no canto. A contagem de aprovações aparece no "Mais".
-- **Trilho (PC):** grupos com título em rótulo pequeno; cada tela é um item com pictograma de 1.15rem e nome em Archivo 550 .9rem. Hover em meio poço; a ativa afunda e acende o ponto amarelo à direita. A marca, a placa AT-1 e os LEDs das zonas ficam no alto; a tecla Buscar com Ctrl K, no pé.
-- **Mais (folha):** sobe de baixo, com cantos de 14px no topo, e mostra as outras telas como teclas grafite num teclado de três colunas.
-- **Paleta (Ctrl+K):** janela a 12% do topo, até 36rem, com campo grande de 3rem; os itens mostram pictograma, título e o grupo em versalete à direita. Setas movem a marcação, Enter executa; o item marcado afunda.
+- **Barra (celular):** cinco itens transparentes, ícone de 1.4rem e o nome em Rótulo a .72rem, na Tinta Segunda. A tela ativa fica azul, a tinta do ícone acende e, atrás dela, o marcador em Véu Azul (cantos de 12px) desliza até lá numa mola. A contagem vai no "Mais".
+- **Trilho (PC):** grupos com o título em Rótulo a .74rem; cada tela é um item com ícone de 1.2rem e nome a .92rem. A ativa fica azul, em 600, com o mesmo marcador deslizante em Véu Azul (cantos de 6px). A contagem fica à direita das Aprovações.
+- **Mais (folha):** sobe de baixo numa mola, com cantos de 18px no topo, e mostra as outras telas e a Buscar como teclas de Placa Funda num teclado de três colunas; no hover e na ativa, Véu Azul com texto azul.
+- **Paleta (Ctrl+K):** janela a 12% do topo, até 36rem, com campo grande de 3rem; cada item mostra o ícone, o título e o grupo em Rótulo à direita. Setas movem a marcação, Enter executa; o item marcado fica no Véu Azul, com o ícone azul e a tinta acesa.
 
 ### Linhas de lista
-Toda lista do painel é feita de linhas iguais (`item()` e `itens()` no `comum.js`), separadas por 1px de Risco.
-- **Estrutura:** o LED do estado numa coluna de .5rem, o nome (Corpo; o nome de stack, app ou agendamento em 650) com o Detalhe embaixo, e as teclas claras à direita. O nome tem sempre ao menos 13rem; as teclas ficam com o que sobra e quebram de linha.
-- **Estado:** o LED diz o estado e o detalhe começa por ele escrito ("no ar", "falhou", "pausado"), cumprindo a Regra do LED com Legenda.
+Toda lista do painel é feita de linhas iguais (`item()` e `itens()` no `comum.js`), separadas por 1px de Veio.
+- **Estrutura:** o ponto do estado numa coluna de .5rem, o nome (o de stack, app ou agendamento em 600) com o Detalhe embaixo, e as teclas discretas à direita. O nome tem sempre ao menos 13rem; as teclas ficam com o que sobra e quebram de linha.
+- **Estado:** o ponto diz o estado e o detalhe começa por ele escrito ("no ar", "falhou", "pausado").
 - **Teclas embaixo:** com quatro teclas ou mais, ou mais de uma num módulo estreito, elas descem para baixo do nome, alinhadas com ele.
-- **Presas a outra:** os containers de uma stack e as execuções de um agendamento ficam embaixo da linha dela, ligados pela guia tracejada da vista explodida (1px tracejado em Risco Forte, à esquerda).
-- **Registros:** na Atividade, uma linha por evento, com o nome em Martian Mono; no módulo largo, o nome e o detalhe ficam lado a lado e o detalhe corta com reticências (o inteiro aparece ao parar o mouse).
+- **Presas a outra:** os containers de uma stack e as execuções de um agendamento ficam embaixo dela, presos por um fio de 1px de Veio à esquerda.
+- **Registros:** na Atividade, uma linha por evento, com o nome na monoespaçada.
 
-### O Visor
-A assinatura do aparelho: um vidro preto numa moldura, com células de desenho e leitura, sempre a partir dos dados de verdade.
-- **Estrutura:** moldura de 5px, vidro com cantos de 5px e sombra interna funda; as células ficam lado a lado, cada uma com a largura do que mostra, separadas por 1rem por 2.2rem.
-- **Célula:** rótulo em versalete na Legenda do Visor, o desenho, o número em 7 segmentos com a unidade em Martian Mono ao lado e, se houver, uma linha extra em mono.
-- **7 segmentos:** os segmentos apagados ficam visíveis em Segmento Fantasma, como numa calculadora; ponto decimal e dois-pontos de relógio são parte do dígito; inclinação de 7 graus; altura de 2.15rem (1.95rem no telefone, 3rem no módulo largo do PC).
-- **Desenhos:** traço de 1.6 em Traço do Visor (1 a 55% para os finos), níveis em verde que passam a âmbar perto do limite e a vermelho acima dele. Carretéis de fita giram de 9s por volta (CPU parada) a 0,7s (CPU cheia); a ventoinha da placa gira pelo rpm; a torre do PC acende o botão de energia em verde quando ligado.
-- **Mostrador pequeno:** um número em 7 segmentos num vidro com moldura de 4px dentro de um módulo comum (por exemplo, o gasto do mês).
+### Medalhões
+A leitura do servidor (CPU, temperatura, RAM, GPU; o PC e o LM Studio; as ventoinhas): um disco de até 9.6rem com o número no meio e o meandro da borda pintado de azul até o valor, em voltas inteiras. Perto do limite (a 85% do alerta) a tinta passa a Ocre; passado dele, a Cinábrio. Embaixo, o nome em Rótulo a .86rem e uma nota a .78rem na Tinta Segunda. Ao chegar, o anel se pinta do zero até o valor em 1.3s; quando o valor muda, a tinta anda até o novo em 1s.
 
-### Vista Explodida
-O desenho técnico das zonas: uma placa isométrica por zona, com um LED por container (até 12, depois "+N"), linha de chamada até o nome da zona em versalete e a conta "no ar/total" em mono. Uma zona com problema sai do lugar (8px para a direita, 4px para cima), ganha um tampo levemente avermelhado e lista os containers com falha em vermelho. Cada placa é focável e leva à tela de Serviços filtrada na zona.
+### Crepidoma das Zonas
+A assinatura do painel: a escada do templo, um degrau de mármore de 7.2rem por zona (a zona de base embaixo, cada uma acima mais atrás e mais alta) e, no piso de cada degrau, um ponto de .36rem por container, em Malaquita ou em Cinábrio pulsando. Ao lado, a legenda que se lê e se toca: o ponto, o nome da zona, a conta "no ar/total" na letra de pedra e, se houver, os containers com problema em Tinta de Cinábrio. Passar por um degrau ou por uma linha acende os dois em Véu Azul (o degrau também se adianta .5rem); tocar abre os Serviços na zona. A zona com problema escorrega .9rem para o lado, como uma pedra deslocada, com a face em Cinábrio Claro.
+
+### Relógio de Sol
+O mostrador da agenda: 24 horas num disco com o meandro circular na borda, marcas a cada hora (mais fortes a cada seis), os numerais 0, 6, 12 e 18 na letra de pedra, a sombra (uma cunha de Tinta a 7% e o gnômon) na hora de agora e as próximas vezes das 24 h como pontos azuis, a primeira maior. Ao lado, a próxima vez e a conta do dia em Número.
 
 ### Faixa de Aprovações
-Uma tecla larga em Amarelo Sinal, com lado de 3px, no topo de qualquer tela quando há pedido esperando: o pictograma de aprovações, "N aprovações esperando você" em 700 e, à direita, "ver" com a seta. Atravessa todas as colunas no PC.
+No topo de qualquer tela quando há pedido esperando: uma faixa de Ocre Claro com borda de Ocre a 38%, o ícone da coroa de louros em Ocre, "N aprovações esperando você" em 600 a .98rem e, à direita, "Ver" com a seta em Tinta de Ocre. No hover, a borda fica Ocre cheia. Atravessa todas as colunas no PC.
 
-### Avisos
-Retângulos de vidro preto com moldura de 3px, texto em Martian Mono e um LED à esquerda (azul informação, verde ok, vermelho erro). Ficam acima da barra no celular e no canto de baixo à direita no PC; somem em 4s (8s se for erro).
+### A Entrada
+A coruja de Atena num medalhão de Placa, entre dois aros de Veio Forte, com o meandro circular em Tinta de Ornamento deixado aberto num trecho e a inscrição ΑΘΕ em pé à direita, como na moeda. Embaixo, o ΑΘΗΝΑ a 1.7rem, o campo da senha e a tecla principal Entrar.
+
+### Avisos e Textos de Máquina
+- **Aviso:** retângulo de Noite com cantos de 10px, texto a .85rem em Tinta da Noite e um ponto de .5rem à esquerda (azul informação, malaquita ok, cinábrio erro, nos tons da noite). Fica acima da barra no celular e no canto de baixo à direita no PC; some em 4s (8s se for erro). Com uma janela aberta, vai dentro dela.
+- **Registro:** os logs em Noite, monoespaçada a .74rem, cantos de 6px, rolagem própria até 60% da altura.
+- **Texto de pedido:** em Placa Funda com 1px de Veio, na letra lisa a .92rem.
+
+### Esqueleto
+A tela que ainda não chegou mostra duas placas já postas, com marcas vazias em Placa Funda e uma faixa de meandro que se faz e se desfaz (2s, em `--traco`) enquanto o dado chega. A tela já vista volta na hora com o que mostrava, na mesma altura da rolagem, até o dado novo entrar por cima.
 
 ### Movimento
-**A Regra da Cena nos Momentos.** Movimento de cena só em quatro momentos: a varredura dos LEDs das zonas ao entrar (cada LED acende em amarelo por .5s, 70ms depois do anterior), o pulso da faixa quando chega aprovação (anel amarelo de 16px, 1.2s, duas vezes), a ventoinha que acelera no primeiro minuto depois de o PC ligar e o ponteiro do mostrador que gira quando um agendamento roda (1.4s, duas voltas). Os carretéis e as ventoinhas do visor giram na velocidade medida, porque ali o movimento é a leitura. Pela mesma razão, enquanto a tela busca o dado novo, o ponto amarelo da tela ativa pisca (.8s, aceso e apagado), como o LED de leitura de um disco; com `prefers-reduced-motion`, ele só fica mais fraco. A tela que ainda não chegou mostra as placas vazias (esqueleto, sem movimento), e a tela já vista volta na hora com o que mostrava, até o dado novo entrar por cima. Com `prefers-reduced-motion`, nada se move: animações e transições são desligadas.
+Três curvas, todas em custom properties: `--suave` (cubic-bezier(.22, 1, .36, 1), sai rápido e assenta devagar) para o dia a dia; `--mola` (uma mola amortecida escrita em `linear()`, que passa 1,5% do alvo e assenta) para o que se assenta no lugar; `--traco` (cubic-bezier(.65, 0, .25, 1)) para o traço que se desenha.
+- **Trocar de tela:** uma View Transition: a tela velha se apaga em .16s (desfoque de 3px, sobe 4px) e a nova chega do desfoque de 8px em .46s, subindo 14px. A barra e os avisos têm camada própria e não se mexem. Onde o navegador não tem a API, o conteúdo só aparece.
+- **O conteúdo que chega:** aparece todo junto, em .35s de opacidade; o que se mexe é o que mede (o anel se pinta, os degraus sobem um a um, de baixo para cima, a 75ms um do outro, e assentam na mola).
+- **A tela ativa:** o marcador desliza na mola (.62s) e o ícone dela se redesenha (.6s em `--traco`); enquanto a tela lê do servidor, o ícone ativo respira de leve.
+- **Janelas, folha e avisos:** chegam na mola (.5s, .55s, .55s); as janelas e os avisos vêm de um desfoque de 4px.
+- **Contínuos:** só os que leem um dado ou dão vida à assinatura: a escada respira devagar (12s, ida e volta), o ponto ruim pulsa (1.8s), a roseta gira na velocidade da ventoinha.
+
+**A Regra da Mola que Assenta.** A mola é só do que assenta no lugar: o marcador da tela ativa, as janelas, a folha, os avisos, os degraus da crepidoma, a seta dos detalhes, o ponto da trava, os pontos das zonas ao chegar e a cabeça da coruja que volta. Todo o resto é ease-out em `--suave`. Nada de quique, tremor ou cascata de módulos.
+
+**A Regra do Que Não Fica.** Animação de opacidade ou desfoque num módulo, na tela ou num degrau usa `animation-fill-mode: backwards` (ou nenhum), nunca `forwards` nem `both`: uma opacidade ou um filtro que ficasse no elemento achataria o 3D da crepidoma.
+
+**A Regra da Cena nos Momentos.** A cena só acontece quando importa: ao entrar, a coruja se desenha traço a traço (2.7s), fecha os olhos enquanto você digita, inclina a cabeça e volta na mola na senha errada, abre bem os olhos na certa e o meandro do medalhão se fecha em azul antes de a entrada se desfazer e o painel chegar, com os pontos das zonas aparecendo um a um; quando chega uma aprovação, uma luz passa pela faixa e a coroa se redesenha, uma vez; quando um agendamento roda, a sombra do relógio de sol dá a volta (2.2s); quando o PC liga, o anel dele se pinta de novo; a zona com problema escorrega para o lado.
+
+**A Regra do Parado.** Com `prefers-reduced-motion`, nada se move: animações, transições e View Transitions são desligadas, os traços aparecem já desenhados e o ícone que lia só fica a 60%.
+
+### Proveniência
+- **Fonte:** Commissioner, de Kostas Bartsokas, sob a SIL Open Font License 1.1, tirada do Fontsource 5.2.8. Os arquivos ficam em `app/public/fontes` (`commissioner-latin.woff2`, `commissioner-grego.woff2`) com a licença ao lado (`commissioner-LICENSE.txt`).
+- **Ícone do app:** `app/public/icone.svg` é desenhado à mão: a cabeça da coruja em #eff2fb sobre um quadrado de cantos redondos em Azul Egípcio, com o meandro circular a 55%. `app/public/icone-192.png` e `app/public/icone-512.png` (o de 512 também como ícone mascarável) são renderizados desse SVG com o Chromium sem interface. Não há imagem gerada no painel.
+- **Desenhos e ícones:** o meandro, os medalhões, a crepidoma, o relógio de sol, a coruja e os pictogramas são montados em código (`desenhos.js`, `pictos.js`, `estilo.css`) a partir dos dados de verdade; nada vem de biblioteca nem de outro endereço.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** montar todo módulo com o cabeçalho de etiqueta: título em Rótulo, o código do que ele mede em Martian Mono e a peça posicional (IN-01), que o painel numera sozinho.
-- **Do** usar uma única tecla amarela (principal) por módulo ou janela; a ação do módulo é grafite, e as de cada linha e as secundárias são claras.
-- **Do** montar toda lista com `item()` (LED, nome, detalhe com o estado escrito, teclas) e todo formulário com `campo()`.
-- **Do** escrever números com `num()` (e `gb()`, `dinheiro()`, `plural()`): vírgula decimal e ponto de milhar.
-- **Do** dizer todo estado com um LED e o texto do lado (selo), nas cores verde, âmbar, vermelho e azul.
-- **Do** desenhar número medido em 7 segmentos no visor preto, com os segmentos apagados visíveis, e só com dado de verdade do executor.
-- **Do** desenhar pictogramas novos no próprio painel, na grade de 24 com traço de 1,75, pontas redondas e `currentColor`.
-- **Do** pegar cor, raio e fonte das custom properties (`var(--tecla)`, `var(--raio)`, `var(--mono)`) e mudar o tema só trocando valores sob `prefers-color-scheme: dark`.
-- **Do** passar valores dinâmicos (largura do medidor, velocidade dos carretéis, atraso da varredura) pelo CSSOM, com `style.setProperty`.
-- **Do** manter os alvos de toque em 2.75rem no toque grosso e a barra de baixo no celular.
-- **Do** desligar toda animação nova sob `prefers-reduced-motion`.
+- **Do** montar todo módulo com `modulo()`: a chave do meandro, o título na letra de pedra, a régua de Veio e, à direita, o que ele mede, sempre dado de verdade.
+- **Do** usar uma única tecla principal azul por módulo ou janela; as outras são de fio (Placa com contorno de Veio Forte), e as de cada linha e as secundárias são discretas.
+- **Do** dizer todo estado com um ponto de pigmento e o texto do lado (`item()`, selo): Malaquita ok, Ocre perto do limite, Cinábrio falha, Azul informação ou em andamento, Pedra sem estado.
+- **Do** medir com o meandro: `medalhao()` para uma leitura com limite, `medidor()` para uma fração numa linha; a tinta passa do azul ao ocre perto do limite e ao cinábrio passado dele.
+- **Do** escrever números com `num()`, `gb()`, `dinheiro()` e `plural()`, em algarismos tabulares.
+- **Do** desenhar ícones novos em `pictos.js`: grade de 24, traço de 1.5 em `currentColor`, pontas e quinas redondas, a área "tinta" onde os gregos pintariam e `pathLength` 1 nos traços, para o redesenho.
+- **Do** pegar cor, raio, letra e curva das custom properties (`var(--azul)`, `var(--raio)`, `var(--letra)`, `var(--suave)`, `var(--mola)`) e mudar o tema só trocando valores sob `prefers-color-scheme: dark`.
+- **Do** passar valores dinâmicos (`--fracao`, `--i`, `--volta`, a posição do marcador, a largura do medidor) pelo CSSOM, com `style.setProperty`: a CSP barra o atributo `style`.
+- **Do** usar a mola só no que assenta, `--suave` no resto, e `animation-fill-mode: backwards` em toda animação de opacidade ou desfoque num módulo.
+- **Do** deixar toda animação nova parada sob `prefers-reduced-motion`, com os traços já desenhados.
+- **Do** manter os alvos de toque em 2.75rem no toque grosso e a barra embaixo no celular.
 
 ### Don't:
-- **Don't** pintar de amarelo uma tecla que não seja a ação principal, nem usar o amarelo como enfeite.
-- **Don't** dizer estado só com cor, nem criar um quinto matiz de estado.
-- **Don't** clarear o visor no tema claro.
-- **Don't** usar biblioteca de ícones nem caractere Unicode fazendo papel de ícone.
+- **Don't** usar caixa-alta fora das inscrições gregas (ΑΘΗΝΑ, ΑΘΕ), nem `text-transform: uppercase`.
+- **Don't** trazer um segundo acento, nem pintar com malaquita, ocre ou cinábrio o que não é estado (a única exceção é o ocre das aprovações).
+- **Don't** escrever texto na Tinta de Ornamento.
+- **Don't** medir com barra lisa ou anel liso: a medida é o meandro pintado.
+- **Don't** pôr quique, tremor, cascata de módulos nem mola numa transição do dia a dia.
+- **Don't** deixar opacidade ou filtro preso num módulo com `forwards` ou `both`: achata a crepidoma.
+- **Don't** dar sombra deslocada, lado de tecla ou relevo a teclas e módulos: o único 3D é a crepidoma.
 - **Don't** carregar fonte, script, estilo ou imagem de outro endereço, nem usar o atributo `style` inline: a CSP é `default-src 'self'` e o container não tem rede.
-- **Don't** pôr movimento contínuo que não seja leitura de dado; a cena fica nos quatro momentos.
-- **Don't** fazer cara de SaaS genérico (cartões cinza iguais com ícones de biblioteca) nem de ficção científica ou jogo.
-- **Don't** escrever texto abaixo de .6rem.
-- **Don't** dar sombra deslocada às teclas: a profundidade é o lado de 3px.
+- **Don't** usar biblioteca de ícones nem caractere Unicode fazendo papel de ícone.
+- **Don't** fazer a Grécia de souvenir (colunas de enfeite, dourado, creme), nem algo que pareça desenho animado, jogo ou fantasia, nem o dashboard de cartões cinza do SaaS genérico.

@@ -1,1085 +1,993 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-22T15:26:34+00:00",
+  "generatedAt": "2026-10-22T18:54:54+00:00",
   "title": "Design System: Painel Atena",
   "extensions": {
     "colorMeta": {
-      "amarelo": {
+      "azul": {
         "role": "primary",
-        "displayName": "Amarelo Sinal",
-        "canonical": "#ffc400",
+        "displayName": "Azul Egípcio",
+        "canonical": "#24418f",
         "tonalRamp": [
-          "#110a00",
-          "#312300",
-          "#533f08",
-          "#795d0a",
-          "#a27c0d",
-          "#cb9e20",
-          "#f7c12a",
-          "#ffedc6"
+          "#010036",
+          "#061864",
+          "#1f3a88",
+          "#3c5cad",
+          "#5b7ed2",
+          "#7ca2f9",
+          "#b0c9fe",
+          "#e7efff"
         ]
       },
-      "amarelo-borda": {
+      "azul-forte": {
         "role": "primary",
-        "displayName": "Borda do Amarelo",
-        "canonical": "#c99a00",
+        "displayName": "Azul Fundo",
+        "canonical": "#1a3275",
         "tonalRamp": [
-          "#110a00",
-          "#302301",
-          "#533f03",
-          "#785d11",
-          "#a17d19",
-          "#cc9d0d",
-          "#f2c248",
-          "#feedc7"
+          "#010035",
+          "#091c5e",
+          "#233c80",
+          "#405da4",
+          "#607fca",
+          "#81a3f0",
+          "#b1c9fe",
+          "#e7efff"
         ]
       },
-      "amarelo-lado": {
+      "azul-claro": {
         "role": "primary",
-        "displayName": "Lado do Amarelo",
-        "canonical": "#9a7600",
+        "displayName": "Véu Azul",
+        "canonical": "#e9edf7",
         "tonalRamp": [
-          "#110a00",
-          "#302300",
-          "#543f00",
-          "#795d0d",
-          "#a17d12",
-          "#c5a042",
-          "#eac468",
-          "#feedc6"
+          "#090b11",
+          "#22252c",
+          "#3f424a",
+          "#5e616a",
+          "#7f828b",
+          "#a1a5ae",
+          "#c5c9d3",
+          "#eaeef8"
         ]
       },
-      "amarelo-tinta": {
+      "azul-tinta": {
         "role": "primary",
-        "displayName": "Tinta sobre Amarelo",
-        "canonical": "#141414",
+        "displayName": "Tinta sobre o Azul",
+        "canonical": "#f7f8fc",
+        "tonalRamp": [
+          "#0a0b0d",
+          "#242528",
+          "#414245",
+          "#606164",
+          "#818286",
+          "#a4a5a8",
+          "#c8c9cd",
+          "#edeef2"
+        ]
+      },
+      "foco": {
+        "role": "primary",
+        "displayName": "Foco",
+        "canonical": "#24418f",
+        "tonalRamp": [
+          "#010036",
+          "#061864",
+          "#1f3a88",
+          "#3c5cad",
+          "#5b7ed2",
+          "#7ca2f9",
+          "#b0c9fe",
+          "#e7efff"
+        ]
+      },
+      "malaquita": {
+        "role": "tertiary",
+        "displayName": "Malaquita",
+        "canonical": "#2b8059",
+        "tonalRamp": [
+          "#000f06",
+          "#022d1b",
+          "#054f32",
+          "#19734c",
+          "#43956d",
+          "#67b98f",
+          "#8cdeb2",
+          "#c3ffdd"
+        ]
+      },
+      "malaquita-tinta": {
+        "role": "tertiary",
+        "displayName": "Tinta de Malaquita",
+        "canonical": "#1c6946",
+        "tonalRamp": [
+          "#000f06",
+          "#012d1a",
+          "#044f31",
+          "#26714e",
+          "#4b946e",
+          "#6fb790",
+          "#93dcb3",
+          "#c3ffdc"
+        ]
+      },
+      "ocre": {
+        "role": "tertiary",
+        "displayName": "Ocre",
+        "canonical": "#b07c1e",
+        "tonalRamp": [
+          "#130900",
+          "#332102",
+          "#593c05",
+          "#80580d",
+          "#ab7716",
+          "#d09a43",
+          "#f6be69",
+          "#ffecd0"
+        ]
+      },
+      "ocre-claro": {
+        "role": "tertiary",
+        "displayName": "Ocre Claro",
+        "canonical": "#f7f1e4",
+        "tonalRamp": [
+          "#0f0b04",
+          "#29251b",
+          "#464137",
+          "#666156",
+          "#878276",
+          "#aaa498",
+          "#cec9bc",
+          "#f4eee1"
+        ]
+      },
+      "ocre-tinta": {
+        "role": "tertiary",
+        "displayName": "Tinta de Ocre",
+        "canonical": "#6e4706",
+        "tonalRamp": [
+          "#130900",
+          "#362000",
+          "#5c3a00",
+          "#80581f",
+          "#a37942",
+          "#c89c64",
+          "#eec088",
+          "#ffebd4"
+        ]
+      },
+      "cinabrio": {
+        "role": "tertiary",
+        "displayName": "Cinábrio",
+        "canonical": "#c23a26",
+        "tonalRamp": [
+          "#1e0000",
+          "#4b0601",
+          "#7d1102",
+          "#af2612",
+          "#d74e39",
+          "#fc7760",
+          "#feb4a5",
+          "#ffe9e4"
+        ]
+      },
+      "cinabrio-claro": {
+        "role": "tertiary",
+        "displayName": "Cinábrio Claro",
+        "canonical": "#f9e8e4",
+        "tonalRamp": [
+          "#120806",
+          "#2e221f",
+          "#4c3e3b",
+          "#6c5d5a",
+          "#8e7e7b",
+          "#b1a19d",
+          "#d5c5c1",
+          "#fbeae6"
+        ]
+      },
+      "cinabrio-tinta": {
+        "role": "tertiary",
+        "displayName": "Tinta de Cinábrio",
+        "canonical": "#a22d1b",
+        "tonalRamp": [
+          "#1e0100",
+          "#4a0701",
+          "#7c1303",
+          "#a83320",
+          "#cf5743",
+          "#f77b65",
+          "#feb4a5",
+          "#ffe9e4"
+        ]
+      },
+      "pedra": {
+        "role": "tertiary",
+        "displayName": "Pedra",
+        "canonical": "#c6ccc9",
+        "tonalRamp": [
+          "#080c0a",
+          "#222624",
+          "#3e4341",
+          "#5d6360",
+          "#7e8481",
+          "#a1a7a4",
+          "#c5cbc8",
+          "#eaf0ed"
+        ]
+      },
+      "chao": {
+        "role": "neutral",
+        "displayName": "Chão de Mármore",
+        "canonical": "#f0f1ef",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#252524",
+          "#414241",
+          "#616160",
+          "#828381",
+          "#a4a5a3",
+          "#c8c9c7",
+          "#eeefed"
+        ]
+      },
+      "casca": {
+        "role": "neutral",
+        "displayName": "Casca",
+        "canonical": "#f6f7f6",
         "tonalRamp": [
           "#0b0b0b",
-          "#252525",
-          "#424242",
+          "#242524",
+          "#414241",
           "#616161",
           "#828282",
-          "#a5a5a5",
-          "#c9c9c9",
-          "#eeeeee"
+          "#a4a5a4",
+          "#c8c9c8",
+          "#eeefee"
         ]
       },
-      "tecla": {
-        "role": "secondary",
-        "displayName": "Tecla Grafite",
-        "canonical": "#2c2f2d",
+      "placa": {
+        "role": "neutral",
+        "displayName": "Placa",
+        "canonical": "#fcfcfb",
         "tonalRamp": [
-          "#090c0a",
+          "#0b0b0b",
+          "#252524",
+          "#424241",
+          "#616160",
+          "#828281",
+          "#a5a5a4",
+          "#c9c9c8",
+          "#eeeeed"
+        ]
+      },
+      "placa-2": {
+        "role": "neutral",
+        "displayName": "Placa Funda",
+        "canonical": "#f4f5f4",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#242524",
+          "#414241",
+          "#616161",
+          "#828282",
+          "#a4a5a4",
+          "#c8c9c8",
+          "#eeefee"
+        ]
+      },
+      "veio": {
+        "role": "neutral",
+        "displayName": "Veio",
+        "canonical": "#e1e4e2",
+        "tonalRamp": [
+          "#0a0c0a",
           "#232624",
           "#404341",
           "#5f6260",
           "#808381",
-          "#a2a6a4",
-          "#c6cac8",
-          "#ecf0ed"
-        ]
-      },
-      "tecla-borda": {
-        "role": "secondary",
-        "displayName": "Borda da Tecla",
-        "canonical": "#1f2120",
-        "tonalRamp": [
-          "#0a0c0b",
-          "#242625",
-          "#404341",
-          "#5f6261",
-          "#808382",
           "#a3a6a4",
           "#c7cac8",
-          "#ecefee"
+          "#ecefed"
         ]
       },
-      "tecla-lado": {
-        "role": "secondary",
-        "displayName": "Lado da Tecla",
-        "canonical": "#0b0c0b",
-        "tonalRamp": [
-          "#0a0b0a",
-          "#242524",
-          "#414241",
-          "#606260",
-          "#818381",
-          "#a4a5a4",
-          "#c8c9c8",
-          "#edefed"
-        ]
-      },
-      "tecla-tinta": {
-        "role": "secondary",
-        "displayName": "Tinta da Tecla",
-        "canonical": "#f1f2ef",
-        "tonalRamp": [
-          "#0b0b0a",
-          "#252523",
-          "#414240",
-          "#61625f",
-          "#828380",
-          "#a4a5a3",
-          "#c8c9c7",
-          "#eeefec"
-        ]
-      },
-      "tecla-perigo": {
-        "role": "secondary",
-        "displayName": "Coral de Perigo",
-        "canonical": "#ff8a7f",
-        "tonalRamp": [
-          "#1f0001",
-          "#4d0004",
-          "#7d0e11",
-          "#a33732",
-          "#ca5b52",
-          "#f27e74",
-          "#fdb4ab",
-          "#fee9e6"
-        ]
-      },
-      "led-verde": {
-        "role": "tertiary",
-        "displayName": "Luz Verde",
-        "canonical": "#2bd46a",
-        "tonalRamp": [
-          "#001003",
-          "#012e11",
-          "#015022",
-          "#127537",
-          "#189c4b",
-          "#00c65c",
-          "#4eec80",
-          "#c7ffd2"
-        ]
-      },
-      "led-ambar": {
-        "role": "tertiary",
-        "displayName": "Luz Âmbar",
-        "canonical": "#ffa51f",
-        "tonalRamp": [
-          "#140800",
-          "#361f01",
-          "#5d3903",
-          "#885400",
-          "#b27319",
-          "#e2900e",
-          "#feba6a",
-          "#feebd7"
-        ]
-      },
-      "led-vermelho": {
-        "role": "tertiary",
-        "displayName": "Luz Vermelha",
-        "canonical": "#ff4433",
-        "tonalRamp": [
-          "#1f0000",
-          "#4b0502",
-          "#7e0d06",
-          "#b61007",
-          "#eb2c1e",
-          "#fd7664",
-          "#fdb4a8",
-          "#fee9e5"
-        ]
-      },
-      "led-azul": {
-        "role": "tertiary",
-        "displayName": "Luz Azul",
-        "canonical": "#3e8bff",
-        "tonalRamp": [
-          "#000923",
-          "#012253",
-          "#033d8b",
-          "#115bc2",
-          "#307ef0",
-          "#6da5fc",
-          "#aacbfd",
-          "#e5effe"
-        ]
-      },
-      "led-apagado": {
-        "role": "tertiary",
-        "displayName": "LED Apagado",
-        "canonical": "#aeb1ac",
-        "tonalRamp": [
-          "#0a0c09",
-          "#242622",
-          "#40433f",
-          "#5f625e",
-          "#80837f",
-          "#a3a6a1",
-          "#c7cac5",
-          "#ecf0ea"
-        ]
-      },
-      "verde": {
-        "role": "tertiary",
-        "displayName": "Texto de Estado Verde",
-        "canonical": "#12773a",
-        "tonalRamp": [
-          "#001003",
-          "#002e11",
-          "#0a5025",
-          "#0d7538",
-          "#3d9758",
-          "#62bc7a",
-          "#87e19d",
-          "#cafed4"
-        ]
-      },
-      "ambar": {
-        "role": "tertiary",
-        "displayName": "Texto de Estado Âmbar",
-        "canonical": "#965400",
-        "tonalRamp": [
-          "#150700",
-          "#381e03",
-          "#613607",
-          "#8d5009",
-          "#b4702c",
-          "#da9352",
-          "#fdb97d",
-          "#feebdb"
-        ]
-      },
-      "vermelho": {
-        "role": "tertiary",
-        "displayName": "Texto de Estado Vermelho",
-        "canonical": "#c42b1e",
-        "tonalRamp": [
-          "#1e0000",
-          "#4d0100",
-          "#800300",
-          "#b5160c",
-          "#dd4636",
-          "#fb7765",
-          "#fcb5a9",
-          "#ffe9e5"
-        ]
-      },
-      "azul": {
-        "role": "tertiary",
-        "displayName": "Texto de Estado Azul",
-        "canonical": "#2559c4",
-        "tonalRamp": [
-          "#000729",
-          "#011d5f",
-          "#02349d",
-          "#2558c3",
-          "#457cea",
-          "#74a3fe",
-          "#aecafe",
-          "#e6efff"
-        ]
-      },
-      "foco": {
+      "veio-forte": {
         "role": "neutral",
-        "displayName": "Foco",
-        "canonical": "#2559c4",
+        "displayName": "Veio Forte",
+        "canonical": "#b8bfbb",
         "tonalRamp": [
-          "#000729",
-          "#011d5f",
-          "#02349d",
-          "#2558c3",
-          "#457cea",
-          "#74a3fe",
-          "#aecafe",
-          "#e6efff"
-        ]
-      },
-      "chassi": {
-        "role": "neutral",
-        "displayName": "Alumínio Escovado",
-        "canonical": "#e3e4e1",
-        "tonalRamp": [
-          "#0b0b0a",
-          "#252523",
-          "#414240",
-          "#61625f",
-          "#828380",
-          "#a4a5a3",
-          "#c8c9c7",
-          "#eeefec"
-        ]
-      },
-      "chassi-2": {
-        "role": "neutral",
-        "displayName": "Lateral do Chassi",
-        "canonical": "#d6d8d4",
-        "tonalRamp": [
-          "#0a0c09",
-          "#242623",
-          "#41433f",
-          "#60625e",
-          "#81837f",
-          "#a4a6a2",
-          "#c8cac6",
-          "#edefeb"
-        ]
-      },
-      "modulo": {
-        "role": "neutral",
-        "displayName": "Placa",
-        "canonical": "#f1f2ef",
-        "tonalRamp": [
-          "#0b0b0a",
-          "#252523",
-          "#414240",
-          "#61625f",
-          "#828380",
-          "#a4a5a3",
-          "#c8c9c7",
-          "#eeefec"
-        ]
-      },
-      "modulo-claro": {
-        "role": "neutral",
-        "displayName": "Tampo",
-        "canonical": "#fafaf8",
-        "tonalRamp": [
-          "#0b0b0a",
-          "#252524",
-          "#424240",
-          "#616160",
-          "#828281",
-          "#a5a5a3",
-          "#c9c9c7",
-          "#eeeeec"
-        ]
-      },
-      "poco": {
-        "role": "neutral",
-        "displayName": "Poço",
-        "canonical": "#d3d5d1",
-        "tonalRamp": [
-          "#0a0c09",
-          "#242623",
-          "#41433f",
-          "#60625e",
-          "#81837f",
-          "#a4a6a2",
-          "#c8cac6",
-          "#edefeb"
+          "#080c0a",
+          "#212724",
+          "#3e4440",
+          "#5d635f",
+          "#7e8480",
+          "#a0a7a3",
+          "#c4cbc7",
+          "#e9f1ec"
         ]
       },
       "tinta": {
         "role": "neutral",
-        "displayName": "Tinta de Serigrafia",
-        "canonical": "#161716",
+        "displayName": "Tinta",
+        "canonical": "#151b27",
         "tonalRamp": [
-          "#0a0b0a",
-          "#242524",
-          "#414241",
-          "#606260",
-          "#818381",
-          "#a4a5a4",
-          "#c8c9c8",
-          "#edefed"
+          "#060b16",
+          "#1f2532",
+          "#3b4250",
+          "#5a6170",
+          "#7b8392",
+          "#9da5b5",
+          "#c1c9da",
+          "#e7effe"
         ]
       },
       "tinta-2": {
         "role": "neutral",
-        "displayName": "Tinta Secundária",
-        "canonical": "#585b57",
+        "displayName": "Tinta Segunda",
+        "canonical": "#556070",
         "tonalRamp": [
-          "#0a0c09",
-          "#232622",
-          "#40433f",
-          "#5f625e",
-          "#80837f",
-          "#a3a6a2",
-          "#c7cac6",
-          "#ecf0eb"
+          "#040b17",
+          "#1c2633",
+          "#384352",
+          "#576272",
+          "#788394",
+          "#9aa6b8",
+          "#becadd",
+          "#e5efff"
         ]
       },
-      "risco": {
+      "tinta-3": {
         "role": "neutral",
-        "displayName": "Risco",
-        "canonical": "#c3c6c1",
+        "displayName": "Tinta de Ornamento",
+        "canonical": "#9aa3ad",
         "tonalRamp": [
-          "#0a0c09",
-          "#242622",
-          "#40433f",
-          "#60625e",
-          "#81837f",
-          "#a3a6a1",
-          "#c7cac5",
-          "#ecf0ea"
+          "#060c12",
+          "#1f262e",
+          "#3b434b",
+          "#5a626b",
+          "#7b838d",
+          "#9da6b0",
+          "#c1cad5",
+          "#e6f0fa"
         ]
       },
-      "risco-forte": {
+      "noite": {
         "role": "neutral",
-        "displayName": "Risco Forte",
-        "canonical": "#9da09b",
+        "displayName": "Noite",
+        "canonical": "#141a27",
         "tonalRamp": [
-          "#0a0c09",
-          "#242622",
-          "#40433f",
-          "#5f625e",
-          "#80837f",
-          "#a3a6a1",
-          "#c7cac5",
-          "#ecf0ea"
+          "#060b17",
+          "#1f2533",
+          "#3b4251",
+          "#5a6171",
+          "#7a8293",
+          "#9da5b7",
+          "#c1c9dc",
+          "#e7efff"
         ]
       },
-      "moldura": {
+      "noite-tinta": {
         "role": "neutral",
-        "displayName": "Moldura",
-        "canonical": "#2a2c2b",
+        "displayName": "Tinta da Noite",
+        "canonical": "#e4e8ee",
         "tonalRamp": [
-          "#0a0c0b",
-          "#242625",
-          "#404241",
-          "#5f6261",
-          "#808382",
-          "#a3a6a4",
-          "#c7cac8",
-          "#ecefee"
-        ]
-      },
-      "borda-visor": {
-        "role": "neutral",
-        "displayName": "Borda do Visor",
-        "canonical": "transparent",
-        "tonalRamp": []
-      },
-      "visor": {
-        "role": "neutral",
-        "displayName": "Vidro Preto",
-        "canonical": "#070908",
-        "tonalRamp": [
-          "#090c0b",
-          "#232624",
-          "#404341",
-          "#5f6260",
-          "#808382",
-          "#a2a6a4",
-          "#c6cac8",
-          "#ecefee"
-        ]
-      },
-      "visor-traco": {
-        "role": "neutral",
-        "displayName": "Traço do Visor",
-        "canonical": "#e6efe9",
-        "tonalRamp": [
-          "#070d09",
-          "#202723",
-          "#3d443f",
-          "#5c635e",
-          "#7d857f",
-          "#9fa7a2",
-          "#c3ccc6",
-          "#e8f1eb"
-        ]
-      },
-      "visor-fraco": {
-        "role": "neutral",
-        "displayName": "Legenda do Visor",
-        "canonical": "#7d8a83",
-        "tonalRamp": [
-          "#050e09",
-          "#1d2822",
-          "#3a453f",
-          "#58655e",
-          "#79867f",
-          "#9ba9a2",
-          "#bfcdc6",
-          "#e4f3eb"
-        ]
-      },
-      "visor-apagado": {
-        "role": "neutral",
-        "displayName": "Segmento Fantasma",
-        "canonical": "#17211c",
-        "tonalRamp": [
-          "#050d09",
-          "#1e2823",
-          "#3a453f",
-          "#59645e",
-          "#7a867f",
-          "#9ca9a2",
-          "#c0cdc6",
-          "#e5f2eb"
-        ]
-      },
-      "tecla-escuro": {
-        "role": "secondary",
-        "displayName": "Tecla Grafite (tema escuro)",
-        "canonical": "#353937",
-        "tonalRamp": [
-          "#090c0a",
-          "#222624",
-          "#3f4341",
-          "#5e6260",
-          "#7f8481",
-          "#a1a6a4",
-          "#c5cac8",
-          "#ebf0ed"
-        ]
-      },
-      "tecla-borda-escuro": {
-        "role": "secondary",
-        "displayName": "Borda da Tecla (tema escuro)",
-        "canonical": "#444946",
-        "tonalRamp": [
-          "#080c0a",
-          "#222624",
-          "#3e4340",
-          "#5d6360",
-          "#7e8481",
-          "#a1a7a3",
-          "#c5cbc7",
-          "#eaf0ec"
-        ]
-      },
-      "tecla-lado-escuro": {
-        "role": "secondary",
-        "displayName": "Lado da Tecla (tema escuro)",
-        "canonical": "#080908",
-        "tonalRamp": [
-          "#0a0b0a",
-          "#242524",
-          "#414241",
-          "#606260",
-          "#818381",
-          "#a4a5a4",
-          "#c8cac8",
-          "#edefed"
-        ]
-      },
-      "tecla-tinta-escuro": {
-        "role": "secondary",
-        "displayName": "Tinta da Tecla (tema escuro)",
-        "canonical": "#ecedea",
-        "tonalRamp": [
-          "#0b0b0a",
-          "#252523",
-          "#414240",
-          "#61625f",
-          "#828380",
-          "#a4a5a3",
-          "#c8c9c7",
-          "#eeefec"
-        ]
-      },
-      "led-apagado-escuro": {
-        "role": "tertiary",
-        "displayName": "LED Apagado (tema escuro)",
-        "canonical": "#3a3e3b",
-        "tonalRamp": [
-          "#090c0a",
-          "#222623",
-          "#3f4340",
-          "#5e625f",
-          "#7f8480",
-          "#a2a6a3",
-          "#c6cbc7",
-          "#ebf0ec"
-        ]
-      },
-      "verde-escuro": {
-        "role": "tertiary",
-        "displayName": "Texto de Estado Verde (tema escuro)",
-        "canonical": "#3ddc7a",
-        "tonalRamp": [
-          "#000f04",
-          "#012e13",
-          "#035025",
-          "#15743c",
-          "#1c9b51",
-          "#0ec564",
-          "#51eb88",
-          "#c8fed4"
-        ]
-      },
-      "ambar-escuro": {
-        "role": "tertiary",
-        "displayName": "Texto de Estado Âmbar (tema escuro)",
-        "canonical": "#ffb347",
-        "tonalRamp": [
-          "#130900",
-          "#352002",
-          "#5b3a06",
-          "#855606",
-          "#b17306",
-          "#dd9319",
-          "#fdbb64",
-          "#ffebd4"
-        ]
-      },
-      "vermelho-escuro": {
-        "role": "tertiary",
-        "displayName": "Texto de Estado Vermelho (tema escuro)",
-        "canonical": "#ff6a5c",
-        "tonalRamp": [
-          "#1f0000",
-          "#4c0303",
-          "#7f090a",
-          "#b21c19",
-          "#db483e",
-          "#fe7466",
-          "#feb3a9",
-          "#ffe9e6"
+          "#090b0f",
+          "#22252a",
+          "#3f4247",
+          "#5e6167",
+          "#7f8388",
+          "#a1a5ab",
+          "#c5c9cf",
+          "#ebeff5"
         ]
       },
       "azul-escuro": {
-        "role": "tertiary",
-        "displayName": "Texto de Estado Azul (tema escuro)",
-        "canonical": "#6aa4ff",
+        "role": "primary",
+        "displayName": "Azul Egípcio (tema escuro)",
+        "canonical": "#a3b5f3",
         "tonalRamp": [
-          "#000923",
-          "#002155",
-          "#003c8e",
-          "#275eb3",
-          "#4981d9",
-          "#6fa5fa",
-          "#accbfb",
-          "#e6effe"
+          "#040130",
+          "#171f50",
+          "#313d72",
+          "#4f5d95",
+          "#6f7fb9",
+          "#90a2df",
+          "#b7c7fd",
+          "#e9eefe"
+        ]
+      },
+      "azul-forte-escuro": {
+        "role": "primary",
+        "displayName": "Azul Fundo (tema escuro)",
+        "canonical": "#bfcdf7",
+        "tonalRamp": [
+          "#040724",
+          "#1a2242",
+          "#364062",
+          "#546084",
+          "#7481a7",
+          "#96a4cc",
+          "#bac8f2",
+          "#e8eefe"
+        ]
+      },
+      "azul-claro-escuro": {
+        "role": "primary",
+        "displayName": "Véu Azul (tema escuro)",
+        "canonical": "#1b2441",
+        "tonalRamp": [
+          "#040822",
+          "#1a2340",
+          "#364160",
+          "#546081",
+          "#7581a4",
+          "#97a4c9",
+          "#bac8ee",
+          "#e8eeff"
+        ]
+      },
+      "azul-tinta-escuro": {
+        "role": "primary",
+        "displayName": "Tinta sobre o Azul (tema escuro)",
+        "canonical": "#0b0f1a",
+        "tonalRamp": [
+          "#070b15",
+          "#202531",
+          "#3d424f",
+          "#5b616f",
+          "#7c8291",
+          "#9fa5b5",
+          "#c2c9d9",
+          "#e8eefe"
         ]
       },
       "foco-escuro": {
-        "role": "neutral",
+        "role": "primary",
         "displayName": "Foco (tema escuro)",
-        "canonical": "#6aa4ff",
+        "canonical": "#a3b5f3",
         "tonalRamp": [
-          "#000923",
-          "#002155",
-          "#003c8e",
-          "#275eb3",
-          "#4981d9",
-          "#6fa5fa",
-          "#accbfb",
-          "#e6effe"
+          "#040130",
+          "#171f50",
+          "#313d72",
+          "#4f5d95",
+          "#6f7fb9",
+          "#90a2df",
+          "#b7c7fd",
+          "#e9eefe"
         ]
       },
-      "chassi-escuro": {
+      "malaquita-escuro": {
+        "role": "tertiary",
+        "displayName": "Malaquita (tema escuro)",
+        "canonical": "#57b98a",
+        "tonalRamp": [
+          "#000f07",
+          "#022d1b",
+          "#074f33",
+          "#00744b",
+          "#31976a",
+          "#5abb8c",
+          "#7fe1b0",
+          "#c4fede"
+        ]
+      },
+      "malaquita-tinta-escuro": {
+        "role": "tertiary",
+        "displayName": "Tinta de Malaquita (tema escuro)",
+        "canonical": "#7fd0a8",
+        "tonalRamp": [
+          "#000f07",
+          "#022d1c",
+          "#064f34",
+          "#1a724f",
+          "#43956f",
+          "#68b892",
+          "#8cdeb5",
+          "#c4fedf"
+        ]
+      },
+      "ocre-escuro": {
+        "role": "tertiary",
+        "displayName": "Ocre (tema escuro)",
+        "canonical": "#d6a24a",
+        "tonalRamp": [
+          "#120900",
+          "#332101",
+          "#583c04",
+          "#80590b",
+          "#aa7813",
+          "#ce9b42",
+          "#f4bf68",
+          "#ffeccf"
+        ]
+      },
+      "ocre-claro-escuro": {
+        "role": "tertiary",
+        "displayName": "Ocre Claro (tema escuro)",
+        "canonical": "#231d10",
+        "tonalRamp": [
+          "#100a02",
+          "#2a2417",
+          "#484133",
+          "#686051",
+          "#898272",
+          "#aca494",
+          "#d0c8b7",
+          "#f6eedc"
+        ]
+      },
+      "ocre-tinta-escuro": {
+        "role": "tertiary",
+        "displayName": "Tinta de Ocre (tema escuro)",
+        "canonical": "#e8bf74",
+        "tonalRamp": [
+          "#120900",
+          "#322201",
+          "#563d02",
+          "#7d5a06",
+          "#a27b2e",
+          "#c69e53",
+          "#ecc377",
+          "#feeccc"
+        ]
+      },
+      "cinabrio-escuro": {
+        "role": "tertiary",
+        "displayName": "Cinábrio (tema escuro)",
+        "canonical": "#e8705c",
+        "tonalRamp": [
+          "#1f0000",
+          "#4b0500",
+          "#7d0e01",
+          "#a63424",
+          "#ce5846",
+          "#f67c68",
+          "#fdb5a7",
+          "#fee9e5"
+        ]
+      },
+      "cinabrio-claro-escuro": {
+        "role": "tertiary",
+        "displayName": "Cinábrio Claro (tema escuro)",
+        "canonical": "#2d1714",
+        "tonalRamp": [
+          "#180504",
+          "#351e1b",
+          "#543b37",
+          "#755a56",
+          "#977b76",
+          "#bb9d98",
+          "#e0c1bc",
+          "#fee9e5"
+        ]
+      },
+      "cinabrio-tinta-escuro": {
+        "role": "tertiary",
+        "displayName": "Tinta de Cinábrio (tema escuro)",
+        "canonical": "#f19a8a",
+        "tonalRamp": [
+          "#1e0100",
+          "#4b0400",
+          "#70261b",
+          "#95473a",
+          "#ba685a",
+          "#e08b7b",
+          "#fdb4a6",
+          "#ffe9e5"
+        ]
+      },
+      "pedra-escuro": {
+        "role": "tertiary",
+        "displayName": "Pedra (tema escuro)",
+        "canonical": "#343d52",
+        "tonalRamp": [
+          "#050a1b",
+          "#1c2438",
+          "#394257",
+          "#576178",
+          "#78829a",
+          "#9aa5be",
+          "#bec9e3",
+          "#e7efff"
+        ]
+      },
+      "chao-escuro": {
         "role": "neutral",
-        "displayName": "Grafite Fundido",
-        "canonical": "#151615",
+        "displayName": "Noite Azul (tema escuro)",
+        "canonical": "#0b0f1a",
         "tonalRamp": [
-          "#0a0b0a",
-          "#242524",
-          "#414241",
-          "#606260",
-          "#818381",
-          "#a4a5a4",
-          "#c8c9c8",
-          "#edefed"
+          "#070b15",
+          "#202531",
+          "#3d424f",
+          "#5b616f",
+          "#7c8291",
+          "#9fa5b5",
+          "#c2c9d9",
+          "#e8eefe"
         ]
       },
-      "chassi-2-escuro": {
+      "casca-escuro": {
         "role": "neutral",
-        "displayName": "Lateral do Chassi (tema escuro)",
-        "canonical": "#0f100f",
+        "displayName": "Casca (tema escuro)",
+        "canonical": "#0e1320",
         "tonalRamp": [
-          "#0a0b0a",
-          "#242524",
-          "#414241",
-          "#606260",
-          "#818381",
-          "#a4a5a4",
-          "#c8c9c8",
-          "#edefed"
+          "#060b17",
+          "#1f2533",
+          "#3b4251",
+          "#5a6172",
+          "#7b8294",
+          "#9da5b7",
+          "#c1c9dc",
+          "#e8eefe"
         ]
       },
-      "modulo-escuro": {
+      "placa-escuro": {
         "role": "neutral",
         "displayName": "Placa (tema escuro)",
-        "canonical": "#1d1f1e",
+        "canonical": "#121827",
         "tonalRamp": [
-          "#0a0c0b",
-          "#242625",
-          "#404341",
-          "#5f6261",
-          "#808382",
-          "#a3a6a4",
-          "#c7cac8",
-          "#ecefee"
+          "#060a18",
+          "#1e2534",
+          "#3a4253",
+          "#596174",
+          "#7a8296",
+          "#9ca5b9",
+          "#c0c9de",
+          "#e7eeff"
         ]
       },
-      "modulo-claro-escuro": {
+      "placa-2-escuro": {
         "role": "neutral",
-        "displayName": "Tampo (tema escuro)",
-        "canonical": "#242625",
+        "displayName": "Placa Funda (tema escuro)",
+        "canonical": "#0e1320",
         "tonalRamp": [
-          "#0a0c0b",
-          "#242625",
-          "#404341",
-          "#5f6261",
-          "#808382",
-          "#a3a6a4",
-          "#c7cac8",
-          "#ecefee"
+          "#060b17",
+          "#1f2533",
+          "#3b4251",
+          "#5a6172",
+          "#7b8294",
+          "#9da5b7",
+          "#c1c9dc",
+          "#e8eefe"
         ]
       },
-      "poco-escuro": {
+      "veio-escuro": {
         "role": "neutral",
-        "displayName": "Poço (tema escuro)",
-        "canonical": "#0d0e0d",
+        "displayName": "Veio (tema escuro)",
+        "canonical": "#1f2738",
         "tonalRamp": [
-          "#0a0b0a",
-          "#242524",
-          "#414241",
-          "#606260",
-          "#818381",
-          "#a4a5a4",
-          "#c8c9c8",
-          "#edefed"
+          "#050a19",
+          "#1d2536",
+          "#394254",
+          "#586175",
+          "#788297",
+          "#9ba5bb",
+          "#bec9e0",
+          "#e7efff"
+        ]
+      },
+      "veio-forte-escuro": {
+        "role": "neutral",
+        "displayName": "Veio Forte (tema escuro)",
+        "canonical": "#374157",
+        "tonalRamp": [
+          "#040a1c",
+          "#1c2539",
+          "#384258",
+          "#566179",
+          "#77829b",
+          "#99a5bf",
+          "#bdc9e4",
+          "#e7effe"
         ]
       },
       "tinta-escuro": {
         "role": "neutral",
-        "displayName": "Tinta de Serigrafia (tema escuro)",
-        "canonical": "#ecedea",
+        "displayName": "Tinta (tema escuro)",
+        "canonical": "#e7e9ee",
         "tonalRamp": [
-          "#0b0b0a",
-          "#252523",
-          "#414240",
-          "#61625f",
-          "#828380",
-          "#a4a5a3",
-          "#c8c9c7",
-          "#eeefec"
+          "#0a0b0e",
+          "#242529",
+          "#404246",
+          "#5f6165",
+          "#808287",
+          "#a3a5aa",
+          "#c7c9ce",
+          "#eceef3"
         ]
       },
       "tinta-2-escuro": {
         "role": "neutral",
-        "displayName": "Tinta Secundária (tema escuro)",
-        "canonical": "#a3a6a1",
+        "displayName": "Tinta Segunda (tema escuro)",
+        "canonical": "#a3acba",
         "tonalRamp": [
-          "#0a0c09",
-          "#242622",
-          "#40433f",
-          "#5f625e",
-          "#80837f",
-          "#a3a6a1",
-          "#c7cac5",
-          "#ecf0ea"
+          "#060b15",
+          "#1e2530",
+          "#3b424e",
+          "#5a626e",
+          "#7a8390",
+          "#9da6b4",
+          "#c1cad8",
+          "#e6effe"
         ]
       },
-      "risco-escuro": {
+      "tinta-3-escuro": {
         "role": "neutral",
-        "displayName": "Risco (tema escuro)",
-        "canonical": "#2e312f",
+        "displayName": "Tinta de Ornamento (tema escuro)",
+        "canonical": "#4f5a72",
         "tonalRamp": [
-          "#090c0a",
-          "#232624",
-          "#404341",
-          "#5f6260",
-          "#808381",
-          "#a2a6a4",
-          "#c6cac8",
-          "#ecf0ed"
+          "#040a1c",
+          "#1b2439",
+          "#374258",
+          "#566179",
+          "#76829c",
+          "#99a5c0",
+          "#bcc9e5",
+          "#e7efff"
         ]
       },
-      "risco-forte-escuro": {
+      "noite-escuro": {
         "role": "neutral",
-        "displayName": "Risco Forte (tema escuro)",
-        "canonical": "#424643",
+        "displayName": "Noite (tema escuro)",
+        "canonical": "#06090f",
         "tonalRamp": [
-          "#090c0a",
-          "#222623",
-          "#3f4340",
-          "#5e625f",
-          "#7f8480",
-          "#a2a6a3",
-          "#c6cac7",
-          "#ebf0ec"
-        ]
-      },
-      "moldura-escuro": {
-        "role": "neutral",
-        "displayName": "Moldura (tema escuro)",
-        "canonical": "#090a09",
-        "tonalRamp": [
-          "#0a0b0a",
-          "#242524",
-          "#414241",
-          "#606260",
-          "#818381",
-          "#a4a5a4",
-          "#c8c9c8",
-          "#edefed"
-        ]
-      },
-      "borda-visor-escuro": {
-        "role": "neutral",
-        "displayName": "Borda do Visor (tema escuro)",
-        "canonical": "#343835",
-        "tonalRamp": [
-          "#090c0a",
-          "#222623",
-          "#3f4340",
-          "#5e625f",
-          "#7f8480",
-          "#a2a6a3",
-          "#c6cbc7",
-          "#ebf0ec"
-        ]
-      },
-      "tecla-clara": {
-        "role": "secondary",
-        "displayName": "Tecla Clara",
-        "canonical": "#f8f8f5",
-        "tonalRamp": [
-          "#0b0b0a",
-          "#252523",
-          "#414240",
-          "#61625f",
-          "#828380",
-          "#a4a5a3",
-          "#c8c9c7",
-          "#eeefec"
-        ]
-      },
-      "tecla-clara-borda": {
-        "role": "secondary",
-        "displayName": "Contorno da Tecla Clara",
-        "canonical": "#a4a7a1",
-        "tonalRamp": [
-          "#0b0b0a",
-          "#252523",
-          "#414240",
-          "#61625f",
-          "#828380",
-          "#a4a5a3",
-          "#c8c9c7",
-          "#eeefec"
-        ]
-      },
-      "tecla-clara-lado": {
-        "role": "secondary",
-        "displayName": "Lado da Tecla Clara",
-        "canonical": "#868983",
-        "tonalRamp": [
-          "#0b0b0a",
-          "#252523",
-          "#414240",
-          "#61625f",
-          "#828380",
-          "#a4a5a3",
-          "#c8c9c7",
-          "#eeefec"
-        ]
-      },
-      "tecla-clara-escuro": {
-        "role": "secondary",
-        "displayName": "Tecla Clara (tema escuro)",
-        "canonical": "#262927",
-        "tonalRamp": [
-          "#090c0a",
-          "#232624",
-          "#404341",
-          "#5f6260",
-          "#808381",
-          "#a2a6a4",
-          "#c6cac8",
-          "#ecf0ed"
-        ]
-      },
-      "tecla-clara-borda-escuro": {
-        "role": "secondary",
-        "displayName": "Contorno da Tecla Clara (tema escuro)",
-        "canonical": "#3b3f3c",
-        "tonalRamp": [
-          "#090c0a",
-          "#232624",
-          "#404341",
-          "#5f6260",
-          "#808381",
-          "#a2a6a4",
-          "#c6cac8",
-          "#ecf0ed"
-        ]
-      },
-      "tecla-clara-lado-escuro": {
-        "role": "secondary",
-        "displayName": "Lado da Tecla Clara (tema escuro)",
-        "canonical": "#0a0b0a",
-        "tonalRamp": [
-          "#090c0a",
-          "#232624",
-          "#404341",
-          "#5f6260",
-          "#808381",
-          "#a2a6a4",
-          "#c6cac8",
-          "#ecf0ed"
+          "#080b11",
+          "#21252c",
+          "#3e424a",
+          "#5d616a",
+          "#7d838b",
+          "#a0a5ae",
+          "#c4c9d3",
+          "#e9eff9"
         ]
       }
     },
     "typographyMeta": {
-      "marca": {
-        "displayName": "Marca",
-        "purpose": "O ATENA do cabeçalho, do trilho e da frente de entrada, sempre seguido da placa de modelo AT-1."
+      "inscricao": {
+        "displayName": "Inscrição",
+        "purpose": "O ΑΘΗΝΑ da marca, em letras gregas (1.1rem no topo, 1.3rem no trilho, 1.7rem na entrada); a única caixa-alta do painel, com o ΑΘΕ da moeda."
       },
-      "titulo": {
-        "displayName": "Título",
-        "purpose": "O texto da faixa de aprovações e o título das janelas; não há manchete maior."
+      "titulo-tela": {
+        "displayName": "Título da Tela",
+        "purpose": "O nome de cada tela, em cima da faixa de meandro; a maior letra do painel."
+      },
+      "numero": {
+        "displayName": "Número",
+        "purpose": "O número de leitura de um módulo (o gasto do mês, a próxima vez da agenda), com a unidade ao lado na letra lisa."
+      },
+      "numero-medalhao": {
+        "displayName": "Número do Medalhão",
+        "purpose": "O número no miolo de um medalhão, com a unidade a .42em na Tinta Segunda."
+      },
+      "titulo-modulo": {
+        "displayName": "Título de Módulo",
+        "purpose": "O título de cada módulo, depois da chave do meandro, e o título das janelas."
       },
       "corpo": {
         "displayName": "Corpo",
-        "purpose": "Texto corrido e valores das linhas."
+        "purpose": "Texto corrido e valores das linhas, na letra lisa (FLAR e VOLM em 0)."
       },
       "corpo-fraco": {
-        "displayName": "Corpo fraco",
-        "purpose": "Explicações, metadados de pedidos e estados vazios, em Tinta Secundária."
+        "displayName": "Corpo Fraco",
+        "purpose": "Explicações, metadados e estados vazios, na Tinta Segunda."
+      },
+      "detalhe": {
+        "displayName": "Detalhe",
+        "purpose": "A linha de baixo de cada item, com o estado escrito primeiro, em algarismos tabulares."
+      },
+      "rotulo": {
+        "displayName": "Rótulo",
+        "purpose": "Rótulos de linha e de campo na meia pedra, em caixa comum; a mesma letra faz o h3, o selo, a barra, os grupos do trilho e os nomes das zonas."
+      },
+      "tecla": {
+        "displayName": "Tecla",
+        "purpose": "O texto das teclas; .8rem nas discretas e .95rem nas grandes."
+      },
+      "trilho": {
+        "displayName": "Trilho",
+        "purpose": "Os nomes das telas no trilho do PC; 600 na tela ativa."
       },
       "campo": {
         "displayName": "Campo",
         "purpose": "O texto digitado em campos, selects e textareas."
       },
-      "tecla": {
-        "displayName": "Tecla",
-        "purpose": "O texto das teclas; .95rem nas teclas grandes de decisão."
-      },
-      "trilho": {
-        "displayName": "Trilho",
-        "purpose": "Os nomes das telas no trilho do PC."
-      },
-      "rotulo": {
-        "displayName": "Rótulo",
-        "purpose": "Títulos de módulo, rótulos de linha e h3, sempre em caixa alta espaçada."
-      },
-      "selo": {
-        "displayName": "Selo",
-        "purpose": "A legenda ao lado do LED de estado, em caixa alta."
-      },
-      "rotulo-pequeno": {
-        "displayName": "Rótulo pequeno",
-        "purpose": "O nome das telas na barra do celular e o título dos grupos do trilho, em caixa alta."
-      },
-      "codigo": {
-        "displayName": "Código",
-        "purpose": "O que o módulo mede, à direita do título, com algarismos tabulares."
-      },
-      "peca": {
-        "displayName": "Peça",
-        "purpose": "O código posicional do módulo (IN-01)."
-      },
-      "placa-modelo": {
-        "displayName": "Placa de modelo",
-        "purpose": "O AT-1 invertido ao lado da marca."
-      },
-      "mono-texto": {
-        "displayName": "Texto de máquina",
-        "purpose": "O texto de um pedido e o editor de stacks."
+      "contagem": {
+        "displayName": "Contagem",
+        "purpose": "O número de aprovações esperando, na pílula de ocre."
       },
       "mono-registro": {
         "displayName": "Registro",
-        "purpose": "Logs e saídas de comando no vidro preto."
+        "purpose": "Os logs, na monoespaçada do sistema, sobre a Noite."
+      },
+      "mono-texto": {
+        "displayName": "Texto de Máquina",
+        "purpose": "O editor de stacks."
+      },
+      "mono-linha": {
+        "displayName": "Linha de Registro",
+        "purpose": "As linhas da Atividade e o caminho dos arquivos."
       }
     },
     "shadows": [
       {
-        "name": "placa",
-        "value": "0 1px 0 rgb(255 255 255 / .7) inset, 0 1px 2px rgb(0 0 0 / .07), 0 6px 16px -6px rgb(0 0 0 / .12)",
-        "purpose": "Módulos e frente de entrada no tema claro (--sombra-modulo)."
+        "name": "marmore",
+        "value": "0 1px 1px rgb(21 27 39 / .03), 0 12px 32px -20px rgb(21 27 39 / .22)",
+        "purpose": "Os módulos, no tema claro (--sombra)."
       },
       {
-        "name": "placa-escuro",
-        "value": "0 1px 0 rgb(255 255 255 / .04) inset, 0 1px 2px rgb(0 0 0 / .5), 0 8px 20px -8px rgb(0 0 0 / .6)",
-        "purpose": "Módulos e frente de entrada no tema escuro (--sombra-modulo)."
+        "name": "marmore-escuro",
+        "value": "0 1px 1px rgb(0 0 0 / .3), 0 14px 36px -20px rgb(0 0 0 / .8)",
+        "purpose": "Os módulos, no tema escuro (--sombra)."
       },
       {
-        "name": "tecla",
-        "value": "0 2px 5px -1px rgb(0 0 0 / .18)",
-        "purpose": "Teclas e faixa no tema claro, junto com o lado de 3px (--sombra-tecla)."
+        "name": "alta",
+        "value": "0 30px 80px -24px rgb(10 14 26 / .45)",
+        "purpose": "Janelas, a folha \"Mais\" e a paleta (--sombra-alta), sobre o fundo rgb(10 14 26 / .42) com desfoque de 3px."
       },
       {
-        "name": "tecla-escuro",
-        "value": "0 2px 5px -1px rgb(0 0 0 / .6)",
-        "purpose": "Teclas e faixa no tema escuro (--sombra-tecla)."
-      },
-      {
-        "name": "tecla-apertada",
-        "value": "0 1px 2px rgb(0 0 0 / .2)",
-        "purpose": "Durante o toque, com a tecla 1px abaixo e o lado em 2px."
-      },
-      {
-        "name": "poco",
-        "value": "inset 0 1px 3px rgb(0 0 0 / .14)",
-        "purpose": "Campos, tecla ativa da barra e do trilho, item marcado da paleta."
-      },
-      {
-        "name": "visor-moldura",
-        "value": "0 0 0 1px var(--borda-visor), 0 1px 0 rgb(255 255 255 / .35), inset 0 1px 1px rgb(0 0 0 / .6)",
-        "purpose": "A moldura em volta do vidro do visor."
-      },
-      {
-        "name": "visor-vidro",
-        "value": "inset 0 0 0 1px rgb(255 255 255 / .035), inset 0 10px 28px rgb(0 0 0 / .7)",
-        "purpose": "A profundidade do vidro preto."
-      },
-      {
-        "name": "mostrador-numero",
-        "value": "0 0 0 4px var(--moldura), inset 0 6px 16px rgb(0 0 0 / .7)",
-        "purpose": "O visorzinho de um número dentro de um módulo."
+        "name": "tecla-principal",
+        "value": "0 1px 0 rgb(255 255 255 / .12) inset, 0 6px 16px -8px color-mix(in srgb, var(--azul) 70%, transparent)",
+        "purpose": "Só a tecla azul."
       },
       {
         "name": "aviso",
-        "value": "0 0 0 3px var(--moldura), 0 10px 24px -8px rgb(0 0 0 / .5)",
-        "purpose": "Avisos passageiros."
+        "value": "0 18px 40px -16px rgb(0 0 0 / .55)",
+        "purpose": "Os avisos na Noite."
       },
       {
-        "name": "janela",
-        "value": "0 20px 50px -12px rgb(0 0 0 / .45)",
-        "purpose": "Janelas, folha Mais e paleta; fundo rgb(10 11 10 / .5)."
+        "name": "disco-entrada",
+        "value": "drop-shadow(0 14px 28px rgb(21 27 39 / .12))",
+        "purpose": "O medalhão da coruja na entrada (como filter)."
       },
       {
-        "name": "brilho-led",
-        "value": "0 0 6px rgb(43 212 106 / .55)",
-        "purpose": "Brilho do LED aceso, na cor do LED a 55% (aqui o verde); só em LEDs."
+        "name": "anel-foco-campo",
+        "value": "0 0 0 4px color-mix(in srgb, var(--azul) 14%, transparent)",
+        "purpose": "O campo em foco, junto com a borda azul."
+      },
+      {
+        "name": "halo-cinabrio",
+        "value": "0 0 0 3px color-mix(in srgb, var(--cinabrio) 18%, transparent)",
+        "purpose": "Só o ponto de falha."
       }
     ],
     "motion": [
       {
-        "name": "tecla-afunda",
-        "value": "transform .08s ease-out, border-bottom-width .08s ease-out, box-shadow .08s ease-out",
-        "purpose": "A tecla desce 1px e o lado vai de 3px a 2px ao apertar."
+        "name": "suave",
+        "value": "cubic-bezier(.22, 1, .36, 1)",
+        "purpose": "O dia a dia (--suave): sai rápido e assenta devagar. Cores, bordas, o aperto da tecla, a troca de tela, a tinta dos anéis."
       },
       {
-        "name": "varredura-leds",
-        "value": "varrer .5s ease-out both; atraso calc(var(--i) * 70ms)",
-        "purpose": "Ao entrar, cada LED das zonas acende em amarelo e volta ao estado, um depois do outro, uma vez."
+        "name": "mola",
+        "value": "linear(0, 0.0273, 0.0955, 0.1875, 0.2909, 0.3965, 0.4982, 0.5921, 0.6759, 0.7488, 0.8104, 0.8615, 0.9028, 0.9355, 0.9607, 0.9796, 0.9933, 1.0029, 1.0091, 1.0129, 1.0147, 1.0152, 1.0147, 1.0136, 1.0122, 1.0107, 1.0091, 1.0075, 1.0061, 1.0048, 1.0038, 1.0028, 1.0021, 1.0014, 1.001, 1.0006, 1.0003, 1.0001, 0.9999, 0.9999, 1)",
+        "purpose": "Uma mola amortecida (--mola) que passa 1,5% do alvo e assenta; só no que se assenta no lugar."
       },
       {
-        "name": "faixa-pulsa",
-        "value": "chamar 1.2s ease-out 2",
-        "purpose": "Anel amarelo de 16px em volta da faixa quando chega aprovação nova."
+        "name": "traco",
+        "value": "cubic-bezier(.65, 0, .25, 1)",
+        "purpose": "O traço que se desenha (--traco): o meandro, os ícones, a coruja."
       },
       {
-        "name": "ventoinha-acelera",
-        "value": "girar .45s linear infinite, acelerar 1.4s ease-out 1",
-        "purpose": "No primeiro minuto depois de ligar o PC, a ventoinha da torre sobe de giro."
+        "name": "sair-tela",
+        "value": "sair-tela .16s cubic-bezier(.4, 0, 1, 1) both (::view-transition-old(tela))",
+        "purpose": "A tela velha se apaga, com desfoque de 3px e 4px para cima."
       },
       {
-        "name": "ponteiro-gira",
-        "value": "girar 1.4s cubic-bezier(.2, .7, .2, 1) 2",
-        "purpose": "O ponteiro do mostrador da agenda dá duas voltas quando um agendamento roda."
+        "name": "chegar-tela",
+        "value": "chegar-tela .46s var(--suave) both (::view-transition-new(tela)); .7s backwards no main ao entrar",
+        "purpose": "A tela nova chega do desfoque de 8px, subindo 14px."
       },
       {
-        "name": "carreteis",
-        "value": "girar var(--volta) linear infinite; --volta de 9s (CPU parada) a 0,7s (CPU cheia)",
-        "purpose": "Leitura viva da carga da CPU no visor do Início."
+        "name": "marcador",
+        "value": "transform .62s var(--mola), width .45s var(--suave), height .45s var(--suave)",
+        "purpose": "O marcador da tela ativa desliza até ela na barra e no trilho."
       },
       {
-        "name": "ventoinha-placa",
+        "name": "redesenho-icone",
+        "value": "tracar .6s var(--traco) both",
+        "purpose": "O ícone da tela que fica ativa se redesenha."
+      },
+      {
+        "name": "surgir",
+        "value": "surgir .35s ease-out backwards",
+        "purpose": "O conteúdo que chega aparece todo junto, só em opacidade; backwards para nada ficar no módulo e achatar a crepidoma."
+      },
+      {
+        "name": "pintar-anel",
+        "value": "pintar-anel 1.3s var(--suave) both; atraso calc(var(--i) * 40ms + .1s)",
+        "purpose": "O meandro do medalhão se pinta do zero até o valor; quando o valor muda, stroke-dashoffset 1s var(--suave)."
+      },
+      {
+        "name": "assentar",
+        "value": "assentar 1s var(--mola) backwards; atraso calc(var(--i) * 75ms + .1s)",
+        "purpose": "Os degraus da crepidoma sobem um a um, de baixo para cima, e assentam."
+      },
+      {
+        "name": "laje",
+        "value": "transform .75s var(--mola)",
+        "purpose": "O degrau aceso se adianta .5rem; o da zona com problema escorrega .9rem para o lado."
+      },
+      {
+        "name": "respirar-pilha",
+        "value": "respirar-pilha 12s ease-in-out infinite alternate",
+        "purpose": "A escada da crepidoma respira devagar (de 57° e -33° a 54° e -25°)."
+      },
+      {
+        "name": "pulsar",
+        "value": "pulsar 1.8s ease-in-out infinite",
+        "purpose": "O ponto do container com problema no piso do degrau."
+      },
+      {
+        "name": "girar-roseta",
         "value": "girar var(--volta) linear infinite; --volta = 800/rpm s, entre .4s e 4s",
-        "purpose": "Leitura viva do rpm da ventoinha no visor do Sistema."
+        "purpose": "A roseta do medalhão da ventoinha gira na velocidade dela."
+      },
+      {
+        "name": "sombra-relogio",
+        "value": "girar 2.2s cubic-bezier(.65, 0, .35, 1) 1",
+        "purpose": "A sombra do relógio de sol dá a volta quando um agendamento roda."
+      },
+      {
+        "name": "luz-faixa",
+        "value": "luz 1.6s var(--suave) .15s 1 both (::after); tracar 1s var(--traco) no ícone",
+        "purpose": "Quando chega aprovação, uma luz passa pela faixa e a coroa se redesenha, uma vez."
+      },
+      {
+        "name": "abrir-janela",
+        "value": "abrir-janela .5s var(--mola)",
+        "purpose": "Janelas chegam de 12px abaixo, a 97% e de um desfoque de 4px."
+      },
+      {
+        "name": "subir-folha",
+        "value": "subir-folha .55s var(--mola)",
+        "purpose": "A folha \"Mais\" sobe de baixo."
+      },
+      {
+        "name": "chegar-aviso",
+        "value": "chegar-aviso .55s var(--mola)",
+        "purpose": "Os avisos chegam de 14px abaixo e de um desfoque de 4px."
+      },
+      {
+        "name": "pingar",
+        "value": "pingar .6s var(--mola) both; atraso calc(var(--i) * 70ms + .25s)",
+        "purpose": "Ao chegar no painel, os pontos das zonas aparecem um a um."
+      },
+      {
+        "name": "respirar-icone",
+        "value": "respirar 1.1s ease-in-out infinite alternate",
+        "purpose": "Enquanto a tela lê do servidor, o ícone ativo respira de leve (a 45%)."
+      },
+      {
+        "name": "refazer-esqueleto",
+        "value": "refazer 2s var(--traco) infinite",
+        "purpose": "No esqueleto, a faixa de meandro se faz e se desfaz enquanto o dado chega."
+      },
+      {
+        "name": "coruja-desenhar",
+        "value": "tracar var(--duracao, .9s) var(--traco) var(--atraso) forwards; o tondo chega em .9s var(--suave) backwards",
+        "purpose": "A coruja se desenha traço a traço ao abrir a entrada (2.7s no todo); o meandro do medalhão se traça em 1.8s e fica aberto."
+      },
+      {
+        "name": "coruja-negar",
+        "value": "negar .9s both (vai em var(--suave) a -8°, volta na mola)",
+        "purpose": "Senha errada: a coruja inclina a cabeça e volta."
+      },
+      {
+        "name": "coruja-olhos",
+        "value": "transform .35s var(--suave); arregalar .7s var(--suave)",
+        "purpose": "Ela fecha os olhos enquanto você digita e abre bem na senha certa."
+      },
+      {
+        "name": "fechar-meandro",
+        "value": "stroke-dashoffset .9s var(--suave), stroke .6s var(--suave)",
+        "purpose": "Na senha certa, o meandro do medalhão da entrada se fecha em azul."
+      },
+      {
+        "name": "afastar-entrada",
+        "value": "afastar .5s var(--suave) forwards",
+        "purpose": "A entrada se desfaz (desfoque de 10px, 102%) e o painel chega."
       },
       {
         "name": "reducao",
-        "value": "@media (prefers-reduced-motion: reduce) { animation: none; transition: none }",
-        "purpose": "Com redução de movimento, nada se move."
-      },
-      {
-        "name": "ponto-lendo",
-        "value": "lendo .8s step-end infinite",
-        "purpose": "Enquanto a tela busca o dado novo, o ponto amarelo da tela ativa pisca, como o LED de leitura de um disco; com prefers-reduced-motion, só fica mais fraco."
+        "value": "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important } }",
+        "purpose": "Com redução de movimento, nada se move: também as View Transitions; os traços aparecem já desenhados e o ícone que lia fica a 60%."
       }
     ],
     "breakpoints": [
@@ -1094,208 +1002,254 @@
       {
         "name": "toque-grosso",
         "value": "pointer: coarse"
+      },
+      {
+        "name": "modulo-crepidoma-empilha",
+        "value": "@container modulo (max-width: 19rem)"
+      },
+      {
+        "name": "modulo-codigo-desce",
+        "value": "@container modulo (max-width: 26rem)"
+      },
+      {
+        "name": "modulo-teclas-descem",
+        "value": "@container modulo (max-width: 30rem)"
+      },
+      {
+        "name": "modulo-registro-lado-a-lado",
+        "value": "@container modulo (min-width: 46rem)"
       }
     ]
   },
   "components": [
     {
-      "name": "Tecla grafite",
+      "name": "Tecla",
       "kind": "button",
       "refersTo": "tecla",
-      "description": "A tecla padrão de toda ação que não é a principal, grafite nos dois temas, com lado de 3px que afunda ao toque.",
-      "html": "<button type=\"button\" class=\"ds-tecla\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 4v7\"/><path d=\"M7.4 7.2a6.8 6.8 0 1 0 9.2 0\"/></svg>Reiniciar</button>",
-      "css": ".ds-tecla{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.5rem;padding:.5rem .95rem;cursor:pointer;font:600 .84rem/1.1 var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:106%;letter-spacing:.01em;color:var(--tecla-tinta, #f1f2ef);background:var(--tecla, #2c2f2d);border:1px solid var(--tecla-borda, #1f2120);border-bottom:3px solid var(--tecla-lado, #0b0c0b);border-radius:var(--raio-tecla, 5px);box-shadow:var(--sombra-tecla, 0 2px 5px -1px rgb(0 0 0 / .18));transition:transform .08s ease-out,border-bottom-width .08s ease-out,box-shadow .08s ease-out}.ds-tecla:hover{filter:brightness(1.03)}.ds-tecla:active{transform:translateY(1px);border-bottom-width:2px;box-shadow:0 1px 2px rgb(0 0 0 / .2)}.ds-tecla:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px}.ds-tecla .ds-picto{width:1.15rem;height:1.15rem;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}@media (prefers-reduced-motion: reduce){.ds-tecla{animation:none;transition:none}}"
+      "description": "A tecla de toda ação que não é a principal: Placa com um fio de Veio Forte, sem relevo; encolhe a 97% ao apertar.",
+      "html": "<button type=\"button\" class=\"ds-tecla\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect class=\"ds-tinta\" x=\"5.3\" y=\"6.3\" width=\"13.4\" height=\"7.8\" rx=\"0.6\"/><rect x=\"3.4\" y=\"4.4\" width=\"17.2\" height=\"11.6\" rx=\"1.6\"/><path d=\"M12 16v3.4M8.6 19.6h6.8\"/></svg>Desligar</button>",
+      "css": ".ds-tecla{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.5rem;padding:.5rem 1rem;cursor:pointer;font:550 .86rem/1.1 var(--letra, \"Commissioner\", system-ui, sans-serif);letter-spacing:.01em;color:var(--tinta, #151b27);background:var(--placa, #fcfcfb);border:1px solid var(--veio-forte, #b8bfbb);border-radius:var(--raio, 6px);transition:background-color .2s var(--suave, cubic-bezier(.22, 1, .36, 1)),color .2s var(--suave, cubic-bezier(.22, 1, .36, 1)),border-color .2s var(--suave, cubic-bezier(.22, 1, .36, 1)),transform .16s var(--suave, cubic-bezier(.22, 1, .36, 1)),box-shadow .2s var(--suave, cubic-bezier(.22, 1, .36, 1))}.ds-tecla:hover{background:var(--placa-2, #f4f5f4);border-color:var(--tinta-2, #556070)}.ds-tecla:active:not(:disabled){transform:scale(.97)}.ds-tecla:focus-visible{outline:2px solid var(--foco, #24418f);outline-offset:2px}.ds-tecla:disabled{opacity:.45;cursor:not-allowed}.ds-picto{width:1.15rem;height:1.15rem;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;overflow:visible}.ds-picto .ds-fino{stroke-width:1.05}.ds-picto .ds-cheio{fill:currentColor;stroke:none}.ds-picto .ds-tinta{fill:currentColor;fill-opacity:0;stroke:none;transition:fill-opacity .4s var(--suave, cubic-bezier(.22, 1, .36, 1))}@media (prefers-reduced-motion: reduce){.ds-tecla{animation:none !important;transition:none !important}}"
     },
     {
       "name": "Tecla principal",
       "kind": "button",
       "refersTo": "tecla-principal",
-      "description": "A única tecla amarela do módulo ou da janela: a ação principal (Aprovar, Ligar, Entrar, Agendar).",
-      "html": "<button type=\"button\" class=\"ds-tecla-principal\">Aprovar</button>",
-      "css": ".ds-tecla-principal{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.5rem;padding:.5rem .95rem;cursor:pointer;font:600 .84rem/1.1 var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:106%;letter-spacing:.01em;color:var(--amarelo-tinta, #141414);background:var(--amarelo, #ffc400);border:1px solid var(--amarelo-borda, #c99a00);border-bottom:3px solid var(--amarelo-lado, #9a7600);border-radius:var(--raio-tecla, 5px);box-shadow:var(--sombra-tecla, 0 2px 5px -1px rgb(0 0 0 / .18));transition:transform .08s ease-out,border-bottom-width .08s ease-out,box-shadow .08s ease-out}.ds-tecla-principal:hover{filter:brightness(1.03)}.ds-tecla-principal:active{transform:translateY(1px);border-bottom-width:2px;box-shadow:0 1px 2px rgb(0 0 0 / .2)}.ds-tecla-principal:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px}.ds-tecla-principal .ds-picto{width:1.15rem;height:1.15rem;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}@media (prefers-reduced-motion: reduce){.ds-tecla-principal{animation:none;transition:none}}"
+      "description": "A única ação azul de um módulo ou janela (Entrar, Ligar, Aprovar), com o brilho da tecla principal.",
+      "html": "<button type=\"button\" class=\"ds-tecla ds-principal\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect class=\"ds-tinta\" x=\"5.3\" y=\"6.3\" width=\"13.4\" height=\"7.8\" rx=\"0.6\"/><rect x=\"3.4\" y=\"4.4\" width=\"17.2\" height=\"11.6\" rx=\"1.6\"/><path d=\"M12 16v3.4M8.6 19.6h6.8\"/></svg>Ligar</button>",
+      "css": ".ds-tecla{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.5rem;padding:.5rem 1rem;cursor:pointer;font:550 .86rem/1.1 var(--letra, \"Commissioner\", system-ui, sans-serif);letter-spacing:.01em;color:var(--tinta, #151b27);background:var(--placa, #fcfcfb);border:1px solid var(--veio-forte, #b8bfbb);border-radius:var(--raio, 6px);transition:background-color .2s var(--suave, cubic-bezier(.22, 1, .36, 1)),color .2s var(--suave, cubic-bezier(.22, 1, .36, 1)),border-color .2s var(--suave, cubic-bezier(.22, 1, .36, 1)),transform .16s var(--suave, cubic-bezier(.22, 1, .36, 1)),box-shadow .2s var(--suave, cubic-bezier(.22, 1, .36, 1))}.ds-tecla:hover{background:var(--placa-2, #f4f5f4);border-color:var(--tinta-2, #556070)}.ds-tecla:active:not(:disabled){transform:scale(.97)}.ds-tecla:focus-visible{outline:2px solid var(--foco, #24418f);outline-offset:2px}.ds-tecla:disabled{opacity:.45;cursor:not-allowed}.ds-tecla.ds-principal{color:var(--azul-tinta, #f7f8fc);background:var(--azul, #24418f);border-color:var(--azul, #24418f);box-shadow:0 1px 0 rgb(255 255 255 / .12) inset, 0 6px 16px -8px color-mix(in srgb, var(--azul, #24418f) 70%, transparent)}.ds-tecla.ds-principal:hover{background:var(--azul-forte, #1a3275);border-color:var(--azul-forte, #1a3275)}.ds-picto{width:1.15rem;height:1.15rem;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;overflow:visible}.ds-picto .ds-fino{stroke-width:1.05}.ds-picto .ds-cheio{fill:currentColor;stroke:none}.ds-picto .ds-tinta{fill:currentColor;fill-opacity:0;stroke:none;transition:fill-opacity .4s var(--suave, cubic-bezier(.22, 1, .36, 1))}@media (prefers-reduced-motion: reduce){.ds-tecla{animation:none !important;transition:none !important}}"
     },
     {
-      "name": "Tecla de perigo",
+      "name": "Tecla discreta e de perigo",
       "kind": "button",
-      "refersTo": "tecla-perigo",
-      "description": "Tecla grafite discreta para apagar ou desfazer: texto coral e um ponto de LED vermelho; a ação pede confirmação antes de rodar.",
-      "html": "<button type=\"button\" class=\"ds-tecla-perigo\">Apagar</button>",
-      "css": ".ds-tecla-perigo{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.2rem;padding:.4rem .72rem;cursor:pointer;font:600 .78rem/1.1 var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:106%;letter-spacing:.01em;color:var(--tecla-perigo, #ff8a7f);background:var(--tecla, #2c2f2d);border:1px solid var(--tecla-borda, #1f2120);border-bottom:3px solid var(--tecla-lado, #0b0c0b);border-radius:var(--raio-tecla, 5px);box-shadow:var(--sombra-tecla, 0 2px 5px -1px rgb(0 0 0 / .18));transition:transform .08s ease-out,border-bottom-width .08s ease-out,box-shadow .08s ease-out}.ds-tecla-perigo:hover{filter:brightness(1.03)}.ds-tecla-perigo:active{transform:translateY(1px);border-bottom-width:2px;box-shadow:0 1px 2px rgb(0 0 0 / .2)}.ds-tecla-perigo:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px}.ds-tecla-perigo .ds-picto{width:1.15rem;height:1.15rem;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}@media (prefers-reduced-motion: reduce){.ds-tecla-perigo{animation:none;transition:none}}.ds-tecla-perigo::before{content:\"\";width:.42rem;height:.42rem;border-radius:50%;background:var(--led-vermelho, #ff4433)}"
+      "refersTo": "tecla-discreta",
+      "description": "As teclas de cada linha e as secundárias, sem fundo e menores; a de perigo escreve em Tinta de Cinábrio e pede confirmação.",
+      "html": "<div class=\"ds-botoes\"><button type=\"button\" class=\"ds-tecla ds-discreta\">Logs</button><button type=\"button\" class=\"ds-tecla ds-discreta\">Reiniciar</button><button type=\"button\" class=\"ds-tecla ds-discreta ds-perigo\">Apagar</button></div>",
+      "css": ".ds-tecla{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.5rem;padding:.5rem 1rem;cursor:pointer;font:550 .86rem/1.1 var(--letra, \"Commissioner\", system-ui, sans-serif);letter-spacing:.01em;color:var(--tinta, #151b27);background:var(--placa, #fcfcfb);border:1px solid var(--veio-forte, #b8bfbb);border-radius:var(--raio, 6px);transition:background-color .2s var(--suave, cubic-bezier(.22, 1, .36, 1)),color .2s var(--suave, cubic-bezier(.22, 1, .36, 1)),border-color .2s var(--suave, cubic-bezier(.22, 1, .36, 1)),transform .16s var(--suave, cubic-bezier(.22, 1, .36, 1)),box-shadow .2s var(--suave, cubic-bezier(.22, 1, .36, 1))}.ds-tecla:hover{background:var(--placa-2, #f4f5f4);border-color:var(--tinta-2, #556070)}.ds-tecla:active:not(:disabled){transform:scale(.97)}.ds-tecla:focus-visible{outline:2px solid var(--foco, #24418f);outline-offset:2px}.ds-tecla:disabled{opacity:.45;cursor:not-allowed}.ds-botoes{display:flex;gap:.4rem;flex-wrap:wrap}.ds-tecla.ds-discreta{min-height:2.2rem;padding:.4rem .78rem;font-size:.8rem;background:transparent}.ds-tecla.ds-discreta:hover{background:var(--placa-2, #f4f5f4)}.ds-tecla.ds-perigo{color:var(--cinabrio-tinta, #a22d1b);border-color:color-mix(in srgb, var(--cinabrio, #c23a26) 45%, var(--veio, #e1e4e2))}.ds-tecla.ds-perigo:hover{background:var(--cinabrio-claro, #f9e8e4);border-color:var(--cinabrio, #c23a26)}.ds-picto{width:1.15rem;height:1.15rem;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;overflow:visible}.ds-picto .ds-fino{stroke-width:1.05}.ds-picto .ds-cheio{fill:currentColor;stroke:none}.ds-picto .ds-tinta{fill:currentColor;fill-opacity:0;stroke:none;transition:fill-opacity .4s var(--suave, cubic-bezier(.22, 1, .36, 1))}@media (prefers-reduced-motion: reduce){.ds-tecla{animation:none !important;transition:none !important}}"
     },
     {
       "name": "Campo",
       "kind": "input",
       "refersTo": "campo",
-      "description": "Campo de texto como um poço no painel: fundo afundado, contorno em risco forte e o rótulo em versalete (.62rem) em cima. Nos formulários, os campos ficam numa grade de no mínimo 9rem por coluna.",
-      "html": "<label class=\"ds-campo-rotulo\"><span>Nova pendência</span><input class=\"ds-campo\" type=\"text\" placeholder=\"O que falta fazer\"></label>",
-      "css": ".ds-campo-rotulo{display:grid;gap:.45rem;max-width:22rem}.ds-campo-rotulo span{font:650 .69rem var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:112%;text-transform:uppercase;letter-spacing:.14em;color:var(--tinta-2, #585b57)}.ds-campo{font:400 .95rem var(--fonte, \"Archivo\", system-ui, sans-serif);color:var(--tinta, #161716);background:var(--poco, #d3d5d1);border:1px solid var(--risco-forte, #9da09b);border-radius:4px;padding:.5rem .65rem;min-height:2.5rem;box-shadow:inset 0 1px 3px rgb(0 0 0 / .14)}.ds-campo::placeholder{color:var(--tinta-2, #585b57)}.ds-campo:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px;border-radius:4px}"
+      "description": "O rótulo em cima do controle; em foco, a borda fica azul, o fundo sobe para a Placa e aparece o anel de 4px do azul a 14%.",
+      "html": "<label class=\"ds-campo\"><span class=\"ds-rotulo\">Nome do agendamento</span><input class=\"ds-entrada\" type=\"text\" placeholder=\"backup da noite\"></label>",
+      "css": ".ds-campo{display:grid;gap:.4rem;max-width:20rem}.ds-rotulo{font:550 .8rem/1.2 var(--letra, \"Commissioner\", system-ui, sans-serif);font-variation-settings:var(--pedra-letra, \"FLAR\" 100, \"VOLM\" 50);letter-spacing:.005em;color:var(--tinta-2, #556070)}.ds-entrada{font:400 .95rem var(--letra, \"Commissioner\", system-ui, sans-serif);color:var(--tinta, #151b27);background:var(--placa-2, #f4f5f4);border:1px solid var(--veio-forte, #b8bfbb);border-radius:var(--raio, 6px);padding:.5rem .7rem;min-height:2.5rem;transition:border-color .2s var(--suave, cubic-bezier(.22, 1, .36, 1)),box-shadow .25s var(--suave, cubic-bezier(.22, 1, .36, 1)),background-color .2s var(--suave, cubic-bezier(.22, 1, .36, 1))}.ds-entrada::placeholder{color:var(--tinta-2, #556070);opacity:.8}.ds-entrada:hover{border-color:var(--tinta-2, #556070)}.ds-entrada:focus,.ds-entrada:focus-visible{outline:none;border-color:var(--azul, #24418f);background:var(--placa, #fcfcfb);box-shadow:0 0 0 4px color-mix(in srgb, var(--azul, #24418f) 14%, transparent)}@media (prefers-reduced-motion: reduce){.ds-entrada{animation:none !important;transition:none !important}}"
+    },
+    {
+      "name": "Travas (dias da semana)",
+      "kind": "toggle",
+      "refersTo": "trava",
+      "description": "Teclas que ficam ligadas, com um ponto no alto; ligadas, ficam no Véu Azul e o ponto azul cresce numa mola.",
+      "html": "<div class=\"ds-travas\"><label class=\"ds-trava\"><input type=\"checkbox\" checked><span>seg</span></label><label class=\"ds-trava\"><input type=\"checkbox\"><span>ter</span></label><label class=\"ds-trava\"><input type=\"checkbox\" checked><span>qua</span></label><label class=\"ds-trava\"><input type=\"checkbox\"><span>qui</span></label></div>",
+      "css": ".ds-travas{display:flex;flex-wrap:wrap;gap:.35rem}.ds-trava{position:relative;display:inline-grid}.ds-trava input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.ds-trava span{display:grid;justify-items:center;gap:.3rem;min-width:2.8rem;padding:.45rem .45rem .5rem;font:550 .78rem/1.2 var(--letra, \"Commissioner\", system-ui, sans-serif);font-variation-settings:var(--pedra-letra, \"FLAR\" 100, \"VOLM\" 50);text-transform:capitalize;color:var(--tinta-2, #556070);background:transparent;border:1px solid var(--veio-forte, #b8bfbb);border-radius:var(--raio, 6px);transition:background-color .25s var(--suave, cubic-bezier(.22, 1, .36, 1)),color .25s var(--suave, cubic-bezier(.22, 1, .36, 1)),border-color .25s var(--suave, cubic-bezier(.22, 1, .36, 1))}.ds-trava span::before{content:\"\";width:.38rem;height:.38rem;border-radius:50%;background:var(--pedra, #c6ccc9);transition:background-color .25s var(--suave, cubic-bezier(.22, 1, .36, 1)),transform .4s var(--mola, linear(0, 0.0273, 0.0955, 0.1875, 0.2909, 0.3965, 0.4982, 0.5921, 0.6759, 0.7488, 0.8104, 0.8615, 0.9028, 0.9355, 0.9607, 0.9796, 0.9933, 1.0029, 1.0091, 1.0129, 1.0147, 1.0152, 1.0147, 1.0136, 1.0122, 1.0107, 1.0091, 1.0075, 1.0061, 1.0048, 1.0038, 1.0028, 1.0021, 1.0014, 1.001, 1.0006, 1.0003, 1.0001, 0.9999, 0.9999, 1))}.ds-trava:hover span{border-color:var(--tinta-2, #556070)}.ds-trava input:checked + span{color:var(--azul, #24418f);background:var(--azul-claro, #e9edf7);border-color:color-mix(in srgb, var(--azul, #24418f) 45%, var(--veio, #e1e4e2))}.ds-trava input:checked + span::before{background:var(--azul, #24418f);transform:scale(1.15)}.ds-trava input:focus-visible + span{outline:2px solid var(--foco, #24418f);outline-offset:2px}@media (prefers-reduced-motion: reduce){.ds-trava span,.ds-trava span::before{animation:none !important;transition:none !important}}"
     },
     {
       "name": "Barra de navegação (celular)",
       "kind": "nav",
       "refersTo": "barra-item",
-      "description": "As cinco teclas de baixo no celular; a tela ativa afunda e acende o ponto amarelo, e a contagem de aprovações vai no Mais.",
-      "html": "<nav class=\"ds-barra\" aria-label=\"Telas principais\"><a href=\"#inicio\" class=\"ds-barra-item ds-ativa\" aria-current=\"page\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 11.2 12 4.5l8 6.7V19a1 1 0 0 1-1 1h-4.5v-5.5h-5V20H5a1 1 0 0 1-1-1z\"/></svg><span>Início</span></a><a href=\"#pc\" class=\"ds-barra-item\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M12 4v7\"/><path d=\"M7.4 7.2a6.8 6.8 0 1 0 9.2 0\"/></svg><span>PC</span></a><a href=\"#agenda\" class=\"ds-barra-item\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"8\"/><path d=\"M12 7.5V12l3 2\"/></svg><span>Agenda</span></a><a href=\"#servicos\" class=\"ds-barra-item\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"4\" y=\"4.5\" width=\"16\" height=\"4.2\" rx=\"1\"/><rect x=\"4\" y=\"9.9\" width=\"16\" height=\"4.2\" rx=\"1\"/><rect x=\"4\" y=\"15.3\" width=\"16\" height=\"4.2\" rx=\"1\"/><circle cx=\"7\" cy=\"6.6\" r=\"0.6\" class=\"ds-cheio\"/><circle cx=\"7\" cy=\"12\" r=\"0.6\" class=\"ds-cheio\"/><circle cx=\"7\" cy=\"17.4\" r=\"0.6\" class=\"ds-cheio\"/></svg><span>Serviços</span></a><a href=\"#mais\" class=\"ds-barra-item\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"6.5\" cy=\"12\" r=\"1.4\" class=\"ds-cheio\"/><circle cx=\"12\" cy=\"12\" r=\"1.4\" class=\"ds-cheio\"/><circle cx=\"17.5\" cy=\"12\" r=\"1.4\" class=\"ds-cheio\"/></svg><span>Mais</span><b class=\"ds-contagem\">3</b></a></nav>",
-      "css": ".ds-barra{display:grid;grid-template-columns:repeat(5,1fr);gap:.35rem;padding:.45rem .55rem;background:var(--chassi-2, #d6d8d4);border-top:1px solid var(--risco-forte, #9da09b);max-width:30rem}.ds-barra-item{position:relative;display:grid;justify-items:center;align-content:center;gap:.2rem;min-height:3.3rem;padding:.3rem .2rem;border-radius:var(--raio-tecla, 5px);color:var(--tinta-2, #585b57);text-decoration:none;border:1px solid transparent;font:650 .6rem var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:112%;text-transform:uppercase;letter-spacing:.12em}.ds-barra-item:hover{color:var(--tinta, #161716)}.ds-barra-item:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px}.ds-barra-item .ds-picto{width:1.4rem;height:1.4rem;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}.ds-picto .ds-cheio{fill:currentColor;stroke:none}.ds-barra-item.ds-ativa{color:var(--tinta, #161716);background:var(--poco, #d3d5d1);border-color:var(--risco, #c3c6c1);box-shadow:inset 0 1px 3px rgb(0 0 0 / .14)}.ds-barra-item.ds-ativa::before{content:\"\";position:absolute;top:.32rem;right:.45rem;width:.38rem;height:.38rem;border-radius:50%;background:var(--amarelo, #ffc400);box-shadow:0 0 5px rgb(255 196 0 / .7)}.ds-contagem{position:absolute;top:.2rem;left:calc(50% + .45rem);min-width:1.1rem;height:1.1rem;padding:0 .3rem;border-radius:.6rem;background:var(--amarelo, #ffc400);color:var(--amarelo-tinta, #141414);border:1px solid var(--amarelo-borda, #c99a00);font:700 .62rem/1rem var(--mono, \"Martian Mono\", ui-monospace, monospace);text-align:center;letter-spacing:0}"
+      "description": "Os cinco itens de baixo no celular; a tela ativa fica azul, a tinta do ícone acende e o marcador em Véu Azul (que no painel é um elemento só, deslizando numa mola) fica atrás dela.",
+      "html": "<nav class=\"ds-barra\" aria-label=\"Telas principais\"><a href=\"#inicio\" class=\"ds-barra-item ds-ativa\" aria-current=\"page\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path class=\"ds-tinta\" d=\"M6.7 8.2 12 5.1l5.3 3.1z\"/><path d=\"M3.4 9.2 12 3.9l8.6 5.3z\"/><path d=\"M4.2 10.8h15.6\"/><path d=\"M6.6 12.6v5.3M10.2 12.6v5.3M13.8 12.6v5.3M17.4 12.6v5.3\"/><path d=\"M4.6 19.4h14.8M3.4 21h17.2\"/></svg><span>Início</span></a><a href=\"#pc\" class=\"ds-barra-item\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect class=\"ds-tinta\" x=\"5.3\" y=\"6.3\" width=\"13.4\" height=\"7.8\" rx=\"0.6\"/><rect x=\"3.4\" y=\"4.4\" width=\"17.2\" height=\"11.6\" rx=\"1.6\"/><path d=\"M12 16v3.4M8.6 19.6h6.8\"/></svg><span>PC</span></a><a href=\"#agenda\" class=\"ds-barra-item\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path class=\"ds-tinta\" d=\"M12 12V4.4a7.6 7.6 0 0 1 6.6 3.8z\"/><circle cx=\"12\" cy=\"12\" r=\"8.4\"/><path class=\"ds-fino\" d=\"M12 4.6v1.2M19.4 12h-1.2M12 19.4v-1.2M4.6 12h1.2\"/><path d=\"M12 7.6V12l3.1 1.9\"/></svg><span>Agenda</span></a><a href=\"#servicos\" class=\"ds-barra-item\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path class=\"ds-tinta\" d=\"M7 10.4h10v2.3H7z\"/><path d=\"M9.4 3.6h5.2M10.3 3.6v2.8M13.7 3.6v2.8\"/><path d=\"M10.3 6.4C6.8 7.6 6 11.6 7.5 15c1.2 2.7 3.1 4.4 4.5 5.4 1.4-1 3.3-2.7 4.5-5.4 1.5-3.4.7-7.4-2.8-8.6\"/><path d=\"M10.3 4.8C7.8 4.6 6.6 6.8 7.9 9M13.7 4.8c2.5-.2 3.7 2 2.4 4.2M12 20.4v1.2\"/><path class=\"ds-fino\" d=\"M7 10.4h10M7 12.7h10\"/></svg><span>Serviços</span></a><a href=\"#mais\" class=\"ds-barra-item\"><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle class=\"ds-cheio\" cx=\"6.5\" cy=\"12\" r=\"1.35\"/><circle class=\"ds-cheio\" cx=\"12\" cy=\"12\" r=\"1.35\"/><circle class=\"ds-cheio\" cx=\"17.5\" cy=\"12\" r=\"1.35\"/></svg><span>Mais</span><span class=\"ds-contagem\">1</span></a></nav>",
+      "css": ".ds-barra{display:grid;grid-template-columns:repeat(5, 1fr);gap:.2rem;max-width:26rem;padding:.35rem .45rem;isolation:isolate;background:color-mix(in srgb, var(--placa, #fcfcfb) 94%, transparent);border-top:1px solid var(--veio, #e1e4e2)}.ds-barra-item{position:relative;display:grid;justify-items:center;align-content:center;gap:.3rem;min-height:3.5rem;padding:.3rem .1rem;color:var(--tinta-2, #556070);text-decoration:none;font:550 .72rem/1.2 var(--letra, \"Commissioner\", system-ui, sans-serif);font-variation-settings:var(--pedra-letra, \"FLAR\" 100, \"VOLM\" 50);letter-spacing:.005em;transition:color .25s var(--suave, cubic-bezier(.22, 1, .36, 1))}.ds-barra-item::before{content:\"\";position:absolute;inset:4px 3px;z-index:-1;border-radius:12px;background:var(--azul-claro, #e9edf7);opacity:0;transform:scale(.9);transition:opacity .3s var(--suave, cubic-bezier(.22, 1, .36, 1)),transform .62s var(--mola, linear(0, 0.0273, 0.0955, 0.1875, 0.2909, 0.3965, 0.4982, 0.5921, 0.6759, 0.7488, 0.8104, 0.8615, 0.9028, 0.9355, 0.9607, 0.9796, 0.9933, 1.0029, 1.0091, 1.0129, 1.0147, 1.0152, 1.0147, 1.0136, 1.0122, 1.0107, 1.0091, 1.0075, 1.0061, 1.0048, 1.0038, 1.0028, 1.0021, 1.0014, 1.001, 1.0006, 1.0003, 1.0001, 0.9999, 0.9999, 1))}.ds-barra-item:hover{color:var(--tinta, #151b27)}.ds-barra-item:focus-visible{outline:2px solid var(--foco, #24418f);outline-offset:2px}.ds-barra-item.ds-ativa{color:var(--azul, #24418f)}.ds-barra-item.ds-ativa::before{opacity:1;transform:none}.ds-barra-item.ds-ativa .ds-picto .ds-tinta{fill-opacity:.16}.ds-barra-item .ds-picto{width:1.4rem;height:1.4rem}.ds-contagem{position:absolute;top:.15rem;left:calc(50% + .5rem);min-width:1.15rem;height:1.15rem;padding:0 .3rem;border-radius:.6rem;background:var(--ocre, #b07c1e);color:#1b1307;font:700 .64rem/1.15rem var(--letra, \"Commissioner\", system-ui, sans-serif);text-align:center;font-variant-numeric:tabular-nums}.ds-picto{width:1.15rem;height:1.15rem;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;overflow:visible}.ds-picto .ds-fino{stroke-width:1.05}.ds-picto .ds-cheio{fill:currentColor;stroke:none}.ds-picto .ds-tinta{fill:currentColor;fill-opacity:0;stroke:none;transition:fill-opacity .4s var(--suave, cubic-bezier(.22, 1, .36, 1))}@media (prefers-reduced-motion: reduce){.ds-barra-item,.ds-barra-item::before,.ds-picto .ds-tinta{animation:none !important;transition:none !important}}"
     },
     {
-      "name": "Selo de estado",
+      "name": "Ponto e selo de estado",
       "kind": "chip",
       "refersTo": "selo",
-      "description": "O LED com a legenda do lado: o único jeito de dizer estado (verde ok, vermelho falha, azul em andamento).",
-      "html": "<span class=\"ds-selo ds-ok\">no ar</span><span class=\"ds-selo ds-ruim\">parado</span><span class=\"ds-selo ds-neutro\">rodando</span>",
-      "css": ".ds-selo{display:inline-flex;align-items:center;gap:.4rem;margin-right:.9rem;color:var(--tinta-2, #585b57);white-space:nowrap;font:650 .62rem var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:112%;text-transform:uppercase;letter-spacing:.14em}.ds-selo::before{content:\"\";width:.46rem;height:.46rem;border-radius:50%;background:var(--led-apagado, #aeb1ac);box-shadow:inset 0 1px 1px rgb(0 0 0 / .35)}.ds-selo.ds-ok{color:var(--verde, #12773a)}.ds-selo.ds-ok::before{background:var(--led-verde, #2bd46a);box-shadow:0 0 6px rgb(43 212 106 / .55)}.ds-selo.ds-ruim{color:var(--vermelho, #c42b1e)}.ds-selo.ds-ruim::before{background:var(--led-vermelho, #ff4433);box-shadow:0 0 6px rgb(255 68 51 / .55)}.ds-selo.ds-neutro{color:var(--azul, #2559c4)}.ds-selo.ds-neutro::before{background:var(--led-azul, #3e8bff);box-shadow:0 0 6px rgb(62 139 255 / .5)}"
+      "description": "O estado sempre com o texto do lado: o ponto de pigmento (malaquita, ocre, cinábrio com halo, azul, pedra) e a legenda na tinta dele.",
+      "html": "<p class=\"ds-selos\"><span class=\"ds-selo ds-ok\">no ar</span><span class=\"ds-selo ds-morno\">perto do limite</span><span class=\"ds-selo ds-ruim\">falhou</span><span class=\"ds-selo ds-neutro\">este</span><span class=\"ds-selo\">desligado</span></p>",
+      "css": ".ds-selos{display:flex;flex-wrap:wrap;gap:.6rem 1rem;margin:0}.ds-selo{display:inline-flex;align-items:center;gap:.4rem;color:var(--tinta-2, #556070);font:550 .76rem/1.3 var(--letra, \"Commissioner\", system-ui, sans-serif);font-variation-settings:var(--pedra-letra, \"FLAR\" 100, \"VOLM\" 50);white-space:nowrap}.ds-selo::before{content:\"\";width:.45rem;height:.45rem;border-radius:50%;background:var(--pedra, #c6ccc9)}.ds-selo.ds-ok{color:var(--malaquita-tinta, #1c6946)}.ds-selo.ds-ok::before{background:var(--malaquita, #2b8059)}.ds-selo.ds-morno{color:var(--ocre-tinta, #6e4706)}.ds-selo.ds-morno::before{background:var(--ocre, #b07c1e)}.ds-selo.ds-ruim{color:var(--cinabrio-tinta, #a22d1b)}.ds-selo.ds-ruim::before{background:var(--cinabrio, #c23a26);box-shadow:0 0 0 3px color-mix(in srgb, var(--cinabrio, #c23a26) 18%, transparent)}.ds-selo.ds-neutro{color:var(--azul, #24418f)}.ds-selo.ds-neutro::before{background:var(--azul, #24418f)}"
     },
     {
-      "name": "Módulo com etiqueta",
+      "name": "Módulo com a chave do meandro",
       "kind": "card",
       "refersTo": "modulo",
-      "description": "A placa aparafusada de toda tela: régua na borda, parafusos nos cantos, título em versalete, código do que mede e a peça posicional.",
-      "html": "<section class=\"ds-modulo\"><header class=\"ds-modulo-topo\"><h2>Servidor</h2><span class=\"ds-etiqueta\"><span class=\"ds-codigo\">12 núcleos · 16 GB</span><span class=\"ds-peca\">IN-01</span></span></header><div class=\"ds-linha\"><span class=\"ds-rotulo\">Disco /</span><span>180 GB livres de 480 GB</span></div><div class=\"ds-medidor\"><span></span></div></section>",
-      "css": ".ds-modulo{position:relative;max-width:26rem;padding:1rem 1.05rem 1.05rem;color:var(--tinta, #161716);font:400 1rem/1.45 var(--fonte, \"Archivo\", system-ui, sans-serif);border:1px solid var(--risco, #c3c6c1);border-radius:var(--raio, 7px);box-shadow:var(--sombra-modulo, 0 1px 0 rgb(255 255 255 / .7) inset, 0 1px 2px rgb(0 0 0 / .07), 0 6px 16px -6px rgb(0 0 0 / .12));background:var(--parafuso, url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.7' fill='%23d0d2ce' stroke='%23919490' stroke-width='.8'/%3E%3Cpath d='M3.1 6.9 6.9 3.1' stroke='%23727571' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E\")) left 5px top 5px / 9px 9px no-repeat, var(--parafuso, url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.7' fill='%23d0d2ce' stroke='%23919490' stroke-width='.8'/%3E%3Cpath d='M3.1 6.9 6.9 3.1' stroke='%23727571' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E\")) right 5px top 5px / 9px 9px no-repeat, var(--parafuso, url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.7' fill='%23d0d2ce' stroke='%23919490' stroke-width='.8'/%3E%3Cpath d='M3.1 6.9 6.9 3.1' stroke='%23727571' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E\")) left 5px bottom 5px / 9px 9px no-repeat, var(--parafuso, url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Ccircle cx='5' cy='5' r='3.7' fill='%23d0d2ce' stroke='%23919490' stroke-width='.8'/%3E%3Cpath d='M3.1 6.9 6.9 3.1' stroke='%23727571' stroke-width='1' stroke-linecap='round'/%3E%3C/svg%3E\")) right 5px bottom 5px / 9px 9px no-repeat, var(--modulo, #f1f2ef)}.ds-modulo::before{content:\"\";position:absolute;left:1.4rem;right:1.4rem;top:0;height:7px;pointer-events:none;opacity:.8;background:repeating-linear-gradient(90deg, var(--risco-forte, #9da09b) 0 1px, transparent 1px 40px) top left / 100% 7px no-repeat, repeating-linear-gradient(90deg, var(--risco-forte, #9da09b) 0 1px, transparent 1px 8px) top left / 100% 4px no-repeat}.ds-modulo-topo{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem;margin:0 .35rem .8rem;padding-bottom:.55rem;border-bottom:1px solid var(--risco, #c3c6c1)}.ds-modulo-topo h2,.ds-rotulo{margin:0;font-weight:650;font-size:.69rem;font-stretch:112%;text-transform:uppercase;letter-spacing:.14em}.ds-rotulo{color:var(--tinta-2, #585b57)}.ds-etiqueta{display:inline-flex;align-items:baseline;gap:.6rem;margin-left:auto;flex:none;max-width:60%}.ds-codigo{font:500 .64rem var(--mono, \"Martian Mono\", ui-monospace, monospace);color:var(--tinta-2, #585b57);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}.ds-peca{flex:none;font:700 .62rem var(--mono, \"Martian Mono\", ui-monospace, monospace);color:var(--tinta, #161716);letter-spacing:.04em;padding:.05rem .3rem;border:1px solid var(--risco-forte, #9da09b);border-radius:2px}.ds-linha{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem 1rem;margin:.4rem 0;flex-wrap:wrap;font-variant-numeric:tabular-nums}.ds-medidor{height:.55rem;margin:.15rem 0 .65rem;border-radius:2px;overflow:hidden;background:repeating-linear-gradient(90deg, var(--led-apagado, #aeb1ac) 0 5px, transparent 5px 7px)}.ds-medidor span{display:block;width:62%;height:100%;background:repeating-linear-gradient(90deg, var(--led-verde, #2bd46a) 0 5px, transparent 5px 7px)}"
+      "description": "A placa de mármore de toda tela: a chave do meandro em azul, o título na letra de pedra, a régua de Veio e o que o módulo mede; o medidor é o meandro pintado até a fração.",
+      "html": "<section class=\"ds-modulo\"><header class=\"ds-modulo-topo\"><svg class=\"ds-chave\" viewBox=\"-1 -1 18 14\" aria-hidden=\"true\"><path d=\"M0 12 V0 H12 V8 H8 V4 H4 V12 H16\"/></svg><h2>Servidor</h2><span class=\"ds-regua\"></span><span class=\"ds-codigo\">12 núcleos · 15,0 GB</span></header><div class=\"ds-linha\"><span class=\"ds-rotulo\">Disco /</span><span>178,2 GB livres de 247,2 GB</span></div><div class=\"ds-medidor\" role=\"img\" aria-label=\"28%\"><span class=\"ds-medida\"></span></div><div class=\"ds-linha\"><span class=\"ds-rotulo\">Disco /srv</span><span>21,0 GB livres de 235,2 GB</span></div><div class=\"ds-medidor ds-alto\" role=\"img\" aria-label=\"91%\"><span class=\"ds-medida\"></span></div></section>",
+      "css": ".ds-modulo{max-width:26rem;padding:1.15rem 1.25rem 1.25rem;color:var(--tinta, #151b27);font:400 1rem/1.5 var(--letra, \"Commissioner\", system-ui, sans-serif);font-variation-settings:\"FLAR\" 0, \"VOLM\" 0;background:var(--placa, #fcfcfb);border:1px solid var(--veio, #e1e4e2);border-radius:var(--raio, 6px);box-shadow:var(--sombra, 0 1px 1px rgb(21 27 39 / .03), 0 12px 32px -20px rgb(21 27 39 / .22))}.ds-modulo-topo{display:flex;align-items:center;gap:.6rem;margin:0 0 1rem;min-width:0}.ds-chave{flex:none;width:.95rem;height:.72rem;color:var(--azul, #24418f);overflow:visible}.ds-chave path{fill:none;stroke:currentColor;stroke-width:1.5}.ds-modulo-topo h2{margin:0;flex:0 1 auto;min-width:0;font:500 1.02rem/1.2 var(--letra, \"Commissioner\", system-ui, sans-serif);font-variation-settings:var(--titulo-letra, \"FLAR\" 100, \"VOLM\" 100);color:var(--tinta, #151b27)}.ds-regua{flex:1 1 1.5rem;min-width:1.5rem;height:1px;background:var(--veio, #e1e4e2)}.ds-codigo{flex:none;max-width:55%;font-size:.8rem;color:var(--tinta-2, #556070);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ds-linha{display:flex;justify-content:space-between;align-items:baseline;gap:.5rem 1rem;margin:.45rem 0;flex-wrap:wrap;font-variant-numeric:tabular-nums}.ds-rotulo{flex:none;font:550 .8rem/1.2 var(--letra, \"Commissioner\", system-ui, sans-serif);font-variation-settings:var(--pedra-letra, \"FLAR\" 100, \"VOLM\" 50);color:var(--tinta-2, #556070)}.ds-medidor{height:.5rem;margin:.25rem 0 .8rem;background:var(--veio-forte, #b8bfbb);-webkit-mask:var(--meandro, url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 14'%3E%3Cpath d='M0 13H1V1H13V9H9V5H5V13H16' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E\")) repeat-x left center / auto 100%;mask:var(--meandro, url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 14'%3E%3Cpath d='M0 13H1V1H13V9H9V5H5V13H16' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E\")) repeat-x left center / auto 100%}.ds-medida{display:block;width:28%;height:100%;background:var(--azul, #24418f);transition:width .8s var(--suave, cubic-bezier(.22, 1, .36, 1))}.ds-medidor.ds-alto .ds-medida{width:91%;background:var(--cinabrio, #c23a26)}@media (prefers-reduced-motion: reduce){.ds-medida{animation:none !important;transition:none !important}}"
     },
     {
-      "name": "Visor",
+      "name": "Medalhão",
       "kind": "custom",
-      "refersTo": "visor-vidro",
-      "description": "A assinatura do aparelho: vidro preto em moldura, com desenhos vivos e números em 7 segmentos com os segmentos apagados visíveis.",
-      "html": "<div class=\"ds-visor\"><div class=\"ds-visor-vidro\"><div class=\"ds-celula\"><span class=\"ds-celula-rotulo\">temp cpu</span><div class=\"ds-celula-corpo\"><svg viewBox=\"0 0 24 60\" class=\"ds-desenho\" aria-hidden=\"true\"><rect x=\"8\" y=\"3\" width=\"8\" height=\"44\" rx=\"4\" class=\"ds-traco\"/><circle cx=\"12\" cy=\"51\" r=\"6.5\" class=\"ds-traco\"/><circle cx=\"12\" cy=\"51\" r=\"4\" class=\"ds-nivel\"/><rect x=\"10.2\" y=\"24.13\" width=\"3.6\" height=\"23.87\" class=\"ds-nivel\"/><line x1=\"18\" y1=\"11\" x2=\"21\" y2=\"11\" class=\"ds-traco ds-fino\"/><line x1=\"18\" y1=\"21\" x2=\"21\" y2=\"21\" class=\"ds-traco ds-fino\"/><line x1=\"18\" y1=\"31\" x2=\"21\" y2=\"31\" class=\"ds-traco ds-fino\"/><line x1=\"18\" y1=\"41\" x2=\"21\" y2=\"41\" class=\"ds-traco ds-fino\"/></svg><div class=\"ds-celula-leitura\"><svg viewBox=\"-1 0 44.5 22\" class=\"ds-sete\" role=\"img\" aria-label=\"48,6\"><g transform=\"skewX(-7) translate(2 0)\"><g transform=\"translate(0 0)\"><polygon points=\"2.05,1.5 3.25,0.3 8.75,0.3 9.95,1.5 8.75,2.7 3.25,2.7\" class=\"ds-apagado\"/><polygon points=\"2.05,11 3.25,9.8 8.75,9.8 9.95,11 8.75,12.2 3.25,12.2\" class=\"ds-aceso\"/><polygon points=\"2.05,20.5 3.25,19.3 8.75,19.3 9.95,20.5 8.75,21.7 3.25,21.7\" class=\"ds-apagado\"/><polygon points=\"1.5,2.05 2.7,3.25 2.7,9.25 1.5,10.45 0.3,9.25 0.3,3.25\" class=\"ds-aceso\"/><polygon points=\"10.5,2.05 11.7,3.25 11.7,9.25 10.5,10.45 9.3,9.25 9.3,3.25\" class=\"ds-aceso\"/><polygon points=\"1.5,11.55 2.7,12.75 2.7,18.75 1.5,19.95 0.3,18.75 0.3,12.75\" class=\"ds-apagado\"/><polygon points=\"10.5,11.55 11.7,12.75 11.7,18.75 10.5,19.95 9.3,18.75 9.3,12.75\" class=\"ds-aceso\"/><circle cx=\"12.8\" cy=\"20.5\" r=\"1.05\" class=\"ds-apagado\"/></g><g transform=\"translate(14.5 0)\"><polygon points=\"2.05,1.5 3.25,0.3 8.75,0.3 9.95,1.5 8.75,2.7 3.25,2.7\" class=\"ds-aceso\"/><polygon points=\"2.05,11 3.25,9.8 8.75,9.8 9.95,11 8.75,12.2 3.25,12.2\" class=\"ds-aceso\"/><polygon points=\"2.05,20.5 3.25,19.3 8.75,19.3 9.95,20.5 8.75,21.7 3.25,21.7\" class=\"ds-aceso\"/><polygon points=\"1.5,2.05 2.7,3.25 2.7,9.25 1.5,10.45 0.3,9.25 0.3,3.25\" class=\"ds-aceso\"/><polygon points=\"10.5,2.05 11.7,3.25 11.7,9.25 10.5,10.45 9.3,9.25 9.3,3.25\" class=\"ds-aceso\"/><polygon points=\"1.5,11.55 2.7,12.75 2.7,18.75 1.5,19.95 0.3,18.75 0.3,12.75\" class=\"ds-aceso\"/><polygon points=\"10.5,11.55 11.7,12.75 11.7,18.75 10.5,19.95 9.3,18.75 9.3,12.75\" class=\"ds-aceso\"/><circle cx=\"12.8\" cy=\"20.5\" r=\"1.05\" class=\"ds-aceso\"/></g><g transform=\"translate(29 0)\"><polygon points=\"2.05,1.5 3.25,0.3 8.75,0.3 9.95,1.5 8.75,2.7 3.25,2.7\" class=\"ds-aceso\"/><polygon points=\"2.05,11 3.25,9.8 8.75,9.8 9.95,11 8.75,12.2 3.25,12.2\" class=\"ds-aceso\"/><polygon points=\"2.05,20.5 3.25,19.3 8.75,19.3 9.95,20.5 8.75,21.7 3.25,21.7\" class=\"ds-aceso\"/><polygon points=\"1.5,2.05 2.7,3.25 2.7,9.25 1.5,10.45 0.3,9.25 0.3,3.25\" class=\"ds-aceso\"/><polygon points=\"10.5,2.05 11.7,3.25 11.7,9.25 10.5,10.45 9.3,9.25 9.3,3.25\" class=\"ds-apagado\"/><polygon points=\"1.5,11.55 2.7,12.75 2.7,18.75 1.5,19.95 0.3,18.75 0.3,12.75\" class=\"ds-aceso\"/><polygon points=\"10.5,11.55 11.7,12.75 11.7,18.75 10.5,19.95 9.3,18.75 9.3,12.75\" class=\"ds-aceso\"/><circle cx=\"12.8\" cy=\"20.5\" r=\"1.05\" class=\"ds-apagado\"/></g></g></svg><span class=\"ds-celula-unidade\">°C</span></div></div></div><div class=\"ds-celula\"><span class=\"ds-celula-rotulo\">ram</span><div class=\"ds-celula-corpo\"><svg viewBox=\"0 0 34 54\" class=\"ds-desenho\" aria-hidden=\"true\"><rect x=\"3\" y=\"3\" width=\"28\" height=\"48\" rx=\"2\" class=\"ds-traco\"/><rect x=\"6\" y=\"22.7\" width=\"22\" height=\"25.3\" class=\"ds-nivel\"/><line x1=\"6\" y1=\"8\" x2=\"28\" y2=\"8\" class=\"ds-risca\"/><line x1=\"6\" y1=\"12\" x2=\"28\" y2=\"12\" class=\"ds-risca\"/><line x1=\"6\" y1=\"16\" x2=\"28\" y2=\"16\" class=\"ds-risca\"/><line x1=\"6\" y1=\"20\" x2=\"28\" y2=\"20\" class=\"ds-risca\"/><line x1=\"6\" y1=\"24\" x2=\"28\" y2=\"24\" class=\"ds-risca\"/><line x1=\"6\" y1=\"28\" x2=\"28\" y2=\"28\" class=\"ds-risca\"/><line x1=\"6\" y1=\"32\" x2=\"28\" y2=\"32\" class=\"ds-risca\"/><line x1=\"6\" y1=\"36\" x2=\"28\" y2=\"36\" class=\"ds-risca\"/><line x1=\"6\" y1=\"40\" x2=\"28\" y2=\"40\" class=\"ds-risca\"/><line x1=\"6\" y1=\"44\" x2=\"28\" y2=\"44\" class=\"ds-risca\"/><line x1=\"6\" y1=\"48\" x2=\"28\" y2=\"48\" class=\"ds-risca\"/></svg><div class=\"ds-celula-leitura\"><svg viewBox=\"-1 0 30 22\" class=\"ds-sete\" role=\"img\" aria-label=\"8,8\"><g transform=\"skewX(-7) translate(2 0)\"><g transform=\"translate(0 0)\"><polygon points=\"2.05,1.5 3.25,0.3 8.75,0.3 9.95,1.5 8.75,2.7 3.25,2.7\" class=\"ds-aceso\"/><polygon points=\"2.05,11 3.25,9.8 8.75,9.8 9.95,11 8.75,12.2 3.25,12.2\" class=\"ds-aceso\"/><polygon points=\"2.05,20.5 3.25,19.3 8.75,19.3 9.95,20.5 8.75,21.7 3.25,21.7\" class=\"ds-aceso\"/><polygon points=\"1.5,2.05 2.7,3.25 2.7,9.25 1.5,10.45 0.3,9.25 0.3,3.25\" class=\"ds-aceso\"/><polygon points=\"10.5,2.05 11.7,3.25 11.7,9.25 10.5,10.45 9.3,9.25 9.3,3.25\" class=\"ds-aceso\"/><polygon points=\"1.5,11.55 2.7,12.75 2.7,18.75 1.5,19.95 0.3,18.75 0.3,12.75\" class=\"ds-aceso\"/><polygon points=\"10.5,11.55 11.7,12.75 11.7,18.75 10.5,19.95 9.3,18.75 9.3,12.75\" class=\"ds-aceso\"/><circle cx=\"12.8\" cy=\"20.5\" r=\"1.05\" class=\"ds-aceso\"/></g><g transform=\"translate(14.5 0)\"><polygon points=\"2.05,1.5 3.25,0.3 8.75,0.3 9.95,1.5 8.75,2.7 3.25,2.7\" class=\"ds-aceso\"/><polygon points=\"2.05,11 3.25,9.8 8.75,9.8 9.95,11 8.75,12.2 3.25,12.2\" class=\"ds-aceso\"/><polygon points=\"2.05,20.5 3.25,19.3 8.75,19.3 9.95,20.5 8.75,21.7 3.25,21.7\" class=\"ds-aceso\"/><polygon points=\"1.5,2.05 2.7,3.25 2.7,9.25 1.5,10.45 0.3,9.25 0.3,3.25\" class=\"ds-aceso\"/><polygon points=\"10.5,2.05 11.7,3.25 11.7,9.25 10.5,10.45 9.3,9.25 9.3,3.25\" class=\"ds-aceso\"/><polygon points=\"1.5,11.55 2.7,12.75 2.7,18.75 1.5,19.95 0.3,18.75 0.3,12.75\" class=\"ds-aceso\"/><polygon points=\"10.5,11.55 11.7,12.75 11.7,18.75 10.5,19.95 9.3,18.75 9.3,12.75\" class=\"ds-aceso\"/><circle cx=\"12.8\" cy=\"20.5\" r=\"1.05\" class=\"ds-apagado\"/></g></g></svg><span class=\"ds-celula-unidade\">GB</span></div></div><div class=\"ds-celula-extra\">de 16,0 GB</div></div></div></div>",
-      "css": ".ds-visor{display:inline-block;padding:5px;border-radius:9px;background:var(--moldura, #2a2c2b);box-shadow:0 0 0 1px var(--borda-visor, transparent), 0 1px 0 rgb(255 255 255 / .35), inset 0 1px 1px rgb(0 0 0 / .6)}.ds-visor-vidro{display:flex;flex-wrap:wrap;gap:1rem 2.2rem;padding:.9rem 1rem 1rem;border-radius:5px;color:var(--visor-traco, #e6efe9);background:var(--visor, #070908);box-shadow:inset 0 0 0 1px rgb(255 255 255 / .035), inset 0 10px 28px rgb(0 0 0 / .7)}.ds-celula{display:grid;gap:.4rem;align-content:start}.ds-celula-rotulo{color:var(--visor-fraco, #7d8a83);font:650 .6rem var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:112%;text-transform:uppercase;letter-spacing:.18em}.ds-celula-corpo{display:flex;align-items:flex-end;gap:.7rem}.ds-celula-leitura{display:flex;align-items:flex-end;gap:.3rem}.ds-celula-unidade{font:500 .66rem var(--mono, \"Martian Mono\", ui-monospace, monospace);color:var(--visor-fraco, #7d8a83);padding-bottom:.15rem}.ds-celula-extra{font:400 .66rem/1.35 var(--mono, \"Martian Mono\", ui-monospace, monospace);color:var(--visor-fraco, #7d8a83)}.ds-sete{height:2.15rem;width:auto;overflow:visible}.ds-sete .ds-aceso{fill:currentColor}.ds-sete .ds-apagado{fill:var(--visor-apagado, #17211c)}.ds-desenho{height:3.4rem;width:auto;flex:none;overflow:visible}.ds-desenho .ds-traco{fill:none;stroke:var(--visor-traco, #e6efe9);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.ds-desenho .ds-traco.ds-fino{stroke-width:1;opacity:.55}.ds-desenho .ds-nivel{fill:var(--led-verde, #2bd46a)}.ds-desenho .ds-risca{stroke:var(--visor, #070908);stroke-width:1.5}"
+      "refersTo": "medalhao",
+      "description": "A leitura do servidor: o número no meio e o meandro da borda pintado de azul até o valor, em voltas inteiras; perto do limite a tinta vira ocre, passado dele, cinábrio.",
+      "html": "<figure class=\"ds-medalhao\"><div class=\"ds-disco\"><svg class=\"ds-anel\" viewBox=\"-60 -60 120 120\" aria-hidden=\"true\"><circle class=\"ds-borda\" r=\"58.5\"/><circle class=\"ds-borda\" r=\"43.4\"/><path class=\"ds-risco\" d=\"M0 -45.2 L0 -56 A56 56 0 0 1 11.9 -54.72 L10.37 -47.68 A48.8 48.8 0 0 0 6.94 -48.3 L7.46 -51.87 A52.4 52.4 0 0 0 3.74 -52.27 L3.22 -45.08 A45.2 45.2 0 0 1 12.73 -43.37 L15.78 -53.73 A56 56 0 0 1 26.84 -49.15 L23.39 -42.83 A48.8 48.8 0 0 0 20.27 -44.39 L21.77 -47.66 A52.4 52.4 0 0 0 18.31 -49.1 L15.8 -42.35 A45.2 45.2 0 0 1 24.44 -38.02 L30.28 -47.11 A56 56 0 0 1 39.6 -39.6 L34.51 -34.51 A48.8 48.8 0 0 0 31.96 -36.88 L34.31 -39.6 A52.4 52.4 0 0 0 31.4 -41.95 L27.09 -36.18 A45.2 45.2 0 0 1 34.16 -29.6 L42.32 -36.67 A56 56 0 0 1 49.15 -26.84 L42.83 -23.39 A48.8 48.8 0 0 0 41.05 -26.38 L44.08 -28.33 A52.4 52.4 0 0 0 41.95 -31.4 L36.18 -27.09 A45.2 45.2 0 0 1 41.12 -18.78 L50.94 -23.26 A56 56 0 0 1 54.72 -11.9 L47.68 -10.37 A48.8 48.8 0 0 0 46.82 -13.75 L50.28 -14.76 A52.4 52.4 0 0 0 49.1 -18.31 L42.35 -15.8 A45.2 45.2 0 0 1 44.74 -6.43 L55.43 -7.97 A56 56 0 0 1 55.86 3.99 L48.68 3.48 A48.8 48.8 0 0 0 48.8 0 L52.4 0 A52.4 52.4 0 0 0 52.27 -3.74 L45.08 -3.22 A45.2 45.2 0 0 1 44.74 6.43 L55.43 7.97 A56 56 0 0 1 52.47 19.57 L45.72 17.05 A48.8 48.8 0 0 0 46.82 13.75 L50.28 14.76 A52.4 52.4 0 0 0 51.2 11.14 L44.17 9.61 A45.2 45.2 0 0 1 41.12 18.78 L50.94 23.26 A56 56 0 0 1 44.83 33.56 L39.07 29.24 A48.8 48.8 0 0 0 41.05 26.38 L44.08 28.33 A52.4 52.4 0 0 0 45.99 25.11 L39.67 21.66 A45.2 45.2 0 0 1 34.16 29.6 L42.32 36.67 A56 56 0 0 1 33.56 44.83 L29.24 39.07 A48.8 48.8 0 0 0 31.96 36.88 L34.31 39.6 A52.4 52.4 0 0 0 37.05 37.05 L31.96 31.96 A45.2 45.2 0 0 1 24.44 38.02 L30.28 47.11 A56 56 0 0 1 19.57 52.47 L17.05 45.72 A48.8 48.8 0 0 0 20.27 44.39 L21.77 47.66 A52.4 52.4 0 0 0 25.11 45.99 L21.66 39.67 A45.2 45.2 0 0 1 12.73 43.37 L15.78 53.73 A56 56 0 0 1 3.99 55.86 L3.48 48.68 A48.8 48.8 0 0 0 6.94 48.3 L7.46 51.87 A52.4 52.4 0 0 0 11.14 51.2 L9.61 44.17 A45.2 45.2 0 0 1 0 45.2 L0 56 A56 56 0 0 1 -11.9 54.72 L-10.37 47.68 A48.8 48.8 0 0 0 -6.94 48.3 L-7.46 51.87 A52.4 52.4 0 0 0 -3.74 52.27 L-3.22 45.08 A45.2 45.2 0 0 1 -12.73 43.37 L-15.78 53.73 A56 56 0 0 1 -26.84 49.15 L-23.39 42.83 A48.8 48.8 0 0 0 -20.27 44.39 L-21.77 47.66 A52.4 52.4 0 0 0 -18.31 49.1 L-15.8 42.35 A45.2 45.2 0 0 1 -24.44 38.02 L-30.28 47.11 A56 56 0 0 1 -39.6 39.6 L-34.51 34.51 A48.8 48.8 0 0 0 -31.96 36.88 L-34.31 39.6 A52.4 52.4 0 0 0 -31.4 41.95 L-27.09 36.18 A45.2 45.2 0 0 1 -34.16 29.6 L-42.32 36.67 A56 56 0 0 1 -49.15 26.84 L-42.83 23.39 A48.8 48.8 0 0 0 -41.05 26.38 L-44.08 28.33 A52.4 52.4 0 0 0 -41.95 31.4 L-36.18 27.09 A45.2 45.2 0 0 1 -41.12 18.78 L-50.94 23.26 A56 56 0 0 1 -54.72 11.9 L-47.68 10.37 A48.8 48.8 0 0 0 -46.82 13.75 L-50.28 14.76 A52.4 52.4 0 0 0 -49.1 18.31 L-42.35 15.8 A45.2 45.2 0 0 1 -44.74 6.43 L-55.43 7.97 A56 56 0 0 1 -55.86 -3.99 L-48.68 -3.48 A48.8 48.8 0 0 0 -48.8 0 L-52.4 0 A52.4 52.4 0 0 0 -52.27 3.74 L-45.08 3.22 A45.2 45.2 0 0 1 -44.74 -6.43 L-55.43 -7.97 A56 56 0 0 1 -52.47 -19.57 L-45.72 -17.05 A48.8 48.8 0 0 0 -46.82 -13.75 L-50.28 -14.76 A52.4 52.4 0 0 0 -51.2 -11.14 L-44.17 -9.61 A45.2 45.2 0 0 1 -41.12 -18.78 L-50.94 -23.26 A56 56 0 0 1 -44.83 -33.56 L-39.07 -29.24 A48.8 48.8 0 0 0 -41.05 -26.38 L-44.08 -28.33 A52.4 52.4 0 0 0 -45.99 -25.11 L-39.67 -21.66 A45.2 45.2 0 0 1 -34.16 -29.6 L-42.32 -36.67 A56 56 0 0 1 -33.56 -44.83 L-29.24 -39.07 A48.8 48.8 0 0 0 -31.96 -36.88 L-34.31 -39.6 A52.4 52.4 0 0 0 -37.05 -37.05 L-31.96 -31.96 A45.2 45.2 0 0 1 -24.44 -38.02 L-30.28 -47.11 A56 56 0 0 1 -19.57 -52.47 L-17.05 -45.72 A48.8 48.8 0 0 0 -20.27 -44.39 L-21.77 -47.66 A52.4 52.4 0 0 0 -25.11 -45.99 L-21.66 -39.67 A45.2 45.2 0 0 1 -12.73 -43.37 L-15.78 -53.73 A56 56 0 0 1 -3.99 -55.86 L-3.48 -48.68 A48.8 48.8 0 0 0 -6.94 -48.3 L-7.46 -51.87 A52.4 52.4 0 0 0 -11.14 -51.2 L-9.61 -44.17 A45.2 45.2 0 0 1 0 -45.2 Z\"/><path class=\"ds-pintado\" d=\"M0 -45.2 L0 -56 A56 56 0 0 1 11.9 -54.72 L10.37 -47.68 A48.8 48.8 0 0 0 6.94 -48.3 L7.46 -51.87 A52.4 52.4 0 0 0 3.74 -52.27 L3.22 -45.08 A45.2 45.2 0 0 1 12.73 -43.37 L15.78 -53.73 A56 56 0 0 1 26.84 -49.15 L23.39 -42.83 A48.8 48.8 0 0 0 20.27 -44.39 L21.77 -47.66 A52.4 52.4 0 0 0 18.31 -49.1 L15.8 -42.35 A45.2 45.2 0 0 1 24.44 -38.02 L30.28 -47.11 A56 56 0 0 1 39.6 -39.6 L34.51 -34.51 A48.8 48.8 0 0 0 31.96 -36.88 L34.31 -39.6 A52.4 52.4 0 0 0 31.4 -41.95 L27.09 -36.18 A45.2 45.2 0 0 1 34.16 -29.6 L42.32 -36.67 A56 56 0 0 1 49.15 -26.84 L42.83 -23.39 A48.8 48.8 0 0 0 41.05 -26.38 L44.08 -28.33 A52.4 52.4 0 0 0 41.95 -31.4 L36.18 -27.09 A45.2 45.2 0 0 1 41.12 -18.78 L50.94 -23.26 A56 56 0 0 1 54.72 -11.9 L47.68 -10.37 A48.8 48.8 0 0 0 46.82 -13.75 L50.28 -14.76 A52.4 52.4 0 0 0 49.1 -18.31 L42.35 -15.8 A45.2 45.2 0 0 1 44.74 -6.43 L55.43 -7.97 A56 56 0 0 1 55.86 3.99 L48.68 3.48 A48.8 48.8 0 0 0 48.8 0 L52.4 0 A52.4 52.4 0 0 0 52.27 -3.74 L45.08 -3.22 A45.2 45.2 0 0 1 44.74 6.43 L55.43 7.97 A56 56 0 0 1 52.47 19.57 L45.72 17.05 A48.8 48.8 0 0 0 46.82 13.75 L50.28 14.76 A52.4 52.4 0 0 0 51.2 11.14 L44.17 9.61 A45.2 45.2 0 0 1 41.12 18.78 L50.94 23.26 A56 56 0 0 1 44.83 33.56 L39.07 29.24 A48.8 48.8 0 0 0 41.05 26.38 L44.08 28.33 A52.4 52.4 0 0 0 45.99 25.11 L39.67 21.66 A45.2 45.2 0 0 1 34.16 29.6 L42.32 36.67 A56 56 0 0 1 33.56 44.83 L29.24 39.07 A48.8 48.8 0 0 0 31.96 36.88 L34.31 39.6 A52.4 52.4 0 0 0 37.05 37.05 L31.96 31.96 A45.2 45.2 0 0 1 24.44 38.02 L30.28 47.11 A56 56 0 0 1 19.57 52.47 L17.05 45.72 A48.8 48.8 0 0 0 20.27 44.39 L21.77 47.66 A52.4 52.4 0 0 0 25.11 45.99 L21.66 39.67 A45.2 45.2 0 0 1 12.73 43.37 L15.78 53.73 A56 56 0 0 1 3.99 55.86 L3.48 48.68 A48.8 48.8 0 0 0 6.94 48.3 L7.46 51.87 A52.4 52.4 0 0 0 11.14 51.2 L9.61 44.17 A45.2 45.2 0 0 1 0 45.2 L0 56 A56 56 0 0 1 -11.9 54.72 L-10.37 47.68 A48.8 48.8 0 0 0 -6.94 48.3 L-7.46 51.87 A52.4 52.4 0 0 0 -3.74 52.27 L-3.22 45.08 A45.2 45.2 0 0 1 -12.73 43.37 L-15.78 53.73 A56 56 0 0 1 -26.84 49.15 L-23.39 42.83 A48.8 48.8 0 0 0 -20.27 44.39 L-21.77 47.66 A52.4 52.4 0 0 0 -18.31 49.1 L-15.8 42.35 A45.2 45.2 0 0 1 -24.44 38.02 L-30.28 47.11 A56 56 0 0 1 -39.6 39.6 L-34.51 34.51 A48.8 48.8 0 0 0 -31.96 36.88 L-34.31 39.6 A52.4 52.4 0 0 0 -31.4 41.95 L-27.09 36.18 A45.2 45.2 0 0 1 -34.16 29.6 L-42.32 36.67 A56 56 0 0 1 -49.15 26.84 L-42.83 23.39 A48.8 48.8 0 0 0 -41.05 26.38 L-44.08 28.33 A52.4 52.4 0 0 0 -41.95 31.4 L-36.18 27.09 A45.2 45.2 0 0 1 -41.12 18.78 L-50.94 23.26 A56 56 0 0 1 -54.72 11.9 L-47.68 10.37 A48.8 48.8 0 0 0 -46.82 13.75 L-50.28 14.76 A52.4 52.4 0 0 0 -49.1 18.31 L-42.35 15.8 A45.2 45.2 0 0 1 -44.74 6.43 L-55.43 7.97 A56 56 0 0 1 -55.86 -3.99 L-48.68 -3.48 A48.8 48.8 0 0 0 -48.8 0 L-52.4 0 A52.4 52.4 0 0 0 -52.27 3.74 L-45.08 3.22 A45.2 45.2 0 0 1 -44.74 -6.43 L-55.43 -7.97 A56 56 0 0 1 -52.47 -19.57 L-45.72 -17.05 A48.8 48.8 0 0 0 -46.82 -13.75 L-50.28 -14.76 A52.4 52.4 0 0 0 -51.2 -11.14 L-44.17 -9.61 A45.2 45.2 0 0 1 -41.12 -18.78 L-50.94 -23.26 A56 56 0 0 1 -44.83 -33.56 L-39.07 -29.24 A48.8 48.8 0 0 0 -41.05 -26.38 L-44.08 -28.33 A52.4 52.4 0 0 0 -45.99 -25.11 L-39.67 -21.66 A45.2 45.2 0 0 1 -34.16 -29.6 L-42.32 -36.67 A56 56 0 0 1 -33.56 -44.83 L-29.24 -39.07 A48.8 48.8 0 0 0 -31.96 -36.88 L-34.31 -39.6 A52.4 52.4 0 0 0 -37.05 -37.05 L-31.96 -31.96 A45.2 45.2 0 0 1 -24.44 -38.02 L-30.28 -47.11 A56 56 0 0 1 -19.57 -52.47 L-17.05 -45.72 A48.8 48.8 0 0 0 -20.27 -44.39 L-21.77 -47.66 A52.4 52.4 0 0 0 -25.11 -45.99 L-21.66 -39.67 A45.2 45.2 0 0 1 -12.73 -43.37 L-15.78 -53.73 A56 56 0 0 1 -3.99 -55.86 L-3.48 -48.68 A48.8 48.8 0 0 0 -6.94 -48.3 L-7.46 -51.87 A52.4 52.4 0 0 0 -11.14 -51.2 L-9.61 -44.17 A45.2 45.2 0 0 1 0 -45.2 Z\" pathLength=\"1\"/></svg><div class=\"ds-miolo\"><span class=\"ds-numero\">35,6<span class=\"ds-unidade\">°C</span></span></div></div><figcaption><span class=\"ds-nome\">Temperatura</span><span class=\"ds-nota\">da CPU</span></figcaption></figure>",
+      "css": ".ds-medalhao{margin:0;display:grid;justify-items:center;gap:.65rem;text-align:center;width:9.6rem;color:var(--tinta, #151b27);font-family:var(--letra, \"Commissioner\", system-ui, sans-serif)}.ds-disco{position:relative;width:100%;aspect-ratio:1}.ds-anel{position:absolute;inset:0;width:100%;height:100%;overflow:visible}.ds-borda{fill:none;stroke:var(--veio, #e1e4e2);stroke-width:.6}.ds-risco{fill:none;stroke:var(--veio, #e1e4e2);stroke-width:1}.ds-pintado{fill:none;stroke:var(--azul, #24418f);stroke-width:1.7;stroke-dasharray:1 1;stroke-dashoffset:.58;animation:ds-pintar-anel 1.3s var(--suave, cubic-bezier(.22, 1, .36, 1)) .1s both}@keyframes ds-pintar-anel{from{stroke-dashoffset:1}}.ds-medalhao:hover .ds-pintado{stroke:var(--azul-forte, #1a3275)}.ds-miolo{position:absolute;inset:21%;display:grid;place-items:center}.ds-numero{font-variation-settings:var(--titulo-letra, \"FLAR\" 100, \"VOLM\" 100);font-weight:350;font-size:2rem;line-height:1;letter-spacing:-.025em;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}.ds-unidade{margin-left:.14em;font-variation-settings:\"FLAR\" 0, \"VOLM\" 0;font-size:.42em;font-weight:500;letter-spacing:0;color:var(--tinta-2, #556070)}.ds-medalhao figcaption{display:grid;gap:.2rem}.ds-nome{font-weight:550;font-size:.86rem;font-variation-settings:var(--pedra-letra, \"FLAR\" 100, \"VOLM\" 50)}.ds-nota{font-size:.78rem;line-height:1.35;color:var(--tinta-2, #556070)}@media (prefers-reduced-motion: reduce){.ds-pintado{animation:none !important;transition:none !important}}"
+    },
+    {
+      "name": "Crepidoma das zonas",
+      "kind": "custom",
+      "refersTo": "crepidoma-zona",
+      "description": "A assinatura: a escada do templo em 3D, um degrau de mármore por zona e um ponto por container, com a legenda que se lê e se toca ao lado; a zona com problema escorrega para o lado, e a escada respira devagar.",
+      "html": "<div class=\"ds-crepidoma\"><div class=\"ds-cena\" aria-hidden=\"true\"><div class=\"ds-pilha\"><span class=\"ds-laje\"><span class=\"ds-laje-face\"><span class=\"ds-pontos\"><i class=\"\"></i><i class=\"\"></i><i class=\"\"></i><i class=\"\"></i><i class=\"\"></i></span></span><span class=\"ds-laje-frente\"></span><span class=\"ds-laje-lado\"></span></span><span class=\"ds-laje ds-fora\"><span class=\"ds-laje-face\"><span class=\"ds-pontos\"><i class=\"\"></i><i class=\"\"></i><i class=\"\"></i><i class=\"\"></i><i class=\"\"></i><i class=\"ds-ruim\"></i></span></span><span class=\"ds-laje-frente\"></span><span class=\"ds-laje-lado\"></span></span><span class=\"ds-laje\"><span class=\"ds-laje-face\"><span class=\"ds-pontos\"><i class=\"\"></i><i class=\"\"></i></span></span><span class=\"ds-laje-frente\"></span><span class=\"ds-laje-lado\"></span></span></div></div><div class=\"ds-legenda\"><button type=\"button\" class=\"ds-zona\"><i class=\"ds-ponto\"></i><span class=\"ds-zona-nome\">apps</span><span class=\"ds-conta\">2/2</span></button><button type=\"button\" class=\"ds-zona ds-fora\"><i class=\"ds-ponto ds-ruim\"></i><span class=\"ds-zona-nome\">ai</span><span class=\"ds-conta\">5/6</span><span class=\"ds-problema\">ollama</span></button><button type=\"button\" class=\"ds-zona\"><i class=\"ds-ponto\"></i><span class=\"ds-zona-nome\">core</span><span class=\"ds-conta\">5/5</span></button></div></div>",
+      "css": ".ds-crepidoma{--n:3;display:grid;grid-template-columns:minmax(0, 1.2fr) minmax(0, 1fr);align-items:center;gap:.5rem 1rem;max-width:26rem;color:var(--tinta, #151b27);font-family:var(--letra, \"Commissioner\", system-ui, sans-serif)}.ds-cena{--piso:1.35rem;--espelho:.85rem;position:relative;height:calc(4.6rem + var(--n) * 1.25rem);perspective:1100px;perspective-origin:50% 0%}.ds-pilha{position:absolute;left:47%;top:54%;width:0;height:0;transform-style:preserve-3d;transform:rotateX(56deg) rotateZ(-30deg);animation:ds-respirar 12s ease-in-out infinite alternate}@keyframes ds-respirar{from{transform:rotateX(57deg) rotateZ(-33deg)}to{transform:rotateX(54deg) rotateZ(-25deg)}}.ds-laje{--y:calc((var(--n) / 2 - var(--i) - .5) * var(--piso));--z:calc(var(--i) * var(--espelho));position:absolute;left:-3.6rem;top:calc(var(--piso) / -2);width:7.2rem;height:var(--piso);transform-style:preserve-3d;transform:translate3d(var(--dx, 0px), var(--y), calc(var(--z) + var(--dz, 0px)));transition:transform .75s var(--mola, linear(0, 0.0273, 0.0955, 0.1875, 0.2909, 0.3965, 0.4982, 0.5921, 0.6759, 0.7488, 0.8104, 0.8615, 0.9028, 0.9355, 0.9607, 0.9796, 0.9933, 1.0029, 1.0091, 1.0129, 1.0147, 1.0152, 1.0147, 1.0136, 1.0122, 1.0107, 1.0091, 1.0075, 1.0061, 1.0048, 1.0038, 1.0028, 1.0021, 1.0014, 1.001, 1.0006, 1.0003, 1.0001, 0.9999, 0.9999, 1));animation:ds-assentar 1s var(--mola, linear(0, 0.0273, 0.0955, 0.1875, 0.2909, 0.3965, 0.4982, 0.5921, 0.6759, 0.7488, 0.8104, 0.8615, 0.9028, 0.9355, 0.9607, 0.9796, 0.9933, 1.0029, 1.0091, 1.0129, 1.0147, 1.0152, 1.0147, 1.0136, 1.0122, 1.0107, 1.0091, 1.0075, 1.0061, 1.0048, 1.0038, 1.0028, 1.0021, 1.0014, 1.001, 1.0006, 1.0003, 1.0001, 0.9999, 0.9999, 1)) backwards;animation-delay:calc(var(--i) * 75ms + .1s)}.ds-laje:nth-child(1){--i:0}.ds-laje:nth-child(2){--i:1}.ds-laje:nth-child(3){--i:2}@keyframes ds-assentar{from{transform:translate3d(0, var(--y), calc(var(--z) - 2.6rem));opacity:0}}.ds-laje-face{position:absolute;inset:0;display:grid;place-items:center;padding:.2rem .5rem;background:var(--placa, #fcfcfb);border:1px solid color-mix(in srgb, var(--tinta, #151b27) 20%, transparent);transition:background-color .35s var(--suave, cubic-bezier(.22, 1, .36, 1)),border-color .35s var(--suave, cubic-bezier(.22, 1, .36, 1))}.ds-laje-frente,.ds-laje-lado{position:absolute;border:1px solid color-mix(in srgb, var(--tinta, #151b27) 20%, transparent)}.ds-laje-frente{left:0;bottom:0;width:100%;height:var(--espelho);transform-origin:bottom;transform:rotateX(90deg);background:color-mix(in srgb, var(--placa, #fcfcfb) 86%, var(--tinta, #151b27))}.ds-laje-lado{right:0;top:0;width:var(--espelho);height:100%;transform-origin:right;transform:rotateY(-90deg);background:color-mix(in srgb, var(--placa, #fcfcfb) 74%, var(--tinta, #151b27))}.ds-pontos{display:flex;flex-wrap:wrap;justify-content:center;gap:.26rem}.ds-pontos i{width:.36rem;height:.36rem;border-radius:50%;background:var(--malaquita, #2b8059)}.ds-pontos i.ds-ruim{background:var(--cinabrio, #c23a26);animation:ds-pulsar 1.8s ease-in-out infinite}@keyframes ds-pulsar{50%{opacity:.35}}.ds-laje.ds-fora{--dx:.9rem;--dz:.15rem}.ds-laje.ds-fora .ds-laje-face{background:var(--cinabrio-claro, #f9e8e4);border-color:color-mix(in srgb, var(--cinabrio, #c23a26) 50%, transparent)}.ds-legenda{display:grid;gap:.1rem;min-width:0}.ds-zona{display:grid;grid-template-columns:.5rem minmax(0, 1fr) auto;align-items:center;gap:.1rem .6rem;min-height:2.3rem;padding:.3rem .5rem;color:var(--tinta, #151b27);background:transparent;border:0;border-radius:var(--raio, 6px);text-align:left;font:inherit;cursor:pointer;transition:background-color .2s var(--suave, cubic-bezier(.22, 1, .36, 1))}.ds-zona:hover{background:var(--azul-claro, #e9edf7)}.ds-zona:focus-visible{outline:2px solid var(--foco, #24418f);outline-offset:2px}.ds-ponto{width:.5rem;height:.5rem;border-radius:50%;background:var(--malaquita, #2b8059)}.ds-ponto.ds-ruim{background:var(--cinabrio, #c23a26);box-shadow:0 0 0 3px color-mix(in srgb, var(--cinabrio, #c23a26) 18%, transparent)}.ds-zona-nome{font:550 .86rem/1.2 var(--letra, \"Commissioner\", system-ui, sans-serif);font-variation-settings:var(--pedra-letra, \"FLAR\" 100, \"VOLM\" 50);color:var(--tinta-2, #556070)}.ds-conta{font-variation-settings:var(--titulo-letra, \"FLAR\" 100, \"VOLM\" 100);font-size:1.05rem;font-variant-numeric:tabular-nums}.ds-problema{grid-column:2 / -1;font-size:.74rem;color:var(--cinabrio-tinta, #a22d1b)}.ds-zona.ds-fora .ds-zona-nome{color:var(--cinabrio-tinta, #a22d1b)}@media (prefers-reduced-motion: reduce){.ds-pilha,.ds-laje,.ds-pontos i,.ds-zona{animation:none !important;transition:none !important}}"
     },
     {
       "name": "Faixa de aprovações",
       "kind": "custom",
       "refersTo": "faixa",
-      "description": "A tecla larga amarela no topo da tela quando há pedido esperando; pulsa duas vezes quando chega um novo.",
-      "html": "<a href=\"#aprovacoes\" class=\"ds-faixa ds-pulsa\"><strong><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"4\" y=\"4\" width=\"16\" height=\"16\" rx=\"2.5\"/><path d=\"m8.2 12.3 2.6 2.6 5-5.6\"/></svg> 3 aprovações esperando você</strong><span class=\"ds-faixa-ver\">ver<svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m9.5 6.5 5.5 5.5-5.5 5.5\"/></svg></span></a>",
-      "css": ".ds-faixa{display:flex;align-items:center;justify-content:space-between;gap:.75rem 1rem;flex-wrap:wrap;padding:.8rem 1rem;border-radius:var(--raio, 7px);text-decoration:none;background:var(--amarelo, #ffc400);color:var(--amarelo-tinta, #141414);border:1px solid var(--amarelo-borda, #c99a00);border-bottom:3px solid var(--amarelo-lado, #9a7600);box-shadow:var(--sombra-tecla, 0 2px 5px -1px rgb(0 0 0 / .18));font-family:var(--fonte, \"Archivo\", system-ui, sans-serif)}.ds-faixa:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px}.ds-faixa strong{display:inline-flex;align-items:center;gap:.55rem;font-weight:700;font-size:1rem}.ds-faixa-ver{display:inline-flex;align-items:center;gap:.3rem;opacity:.8;font-weight:650;font-size:.69rem;font-stretch:112%;text-transform:uppercase;letter-spacing:.14em}.ds-faixa .ds-picto{width:1.2rem;height:1.2rem;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}.ds-faixa.ds-pulsa{animation:ds-chamar 1.2s ease-out 2}@keyframes ds-chamar{0%{box-shadow:0 0 0 0 rgb(255 196 0 / .65), 0 2px 5px -1px rgb(0 0 0 / .18)}100%{box-shadow:0 0 0 16px rgb(255 196 0 / 0), 0 2px 5px -1px rgb(0 0 0 / .18)}}@media (prefers-reduced-motion: reduce){.ds-faixa{animation:none;transition:none}}"
+      "description": "No topo de qualquer tela quando há pedido esperando: Ocre Claro, a coroa de louros em ocre e o \"Ver\"; quando chega uma nova, uma luz passa por ela uma vez.",
+      "html": "<a class=\"ds-faixa ds-pulsa\" href=\"#aprovacoes\"><strong><svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path class=\"ds-tinta\" d=\"M5 9.3c-1.5-1-1.9-2.9-1.1-4.4 1.4.8 1.9 2.8 1.1 4.4zM4.9 13.6c-1.9-.4-2.9-2-2.8-3.7 1.7.2 2.8 1.9 2.8 3.7zM6.7 17.4c-1.9.2-3.4-.9-3.9-2.5 1.7-.3 3.3.8 3.9 2.5zM19 9.3c1.5-1 1.9-2.9 1.1-4.4-1.4.8-1.9 2.8-1.1 4.4zM19.1 13.6c1.9-.4 2.9-2 2.8-3.7-1.7.2-2.8 1.9-2.8 3.7zM17.3 17.4c1.9.2 3.4-.9 3.9-2.5-1.7-.3-3.3.8-3.9 2.5z\"/><path d=\"M10.8 20.4C6.4 19.2 4.2 15 5 9.3M13.2 20.4c4.4-1.2 6.6-5.4 5.8-11.1\"/><path class=\"ds-fino\" d=\"M5 9.3c-1.5-1-1.9-2.9-1.1-4.4 1.4.8 1.9 2.8 1.1 4.4zM4.9 13.6c-1.9-.4-2.9-2-2.8-3.7 1.7.2 2.8 1.9 2.8 3.7zM6.7 17.4c-1.9.2-3.4-.9-3.9-2.5 1.7-.3 3.3.8 3.9 2.5zM19 9.3c1.5-1 1.9-2.9 1.1-4.4-1.4.8-1.9 2.8-1.1 4.4zM19.1 13.6c1.9-.4 2.9-2 2.8-3.7-1.7.2-2.8 1.9-2.8 3.7zM17.3 17.4c1.9.2 3.4-.9 3.9-2.5-1.7-.3-3.3.8-3.9 2.5z\"/><path d=\"m8.9 12.6 2.2 2.3 4.2-4.6\"/></svg> 1 aprovação esperando você</strong><span class=\"ds-ver\">Ver<svg class=\"ds-picto\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"m9.5 6.5 5.5 5.5-5.5 5.5\"/></svg></span></a>",
+      "css": ".ds-faixa{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;gap:.75rem 1rem;flex-wrap:wrap;max-width:36rem;padding:.85rem 1.1rem;border-radius:var(--raio, 6px);text-decoration:none;color:var(--tinta, #151b27);background:var(--ocre-claro, #f7f1e4);border:1px solid color-mix(in srgb, var(--ocre, #b07c1e) 38%, transparent);font-family:var(--letra, \"Commissioner\", system-ui, sans-serif);transition:border-color .25s var(--suave, cubic-bezier(.22, 1, .36, 1))}.ds-faixa strong{display:inline-flex;align-items:center;gap:.65rem;font-weight:600;font-size:.98rem}.ds-ver{display:inline-flex;align-items:center;gap:.3rem;font:550 .8rem/1.2 var(--letra, \"Commissioner\", system-ui, sans-serif);font-variation-settings:var(--pedra-letra, \"FLAR\" 100, \"VOLM\" 50);color:var(--ocre-tinta, #6e4706)}.ds-faixa .ds-picto{width:1.3rem;height:1.3rem;color:var(--ocre, #b07c1e)}.ds-faixa .ds-picto .ds-tinta{fill-opacity:.18}.ds-faixa:hover{border-color:var(--ocre, #b07c1e)}.ds-faixa:focus-visible{outline:2px solid var(--foco, #24418f);outline-offset:2px}.ds-faixa.ds-pulsa::after{content:\"\";position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg, transparent 30%, rgb(255 255 255 / .55) 50%, transparent 70%);transform:translateX(-100%);animation:ds-luz 1.6s var(--suave, cubic-bezier(.22, 1, .36, 1)) .15s 1 both}@keyframes ds-luz{to{transform:translateX(100%)}}.ds-picto{width:1.15rem;height:1.15rem;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;overflow:visible}.ds-picto .ds-fino{stroke-width:1.05}.ds-picto .ds-cheio{fill:currentColor;stroke:none}.ds-picto .ds-tinta{fill:currentColor;fill-opacity:0;stroke:none;transition:fill-opacity .4s var(--suave, cubic-bezier(.22, 1, .36, 1))}@media (prefers-reduced-motion: reduce){.ds-faixa,.ds-faixa::after{animation:none !important;transition:none !important}}"
+    },
+    {
+      "name": "Linha de lista",
+      "kind": "list",
+      "refersTo": "item",
+      "description": "Toda lista do painel: o ponto do estado, o nome com o detalhe embaixo (o estado escrito primeiro) e as teclas discretas à direita; os containers de uma stack ficam presos a ela por um fio de Veio.",
+      "html": "<ul class=\"ds-itens\"><li class=\"ds-item\"><span class=\"ds-led ds-ok\"></span><div class=\"ds-texto\"><div><strong>litellm</strong></div><div class=\"ds-detalhe\">3 containers no ar</div></div><div class=\"ds-acoes\"><button type=\"button\" class=\"ds-discreta\">Logs</button><button type=\"button\" class=\"ds-discreta\">Reiniciar</button></div><ul class=\"ds-itens ds-sub\"><li class=\"ds-item\"><span class=\"ds-led ds-ok\"></span><div class=\"ds-texto\"><div>litellm-redis</div><div class=\"ds-detalhe\">no ar há 6 h · saudável · CPU 0,2% · RAM 15,8 MB</div></div></li></ul></li><li class=\"ds-item\"><span class=\"ds-led ds-ruim\"></span><div class=\"ds-texto\"><div><strong>ollama</strong></div><div class=\"ds-detalhe\">no ar há 2 h · verificação de saúde falhando</div></div><div class=\"ds-acoes\"><button type=\"button\" class=\"ds-discreta\">Logs</button><button type=\"button\" class=\"ds-discreta\">Reiniciar</button></div></li></ul>",
+      "css": ".ds-itens{list-style:none;margin:0;padding:0;max-width:34rem;color:var(--tinta, #151b27);font:400 1rem/1.5 var(--letra, \"Commissioner\", system-ui, sans-serif)}.ds-item{display:grid;grid-template-columns:.5rem minmax(min(13rem, 100%), 1fr) minmax(0, max-content);grid-template-areas:\"led texto acoes\" \". extra extra\";align-items:center;gap:.35rem .85rem;padding:.75rem 0;border-top:1px solid var(--veio, #e1e4e2)}.ds-item:first-child{border-top:0}.ds-led{grid-area:led;align-self:start;margin-top:.52rem;width:.5rem;height:.5rem;border-radius:50%;background:var(--pedra, #c6ccc9)}.ds-led.ds-ok{background:var(--malaquita, #2b8059)}.ds-led.ds-ruim{background:var(--cinabrio, #c23a26);box-shadow:0 0 0 3px color-mix(in srgb, var(--cinabrio, #c23a26) 18%, transparent)}.ds-texto{grid-area:texto;min-width:0}.ds-texto strong{font-weight:600}.ds-detalhe{margin-top:.12rem;font-size:.82rem;line-height:1.4;color:var(--tinta-2, #556070);font-variant-numeric:tabular-nums}.ds-acoes{grid-area:acoes;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.4rem}.ds-sub{grid-area:extra;margin:.2rem 0 0 .2rem;padding-left:.9rem;border-left:1px solid var(--veio, #e1e4e2)}.ds-sub .ds-item{border-top:0;padding:.32rem 0}.ds-discreta{display:inline-flex;align-items:center;min-height:2.2rem;padding:.4rem .78rem;cursor:pointer;font:550 .8rem/1.1 var(--letra, \"Commissioner\", system-ui, sans-serif);letter-spacing:.01em;color:var(--tinta, #151b27);background:transparent;border:1px solid var(--veio-forte, #b8bfbb);border-radius:var(--raio, 6px);transition:background-color .2s var(--suave, cubic-bezier(.22, 1, .36, 1)),border-color .2s var(--suave, cubic-bezier(.22, 1, .36, 1)),transform .16s var(--suave, cubic-bezier(.22, 1, .36, 1))}.ds-discreta:hover{background:var(--placa-2, #f4f5f4);border-color:var(--tinta-2, #556070)}.ds-discreta:active{transform:scale(.97)}.ds-discreta:focus-visible{outline:2px solid var(--foco, #24418f);outline-offset:2px}@media (prefers-reduced-motion: reduce){.ds-discreta{animation:none !important;transition:none !important}}"
+    },
+    {
+      "name": "Cabeçalho de tela",
+      "kind": "custom",
+      "refersTo": "cabecalho-tela",
+      "description": "O nome de cada tela na letra de pedra, a maior do painel, sobre a faixa de meandro que se desenha ao entrar nela.",
+      "html": "<header class=\"ds-cabecalho\"><h1>Serviços</h1><svg class=\"ds-faixa-meandro\" viewBox=\"-1 -1 482 14\" preserveAspectRatio=\"xMinYMid slice\" aria-hidden=\"true\"><path d=\"M0 12 L0 0 L12 0 L12 8 L8 8 L8 4 L4 4 L4 12 L16 12 L16 0 L28 0 L28 8 L24 8 L24 4 L20 4 L20 12 L32 12 L32 0 L44 0 L44 8 L40 8 L40 4 L36 4 L36 12 L48 12 L48 0 L60 0 L60 8 L56 8 L56 4 L52 4 L52 12 L64 12 L64 0 L76 0 L76 8 L72 8 L72 4 L68 4 L68 12 L80 12 L80 0 L92 0 L92 8 L88 8 L88 4 L84 4 L84 12 L96 12 L96 0 L108 0 L108 8 L104 8 L104 4 L100 4 L100 12 L112 12 L112 0 L124 0 L124 8 L120 8 L120 4 L116 4 L116 12 L128 12 L128 0 L140 0 L140 8 L136 8 L136 4 L132 4 L132 12 L144 12 L144 0 L156 0 L156 8 L152 8 L152 4 L148 4 L148 12 L160 12 L160 0 L172 0 L172 8 L168 8 L168 4 L164 4 L164 12 L176 12 L176 0 L188 0 L188 8 L184 8 L184 4 L180 4 L180 12 L192 12 L192 0 L204 0 L204 8 L200 8 L200 4 L196 4 L196 12 L208 12 L208 0 L220 0 L220 8 L216 8 L216 4 L212 4 L212 12 L224 12 L224 0 L236 0 L236 8 L232 8 L232 4 L228 4 L228 12 L240 12 L240 0 L252 0 L252 8 L248 8 L248 4 L244 4 L244 12 L256 12 L256 0 L268 0 L268 8 L264 8 L264 4 L260 4 L260 12 L272 12 L272 0 L284 0 L284 8 L280 8 L280 4 L276 4 L276 12 L288 12 L288 0 L300 0 L300 8 L296 8 L296 4 L292 4 L292 12 L304 12 L304 0 L316 0 L316 8 L312 8 L312 4 L308 4 L308 12 L320 12 L320 0 L332 0 L332 8 L328 8 L328 4 L324 4 L324 12 L336 12 L336 0 L348 0 L348 8 L344 8 L344 4 L340 4 L340 12 L352 12 L352 0 L364 0 L364 8 L360 8 L360 4 L356 4 L356 12 L368 12 L368 0 L380 0 L380 8 L376 8 L376 4 L372 4 L372 12 L384 12 L384 0 L396 0 L396 8 L392 8 L392 4 L388 4 L388 12 L400 12 L400 0 L412 0 L412 8 L408 8 L408 4 L404 4 L404 12 L416 12 L416 0 L428 0 L428 8 L424 8 L424 4 L420 4 L420 12 L432 12 L432 0 L444 0 L444 8 L440 8 L440 4 L436 4 L436 12 L448 12 L448 0 L460 0 L460 8 L456 8 L456 4 L452 4 L452 12 L464 12 L464 0 L476 0 L476 8 L472 8 L472 4 L468 4 L468 12 L480 12\" pathLength=\"1\"/></svg></header>",
+      "css": ".ds-cabecalho{display:grid;gap:.6rem;color:var(--tinta, #151b27);font-family:var(--letra, \"Commissioner\", system-ui, sans-serif)}.ds-cabecalho h1{margin:0;font-variation-settings:var(--titulo-letra, \"FLAR\" 100, \"VOLM\" 100);font-weight:400;font-size:clamp(1.7rem, 1.2rem + 1.7vw, 2.5rem);letter-spacing:-.015em;line-height:1.05}.ds-faixa-meandro{display:block;height:.5rem;width:min(100%, 15rem);color:var(--tinta-3, #9aa3ad);overflow:hidden}.ds-faixa-meandro path{fill:none;stroke:currentColor;stroke-width:1.3;stroke-linejoin:miter;stroke-dasharray:1 1;animation:ds-tracar 1.1s var(--traco, cubic-bezier(.65, 0, .25, 1)) both}@keyframes ds-tracar{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}.ds-cabecalho:hover .ds-faixa-meandro{color:var(--azul, #24418f)}@media (prefers-reduced-motion: reduce){.ds-faixa-meandro path{animation:none !important;transition:none !important}}"
     },
     {
       "name": "Aviso",
       "kind": "custom",
       "refersTo": "aviso",
-      "description": "O aviso passageiro: um vidro preto pequeno com moldura, texto em mono e o LED do resultado; some em 4 s (8 s se for erro).",
-      "html": "<div class=\"ds-aviso ds-ok\">Pedido aprovado. O executor já está rodando.</div><div class=\"ds-aviso ds-erro\">O pedido já tinha vencido; nada foi feito.</div>",
-      "css": ".ds-aviso{display:flex;align-items:baseline;gap:.55rem;max-width:30rem;margin:0 0 .6rem;padding:.65rem .85rem;border-radius:6px;background:var(--visor, #070908);color:var(--visor-traco, #e6efe9);font:400 .78rem/1.4 var(--mono, \"Martian Mono\", ui-monospace, monospace);box-shadow:0 0 0 3px var(--moldura, #2a2c2b), 0 10px 24px -8px rgb(0 0 0 / .5)}.ds-aviso::before{content:\"\";flex:none;width:.45rem;height:.45rem;border-radius:50%;background:var(--led-azul, #3e8bff);box-shadow:0 0 6px rgb(62 139 255 / .7)}.ds-aviso.ds-ok::before{background:var(--led-verde, #2bd46a);box-shadow:0 0 6px rgb(43 212 106 / .7)}.ds-aviso.ds-erro::before{background:var(--led-vermelho, #ff4433);box-shadow:0 0 6px rgb(255 68 51 / .7)}"
-    },
-    {
-      "name": "Tecla clara",
-      "kind": "button",
-      "refersTo": "tecla-clara",
-      "description": "As ações de cada linha (Logs, Reiniciar, Editar) e as secundárias (Atualizar, Cancelar, Fechar): face de alumínio clara, contorno e lado de 3px, um degrau abaixo da grafite.",
-      "html": "<button type=\"button\" class=\"ds-tecla-clara\">Reiniciar</button>",
-      "css": ".ds-tecla-clara{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.2rem;padding:.4rem .72rem;cursor:pointer;font:600 .78rem/1.1 var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:106%;letter-spacing:.01em;color:var(--tinta, #161716);background:var(--tecla-clara, #f8f8f5);border:1px solid var(--tecla-clara-borda, #a4a7a1);border-bottom:3px solid var(--tecla-clara-lado, #868983);border-radius:var(--raio-tecla, 5px);box-shadow:0 1px 2px rgb(0 0 0 / .08);transition:transform .08s ease-out,border-bottom-width .08s ease-out}.ds-tecla-clara:hover{border-color:var(--tinta-2, #585b57);border-bottom-color:var(--tecla-clara-lado, #868983)}.ds-tecla-clara:active{transform:translateY(1px);border-bottom-width:2px}.ds-tecla-clara:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px}@media (prefers-reduced-motion: reduce){.ds-tecla-clara{transition:none}}"
-    },
-    {
-      "name": "Linha de lista",
-      "kind": "list",
-      "refersTo": "linha",
-      "description": "Toda lista do painel: o LED do estado, o nome com o detalhe embaixo (o estado escrito primeiro) e as teclas claras à direita; com muitas teclas, ou num módulo estreito, elas descem para baixo do nome.",
-      "html": "<ul class=\"ds-itens\"><li class=\"ds-item\"><span class=\"ds-led\"></span><div><div class=\"ds-item-nome\"><strong>ntfy</strong></div><div class=\"ds-item-detalhe\">no ar há 6 h · saudável · CPU 0,0% · RAM 49,1 MB</div></div><div class=\"ds-item-acoes\"><button type=\"button\" class=\"ds-tecla-clara\">Logs</button><button type=\"button\" class=\"ds-tecla-clara\">Reiniciar</button></div></li></ul>",
-      "css": ".ds-itens{list-style:none;margin:0;padding:0}.ds-item{display:grid;grid-template-columns:.5rem minmax(min(13rem,100%),1fr) minmax(0,max-content);align-items:center;gap:.35rem .75rem;padding:.7rem 0;border-top:1px solid var(--risco, #c3c6c1);font:400 1rem/1.45 var(--fonte, \"Archivo\", system-ui, sans-serif);color:var(--tinta, #161716)}.ds-item:first-child{border-top:0}.ds-led{align-self:start;margin-top:.48rem;width:.5rem;height:.5rem;border-radius:50%;background:var(--led-verde, #2bd46a);box-shadow:inset 0 -1px 1px rgb(0 0 0 / .2),0 0 6px rgb(43 212 106 / .55)}.ds-item-nome strong{font-weight:650}.ds-item-detalhe{margin-top:.1rem;font-size:.8rem;line-height:1.4;color:var(--tinta-2, #585b57);font-variant-numeric:tabular-nums}.ds-item-acoes{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.4rem}"
-    },
-    {
-      "name": "Tecla de trava",
-      "kind": "toggle",
-      "refersTo": "tecla-trava",
-      "description": "Escolha que fica ligada (os dias da semana): tecla clara pequena com um LED no alto; ligada, afunda no poço e o LED acende em verde.",
-      "html": "<label class=\"ds-trava\"><input type=\"checkbox\" checked><span>seg</span></label><label class=\"ds-trava\"><input type=\"checkbox\"><span>sáb</span></label>",
-      "css": ".ds-trava{position:relative;display:inline-grid;margin-right:.35rem}.ds-trava input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.ds-trava span{display:grid;justify-items:center;gap:.3rem;min-width:2.75rem;padding:.4rem .45rem .45rem;font:650 .62rem var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:112%;letter-spacing:.1em;text-transform:uppercase;color:var(--tinta-2, #585b57);background:var(--tecla-clara, #f8f8f5);border:1px solid var(--tecla-clara-borda, #a4a7a1);border-bottom:3px solid var(--tecla-clara-lado, #868983);border-radius:var(--raio-tecla, 5px)}.ds-trava span::before{content:\"\";width:.4rem;height:.4rem;border-radius:50%;background:var(--led-apagado, #aeb1ac)}.ds-trava input:checked+span{color:var(--tinta, #161716);background:var(--poco, #d3d5d1);border-bottom-width:1px;margin-top:2px;box-shadow:inset 0 1px 3px rgb(0 0 0 / .16)}.ds-trava input:checked+span::before{background:var(--led-verde, #2bd46a);box-shadow:0 0 6px rgb(43 212 106 / .55)}.ds-trava input:focus-visible+span{outline:2px solid var(--foco, #2559c4);outline-offset:2px}"
+      "description": "Um retângulo de Noite nos dois temas, com o ponto no pigmento da noite; chega numa mola e some em 4s (8s se for erro).",
+      "html": "<div class=\"ds-avisos\"><div class=\"ds-aviso ds-ok\">Reiniciar serviço: feito</div><div class=\"ds-aviso ds-erro\">Ligar o PC: sem conexão com o servidor (o Tailscale está ligado?)</div></div>",
+      "css": ".ds-avisos{display:grid;gap:.45rem;max-width:30rem}.ds-aviso{display:flex;align-items:baseline;gap:.6rem;padding:.75rem .95rem;border-radius:10px;background:var(--noite, #141a27);color:var(--noite-tinta, #e4e8ee);font:400 .85rem/1.4 var(--letra, \"Commissioner\", system-ui, sans-serif);box-shadow:0 18px 40px -16px rgb(0 0 0 / .55);animation:ds-chegar-aviso .55s var(--mola, linear(0, 0.0273, 0.0955, 0.1875, 0.2909, 0.3965, 0.4982, 0.5921, 0.6759, 0.7488, 0.8104, 0.8615, 0.9028, 0.9355, 0.9607, 0.9796, 0.9933, 1.0029, 1.0091, 1.0129, 1.0147, 1.0152, 1.0147, 1.0136, 1.0122, 1.0107, 1.0091, 1.0075, 1.0061, 1.0048, 1.0038, 1.0028, 1.0021, 1.0014, 1.001, 1.0006, 1.0003, 1.0001, 0.9999, 0.9999, 1))}@keyframes ds-chegar-aviso{from{opacity:0;transform:translateY(14px) scale(.98);filter:blur(4px)}}.ds-aviso::before{content:\"\";flex:none;width:.5rem;height:.5rem;border-radius:50%;background:#a3b5f3}.ds-aviso.ds-ok::before{background:#57b98a}.ds-aviso.ds-erro::before{background:#e8705c}@media (prefers-reduced-motion: reduce){.ds-aviso{animation:none !important;transition:none !important}}"
     }
   ],
   "narrative": {
-    "northStar": "O Aparelho de Mesa",
-    "overview": "O painel é um aparelho de mesa da família Braun e Teenage Engineering, feito para um servidor caseiro: um chassi de alumínio (tema claro) ou grafite (tema escuro) onde se aparafusam módulos com etiqueta de engenharia, uma fileira de teclas físicas e um visor preto que desenha o estado da máquina em tempo real. O tema segue o aparelho do dono (`prefers-color-scheme`); só o chassi muda: o visor é o mesmo e as teclas continuam grafite nos dois.\n\nA densidade é de instrumento, não de site. Os títulos são rótulos pequenos em versalete espaçado, e quem carrega a hierarquia é o visor, com números em 7 segmentos e desenhos vivos (carretéis de fita que giram na velocidade da CPU, termômetros, o tanque da RAM, a torre do PC, o mostrador de 24 h). O estado se lê pelos LEDs, sempre com o texto do lado. Uma tecla amarela por módulo diz qual é a ação principal; todas as outras são grafite.\n\nO sistema recusa duas coisas, confirmadas pelo dono: a cara de SaaS genérico (cartões cinza iguais com ícones de biblioteca) e o temático demais (ficção científica, cara de jogo). A \"cena\" existe, mas só nos momentos que importam: entrar, chegar uma aprovação, um agendamento rodar, o PC ligar. O uso de todo dia é rápido e quieto.",
+    "northStar": "A Policromia Contida",
+    "overview": "O painel é um templo grego visto de perto, em mármore e tinta. Os templos eram pintados; aqui a pintura foi reduzida ao essencial: um mármore frio de dia e uma noite azul-escura quase preta, o azul egípcio como único acento e o meandro como ornamento e como medida. O tema segue o aparelho do dono (`prefers-color-scheme`); os dois temas trocam só os valores das mesmas custom properties.\n\nA densidade é de ferramenta. A casca é do mesmo mármore, com um meandro fino na borda (embaixo do topo no celular, descendo pelo trilho no PC); cada tela abre com o nome na letra de pedra sobre uma faixa de meandro, e cada módulo é uma placa de mármore com a chave do meandro antes do título. O estado se lê em um olhar pelos medalhões, cujo meandro da borda se pinta de azul até o valor, e pela crepidoma das zonas, a escada do templo em 3D, um degrau por zona e um ponto por container. Os pigmentos antigos (malaquita, ocre e cinábrio) só aparecem para dizer o estado.\n\nO sistema recusa, por decisão do dono, a cara de SaaS genérico (o dashboard de cartões cinza), a Grécia de souvenir (colunas de enfeite, dourado, creme) e o que pareça desenho animado, jogo ou fantasia. O movimento é fluido e quieto no dia a dia; a cena fica para os momentos que importam: entrar pela coruja de Atena, chegar uma aprovação, um agendamento rodar, o PC ligar, uma zona ter problema.",
     "keyCharacteristics": [
-      "Chassi de alumínio ou grafite que segue o tema do aparelho; visor sempre preto.",
-      "Teclas grafite com lado de 3px que afundam ao toque; amarelo sinal só na ação principal.",
-      "LEDs verde, âmbar, vermelho e azul como único vocabulário de estado, sempre com legenda.",
-      "Módulos com parafusos nos cantos, régua na borda e etiqueta de engenharia (título em versalete, código em mono, peça posicional como IN-01).",
-      "Placa de modelo \"ATENA AT-1\" na marca.",
-      "Números medidos em 7 segmentos com os segmentos apagados visíveis.",
-      "Pictogramas próprios numa grade de 24 com traço de 1,75.",
-      "Archivo (largura variável) e Martian Mono, servidas pelo próprio painel."
+      "Mármore frio de dia, noite azul-escura à noite; a casca no mesmo mármore, com o meandro fino na borda.",
+      "O azul egípcio é o único acento: a ação principal, a tela ativa, o foco e o que mede.",
+      "Malaquita, ocre e cinábrio só como pontos de estado, sempre com o texto do lado; o ocre também na faixa de aprovações.",
+      "O meandro é ornamento (a borda da casca, a faixa do nome da tela, a chave do módulo) e medida (o anel dos medalhões, o medidor).",
+      "A crepidoma das zonas em 3D é a assinatura e a única profundidade de verdade.",
+      "Commissioner, de um tipógrafo grego, com as serifas de pedra nos títulos e números; caixa-alta só nas inscrições ΑΘΗΝΑ e ΑΘΕ.",
+      "Ícones de traço fino com a área \"pintada\" que acende na tela ativa.",
+      "Ease-out no dia a dia, uma mola amortecida só no que assenta; com `prefers-reduced-motion`, nada se move.",
+      "Sem dependências: fonte, desenhos e ícones servidos pelo próprio painel, sob CSP `default-src 'self'`."
     ],
     "rules": [
       {
-        "name": "A Regra da Tecla Amarela",
-        "body": "Entre as teclas, só a ação principal é amarela, uma por módulo ou janela. As outras são grafite (a ação do módulo que não é a principal) ou claras (as de cada linha e as secundárias), nos dois temas. Fora das teclas, o amarelo só aponta para o dono e para onde ele está: a faixa e a contagem de aprovações, o ponto da tela ativa, o sublinhado dos links, a seleção de texto, os marcadores do mostrador da agenda, o tampo da placa sob o ponteiro na vista explodida e a varredura dos LEDs ao entrar.",
+        "name": "A Regra do Azul Único",
+        "body": "O azul egípcio é o único acento. Ele marca a ação principal (uma por módulo ou janela), onde o dono está (a tela ativa, o item marcado, o foco) e o que mede (o anel, o medidor). Nenhum outro matiz entra como enfeite ou como ação.",
         "section": "colors"
       },
       {
-        "name": "A Regra do LED com Legenda",
-        "body": "Estado só se diz com os quatro LEDs (verde ok, âmbar perto do limite, vermelho falha, azul informação ou em andamento), e sempre com o texto do lado. Cor sozinha não é estado, e nenhum outro matiz entra nesse vocabulário.",
+        "name": "A Regra dos Pigmentos de Estado",
+        "body": "Malaquita, ocre e cinábrio só dizem estado: como pontos, sempre com o texto do lado escrito na tinta deles; na tecla de perigo e no erro; e no anel ou no medidor, que só trocam o azul por ocre perto do limite e por cinábrio passado dele. Fora do estado, só o ocre aparece, e só nas aprovações: a faixa e a contagem.",
         "section": "colors"
       },
       {
-        "name": "A Regra do Visor Sempre Preto",
-        "body": "O visor é vidro preto nos dois temas. O tema troca o chassi, nunca o visor.",
+        "name": "A Regra do Ornamento Mudo",
+        "body": "A Tinta de Ornamento (2,5:1 sobre a placa) é só para o ornamento (o meandro fino, a íris da coruja), nunca para texto. Todo texto usa Tinta ou Tinta Segunda (6,2:1 sobre a placa de dia, 7,7:1 à noite).",
         "section": "colors"
       },
       {
-        "name": "A Regra da Etiqueta",
-        "body": "Título de módulo é rótulo, não manchete: Archivo 650 a .69rem, largura 112, caixa alta com .14em de espaço. A hierarquia vem do visor e dos números, nunca do tamanho dos títulos.",
+        "name": "A Regra da Noite dos Textos de Máquina",
+        "body": "Registros e avisos ficam na Noite nos dois temas. O ponto do aviso usa os pigmentos da noite fixos (#a3b5f3 informação, #57b98a ok, #e8705c erro), porque o fundo dele não muda com o tema.",
+        "section": "colors"
+      },
+      {
+        "name": "A Regra da Inscrição",
+        "body": "A caixa-alta só existe nas inscrições gregas: o ΑΘΗΝΑ da marca e o ΑΘΕ da moeda na entrada. Títulos, rótulos, selos, nomes da barra e grupos do trilho ficam em caixa comum; nenhum estilo usa `text-transform: uppercase`.",
         "section": "typography"
       },
       {
-        "name": "A Regra do Número de Máquina",
-        "body": "Número medido no visor sai em 7 segmentos, com os segmentos apagados visíveis por trás. Códigos, unidades, registros e chaves saem em Martian Mono. Números em linhas de texto usam algarismos tabulares e se escrevem como aqui (15,0 GB, US$ 0,98, 1.304 RPM, 0,3%), pelo num() do comum.js.",
+        "name": "A Regra da Serifa de Pedra",
+        "body": "A serifa de pedra (FLAR 100, VOLM 100) é dos títulos, dos números e da inscrição; os rótulos usam a meia pedra (FLAR 100, VOLM 50); o corpo e as unidades ao lado dos números, a letra lisa (FLAR 0, VOLM 0).",
+        "section": "typography"
+      },
+      {
+        "name": "A Regra do Número de Verdade",
+        "body": "Todo número vem do executor e se escreve como aqui (15,0 GB, US$ 0,98, 1.304 RPM, 0,3%), pelo `num()`, `gb()`, `dinheiro()` e `plural()` do `comum.js`, em algarismos tabulares; o que vem em outro formato (o `54.68MiB` do docker stats) é traduzido antes de entrar na tela. A interface nunca inventa um número.",
         "section": "typography"
       },
       {
         "name": "A Regra das Colunas de Jornal",
-        "body": "No PC, a tela é um fluxo de colunas CSS: duas colunas, e colunas automáticas de 21rem no Início e nas Aprovações. Cada módulo leva `break-inside: avoid`; os módulos largos e a faixa de aprovações atravessam todas as colunas com `column-span: all`. Os módulos têm a altura do que mostram.",
+        "body": "No PC, a tela é um fluxo de colunas CSS: duas colunas, e colunas automáticas de 21rem no Início e nas Aprovações. Cada módulo leva `break-inside: avoid`; o módulo largo, a faixa de aprovações e o cabeçalho da tela atravessam todas as colunas com `column-span: all`. Os módulos têm a altura do que mostram.",
         "section": "layout"
       },
       {
         "name": "A Regra do Polegar",
-        "body": "No celular, as telas de todo dia ficam na barra de baixo, em teclas de 3.3rem de altura; com toque grosso (`pointer: coarse`), toda tecla tem no mínimo 2.75rem.",
+        "body": "No celular, as telas de todo dia ficam na barra de baixo, em itens de 3.5rem de altura; com toque grosso (`pointer: coarse`), toda tecla tem no mínimo 2.75rem.",
         "section": "layout"
       },
       {
-        "name": "A Regra da Tecla com Lado",
-        "body": "A profundidade de uma tecla é a borda de baixo de 3px, o lado dela, não uma sombra deslocada. Ao apertar, a tecla desce 1px e o lado vira 2px.",
+        "name": "A Regra da Única Escada",
+        "body": "A crepidoma é o único 3D do painel. Módulos e teclas ficam planos: nenhuma sombra deslocada, nenhum lado de tecla, nenhum relevo. Nada flutua além das janelas, da folha, da paleta e dos avisos.",
         "section": "elevation"
       },
       {
-        "name": "A Regra da Placa e do Poço",
-        "body": "O que está montado sobe (módulo: realce no topo e sombra ambiente); o que está selecionado ou recebe dado afunda (sombra interna de 1px por 3px). Nada flutua além das janelas.",
-        "section": "elevation"
-      },
-      {
-        "name": "A Regra do Parafuso",
-        "body": "Toda placa montada leva os quatro parafusos: o módulo também leva a régua na borda; a frente de entrada, só os parafusos. Janelas, visor, faixa e avisos não levam parafuso.",
+        "name": "A Regra do Meandro que Mede",
+        "body": "O meandro é ornamento e é medida. Uma fração se mostra pintando o meandro (o anel do medalhão, o medidor), nunca numa barra lisa ou num anel liso; e o ornamento é sempre o mesmo traço, nunca um friso de outra forma.",
         "section": "shapes"
       },
       {
+        "name": "A Regra da Mola que Assenta",
+        "body": "A mola é só do que assenta no lugar: o marcador da tela ativa, as janelas, a folha, os avisos, os degraus da crepidoma, a seta dos detalhes, o ponto da trava, os pontos das zonas ao chegar e a cabeça da coruja que volta. Todo o resto é ease-out em `--suave`. Nada de quique, tremor ou cascata de módulos.",
+        "section": "components"
+      },
+      {
+        "name": "A Regra do Que Não Fica",
+        "body": "Animação de opacidade ou desfoque num módulo, na tela ou num degrau usa `animation-fill-mode: backwards` (ou nenhum), nunca `forwards` nem `both`: uma opacidade ou um filtro que ficasse no elemento achataria o 3D da crepidoma.",
+        "section": "components"
+      },
+      {
         "name": "A Regra da Cena nos Momentos",
-        "body": "Movimento de cena só em quatro momentos: a varredura dos LEDs das zonas ao entrar (cada LED acende em amarelo por .5s, 70ms depois do anterior), o pulso da faixa quando chega aprovação (anel amarelo de 16px, 1.2s, duas vezes), a ventoinha que acelera no primeiro minuto depois de o PC ligar e o ponteiro do mostrador que gira quando um agendamento roda (1.4s, duas voltas). Os carretéis e as ventoinhas do visor giram na velocidade medida, porque ali o movimento é a leitura. Com `prefers-reduced-motion`, nada se move: animações e transições são desligadas.",
+        "body": "A cena só acontece quando importa: ao entrar, a coruja se desenha traço a traço (2.7s), fecha os olhos enquanto você digita, inclina a cabeça e volta na mola na senha errada, abre bem os olhos na certa e o meandro do medalhão se fecha em azul antes de a entrada se desfazer e o painel chegar, com os pontos das zonas aparecendo um a um; quando chega uma aprovação, uma luz passa pela faixa e a coroa se redesenha, uma vez; quando um agendamento roda, a sombra do relógio de sol dá a volta (2.2s); quando o PC liga, o anel dele se pinta de novo; a zona com problema escorrega para o lado.",
+        "section": "components"
+      },
+      {
+        "name": "A Regra do Parado",
+        "body": "Com `prefers-reduced-motion`, nada se move: animações, transições e View Transitions são desligadas, os traços aparecem já desenhados e o ícone que lia só fica a 60%.",
         "section": "components"
       }
     ],
     "dos": [
-      "**Do** montar todo módulo com o cabeçalho de etiqueta: título em Rótulo, o código do que ele mede em Martian Mono e a peça posicional (IN-01), que o painel numera sozinho.",
-      "**Do** usar uma única tecla amarela (principal) por módulo ou janela; a ação do módulo é grafite, e as de cada linha e as secundárias são claras.",
-      "**Do** montar toda lista com item() (LED, nome, detalhe com o estado escrito, teclas) e todo formulário com campo().",
-      "**Do** escrever números com num() (e gb(), dinheiro(), plural()): vírgula decimal e ponto de milhar.",
-      "**Do** dizer todo estado com um LED e o texto do lado (selo), nas cores verde, âmbar, vermelho e azul.",
-      "**Do** desenhar número medido em 7 segmentos no visor preto, com os segmentos apagados visíveis, e só com dado de verdade do executor.",
-      "**Do** desenhar pictogramas novos no próprio painel, na grade de 24 com traço de 1,75, pontas redondas e `currentColor`.",
-      "**Do** pegar cor, raio e fonte das custom properties (`var(--tecla)`, `var(--raio)`, `var(--mono)`) e mudar o tema só trocando valores sob `prefers-color-scheme: dark`.",
-      "**Do** passar valores dinâmicos (largura do medidor, velocidade dos carretéis, atraso da varredura) pelo CSSOM, com `style.setProperty`.",
-      "**Do** manter os alvos de toque em 2.75rem no toque grosso e a barra de baixo no celular.",
-      "**Do** desligar toda animação nova sob `prefers-reduced-motion`."
+      "**Do** montar todo módulo com `modulo()`: a chave do meandro, o título na letra de pedra, a régua de Veio e, à direita, o que ele mede, sempre dado de verdade.",
+      "**Do** usar uma única tecla principal azul por módulo ou janela; as outras são de fio (Placa com contorno de Veio Forte), e as de cada linha e as secundárias são discretas.",
+      "**Do** dizer todo estado com um ponto de pigmento e o texto do lado (`item()`, selo): Malaquita ok, Ocre perto do limite, Cinábrio falha, Azul informação ou em andamento, Pedra sem estado.",
+      "**Do** medir com o meandro: `medalhao()` para uma leitura com limite, `medidor()` para uma fração numa linha; a tinta passa do azul ao ocre perto do limite e ao cinábrio passado dele.",
+      "**Do** escrever números com `num()`, `gb()`, `dinheiro()` e `plural()`, em algarismos tabulares.",
+      "**Do** desenhar ícones novos em `pictos.js`: grade de 24, traço de 1.5 em `currentColor`, pontas e quinas redondas, a área \"tinta\" onde os gregos pintariam e `pathLength` 1 nos traços, para o redesenho.",
+      "**Do** pegar cor, raio, letra e curva das custom properties (`var(--azul)`, `var(--raio)`, `var(--letra)`, `var(--suave)`, `var(--mola)`) e mudar o tema só trocando valores sob `prefers-color-scheme: dark`.",
+      "**Do** passar valores dinâmicos (`--fracao`, `--i`, `--volta`, a posição do marcador, a largura do medidor) pelo CSSOM, com `style.setProperty`: a CSP barra o atributo `style`.",
+      "**Do** usar a mola só no que assenta, `--suave` no resto, e `animation-fill-mode: backwards` em toda animação de opacidade ou desfoque num módulo.",
+      "**Do** deixar toda animação nova parada sob `prefers-reduced-motion`, com os traços já desenhados.",
+      "**Do** manter os alvos de toque em 2.75rem no toque grosso e a barra embaixo no celular."
     ],
     "donts": [
-      "**Don't** pintar de amarelo uma tecla que não seja a ação principal, nem usar o amarelo como enfeite.",
-      "**Don't** dizer estado só com cor, nem criar um quinto matiz de estado.",
-      "**Don't** clarear o visor no tema claro.",
-      "**Don't** usar biblioteca de ícones nem caractere Unicode fazendo papel de ícone.",
+      "**Don't** usar caixa-alta fora das inscrições gregas (ΑΘΗΝΑ, ΑΘΕ), nem `text-transform: uppercase`.",
+      "**Don't** trazer um segundo acento, nem pintar com malaquita, ocre ou cinábrio o que não é estado (a única exceção é o ocre das aprovações).",
+      "**Don't** escrever texto na Tinta de Ornamento.",
+      "**Don't** medir com barra lisa ou anel liso: a medida é o meandro pintado.",
+      "**Don't** pôr quique, tremor, cascata de módulos nem mola numa transição do dia a dia.",
+      "**Don't** deixar opacidade ou filtro preso num módulo com `forwards` ou `both`: achata a crepidoma.",
+      "**Don't** dar sombra deslocada, lado de tecla ou relevo a teclas e módulos: o único 3D é a crepidoma.",
       "**Don't** carregar fonte, script, estilo ou imagem de outro endereço, nem usar o atributo `style` inline: a CSP é `default-src 'self'` e o container não tem rede.",
-      "**Don't** pôr movimento contínuo que não seja leitura de dado; a cena fica nos quatro momentos.",
-      "**Don't** fazer cara de SaaS genérico (cartões cinza iguais com ícones de biblioteca) nem de ficção científica ou jogo.",
-      "**Don't** escrever texto abaixo de .6rem.",
-      "**Don't** dar sombra deslocada às teclas: a profundidade é o lado de 3px."
+      "**Don't** usar biblioteca de ícones nem caractere Unicode fazendo papel de ícone.",
+      "**Don't** fazer a Grécia de souvenir (colunas de enfeite, dourado, creme), nem algo que pareça desenho animado, jogo ou fantasia, nem o dashboard de cartões cinza do SaaS genérico."
     ]
   }
 }

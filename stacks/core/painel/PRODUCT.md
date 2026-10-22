@@ -36,13 +36,14 @@ O painel é o servidor no navegador e no celular (PWA): o estado da máquina e d
 
 - O nome é Atena (o servidor e a assistente).
 - O painel tem identidade própria, separada da do README (que é neon com tema grego): decisão do dono.
+- O painel é "meio grego" desde 2026-10-22, por pedido do dono: elegante e sofisticado, com o grego como sistema (as cores dos templos pintados, o meandro, a letra de inscrição, a coruja e a oliveira de Atena), nunca como fantasia.
 - O que o dono marcou como errado: cara de SaaS genérico, ser ruim de usar no celular, e ser temático demais (parecer jogo ou fantasia em vez de ferramenta).
 - Intensidade: "show" nos momentos certos (entrar, um alerta, uma aprovação, um agendamento que roda); o resto limpo e rápido.
 
 ## Evidence on Hand
 
 - Os dados vêm do servidor em tempo real; não há depoimentos, clientes, números de uso ou imagens de produto, e nada disso deve ser inventado.
-- Identidade gráfica existente só no README (`docs/assets/banner.svg`, `docs/assets/zonas.svg`), que não é a do painel.
+- Identidade gráfica do README (`docs/assets/banner.svg`, `docs/assets/zonas.svg`), que não é a do painel; a do painel está no DESIGN.md.
 
 ## Product Principles
 
