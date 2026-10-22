@@ -1,7 +1,7 @@
 // Interface do painel: telas montadas com elementos (nunca innerHTML com dados do servidor).
-// O visual é o da policromia (estilo.css); os desenhos (o meandro, o templo da entrada) ficam em desenhos.js.
+// O visual é o da policromia (estilo.css); os desenhos (o meandro, a gravura da entrada) ficam em desenhos.js.
 import { $, TIQUE, api, consultar, esqueleto, h, ligarCasca, mudar } from "./comum.js";
-import { faixa, prepararTracos, templo } from "./desenhos.js";
+import { faixa, gravura } from "./desenhos.js";
 import { telaAgenda } from "./telas/agenda.js";
 import { telaAjustes } from "./telas/ajustes.js";
 import { contarPendentes, faixaAprovacoes, telaAprovacoes } from "./telas/aprovacoes.js";
@@ -227,15 +227,18 @@ async function atualizar() {
   tela.removeAttribute("aria-busy");
 }
 
-// a entrada: a construção do templo (a geometria, a obra a tinta e ΑΘΗΝΑ letra a letra); na senha
-// errada a inscrição fica em cinábrio por um instante, e na certa o tímpano se pinta de azul egípcio
+// a entrada: a gravura da Atena Partenos se imprime por pontos e ΑΘΗΝΑ chega letra a letra; na senha
+// errada a inscrição fica em cinábrio por um instante, e na certa ela fica azul e a gravura se desfaz
+let estampa = null;
 function prepararEntrada() {
-  const cena = $(".cena-entrada");
-  cena.replaceChildren(prepararTracos(templo()));
-  cena.classList.remove("aceita", "recusa");
-  if (reduzido()) return;
-  $("#entrada").classList.add("construindo");
-  setTimeout(() => $("#entrada").classList.remove("construindo"), 4300);
+  estampa = gravura("/gravuras/atena-partenos.png", "a Atena Partenos, a estátua de Atena no Partenon, numa gravura de 1851");
+  $(".cena-entrada").replaceChildren(estampa);
+  $("#form-entrada").classList.remove("aceita", "recusa");
+  if (!reduzido()) {
+    $("#entrada").classList.add("construindo");
+    setTimeout(() => $("#entrada").classList.remove("construindo"), 3000);
+  }
+  requestAnimationFrame(() => estampa.imprimir());
 }
 
 function mostrarEntrada() {
@@ -284,20 +287,23 @@ $("#form-entrada").addEventListener("submit", async (evento) => {
   if (r.ok === false) {
     $("#msg-entrada").textContent = r.erro;
     // errada: a inscrição fica em cinábrio por um instante
-    const cena = $(".cena-entrada");
-    cena.classList.remove("recusa");
-    requestAnimationFrame(() => cena.classList.add("recusa"));
-    setTimeout(() => cena.classList.remove("recusa"), 1600);
+    const frente = $("#form-entrada");
+    frente.classList.remove("recusa");
+    requestAnimationFrame(() => frente.classList.add("recusa"));
+    setTimeout(() => frente.classList.remove("recusa"), 1600);
     $("#senha").select();
     return;
   }
   $("#senha").value = "";
   $("#msg-entrada").textContent = "";
-  // certa: o tímpano se pinta de azul, e a entrada se desfaz para o painel chegar
-  $(".cena-entrada").classList.add("aceita");
-  await espera(950);
+  // certa: a inscrição fica azul, a gravura se desfaz em pontos e a entrada se desfaz para o painel chegar
+  $("#form-entrada").classList.add("aceita");
+  await espera(300);
+  const desfeita = estampa?.desfazer();
+  await espera(380);
   $("#entrada").classList.add("saindo");
-  await espera(420);
+  await desfeita;
+  await espera(120);
   $("#entrada").classList.remove("saindo");
   mostrarPainel();
 });

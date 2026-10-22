@@ -1,5 +1,5 @@
 // Os desenhos do painel, no mundo da policromia (os templos gregos eram pintados): o meandro, que
-// também mede; a construção do templo na entrada, como uma prancha de arquiteto; os medalhões dos números; a
+// também mede; a gravura da Atena Partenos na entrada, impressa por pontos; os medalhões dos números; a
 // crepidoma das zonas (os degraus do templo, em 3D) e o relógio de sol da agenda. Tudo em SVG ou em
 // elementos montados um a um, a partir dos dados de verdade. O movimento vem do CSS e para com
 // prefers-reduced-motion.
@@ -182,60 +182,98 @@ export function relogioDeSol(agendamentos, girando) {
     s("circle", { cx: 50, cy: 50, r: 2.4, class: "centro" }));
 }
 
-// --- a entrada: a construção do templo, como numa prancha de arquiteto --------------------------------
-// Três atos. A geometria, em linha fina: o chão, o eixo, um quadrado e o arco do compasso (centrado no
-// meio da base dele) que estende o quadrado até o retângulo de ouro, que é o corpo da fachada. O templo
-// a tinta: os três degraus (a crepidoma), as seis colunas subindo do centro para fora, os capitéis, a
-// arquitrave, o friso com os tríglifos, a cornija e o frontão, cujas duas linhas se encontram no topo.
-// O acabamento: a geometria recua para um fantasma, como num desenho técnico. Quando a senha está certa,
-// o tímpano se pinta de azul egípcio, como eram os templos (as classes vêm do app.js).
+// --- a entrada: a gravura da Atena Partenos, impressa por pontos ------------------------------------
+// A imagem é uma xilogravura de 1851 (domínio público; a origem está em gravuras/ORIGEM.txt) guardada só
+// como máscara: a cor vem do CSS (--gravura: azul egípcio de dia, osso à noite). Ao abrir, ela se imprime
+// por um pontilhado ordenado (a matriz de Bayer 8×8, em pontos de 2 px) que se adensa de cima para baixo e
+// da tinta mais escura para a mais clara; ao entrar no painel, o mesmo pontilhado a desfaz.
 
-const traco = (d, classe, atraso, duracao) =>
-  s("path", { d, class: `traco ${classe}`.trim(), pathLength: 1, "data-atraso": atraso, "data-duracao": duracao });
+const BAYER = [0, 32, 8, 40, 2, 34, 10, 42, 48, 16, 56, 24, 50, 18, 58, 26, 12, 44, 4, 36, 14, 46, 6, 38, 60, 28, 52, 20, 62, 30, 54, 22,
+  3, 35, 11, 43, 1, 33, 9, 41, 51, 19, 59, 27, 49, 17, 57, 25, 15, 47, 7, 39, 13, 45, 5, 37, 63, 31, 55, 23, 61, 29, 53, 21];
 
-const COLUNAS = [82, 113.2, 144.4, 175.6, 206.8, 238];
+export function gravura(src, rotulo) {
+  const tela = document.createElement("canvas");
+  tela.className = "gravura";
+  tela.setAttribute("role", "img");
+  tela.setAttribute("aria-label", rotulo);
+  const imagem = new Image();
+  imagem.src = src;
+  let estado = null;
+  let quadro = 0;
 
-export function templo() {
-  // o quadrado de lado 136 sobre a base (50 a 186), o raio do meio da base (118, 200) até o canto de cima
-  // (186, 64) e o arco desse raio, que cai na base em 270: 220 por 136 é a razão de ouro
-  const raio = Math.hypot(186 - 118, 200 - 64);
-  const geometria = s("g", { class: "geometria" },
-    traco("M20 200 H300", "guia", 0, 0.8),
-    traco("M160 214 V22", "guia", 0.15, 0.8),
-    traco("M50 200 V64 H186 V200", "guia", 0.4, 0.9),
-    traco("M118 200 L186 64", "guia", 0.95, 0.4),
-    traco(`M186 64 A${raio.toFixed(2)} ${raio.toFixed(2)} 0 0 1 ${(118 + raio).toFixed(2)} 200`, "guia compasso", 1.15, 0.8),
-    traco("M186 64 H270 V200", "guia", 1.7, 0.5),
-    s("circle", { cx: 118, cy: 200, r: 1.7, class: "pivo" }),
-    s("circle", { cx: 186, cy: 64, r: 1.3, class: "pivo" }));
-  // as colunas sobem do centro para fora: as duas do meio, depois as do lado, depois as das pontas
-  const ordem = (cx) => [144.4, 175.6].includes(cx) ? 0 : [113.2, 206.8].includes(cx) ? 1 : 2;
-  const colunas = COLUNAS.map((cx) => {
-    const a = 1.95 + ordem(cx) * 0.1;
-    return s("g", { class: "coluna" },
-      traco(`M${cx - 6.5} 164 L${cx - 5.3} 103`, "pedra", a, 0.6),
-      traco(`M${cx + 6.5} 164 L${cx + 5.3} 103`, "pedra", a, 0.6),
-      s("path", { d: `M${cx - 2.2} 162 L${cx - 1.8} 105 M${cx + 2.2} 162 L${cx + 1.8} 105`, class: "estria" }),
-      traco(`M${cx - 5.3} 103 Q${cx - 8} 101.5 ${cx - 8} 100 H${cx + 8} Q${cx + 8} 101.5 ${cx + 5.3} 103 M${cx - 8} 100 V97 H${cx + 8} V100`, "pedra capitel", a + 0.5, 0.35));
-  });
-  // os tríglifos: sobre cada coluna e no meio de cada vão
-  const xs = COLUNAS.flatMap((x, i) => (i ? [(x + COLUNAS[i - 1]) / 2, x] : [x]));
-  const triglifos = s("path", { d: xs.map((x) => `M${(x - 2).toFixed(1)} 82 V72 M${x.toFixed(1)} 82 V72 M${(x + 2).toFixed(1)} 82 V72`).join(" "), class: "triglifos" });
-  const pedra = s("g", { class: "obra" },
-    traco("M50 200 V188 H270 V200", "pedra", 1.75, 0.45),
-    traco("M58 188 V176 H262 V188", "pedra", 1.85, 0.45),
-    traco("M66 176 V164 H254 V176", "pedra", 1.95, 0.45),
-    colunas,
-    traco("M58 97 H262 V84 H58 Z", "pedra", 2.55, 0.55),
-    traco("M58 84 V70 H262 V84", "pedra", 2.65, 0.5),
-    triglifos,
-    traco("M50 70 H270 V64 H50 Z", "pedra", 2.75, 0.5),
-    s("path", { d: "M64 61 L160 40 L256 61 Z", class: "timpano" }),
-    traco("M50 64 L160 36", "pedra", 2.95, 0.5),
-    traco("M270 64 L160 36", "pedra", 2.95, 0.5),
-    s("path", { d: "M66 60.4 L160 41.6 L254 60.4 Z", class: "timpano-tinta" }));
-  return s("svg", { viewBox: "14 18 292 200", class: "templo", role: "img", "aria-label": "a fachada de um templo grego, desenhada a partir do retângulo de ouro" },
-    geometria, pedra);
+  // a máscara no tamanho da tela (na densidade do aparelho) e a ordem em que cada ponto aparece
+  async function preparar() {
+    await imagem.decode();
+    const dpr = Math.min(devicePixelRatio || 1, 3);
+    const w = Math.max(1, Math.round(tela.getBoundingClientRect().width * dpr));
+    const h = Math.max(1, Math.round((w * imagem.naturalHeight) / imagem.naturalWidth));
+    tela.width = w;
+    tela.height = h;
+    const ctx = tela.getContext("2d", { willReadFrequently: true });
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(imagem, 0, 0, w, h);
+    const fonte = ctx.getImageData(0, 0, w, h).data;
+    const alfa = new Uint8ClampedArray(w * h);
+    const ordem = new Float32Array(w * h);
+    const passo = Math.max(1, Math.round(2 * dpr));
+    for (let y = 0; y < h; y++) {
+      const linha = ((y / passo) | 0) % 8;
+      for (let x = 0; x < w; x++) {
+        const i = y * w + x;
+        alfa[i] = fonte[i * 4 + 3];
+        ordem[i] = (BAYER[linha * 8 + (((x / passo) | 0) % 8)] / 64) * 0.5 + (1 - alfa[i] / 255) * 0.2 + (y / h) * 0.3;
+      }
+    }
+    const [r, g, b] = (getComputedStyle(tela).color.match(/\d+(\.\d+)?/g) ?? [0, 0, 0]).map(Number);
+    estado = { ctx, w, h, alfa, ordem, cor: [r, g, b], saida: ctx.createImageData(w, h) };
+  }
+
+  // os pontos cuja ordem já passou de t aparecem com a tinta deles
+  function pintar(t) {
+    const { ctx, w, h, alfa, ordem, cor, saida } = estado;
+    const d = saida.data;
+    d.fill(0);
+    for (let i = 0; i < w * h; i++) {
+      if (alfa[i] && ordem[i] <= t) {
+        d[i * 4] = cor[0];
+        d[i * 4 + 1] = cor[1];
+        d[i * 4 + 2] = cor[2];
+        d[i * 4 + 3] = alfa[i];
+      }
+    }
+    ctx.putImageData(saida, 0, 0);
+  }
+
+  function animar(de, ate, ms) {
+    cancelAnimationFrame(quadro);
+    return new Promise((pronto) => {
+      const inicio = performance.now();
+      const passo = (agora) => {
+        const x = Math.min(1, (agora - inicio) / ms);
+        const suave = x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
+        pintar(de + (ate - de) * suave);
+        if (x < 1) quadro = requestAnimationFrame(passo);
+        else pronto();
+      };
+      quadro = requestAnimationFrame(passo);
+    });
+  }
+
+  const reduzido = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  tela.imprimir = async (ms = 1900) => {
+    await preparar();
+    if (reduzido()) pintar(1.1);
+    else await animar(-0.05, 1.1, ms);
+  };
+  tela.desfazer = async (ms = 650) => {
+    if (!estado || reduzido()) return;
+    await animar(1.1, -0.05, ms);
+  };
+  // a janela muda de tamanho ou de tema: refaz já pronta
+  const refazer = async () => { if (estado && tela.isConnected) { await preparar(); pintar(1.1); } };
+  addEventListener("resize", refazer);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", refazer);
+  return tela;
 }
 
 // cada traço começa a se desenhar no seu atraso (em segundos, do mais antigo ao mais novo)

@@ -37,7 +37,7 @@
   --azul-forte: #1a3275;
   --azul-claro: #e9edf7;
   --azul-tinta: #f7f8fc;
-  --azul-pigmento: #24418f;   /* o azul egípcio como tinta de parede (o tímpano), igual nos dois temas */
+  --gravura: #24418f;   /* a tinta da gravura da entrada: azul egípcio de dia, osso à noite */
   /* os pigmentos de estado */
   --ocre: #b07c1e;
   --ocre-claro: #f7f1e4;
@@ -89,7 +89,7 @@
     --azul-forte: #bfcdf7;
     --azul-claro: #1b2441;
     --azul-tinta: #0b0f1a;
-    --azul-pigmento: #3556b8;
+    --gravura: #cdd3df;
     --ocre: #d6a24a;
     --ocre-claro: #231d10;
     --ocre-tinta: #e8bf74;
@@ -612,7 +612,7 @@ input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]:
 @keyframes luz { to { transform: translateX(100%); } }
 .faixa.pulsa .picto-aprovacoes :not(.tinta, .cheio) { stroke-dasharray: 1 1; animation: tracar 1s var(--traco) both; }
 
-/* --- entrar: a construção do templo, e o tímpano que se pinta com a senha certa --- */
+/* --- entrar: a gravura da Atena Partenos, impressa por pontos --- */
 
 .entrada { min-height: 100dvh; display: grid; place-items: center; padding: 1.5rem 1rem 2rem; }
 .frente { width: min(100%, 22rem); display: grid; gap: .8rem; }
@@ -620,42 +620,21 @@ input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]:
 .frente input { min-height: 3rem; font-size: 1.05rem; }
 .frente button { margin-top: .25rem; min-height: 3rem; font-size: .95rem; }
 .frente .erro { text-align: center; }
-.cena-entrada { justify-self: center; width: min(88vw, 22rem); margin-bottom: .2rem; }
-.templo { display: block; width: 100%; height: auto; overflow: visible; }
-.templo .traco { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-/* a geometria: linha fina, que recua para um fantasma depois da obra, como num desenho técnico */
-.templo .guia { stroke: var(--tinta-3); stroke-width: .6; opacity: .35; }
-.templo .pivo { fill: var(--tinta-3); opacity: .55; }
-/* a obra, a tinta */
-.templo .pedra { stroke: var(--tinta); stroke-width: 1.1; }
-.templo .capitel { stroke-width: .9; }
-.templo :is(.estria, .triglifos) { fill: none; stroke: var(--tinta-2); stroke-width: .45; }
-.templo .timpano { fill: none; stroke: var(--tinta-2); stroke-width: .5; transition: stroke .35s var(--suave); }
-.templo .timpano-tinta { fill: var(--azul-pigmento); transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); transition: transform .9s var(--suave); }
-/* os três atos: a geometria se traça, a obra sobe e o acabamento chega */
-.construindo .templo .traco { stroke-dasharray: 1 1; stroke-dashoffset: 1; animation: tracar var(--duracao, .6s) var(--traco) var(--atraso, 0s) forwards; }
-.construindo .templo .guia { animation: tracar var(--duracao, .6s) var(--traco) var(--atraso, 0s) forwards, recuar 4.2s ease-in-out both; }
-@keyframes recuar { 0%, 72% { opacity: .95; } 100% { opacity: .35; } }
-.construindo .templo :is(.pivo, .estria, .triglifos, .timpano) { animation: aparecer .9s var(--suave) backwards; }
-.construindo .templo .pivo { animation-delay: .95s; }
-.construindo .templo .estria { animation-delay: 2.75s; }
-.construindo .templo .triglifos { animation-delay: 3.1s; }
-.construindo .templo .timpano { animation-delay: 3.35s; }
-@keyframes aparecer { from { opacity: 0; } }
-/* ΑΘΗΝΑ letra a letra, no fim da obra */
+.campos-entrada { display: grid; gap: .8rem; }
+.cena-entrada { justify-self: center; margin-bottom: .1rem; }
+/* a gravura: a cor da tinta vem daqui; o desenho e o pontilhado, do desenhos.js */
+.gravura { display: block; height: min(50dvh, 27rem); width: auto; aspect-ratio: 560 / 1178; color: var(--gravura); }
+/* ΑΘΗΝΑ letra a letra, quando a impressão chega embaixo */
 .marca .letras > span { display: inline-block; transition: color .5s var(--suave); }
 .marca .letras > span:nth-child(2) { --i: 1; }
 .marca .letras > span:nth-child(3) { --i: 2; }
 .marca .letras > span:nth-child(4) { --i: 3; }
 .marca .letras > span:nth-child(5) { --i: 4; }
-.construindo .marca .letras > span { animation: surgir-letra .8s var(--suave) backwards; animation-delay: calc(3.2s + var(--i, 0) * 90ms); }
+.construindo .marca .letras > span { animation: surgir-letra .8s var(--suave) backwards; animation-delay: calc(1.45s + var(--i, 0) * 90ms); }
 @keyframes surgir-letra { from { opacity: 0; transform: translateY(5px); filter: blur(3px); } }
-/* a senha errada: a inscrição e o tímpano ficam em cinábrio por um instante */
-.cena-entrada.recusa ~ .marca .letras > span { color: var(--cinabrio-tinta); }
-.recusa .templo .timpano { stroke: var(--cinabrio); }
-/* a certa: o tímpano se pinta de azul egípcio, do topo para baixo, e a inscrição também */
-.aceita .templo .timpano-tinta { transform: scaleY(1); }
-.cena-entrada.aceita ~ .marca .letras > span { color: var(--azul); }
+/* a senha errada: a inscrição fica em cinábrio por um instante; a certa: ela fica azul */
+.frente.recusa .marca .letras > span { color: var(--cinabrio-tinta); }
+.frente.aceita .marca .letras > span { color: var(--azul); }
 /* entrou: a entrada se desfaz e o painel chega */
 .entrada.saindo { animation: afastar .5s var(--suave) forwards; }
 @keyframes afastar { to { opacity: 0; transform: scale(1.02); filter: blur(10px); } }
@@ -668,7 +647,10 @@ input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]:
   }
   .entrada::before { top: 2rem; }
   .entrada::after { bottom: 2rem; }
-  .cena-entrada { width: 30rem; }
+  /* no PC, a gravura à esquerda e a entrada à direita */
+  .frente { width: min(100%, 48rem); grid-template-columns: auto minmax(0, 21rem); align-items: center; column-gap: 4.5rem; }
+  .campos-entrada .marca { justify-self: start; margin-left: 0; }
+  .gravura { height: min(76dvh, 36rem); }
 }
 
 /* ao chegar no painel, os pontos das zonas aparecem um a um */

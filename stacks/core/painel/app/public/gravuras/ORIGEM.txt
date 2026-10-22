@@ -1,0 +1,12 @@
+atena-partenos.png
+
+A estátua de Palas Atena (a Atena Partenos de Fídias, em reconstrução), xilogravura publicada em 1851
+na Iconographic Encyclopaedia of Science, Literature, and Art (J. G. Heck), na parte de escultura
+grega e romana. Domínio público (PD-Art, PD-old-70).
+
+Fonte: https://commons.wikimedia.org/wiki/File:Statue_of_Pallas_Athena_Engraving_Illustration_id465487203.jpg
+
+Preparo (2026-10-22): recorte da estátua e do pedestal (sem o fio e o número da prancha), ampliação em
+2x (Lanczos) com uma máscara de nitidez leve, a tinta convertida em alfa (o papel transparente, o meio-tom
+guardado na borda da hachura), redução para 560 px de largura e o alfa em 16 níveis. A imagem é só a
+máscara: a cor vem do CSS do painel.
