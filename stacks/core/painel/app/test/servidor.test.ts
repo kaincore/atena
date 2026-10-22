@@ -131,6 +131,9 @@ test("a interface sai comprimida, e o que não mudou volta como 304", async () =
   assert.equal(await igual.text(), "");
   const fonte = await fetch(base + "/fontes/commissioner-latin.woff2", { headers: { "Accept-Encoding": "gzip" } });
   assert.equal(fonte.headers.get("content-encoding"), null); // woff2 já é comprimido
+  const gravura = await fetch(base + "/gravuras/criacao-de-adao.webp", { headers: { "Accept-Encoding": "gzip" } });
+  assert.equal(gravura.headers.get("content-type"), "image/webp");
+  assert.equal(gravura.headers.get("content-encoding"), null);
 });
 
 test("respostas grandes da API saem comprimidas para quem aceita", async () => {

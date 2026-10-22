@@ -69,6 +69,7 @@ const TIPOS: Record<string, string> = {
   ".webmanifest": "application/manifest+json",
   ".svg": "image/svg+xml",
   ".png": "image/png",
+  ".webp": "image/webp", // a gravura da entrada: em WebP, com o recorte no alfa, ela sai bem menor que em PNG
   ".woff2": "font/woff2", // as fontes vêm do próprio painel (a CSP não deixa buscar fora)
 };
 const SEGURANCA = {

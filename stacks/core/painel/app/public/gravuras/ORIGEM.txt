@@ -10,3 +10,19 @@ Preparo (2026-10-22): recorte da estátua e do pedestal (sem o fio e o número d
 2x (Lanczos) com uma máscara de nitidez leve, a tinta convertida em alfa (o papel transparente, o meio-tom
 guardado na borda da hachura), redução para 560 px de largura e o alfa em 16 níveis. A imagem é só a
 máscara: a cor vem do CSS do painel.
+
+criacao-de-adao.webp
+
+As mãos de Deus e de Adão na Criação de Adão, o afresco de Michelangelo na Capela Sistina (1508-1512),
+em domínio público. A foto é de Jörg Bittner Unna (2011), reprodução fiel de uma obra em domínio público
+(PD-Art no Wikimedia Commons); o crédito vai por cortesia.
+
+Fonte: https://commons.wikimedia.org/wiki/File:%27Adam%27s_Creation_Sistine_Chapel_ceiling%27_by_Michelangelo_JBU33cut.jpg
+
+Preparo (2026-10-22): recorte das duas mãos e dos antebraços (1448 por 489 a partir de 973, 589 da foto
+de 4492 px), com as mãos separadas do reboco pelo GrabCut do OpenCV a partir de um contorno folgado
+desenhado à mão; o ruído da foto tirado (non-local means), a luz convertida em tinta (L* do Lab, com
+contraste local leve e nitidez fina), a borda esfumada em 1 px e os braços se apagando para as pontas;
+no fim, 1200 por 389 a partir de 0, 100 do recorte. O arquivo guarda a tinta no cinza e o recorte no alfa
+(WebP: a tinta com perda, qualidade 92; o alfa sem perda). O painel pinta a tinta dentro do recorte de
+dia, adensada (expoente 0,7), e o papel dentro do recorte à noite (as mãos claras no escuro).
