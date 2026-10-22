@@ -1,6 +1,6 @@
 // Interface do painel: telas montadas com elementos (nunca innerHTML com dados do servidor).
 // O visual é o de um aparelho (estilo.css); os desenhos do visor ficam em visor.js.
-import { $, TIQUE, api, cartao, consultar, esqueleto, falha, h, ligarCasca, mudar } from "./comum.js";
+import { $, TIQUE, api, consultar, esqueleto, h, ligarCasca, mudar } from "./comum.js";
 import { telaAgenda } from "./telas/agenda.js";
 import { telaAjustes } from "./telas/ajustes.js";
 import { contarPendentes, faixaAprovacoes, telaAprovacoes } from "./telas/aprovacoes.js";
@@ -145,16 +145,27 @@ function mostrarEntrada() {
   $("#senha").focus();
 }
 
+// as telas da barra ficam prontas em segundo plano depois da primeira: tocar nelas abre na hora,
+// mesmo as que esperam o executor (PC e Serviços levam uns 2 s)
+async function prepararBarra() {
+  for (const nome of ORDEM_BARRA) {
+    if (vistas.has(nome) || telaAtual() === nome) continue;
+    const conteudo = await montar(nome);
+    if (!vistas.has(nome) && telaAtual() !== nome && $("#entrada").hidden) vistas.set(nome, conteudo);
+  }
+}
+
 // ao entrar, os LEDs das zonas varrem uma vez: o único momento de abertura
-async function mostrarPainel() {
+async function mostrarPainel(primeira = atualizar()) {
   $("#entrada").hidden = true;
   $(".aparelho").hidden = false;
-  atualizar();
   if (telaAtual() !== "aprovacoes") contarPendentes();
   const servicos = await consultar("status.servicos");
   if (servicos.ok !== false) marcarZonas(resumirZonas(servicos.resultado));
   $(".aparelho").classList.add("ligando");
   setTimeout(() => $(".aparelho").classList.remove("ligando"), 1400);
+  await primeira;
+  prepararBarra();
 }
 
 $("#form-entrada").addEventListener("submit", async (evento) => {
@@ -208,7 +219,8 @@ if ("serviceWorker" in navigator) {
   navigator.serviceWorker.register("/sw.js").catch(() => {});
 }
 
-const eu = await api("GET", "/api/eu");
-if (eu.ok === false && eu.status !== 401) {
-  $("#tela").replaceChildren(cartao("Atena", falha(eu)));
-} else if (eu.ok !== false) mostrarPainel();
+// a primeira tela já pede os dados dela junto com a sessão: uma ida a menos pelo Tailscale.
+// Sem sessão (401), a api() mostra a entrada e a tela descarta o que chegar.
+const eu = api("GET", "/api/eu");
+const primeira = atualizar();
+if ((await eu).status !== 401) mostrarPainel(primeira); // sem conexão, cada módulo diz o erro

@@ -120,10 +120,24 @@ export function janelaEditor(stack) {
   listar("");
 }
 
+// O uso de CPU e RAM vem do docker stats, que leva uns 2 s: a tela sai com o estado dos containers e
+// o último uso visto, e o de agora entra quando chegar
+let consumoVisto = {};
+const textoConsumo = (c) => (c ? `CPU ${c.cpu} · RAM ${c.ram}` : "");
+
+function consumoDe(container, uso) {
+  const el = h("span", { class: "consumo" }, textoConsumo(consumoVisto[container]));
+  uso.then((x) => el.replaceChildren(textoConsumo(x[container])));
+  return el;
+}
+
 export async function telaServicos() {
-  const [servicos, uso] = await Promise.all([consultar("status.servicos"), consultar("status.containers")]);
+  const servicos = await consultar("status.servicos");
   if (servicos.ok === false) return [cartao("Serviços", falha(servicos))];
-  const consumo = Object.fromEntries((uso.ok === false ? [] : uso.resultado).map((c) => [c.container, c]));
+  const uso = consultar("status.containers").then((u) => {
+    if (u.ok !== false) consumoVisto = Object.fromEntries(u.resultado.map((c) => [c.container, c]));
+    return consumoVisto;
+  });
   const zonas = {};
   for (const c of servicos.resultado) ((zonas[c.zona] ??= {})[c.stack] ??= []).push(c);
   const ordem = Object.keys(zonas).sort((a, b) => ORDEM_ZONAS.indexOf(a) - ORDEM_ZONAS.indexOf(b));
@@ -148,7 +162,7 @@ export async function telaServicos() {
             } }, "Reiniciar"))),
         h("ul", { class: "lista" }, containers.map((c) => h("li", null,
           estadoContainer(c), c.container !== stack && ` ${c.container} `,
-          h("small", null, [statusDocker(c.status, true), consumo[c.container] && `CPU ${consumo[c.container].cpu} · RAM ${consumo[c.container].ram}`].filter(Boolean).join(" · "))))),
+          h("small", null, statusDocker(c.status, true), " ", consumoDe(c.container, uso))))),
       )));
     m.id = `zona-${zona}`;
     return m;

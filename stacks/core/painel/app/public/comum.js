@@ -70,7 +70,15 @@ export async function api(metodo, caminho, corpo) {
   return { status: resposta.status, ...dados };
 }
 
-export const consultar = (nome, params = {}) => api("POST", `/api/acao/${nome}`, { params });
+// a mesma consulta pedida duas vezes ao mesmo tempo (o Início e os LEDs do topo, por exemplo) vai uma
+// vez só ao executor; o que muda algo (as de NOMES) nunca se junta
+const emCurso = new Map();
+export function consultar(nome, params = {}) {
+  if (nome in NOMES) return api("POST", `/api/acao/${nome}`, { params });
+  const chave = `${nome} ${JSON.stringify(params)}`;
+  if (!emCurso.has(chave)) emCurso.set(chave, api("POST", `/api/acao/${nome}`, { params }).finally(() => emCurso.delete(chave)));
+  return emCurso.get(chave);
+}
 
 // ações que mudam algo: confirma, pede, acompanha o pedido (202) e avisa o resultado.
 // acompanhar = false: só avisa que começou (o trabalho do Claude Code leva de minutos a horas)
