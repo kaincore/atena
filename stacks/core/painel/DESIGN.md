@@ -35,6 +35,8 @@ colors:
   azul-claro-escuro: "#1b2441"
   azul-tinta-escuro: "#0b0f1a"
   gravura-escuro: "#cdd3df"
+  centelha: "#2c4fae"
+  centelha-escuro: "#f3eee2"
   foco-escuro: "#a3b5f3"
   malaquita-escuro: "#57b98a"
   malaquita-tinta-escuro: "#7fd0a8"
@@ -386,6 +388,7 @@ Uma paleta de templo pintado, mas contida: neutros de mármore (de dia) ou de no
 
 ### Primary
 - **Tinta da Gravura** (#24418f; #cdd3df à noite): a tinta da imagem da entrada (as mãos da Criação de Adão), azul egípcio de dia (como as gravuras azuis de Delft e de toile) e cor de osso à noite (como as gravuras de Doré em fundo preto).
+- **Centelha** (#2c4fae; #f3eee2 à noite): a luz no vão entre os dedos das mãos da entrada. De dia é só um halo azul; à noite, um halo e um ponto de luz cor de marfim. Não aparece em mais lugar nenhum.
 - **Azul Egípcio** (#24418f; #a3b5f3 à noite): a face da tecla principal, o texto e o ícone da tela ativa, links, seleção de texto, cursor, a chave do meandro antes de cada título, a tinta do anel dos medalhões e do medidor, a trava ligada, as próximas vezes no relógio de sol, o meandro que fecha na entrada e o ponto de informação (em andamento, este aparelho).
 - **Azul Fundo** (#1a3275; #bfcdf7 à noite): só o hover da tecla principal.
 - **Véu Azul** (#e9edf7; #1b2441 à noite): o fundo do que está escolhido ou sob o dedo: o marcador da tela ativa na barra e no trilho, a tecla do "Mais" ativa, o item marcado da paleta, a trava ligada, o degrau aceso da crepidoma e a linha dele na legenda.
@@ -462,7 +465,7 @@ O celular e o PC têm o mesmo peso; nenhum é a versão capada do outro.
 
 **Módulo estreito.** Cada módulo é um container de CSS (`container: modulo`). Abaixo de 26rem, o que ele mede desce para baixo do título, inteiro, alinhado depois da chave; abaixo de 30rem, as linhas com mais de uma tecla põem as teclas embaixo do nome; abaixo de 19rem, a crepidoma empilha a escada sobre a legenda; a partir de 46rem, as linhas de registro põem o nome (15rem) e o detalhe lado a lado.
 
-**A entrada.** No celular, as mãos atravessam a tela de ponta a ponta (128vw), com o vão entre os dedos no meio dela, e embaixo fica a frente, com até 22rem: o ΑΘΗΝΑ, o rótulo, o campo e a tecla principal, ambos com 3rem de altura. No PC, as mãos ficam em cima, largas (min(92vw, 64rem)), e a entrada embaixo, numa coluna de 21rem, 2.5rem abaixo delas. No PC, duas faixas de meandro fino emolduram a página, a 2rem de cima e de baixo e 2.5rem dos lados.
+**A entrada.** No celular, as mãos atravessam a tela de ponta a ponta (128vw), com o vão entre os dedos no meio dela, e embaixo fica a frente, com até 22rem: o ΑΘΗΝΑ, o rótulo, o campo e a tecla principal, ambos com 3rem de altura. No PC, as mãos ficam em cima, largas (min(92vw, 64rem)), e a entrada embaixo, numa coluna de 21rem, 2.5rem abaixo delas. A moldura é a cornija do teto da Sistina, em cima e embaixo (espelhada): 1.4rem de altura, a 1rem das bordas, no celular; no PC, 1.6rem, a 2rem de cima e de baixo e 2.5rem dos lados, com dois filetes de cada lado ligando as cornijas (os montantes).
 
 **Ritmo.** Teclas a .45rem umas das outras (.4rem nas linhas); o módulo tem 1.15rem em cima e 1.25rem nos lados e embaixo; o cabeçalho do módulo fica 1rem acima do conteúdo; os itens têm .75rem de respiro e 1px de Veio entre eles; os medalhões ficam numa grade auto-fit de no mínimo 8.2rem, com 1.2rem por 1.3rem de folga.
 
@@ -498,8 +501,10 @@ Cantos discretos e quase iguais: 6px em quase tudo (módulos, teclas, campos, tr
 
 **A imagem da entrada.** As mãos de Deus e de Adão na Criação de Adão, o afresco de Michelangelo na Capela Sistina, de uma foto em domínio público: recortadas do reboco, com os antebraços se apagando para as bordas, e tonalizadas como uma impressão numa cor só. O arquivo (`app/public/gravuras/criacao-de-adao.webp`, 1200 por 389) guarda a tinta no cinza e o recorte no alfa, e é desenhado num canvas (`gravura()` em `desenhos.js`) na Tinta da Gravura, na densidade do aparelho: de dia a tinta, adensada; à noite o claro da pintura, e as mãos ficam claras sobre o escuro. A estética é a das gravuras e impressões clássicas numa cor só, nunca a de desenho animado ou de personagem; a imagem precisa ser nítida na densidade do celular (dedos legíveis).
 
+**O fundo e a moldura.** Atrás de tudo, o reboco do céu do mesmo afresco, com as rachaduras de verdade (`app/public/gravuras/reboco.webp`, só máscara), na cor da Tinta, quase invisível: 3,5% no painel, onde só aparece no chão entre as placas e fica parado, e 5% na entrada, onde deriva devagar. Na entrada, no vão entre os dedos, a centelha: um halo que respira e, à noite, um ponto de luz. Em cima e embaixo da entrada, a cornija pintada do teto da Sistina, num módulo desenhado em código (`--cornija` no `estilo.css`): óvulos e dardos, dentículos e o astrágalo de contas, em Tinta 3 a 42%. É a única moldura que não é o meandro, e só existe na entrada.
+
 ### Named Rules
-**A Regra do Meandro que Mede.** O meandro é ornamento e é medida. Uma fração se mostra pintando o meandro (o anel do medalhão, o medidor), nunca numa barra lisa ou num anel liso; e o ornamento é sempre o mesmo traço, nunca um friso de outra forma.
+**A Regra do Meandro que Mede.** O meandro é ornamento e é medida. Uma fração se mostra pintando o meandro (o anel do medalhão, o medidor), nunca numa barra lisa ou num anel liso; e, dentro do painel, o ornamento é sempre o mesmo traço, nunca um friso de outra forma. A exceção é a entrada, emoldurada pela cornija da Sistina.
 
 ## Components
 
@@ -565,7 +570,7 @@ O mostrador da agenda: 24 horas num disco com o meandro circular na borda, marca
 No topo de qualquer tela quando há pedido esperando: uma faixa de Ocre Claro com borda de Ocre a 38%, o ícone da coroa de louros em Ocre, "N aprovações esperando você" em 600 a .98rem e, à direita, "Ver" com a seta em Tinta de Ocre. No hover, a borda fica Ocre cheia. Atravessa todas as colunas no PC.
 
 ### A Entrada
-As mãos da Criação de Adão direto sobre o chão, sem moldura. Embaixo delas, o ΑΘΗΝΑ a 1.7rem, o campo da senha e a tecla principal Entrar. Na senha errada, o ΑΘΗΝΑ fica em cinábrio por 1,6 s; na certa, ele fica azul e a imagem se desfaz no mesmo pontilhado em que se imprimiu.
+As mãos da Criação de Adão direto sobre o chão, com o reboco do afresco quase invisível atrás, a centelha no vão entre os dedos e a cornija em cima e embaixo. Embaixo das mãos, o ΑΘΗΝΑ a 1.7rem, o campo da senha e a tecla principal Entrar. Na senha errada, o ΑΘΗΝΑ fica em cinábrio por 1,6 s; na certa, ele fica azul e a imagem se desfaz no mesmo pontilhado em que se imprimiu.
 
 ### Avisos e Textos de Máquina
 - **Aviso:** retângulo de Noite com cantos de 10px, texto a .85rem em Tinta da Noite e um ponto de .5rem à esquerda (azul informação, malaquita ok, cinábrio erro, nos tons da noite). Fica acima da barra no celular e no canto de baixo à direita no PC; some em 4s (8s se for erro). Com uma janela aberta, vai dentro dela.
@@ -587,7 +592,7 @@ Três curvas, todas em custom properties: `--suave` (cubic-bezier(.22, 1, .36, 1
 
 **A Regra do Que Não Fica.** Animação de opacidade ou desfoque num módulo, na tela ou num degrau usa `animation-fill-mode: backwards` (ou nenhum), nunca `forwards` nem `both`: uma opacidade ou um filtro que ficasse no elemento achataria o 3D da crepidoma.
 
-**A Regra da Cena nos Momentos.** A cena só acontece quando importa: ao entrar, as mãos se imprimem por um pontilhado ordenado (a matriz de Bayer 8×8, em pontos de 2 px; 1,9s), que se adensa das bordas para o vão entre os dedos e da tinta mais escura para a mais clara, e o ΑΘΗΝΑ chega letra a letra; nada reage à digitação; na senha errada, a inscrição fica em cinábrio por um instante, e na certa ela fica azul e a imagem se desfaz no mesmo pontilhado antes de a entrada se desfazer e o painel chegar, com os pontos das zonas aparecendo um a um; quando chega uma aprovação, uma luz passa pela faixa e a coroa se redesenha, uma vez; quando um agendamento roda, a sombra do relógio de sol dá a volta (2.2s); quando o PC liga, o anel dele se pinta de novo; a zona com problema escorrega para o lado.
+**A Regra da Cena nos Momentos.** A cena só acontece quando importa: ao entrar, as mãos se imprimem por um pontilhado ordenado (a matriz de Bayer 8×8, em pontos de 2 px; 1,9s), que se adensa das bordas para o vão entre os dedos e da tinta mais escura para a mais clara, e o ΑΘΗΝΑ chega letra a letra, enquanto a cornija se abre do meio para as bordas (1.8s); quando as mãos terminam, a centelha se acende no vão entre os dedos e respira (6s), e o reboco deriva quase parado (70s) enquanto a entrada está aberta; nada reage à digitação; na senha errada, a inscrição fica em cinábrio por um instante, e na certa ela fica azul e a imagem se desfaz no mesmo pontilhado antes de a entrada se desfazer e o painel chegar, com os pontos das zonas aparecendo um a um; quando chega uma aprovação, uma luz passa pela faixa e a coroa se redesenha, uma vez; quando um agendamento roda, a sombra do relógio de sol dá a volta (2.2s); quando o PC liga, o anel dele se pinta de novo; a zona com problema escorrega para o lado.
 
 **A Regra do Parado.** Com `prefers-reduced-motion`, nada se move: animações, transições e View Transitions são desligadas, os traços aparecem já desenhados e o ícone que lia só fica a 60%.
 
@@ -595,7 +600,8 @@ Três curvas, todas em custom properties: `--suave` (cubic-bezier(.22, 1, .36, 1
 - **Fonte:** Commissioner, de Kostas Bartsokas, sob a SIL Open Font License 1.1, tirada do Fontsource 5.2.8. Os arquivos ficam em `app/public/fontes` (`commissioner-latin.woff2`, `commissioner-grego.woff2`) com a licença ao lado (`commissioner-LICENSE.txt`).
 - **Ícone do app:** `app/public/icone.svg` é desenhado à mão: a chave do meandro (uma volta, num traço só de 30) em #f3f5f9 sobre um quadrado de cantos redondos em Azul Egípcio. `app/public/icone-192.png` e `app/public/icone-512.png` (o de 512 também como ícone mascarável) são renderizados desse SVG com o Chromium sem interface. Não há imagem gerada no painel.
 - **A imagem da entrada:** `app/public/gravuras/criacao-de-adao.webp` vem de uma foto do afresco de Michelangelo feita por Jörg Bittner Unna (2011), reprodução fiel de uma obra em domínio público (PD-Art), pelo Wikimedia Commons. O preparo (o recorte com o GrabCut, a luz convertida em tinta e a redução) está em `app/public/gravuras/ORIGEM.txt`.
-- **Desenhos e ícones:** o meandro, os medalhões, a crepidoma, o relógio de sol e os pictogramas são montados em código (`desenhos.js`, `pictos.js`, `estilo.css`) a partir dos dados de verdade; nada vem de biblioteca nem de outro endereço.
+- **O reboco:** `app/public/gravuras/reboco.webp` é o céu da mesma foto do afresco, com a origem e o preparo em `app/public/gravuras/ORIGEM.txt`.
+- **Desenhos e ícones:** o meandro, a cornija, os medalhões, a crepidoma, o relógio de sol e os pictogramas são montados em código (`desenhos.js`, `pictos.js`, `estilo.css`) a partir dos dados de verdade; nada vem de biblioteca nem de outro endereço.
 
 ## Do's and Don'ts
 
