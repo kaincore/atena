@@ -1,5 +1,14 @@
 # Mudanças
 
+## 0.17.1 (2026-10-22)
+
+O fundo e a moldura da entrada do painel (painel 0.9.1). Pedido do dono, que escolheu os três elementos, quase invisíveis e com movimento lento.
+
+- **O reboco:** atrás de toda a interface, o céu da Criação de Adão, da mesma foto das mãos, com as rachaduras de verdade da pintura (`gravuras/reboco.webp`, só máscara, 66 KB). Fica a 3,5% no painel, onde só aparece no chão entre as placas e fica parado, e a 5% na entrada, onde deriva devagar.
+- **A centelha:** quando as mãos terminam de se imprimir, uma luz se acende no vão entre os dedos e respira: de dia só um halo azul, à noite um halo e um ponto de luz. Some quando a senha é aceita.
+- **A cornija:** a cornija pintada do teto da Sistina (óvulos e dardos, dentículos e o astrágalo de contas), em traço fino, emoldura a entrada em cima e embaixo e se abre do meio para as bordas; no PC, dois filetes de cada lado ligam as cornijas. Ela substitui as faixas de meandro da entrada, e o DESIGN.md passa a dizer que a entrada é a exceção à regra de que o ornamento é sempre o meandro.
+- Testado: os 49 testes do painel e o CI reproduzido com `tools/ci-local.sh`; os cliques de ponta a ponta no celular e no PC, sem erro no console; a entrada fotografada no celular e no PC, claro e escuro, e de perto (a cornija e a centelha); o Início no celular e no PC com o reboco; cada um dos três commits do fundo rodado sozinho no ensaio, sem erro. No servidor de origem, o painel 0.9.1 subiu saudável e serve o reboco pelas duas entradas. Sem testar: o movimento num celular de verdade (a deriva do reboco e a respiração da centelha só foram vistas no navegador sem tela). Sem revisor separado nesta rodada.
+
 ## 0.17.0 (2026-10-22)
 
 O painel também na rede de casa, e a entrada com as mãos da Criação de Adão (painel 0.9.0).
