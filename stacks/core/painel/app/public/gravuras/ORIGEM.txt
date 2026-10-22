@@ -13,3 +13,15 @@ contraste local leve e nitidez fina), a borda esfumada em 1 px e os braços se a
 no fim, 1200 por 389 a partir de 0, 100 do recorte. O arquivo guarda a tinta no cinza e o recorte no alfa
 (WebP: a tinta com perda, qualidade 92; o alfa sem perda). O painel pinta a tinta dentro do recorte de
 dia, adensada (expoente 0,7), e o papel dentro do recorte à noite (as mãos claras no escuro).
+
+reboco.webp
+
+O reboco do céu da Criação de Adão, do mesmo afresco e da mesma foto (Jörg Bittner Unna, 2011; PD-Art no
+Wikimedia Commons), com as rachaduras de verdade da pintura.
+
+Fonte: https://commons.wikimedia.org/wiki/File:%27Adam%27s_Creation_Sistine_Chapel_ceiling%27_by_Michelangelo_JBU33cut.jpg
+
+Preparo (2026-10-22): o céu acima das mãos (998 por 659 a partir de 1148, 40 da foto de 4492 px), sem
+uma marca oval no meio (inpaint do OpenCV) e sem o ruído da foto; fica só o que é mais escuro que a
+parede em volta (as rachaduras, as emendas das jornadas e a mancha do pincel), suavizado e reduzido a
+800 px. O arquivo é só máscara, no alfa (WebP, alfa com qualidade 40); a cor e a força vêm do CSS.

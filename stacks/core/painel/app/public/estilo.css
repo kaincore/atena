@@ -38,6 +38,8 @@
   --azul-claro: #e9edf7;
   --azul-tinta: #f7f8fc;
   --gravura: #24418f;   /* a tinta da gravura da entrada: azul egípcio de dia, osso à noite */
+  --reboco: .035;         /* o reboco do afresco atrás de tudo: no painel e na entrada (quase invisível) */
+  --reboco-entrada: .05;
   /* os pigmentos de estado */
   --ocre: #b07c1e;
   --ocre-claro: #f7f1e4;
@@ -90,6 +92,8 @@
     --azul-claro: #1b2441;
     --azul-tinta: #0b0f1a;
     --gravura: #cdd3df;
+    --reboco: .035;
+    --reboco-entrada: .05;
     --ocre: #d6a24a;
     --ocre-claro: #231d10;
     --ocre-tinta: #e8bf74;
@@ -121,6 +125,15 @@ body {
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
 }
+/* o reboco do céu do afresco, quase invisível, atrás de tudo: só aparece no chão, entre as placas. Na
+   entrada ele deriva devagar; no painel fica parado (sem animação, a camada nem fica reservada) */
+body::before {
+  content: ""; position: fixed; inset: -4%; z-index: -1; pointer-events: none;
+  background: var(--tinta); opacity: var(--reboco); transition: opacity 1.2s var(--suave);
+  mask: url("gravuras/reboco.webp") center / cover no-repeat;
+}
+body:has(> .entrada:not([hidden]))::before { opacity: var(--reboco-entrada); animation: derivar 70s ease-in-out infinite alternate; }
+@keyframes derivar { from { translate: -2% 1.5%; } to { translate: 2% -1.5%; } }
 ::selection { background: var(--azul); color: var(--azul-tinta); }
 a { color: var(--azul); text-decoration-color: color-mix(in srgb, currentColor 30%, transparent); text-decoration-thickness: 1px; text-underline-offset: 3px; transition: text-decoration-color .2s var(--suave); }
 a:hover { text-decoration-color: currentColor; }
