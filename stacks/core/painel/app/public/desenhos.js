@@ -1,5 +1,5 @@
 // Os desenhos do painel, no mundo da policromia (os templos gregos eram pintados): o meandro, que
-// também mede; a gravura da Atena Partenos na entrada, impressa por pontos; os medalhões dos números; a
+// também mede; as mãos da Criação de Adão na entrada, impressas por pontos; os medalhões dos números; a
 // crepidoma das zonas (os degraus do templo, em 3D) e o relógio de sol da agenda. Tudo em SVG ou em
 // elementos montados um a um, a partir dos dados de verdade. O movimento vem do CSS e para com
 // prefers-reduced-motion.

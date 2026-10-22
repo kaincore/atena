@@ -612,18 +612,20 @@ input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]:
 @keyframes luz { to { transform: translateX(100%); } }
 .faixa.pulsa .picto-aprovacoes :not(.tinta, .cheio) { stroke-dasharray: 1 1; animation: tracar 1s var(--traco) both; }
 
-/* --- entrar: a gravura da Atena Partenos, impressa por pontos --- */
+/* --- entrar: as mãos da Criação de Adão, impressas por pontos --- */
 
-.entrada { min-height: 100dvh; display: grid; place-items: center; padding: 1.5rem 1rem 2rem; }
+.entrada { min-height: 100dvh; display: grid; place-items: center; padding: 1.5rem 1rem 2rem; overflow-x: clip; }
 .frente { width: min(100%, 22rem); display: grid; gap: .8rem; }
 .frente .marca { justify-self: center; margin: .5rem -.28em .8rem 0; font-size: 1.7rem; color: var(--tinta); }
 .frente input { min-height: 3rem; font-size: 1.05rem; }
 .frente button { margin-top: .25rem; min-height: 3rem; font-size: .95rem; }
 .frente .erro { text-align: center; }
 .campos-entrada { display: grid; gap: .8rem; }
-.cena-entrada { justify-self: center; margin-bottom: .1rem; }
-/* a gravura: a cor da tinta vem daqui; o desenho e o pontilhado, do desenhos.js */
-.gravura { display: block; height: min(50dvh, 27rem); width: auto; aspect-ratio: 560 / 1178; color: var(--gravura); }
+/* as mãos atravessam a tela do celular, com o vão entre os dedos (o --centro, posto pelo app.js) no meio
+   da tela; os braços se apagam nas bordas */
+.cena-entrada { --largura: 128vw; justify-self: start; width: var(--largura); margin: 0 0 .4rem calc(50% - var(--centro, .5) * var(--largura)); }
+/* a imagem: a cor da tinta vem daqui; o desenho e o pontilhado, do desenhos.js */
+.gravura { display: block; width: 100%; height: auto; aspect-ratio: 1200 / 389; color: var(--gravura); }
 /* ΑΘΗΝΑ letra a letra, quando a impressão chega embaixo */
 .marca .letras > span { display: inline-block; transition: color .5s var(--suave); }
 .marca .letras > span:nth-child(2) { --i: 1; }
@@ -647,10 +649,10 @@ input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]:
   }
   .entrada::before { top: 2rem; }
   .entrada::after { bottom: 2rem; }
-  /* no PC, a gravura à esquerda e a entrada à direita */
-  .frente { width: min(100%, 48rem); grid-template-columns: auto minmax(0, 21rem); align-items: center; column-gap: 4.5rem; }
-  .campos-entrada .marca { justify-self: start; margin-left: 0; }
-  .gravura { height: min(76dvh, 36rem); }
+  /* no PC, as mãos vão em cima, largas, e a entrada embaixo */
+  .frente { width: min(100%, 46rem); justify-items: center; row-gap: 2.5rem; }
+  .campos-entrada { width: min(100%, 21rem); }
+  .cena-entrada { --largura: min(92vw, 64rem); }
 }
 
 /* ao chegar no painel, os pontos das zonas aparecem um a um */

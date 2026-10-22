@@ -227,12 +227,18 @@ async function atualizar() {
   tela.removeAttribute("aria-busy");
 }
 
-// a entrada: a gravura da Atena Partenos se imprime por pontos e ΑΘΗΝΑ chega letra a letra; na senha
-// errada a inscrição fica em cinábrio por um instante, e na certa ela fica azul e a gravura se desfaz
+// a entrada: as mãos da Criação de Adão se imprimem por pontos, das bordas para o vão entre os dedos, e
+// ΑΘΗΝΑ chega letra a letra; na senha errada a inscrição fica em cinábrio por um instante, e na certa ela
+// fica azul e a imagem se desfaz. VAO é onde fica o vão entre os dedos, em fração da largura da imagem (a
+// origem dela está em gravuras/ORIGEM.txt): a impressão converge para ele, e o CSS o põe no meio da tela
+const VAO = 0.617;
 let estampa = null;
 function prepararEntrada() {
-  estampa = gravura("/gravuras/atena-partenos.png", "a Atena Partenos, a estátua de Atena no Partenon, numa gravura de 1851");
+  estampa = gravura("/gravuras/criacao-de-adao.webp",
+    "as mãos de Deus e de Adão na Criação de Adão, o afresco de Michelangelo na Capela Sistina",
+    { canais: true, inverterNoEscuro: true, densidade: 0.7, centro: VAO });
   $(".cena-entrada").replaceChildren(estampa);
+  $(".cena-entrada").style.setProperty("--centro", VAO);
   $("#form-entrada").classList.remove("aceita", "recusa");
   if (!reduzido()) {
     $("#entrada").classList.add("construindo");
