@@ -291,6 +291,51 @@ main {
 .stack { border-top: 1px solid var(--risco); padding: .75rem 0; }
 .stack:first-of-type { border-top: 0; padding-top: 0; }
 .stack-topo { display: flex; justify-content: space-between; align-items: center; gap: .5rem; flex-wrap: wrap; }
+/* um campo e a tecla dele na mesma linha (nova pendência) */
+.nova { display: flex; gap: .5rem; margin-top: .75rem; }
+.nova input { flex: 1; min-width: 0; }
+
+/* --- linhas de lista: o LED, o nome com o detalhe embaixo e as teclas à direita --- */
+
+.itens { list-style: none; margin: 0; padding: 0; }
+.item {
+  /* o nome tem sempre ao menos 13rem; as teclas ficam com o que sobra e quebram de linha se precisar */
+  display: grid; grid-template-columns: .5rem minmax(min(13rem, 100%), 1fr) minmax(0, max-content);
+  grid-template-areas: "led texto acoes" ". extra extra";
+  align-items: center; gap: .35rem .75rem; padding: .7rem 0; border-top: 1px solid var(--risco);
+}
+.item:first-child { border-top: 0; padding-top: .15rem; }
+.item:last-child { padding-bottom: .15rem; }
+.item.sem-led { grid-template-columns: minmax(min(13rem, 100%), 1fr) minmax(0, max-content); grid-template-areas: "texto acoes" "extra extra"; }
+.item > .led { grid-area: led; align-self: start; margin-top: .48rem; }
+.item-texto { grid-area: texto; min-width: 0; }
+.item-nome { overflow-wrap: anywhere; }
+.item-nome strong { font-weight: 650; }
+.item-detalhe { margin-top: .1rem; font-size: .8rem; line-height: 1.4; color: var(--tinta-2); font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.item-acoes { grid-area: acoes; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: .4rem; }
+.item-extra { grid-area: extra; min-width: 0; }
+.item-extra > details { margin-top: 0; }
+.item-nome .selo, .item-nome .selo:first-child { margin-left: .5rem; }
+/* quatro teclas ou mais, ou mais de uma num módulo estreito: elas descem para baixo do nome, alinhadas com ele */
+.item:is([data-acoes="4"], [data-acoes="5"], [data-acoes="6"]) { grid-template-areas: "led texto texto" ". acoes acoes" ". extra extra"; }
+.item.sem-led:is([data-acoes="4"], [data-acoes="5"], [data-acoes="6"]) { grid-template-areas: "texto texto" "acoes acoes" "extra extra"; }
+.item:is([data-acoes="4"], [data-acoes="5"], [data-acoes="6"]) .item-acoes { justify-content: flex-start; margin-top: .2rem; }
+@container modulo (max-width: 30rem) {
+  .item[data-acoes]:not([data-acoes="1"]) { grid-template-areas: "led texto texto" ". acoes acoes" ". extra extra"; }
+  .item.sem-led[data-acoes]:not([data-acoes="1"]) { grid-template-areas: "texto texto" "acoes acoes" "extra extra"; }
+  .item[data-acoes]:not([data-acoes="1"]) .item-acoes { justify-content: flex-start; margin-top: .2rem; }
+}
+/* os containers de uma stack, presos a ela pela guia tracejada da vista explodida */
+.itens.sub { margin: .15rem 0 0 .2rem; padding-left: .85rem; border-left: 1px dashed var(--risco-forte); }
+.itens.sub .item { border-top: 0; padding: .3rem 0; }
+/* registros: uma linha por evento; no módulo largo, o nome e o detalhe lado a lado */
+.item.compacto { padding: .45rem 0; content-visibility: auto; contain-intrinsic-size: auto 2.6rem; }
+.item.compacto .item-nome { font: 500 .78rem/1.5 var(--mono); }
+@container modulo (min-width: 46rem) {
+  .item.compacto .item-texto { display: grid; grid-template-columns: 15rem minmax(0, 1fr); column-gap: 1.2rem; align-items: baseline; }
+  .item.compacto .item-detalhe { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+
 details { margin-top: .5rem; }
 summary { cursor: pointer; color: var(--tinta-2); font-size: .875rem; }
 summary::marker { color: var(--risco-forte); }
@@ -376,7 +421,36 @@ textarea { resize: vertical; }
 textarea::-webkit-resizer {
   background: linear-gradient(135deg, transparent 45%, var(--risco-forte) 45% 52%, transparent 52% 64%, var(--risco-forte) 64% 71%, transparent 71% 83%, var(--risco-forte) 83% 90%, transparent 90%);
 }
-.filtros { display: flex; gap: .65rem 1rem; flex-wrap: wrap; align-items: center; margin-bottom: .6rem; }
+.filtros { display: flex; gap: .65rem 1rem; flex-wrap: wrap; align-items: flex-end; margin-bottom: .6rem; }
+.filtros > .campo { flex: 0 1 auto; }
+.filtros > .opcao { min-height: 2.5rem; align-items: center; }
+.filtros > .opcao input { margin-top: 0; }
+.filtros > .campo.cresce { flex: 1 1 12rem; }
+
+/* formulários: o rótulo do aparelho em cima de cada campo, numa grade que vira uma coluna no celular */
+.campos { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr)); gap: .85rem 1rem; align-items: end; }
+.campo, .filtros > .campo, .resposta .campo { display: grid; gap: .35rem; min-width: 0; }
+.campo.largo { grid-column: 1 / -1; }
+.campo > .rotulo { font-size: .62rem; }
+.campos .campo :is(input:not([type=checkbox]), select, textarea), .campo.cresce input { width: 100%; }
+
+/* teclas de trava (os dias da semana): afundam e acendem o LED quando ligadas */
+.travas { display: flex; flex-wrap: wrap; gap: .35rem; }
+.trava { position: relative; display: inline-grid; }
+.trava input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.trava span {
+  display: grid; justify-items: center; gap: .3rem; min-width: 2.75rem; padding: .4rem .45rem .45rem;
+  font: 650 .62rem var(--fonte); font-stretch: 112%; letter-spacing: .1em; text-transform: uppercase; color: var(--tinta-2);
+  background: var(--tecla-clara); border: 1px solid var(--tecla-clara-borda); border-bottom: 3px solid var(--tecla-clara-lado);
+  border-radius: var(--raio-tecla);
+}
+.trava span::before { content: ""; width: .4rem; height: .4rem; border-radius: 50%; background: var(--led-apagado); box-shadow: inset 0 1px 1px rgb(0 0 0 / .35); }
+.trava input:checked + span {
+  color: var(--tinta); background: var(--poco); border-bottom-width: 1px; margin-top: 2px;
+  box-shadow: inset 0 1px 3px rgb(0 0 0 / .16);
+}
+.trava input:checked + span::before { background: var(--led-verde); box-shadow: 0 0 6px rgb(43 212 106 / .55); }
+.trava input:focus-visible + span { outline: 2px solid var(--foco); outline-offset: 2px; }
 .filtros label, .resposta label { display: inline-flex; align-items: center; gap: .45rem; flex-wrap: wrap; }
 .filtros input:not([type=checkbox]) { min-width: 0; max-width: 100%; }
 .resposta { display: grid; gap: .65rem; margin-top: .75rem; }
@@ -570,6 +644,13 @@ dialog::backdrop { background: rgb(10 11 10 / .5); }
 textarea.codigo { width: 100%; min-height: 40dvh; font: .8rem/1.5 var(--mono); white-space: pre; overflow: auto; }
 .processos .comando { font: .78rem var(--mono); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .processos .comando.aberto { white-space: pre-wrap; overflow-wrap: anywhere; }
+.item.arquivo { padding: .3rem 0; }
+.item.arquivo a { display: inline-flex; align-items: center; gap: .6rem; text-decoration: none; overflow-wrap: anywhere; }
+.item.arquivo a.pasta { font-weight: 650; }
+.item.arquivo .picto { width: 1.15rem; height: 1.15rem; flex: none; color: var(--tinta-2); }
+.trilha-caminho { display: flex; flex-wrap: wrap; gap: .1rem .35rem; margin: .75rem 0 .55rem; font: 500 .76rem var(--mono); color: var(--tinta-2); }
+.trilha-caminho a { color: var(--tinta); }
+.trilha-caminho [aria-current] { color: var(--tinta); font-weight: 700; }
 .lista.arquivos li { padding: .35rem 0; }
 .lista.arquivos a { text-decoration: none; overflow-wrap: anywhere; }
 .lista.arquivos a.pasta { font-weight: 650; }

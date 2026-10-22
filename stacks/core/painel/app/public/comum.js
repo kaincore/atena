@@ -195,6 +195,32 @@ export function linha(rotulo, valor, extra) {
   return h("div", { class: "linha" }, h("span", { class: "rotulo" }, rotulo), h("span", null, valor), extra);
 }
 
+// Uma linha de lista, igual em todas as telas: o LED do estado (o texto dele vem no detalhe), o nome,
+// o detalhe embaixo e as teclas à direita (num módulo estreito, várias teclas descem para baixo do
+// nome). O extra ocupa a largura toda embaixo: um resumo, um registro, os "detalhes".
+export function item({ led, nome, detalhe, acoes, extra, classe }) {
+  const teclas = [acoes].flat(Infinity).filter(Boolean);
+  const embaixo = [extra].flat(Infinity).filter(Boolean);
+  return h("li", { class: ["item", !led && "sem-led", classe].filter(Boolean).join(" "), "data-acoes": teclas.length || null },
+    led && h("span", { class: `led ${led}` }),
+    h("div", { class: "item-texto" }, h("div", { class: "item-nome" }, nome), detalhe && h("div", { class: "item-detalhe" }, detalhe)),
+    teclas.length > 0 && h("div", { class: "item-acoes" }, teclas),
+    embaixo.length > 0 && h("div", { class: "item-extra" }, embaixo));
+}
+
+export function itens(lista, vazio, classe) {
+  const linhas = [lista].flat(Infinity).filter(Boolean);
+  return linhas.length ? h("ul", { class: `itens${classe ? ` ${classe}` : ""}` }, linhas) : vazio && h("p", { class: "fraco" }, vazio);
+}
+
+// o LED de cada estado de pedido: verde terminou bem, azul em andamento, vermelho o resto
+export const ledEstado = (estado) => (estado === "concluido" ? "ok" : TERMINADOS.has(estado) || estado === "perdida" ? "ruim" : "info");
+
+// um campo de formulário: o rótulo do aparelho em cima, o controle embaixo (largo: a linha toda)
+export function campo(rotulo, controle, largo = false) {
+  return h("label", { class: `campo${largo ? " largo" : ""}` }, h("span", { class: "rotulo" }, rotulo), controle);
+}
+
 export const containerOk = (c) => c.estado === "running" && !/unhealthy/.test(c.status);
 
 // os estados dos pedidos, como o executor guarda, no português da tela
