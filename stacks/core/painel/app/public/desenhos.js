@@ -182,16 +182,19 @@ export function relogioDeSol(agendamentos, girando) {
     s("circle", { cx: 50, cy: 50, r: 2.4, class: "centro" }));
 }
 
-// --- a entrada: a gravura da Atena Partenos, impressa por pontos ------------------------------------
-// A imagem é uma xilogravura de 1851 (domínio público; a origem está em gravuras/ORIGEM.txt) guardada só
-// como máscara: a cor vem do CSS (--gravura: azul egípcio de dia, osso à noite). Ao abrir, ela se imprime
-// por um pontilhado ordenado (a matriz de Bayer 8×8, em pontos de 2 px) que se adensa de cima para baixo e
-// da tinta mais escura para a mais clara; ao entrar no painel, o mesmo pontilhado a desfaz.
+// --- a entrada: uma gravura clássica, impressa por pontos ----------------------------------------------
+// A imagem é uma gravura antiga (a origem de cada uma está em gravuras/ORIGEM.txt) guardada só como tinta:
+// a cor vem do CSS (--gravura: azul egípcio de dia, osso à noite). Ao abrir, ela se imprime por um
+// pontilhado ordenado (a matriz de Bayer 8×8, em pontos de 2 px) que se adensa da tinta mais escura para a
+// mais clara, de cima para baixo ou das bordas para um centro; ao entrar no painel, o mesmo pontilhado a
+// desfaz. Opções: canais (a tinta no cinza e o recorte no alfa, em vez de só o alfa), inverterNoEscuro (à
+// noite pinta o papel dentro do recorte: o claro fica claro), densidade (o expoente da tinta de dia: abaixo
+// de 1 adensa os meios-tons) e centro (a fração da largura para onde a impressão converge).
 
 const BAYER = [0, 32, 8, 40, 2, 34, 10, 42, 48, 16, 56, 24, 50, 18, 58, 26, 12, 44, 4, 36, 14, 46, 6, 38, 60, 28, 52, 20, 62, 30, 54, 22,
   3, 35, 11, 43, 1, 33, 9, 41, 51, 19, 59, 27, 49, 17, 57, 25, 15, 47, 7, 39, 13, 45, 5, 37, 63, 31, 55, 23, 61, 29, 53, 21];
 
-export function gravura(src, rotulo) {
+export function gravura(src, rotulo, { canais = false, inverterNoEscuro = false, densidade = 1, centro = null } = {}) {
   const tela = document.createElement("canvas");
   tela.className = "gravura";
   tela.setAttribute("role", "img");
@@ -210,18 +213,26 @@ export function gravura(src, rotulo) {
     tela.width = w;
     tela.height = h;
     const ctx = tela.getContext("2d", { willReadFrequently: true });
+    // a hachura é fina: reduzir ou ampliar com o filtro simples a amolece e faz moiré
+    ctx.imageSmoothingQuality = "high";
     ctx.clearRect(0, 0, w, h);
     ctx.drawImage(imagem, 0, 0, w, h);
     const fonte = ctx.getImageData(0, 0, w, h).data;
     const alfa = new Uint8ClampedArray(w * h);
     const ordem = new Float32Array(w * h);
     const passo = Math.max(1, Math.round(2 * dpr));
+    const papel = inverterNoEscuro && matchMedia("(prefers-color-scheme: dark)").matches;
     for (let y = 0; y < h; y++) {
       const linha = ((y / passo) | 0) % 8;
       for (let x = 0; x < w; x++) {
         const i = y * w + x;
-        alfa[i] = fonte[i * 4 + 3];
-        ordem[i] = (BAYER[linha * 8 + (((x / passo) | 0) % 8)] / 64) * 0.5 + (1 - alfa[i] / 255) * 0.2 + (y / h) * 0.3;
+        if (canais) {
+          const tinta = fonte[i * 4], recorte = fonte[i * 4 + 3];
+          alfa[i] = ((papel ? 255 - tinta : 255 * (tinta / 255) ** densidade) * recorte) / 255;
+        } else alfa[i] = fonte[i * 4 + 3];
+        // de cima para baixo, ou das bordas para o centro (as mãos vão uma ao encontro da outra)
+        const caminho = centro == null ? y / h : 1 - Math.abs(x / w - centro) / Math.max(centro, 1 - centro);
+        ordem[i] = (BAYER[linha * 8 + (((x / passo) | 0) % 8)] / 64) * 0.5 + (1 - alfa[i] / 255) * 0.2 + caminho * 0.3;
       }
     }
     const [r, g, b] = (getComputedStyle(tela).color.match(/\d+(\.\d+)?/g) ?? [0, 0, 0]).map(Number);
