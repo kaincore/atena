@@ -73,8 +73,6 @@
   --traco: cubic-bezier(.65, 0, .25, 1);
   /* uma volta do meandro, que se repete nas faixas (como máscara: a cor vem de quem usa) */
   --meandro: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 14'%3E%3Cpath d='M0 13H1V1H13V9H9V5H5V13H16' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E");
-  /* a cornija pintada do teto da Sistina: óvulos e dardos, dentículos e o astrágalo de contas (um módulo) */
-  --cornija: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 28' fill='none' stroke='%23000' stroke-width='.85' stroke-linecap='round'%3E%3Cpath d='M0 .6H18M0 11.4H18M0 19.8H18M0 25.2H18M0 27.4H18'/%3E%3Cpath d='M2.4 2.2C2.4 12.6 15.6 12.6 15.6 2.2'/%3E%3Cellipse cx='9' cy='6' rx='3.6' ry='2.9'/%3E%3Cpath d='M0 2.2V8.6M-1.1 7.3 0 9.6 1.1 7.3M18 2.2V8.6M16.9 7.3 18 9.6 19.1 7.3'/%3E%3Cpath d='M1.2 13h3.6v5.2H1.2zM7.2 13h3.6v5.2H7.2zM13.2 13h3.6v5.2h-3.6z'/%3E%3Ccircle cx='3' cy='22.5' r='1.25'/%3E%3Cellipse cx='9' cy='22.5' rx='2.9' ry='1.05'/%3E%3Ccircle cx='15' cy='22.5' r='1.25'/%3E%3C/svg%3E");
   --meandro-em-pe: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 16'%3E%3Cpath d='M13 0V1H1V13H9V9H5V5H13V16' fill='none' stroke='%23000' stroke-width='1.2'/%3E%3C/svg%3E");
   --seta: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.5 6 8l3.5-3.5' fill='none' stroke='%23556070' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   --seta-lado: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M4.5 2.5 8 6l-3.5 3.5' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
@@ -635,17 +633,7 @@ input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]:
 
 /* --- entrar: as mãos da Criação de Adão, impressas por pontos --- */
 
-.entrada { min-height: 100dvh; display: grid; place-items: center; padding: 3rem 1rem; overflow-x: clip; }
-/* a moldura: a cornija do teto da Sistina em traço fino, em cima e embaixo (espelhada); ao entrar ela se
-   abre do meio para as bordas */
-.entrada::before, .entrada::after {
-  content: ""; position: fixed; left: 1rem; right: 1rem; height: 1.4rem; pointer-events: none;
-  background: var(--tinta-3); mask: var(--cornija) repeat-x center top / auto 100%; opacity: .42;
-}
-.entrada::before { top: max(1rem, env(safe-area-inset-top)); }
-.entrada::after { bottom: max(1rem, env(safe-area-inset-bottom)); scale: 1 -1; }
-.entrada.construindo::before, .entrada.construindo::after { animation: abrir-cornija 1.8s var(--traco) .1s backwards; }
-@keyframes abrir-cornija { from { clip-path: inset(0 50%); } }
+.entrada { min-height: 100dvh; display: grid; place-items: center; padding: 1.5rem 1rem 2rem; overflow-x: clip; }
 .frente { width: min(100%, 22rem); display: grid; gap: .8rem; }
 .frente .marca { justify-self: center; margin: .5rem -.28em .8rem 0; font-size: 1.7rem; color: var(--tinta); }
 .frente input { min-height: 3rem; font-size: 1.05rem; }
@@ -689,19 +677,7 @@ input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]:
 .entrada.saindo { animation: afastar .5s var(--suave) forwards; }
 @keyframes afastar { to { opacity: 0; transform: scale(1.02); filter: blur(10px); } }
 .painel.chegando main { animation: chegar-tela .7s var(--suave) backwards; }
-/* no PC, a cornija mais larga, e os montantes: dois filetes de cada lado, ligando as cornijas */
 @media (min-width: 60rem) {
-  .entrada::before, .entrada::after { left: 2.5rem; right: 2.5rem; height: 1.6rem; }
-  .entrada::before { top: 2rem; }
-  .entrada::after { bottom: 2rem; }
-  .entrada {
-    --filete: color-mix(in srgb, var(--tinta-3) 50%, transparent);
-    background:
-      linear-gradient(var(--filete) 0 0) left 2.5rem top 3.6rem / 1px calc(100% - 7.2rem) no-repeat fixed,
-      linear-gradient(var(--filete) 0 0) left 2.8rem top 3.6rem / 1px calc(100% - 7.2rem) no-repeat fixed,
-      linear-gradient(var(--filete) 0 0) right 2.5rem top 3.6rem / 1px calc(100% - 7.2rem) no-repeat fixed,
-      linear-gradient(var(--filete) 0 0) right 2.8rem top 3.6rem / 1px calc(100% - 7.2rem) no-repeat fixed;
-  }
   /* no PC, as mãos vão em cima, largas, e a entrada embaixo */
   .frente { width: min(100%, 46rem); justify-items: center; row-gap: 2.5rem; }
   .campos-entrada { width: min(100%, 21rem); }
