@@ -1,7 +1,7 @@
 // Atividade: o registro do executor (cada pedido, cada decisão e os eventos).
-import { atualizar, cartao, consultar, falha, h, hora, semCentral } from "../comum.js";
+import { atualizar, campo, cartao, consultar, falha, h, hora, item, itens, num, semCentral } from "../comum.js";
 
-const filtro = { cliente: "", so_erros: false, linhas: 200 };
+const filtro = { cliente: "", so_erros: false, linhas: 100 };
 const clientesVistos = new Set(["hermes", "painel"]);
 
 function linhaAtividade(i) {
@@ -11,13 +11,15 @@ function linhaAtividade(i) {
     i.params && Object.entries(i.params).map(([k, v]) => `${k}=${v}`).join(" "),
     i.decisao && `decisão ${i.decisao}${i.por ? ` por ${i.por}` : ""}`,
     i.pedido && `pedido ${i.pedido}`, i.aprovacao && `aprovação ${i.aprovacao}`,
-    i.origem && `origem ${i.origem}`, i.segundos != null && `${i.segundos} s`,
+    i.origem && `origem ${i.origem}`, i.segundos != null && `${num(i.segundos, 2)} s`,
   ].filter(Boolean).join(" · ");
-  return h("li", null,
-    h("span", { class: `selo ${erro ? "ruim" : i.ok ? "ok" : "neutro"}` }, erro ? "erro" : i.ok ? "ok" : "evento"),
-    ` ${oque} `, h("small", null, `${i.cliente ?? "executor"} · ${hora(i.quando)}`),
-    detalhes && h("div", { class: "fraco resumo" }, detalhes),
-    i.erro && h("div", { class: "erro resumo" }, i.erro));
+  const texto = [erro ? "erro" : i.ok ? "ok" : "evento", i.cliente ?? "executor", hora(i.quando), detalhes].filter(Boolean).join(" · ");
+  const linhaItem = item({
+    led: erro ? "ruim" : i.ok ? "ok" : "info", nome: oque, detalhe: texto, classe: "compacto",
+    extra: i.erro && h("div", { class: "erro resumo" }, i.erro),
+  });
+  linhaItem.querySelector(".item-detalhe").title = texto; // no PC o detalhe fica numa linha só; o inteiro aparece ao parar o mouse
+  return linhaItem;
 }
 
 export async function telaAtividade() {
@@ -31,15 +33,15 @@ export async function telaAtividade() {
     filtro.linhas = Number(f.linhas.value);
     atualizar();
   } },
-    h("label", null, "Cliente ", h("select", { name: "cliente" }, ["", ...[...clientesVistos].sort()].map((c) =>
+    campo("Cliente", h("select", { name: "cliente" }, ["", ...[...clientesVistos].sort()].map((c) =>
       h("option", { value: c, selected: c === filtro.cliente }, c || "todos")))),
-    h("label", null, h("input", { type: "checkbox", name: "so_erros", checked: filtro.so_erros }), " só erros"),
-    h("label", null, "Linhas ", h("select", { name: "linhas" }, [100, 200, 500, 1000].map((n) =>
-      h("option", { value: String(n), selected: n === filtro.linhas }, String(n))))));
-  const itens = r.resultado.itens;
+    campo("Linhas", h("select", { name: "linhas" }, [100, 200, 500, 1000].map((n) =>
+      h("option", { value: String(n), selected: n === filtro.linhas }, String(n))))),
+    h("label", { class: "opcao" }, h("input", { type: "checkbox", name: "so_erros", checked: filtro.so_erros }), " só erros"));
+  const lista = r.resultado.itens;
   const c = cartao("Atividade do executor", controles,
     h("p", { class: "fraco" }, "Tudo o que a Atena, o painel e o lab pediram ao executor, as suas decisões e os eventos dele, do mais novo ao mais velho."),
-    itens.length ? h("ul", { class: "lista atividade" }, itens.map(linhaAtividade)) : h("p", { class: "fraco" }, "Nada no registro com esse filtro."));
+    itens(lista.map(linhaAtividade), "Nada no registro com esse filtro."));
   c.classList.add("largo");
   return [c];
 }

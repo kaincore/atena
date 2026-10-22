@@ -1,5 +1,5 @@
 // Aprovações: a central do que espera o dono (os tempos do executor vêm em segundos) e a faixa amarela.
-import { $, TERMINADOS, atualizar, avisar, cartao, consultar, estadoTexto, falha, h, hora, mudar, semCentral, telaAtual } from "../comum.js";
+import { $, atualizar, avisar, cartao, consultar, estadoTexto, falha, h, hora, item, itens, ledEstado, mudar, semCentral, telaAtual } from "../comum.js";
 import { picto } from "../pictos.js";
 
 function relativo(s) {
@@ -68,7 +68,7 @@ function cartaoPendente(p) {
       h("ul", { class: "lista" }, params.map(([k, v]) => h("li", null, h("span", { class: "rotulo" }, `${k}: `), v)))),
     h("div", { class: "botoes grandes" },
       h("button", { type: "button", class: "principal", onclick: () => decidirPedido(p, "aprovar") }, "Aprovar"),
-      h("button", { type: "button", class: "discreto", onclick: () => decidirPedido(p, "recusar") }, "Recusar")));
+      h("button", { type: "button", onclick: () => decidirPedido(p, "recusar") }, "Recusar")));
 }
 
 export async function telaAprovacoes() {
@@ -79,10 +79,10 @@ export async function telaAprovacoes() {
   return [
     pendentes.length ? pendentes.map(cartaoPendente)
       : cartao("Aprovações", h("p", { class: "fraco" }, "Nada esperando por você. Os pedidos da Atena e do Claude Code aparecem aqui e no celular.")),
-    cartao("Decididos há pouco", recentes.length ? h("ul", { class: "lista" }, recentes.map((x) => h("li", null,
-      h("span", { class: `selo ${x.estado === "concluido" ? "ok" : TERMINADOS.has(x.estado) ? "ruim" : "neutro"}` }, estadoTexto(x.estado)),
-      ` ${x.titulo ?? x.acao} `,
-      h("small", null, [x.cliente, hora(x.quando), x.por && `por ${x.por}`].filter(Boolean).join(" · ")),
-      x.erro && h("div", { class: "fraco resumo" }, x.erro)))) : h("p", { class: "fraco" }, "Nenhum ainda.")),
+    cartao("Decididos há pouco", itens(recentes.map((x) => item({
+      led: ledEstado(x.estado), nome: x.titulo ?? x.acao,
+      detalhe: [estadoTexto(x.estado), x.cliente, hora(x.quando), x.por && `por ${x.por}`].filter(Boolean).join(" · "),
+      extra: x.erro && h("div", { class: "fraco resumo" }, x.erro),
+    })), "Nenhum ainda.")),
   ];
 }
