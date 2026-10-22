@@ -93,7 +93,7 @@ export async function telaArquivos() {
       r.resultado.itens.map((n) => {
         const ehPasta = n.endsWith("/");
         const caminho = `${pasta === "/" ? "" : pasta}/${n.replace(/\/$/, "")}`;
-        return item({ classe: "arquivo", nome: ehPasta ? link("arquivos", n.slice(0, -1), "pasta", () => navegar(caminho))
+        return item({ classe: "arquivo", nome: ehPasta ? link("pasta", n.slice(0, -1), "pasta", () => navegar(caminho))
           : link("documento", n, null, () => abrirArquivo(caminho)) });
       }),
     ], "Pasta vazia."),

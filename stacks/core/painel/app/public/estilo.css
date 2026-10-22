@@ -221,6 +221,7 @@ main {
 .picto { fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 .picto .cheio { fill: currentColor; stroke: none; }
 .picto .tampa { fill: var(--chassi-2); }
+.picto .tinta { display: none; } /* a área pintada dos ícones novos acende no visual novo */
 
 /* --- módulos: placas do aparelho, com parafusos nos cantos e etiqueta de engenharia --- */
 
