@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-21T15:38:37+00:00",
+  "generatedAt": "2026-10-22T15:26:34+00:00",
   "title": "Design System: Painel Atena",
   "extensions": {
     "colorMeta": {
@@ -819,6 +819,96 @@
           "#c6cbc7",
           "#ebf0ec"
         ]
+      },
+      "tecla-clara": {
+        "role": "secondary",
+        "displayName": "Tecla Clara",
+        "canonical": "#f8f8f5",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#252523",
+          "#414240",
+          "#61625f",
+          "#828380",
+          "#a4a5a3",
+          "#c8c9c7",
+          "#eeefec"
+        ]
+      },
+      "tecla-clara-borda": {
+        "role": "secondary",
+        "displayName": "Contorno da Tecla Clara",
+        "canonical": "#a4a7a1",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#252523",
+          "#414240",
+          "#61625f",
+          "#828380",
+          "#a4a5a3",
+          "#c8c9c7",
+          "#eeefec"
+        ]
+      },
+      "tecla-clara-lado": {
+        "role": "secondary",
+        "displayName": "Lado da Tecla Clara",
+        "canonical": "#868983",
+        "tonalRamp": [
+          "#0b0b0a",
+          "#252523",
+          "#414240",
+          "#61625f",
+          "#828380",
+          "#a4a5a3",
+          "#c8c9c7",
+          "#eeefec"
+        ]
+      },
+      "tecla-clara-escuro": {
+        "role": "secondary",
+        "displayName": "Tecla Clara (tema escuro)",
+        "canonical": "#262927",
+        "tonalRamp": [
+          "#090c0a",
+          "#232624",
+          "#404341",
+          "#5f6260",
+          "#808381",
+          "#a2a6a4",
+          "#c6cac8",
+          "#ecf0ed"
+        ]
+      },
+      "tecla-clara-borda-escuro": {
+        "role": "secondary",
+        "displayName": "Contorno da Tecla Clara (tema escuro)",
+        "canonical": "#3b3f3c",
+        "tonalRamp": [
+          "#090c0a",
+          "#232624",
+          "#404341",
+          "#5f6260",
+          "#808381",
+          "#a2a6a4",
+          "#c6cac8",
+          "#ecf0ed"
+        ]
+      },
+      "tecla-clara-lado-escuro": {
+        "role": "secondary",
+        "displayName": "Lado da Tecla Clara (tema escuro)",
+        "canonical": "#0a0b0a",
+        "tonalRamp": [
+          "#090c0a",
+          "#232624",
+          "#404341",
+          "#5f6260",
+          "#808381",
+          "#a2a6a4",
+          "#c6cac8",
+          "#ecf0ed"
+        ]
       }
     },
     "typographyMeta": {
@@ -985,6 +1075,11 @@
         "name": "reducao",
         "value": "@media (prefers-reduced-motion: reduce) { animation: none; transition: none }",
         "purpose": "Com redução de movimento, nada se move."
+      },
+      {
+        "name": "ponto-lendo",
+        "value": "lendo .8s step-end infinite",
+        "purpose": "Enquanto a tela busca o dado novo, o ponto amarelo da tela ativa pisca, como o LED de leitura de um disco; com prefers-reduced-motion, só fica mais fraco."
       }
     ],
     "breakpoints": [
@@ -1031,7 +1126,7 @@
       "name": "Campo",
       "kind": "input",
       "refersTo": "campo",
-      "description": "Campo de texto como um poço no painel: fundo afundado, contorno em risco forte e o rótulo em versalete acima.",
+      "description": "Campo de texto como um poço no painel: fundo afundado, contorno em risco forte e o rótulo em versalete (.62rem) em cima. Nos formulários, os campos ficam numa grade de no mínimo 9rem por coluna.",
       "html": "<label class=\"ds-campo-rotulo\"><span>Nova pendência</span><input class=\"ds-campo\" type=\"text\" placeholder=\"O que falta fazer\"></label>",
       "css": ".ds-campo-rotulo{display:grid;gap:.45rem;max-width:22rem}.ds-campo-rotulo span{font:650 .69rem var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:112%;text-transform:uppercase;letter-spacing:.14em;color:var(--tinta-2, #585b57)}.ds-campo{font:400 .95rem var(--fonte, \"Archivo\", system-ui, sans-serif);color:var(--tinta, #161716);background:var(--poco, #d3d5d1);border:1px solid var(--risco-forte, #9da09b);border-radius:4px;padding:.5rem .65rem;min-height:2.5rem;box-shadow:inset 0 1px 3px rgb(0 0 0 / .14)}.ds-campo::placeholder{color:var(--tinta-2, #585b57)}.ds-campo:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px;border-radius:4px}"
     },
@@ -1082,6 +1177,30 @@
       "description": "O aviso passageiro: um vidro preto pequeno com moldura, texto em mono e o LED do resultado; some em 4 s (8 s se for erro).",
       "html": "<div class=\"ds-aviso ds-ok\">Pedido aprovado. O executor já está rodando.</div><div class=\"ds-aviso ds-erro\">O pedido já tinha vencido; nada foi feito.</div>",
       "css": ".ds-aviso{display:flex;align-items:baseline;gap:.55rem;max-width:30rem;margin:0 0 .6rem;padding:.65rem .85rem;border-radius:6px;background:var(--visor, #070908);color:var(--visor-traco, #e6efe9);font:400 .78rem/1.4 var(--mono, \"Martian Mono\", ui-monospace, monospace);box-shadow:0 0 0 3px var(--moldura, #2a2c2b), 0 10px 24px -8px rgb(0 0 0 / .5)}.ds-aviso::before{content:\"\";flex:none;width:.45rem;height:.45rem;border-radius:50%;background:var(--led-azul, #3e8bff);box-shadow:0 0 6px rgb(62 139 255 / .7)}.ds-aviso.ds-ok::before{background:var(--led-verde, #2bd46a);box-shadow:0 0 6px rgb(43 212 106 / .7)}.ds-aviso.ds-erro::before{background:var(--led-vermelho, #ff4433);box-shadow:0 0 6px rgb(255 68 51 / .7)}"
+    },
+    {
+      "name": "Tecla clara",
+      "kind": "button",
+      "refersTo": "tecla-clara",
+      "description": "As ações de cada linha (Logs, Reiniciar, Editar) e as secundárias (Atualizar, Cancelar, Fechar): face de alumínio clara, contorno e lado de 3px, um degrau abaixo da grafite.",
+      "html": "<button type=\"button\" class=\"ds-tecla-clara\">Reiniciar</button>",
+      "css": ".ds-tecla-clara{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;min-height:2.2rem;padding:.4rem .72rem;cursor:pointer;font:600 .78rem/1.1 var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:106%;letter-spacing:.01em;color:var(--tinta, #161716);background:var(--tecla-clara, #f8f8f5);border:1px solid var(--tecla-clara-borda, #a4a7a1);border-bottom:3px solid var(--tecla-clara-lado, #868983);border-radius:var(--raio-tecla, 5px);box-shadow:0 1px 2px rgb(0 0 0 / .08);transition:transform .08s ease-out,border-bottom-width .08s ease-out}.ds-tecla-clara:hover{border-color:var(--tinta-2, #585b57);border-bottom-color:var(--tecla-clara-lado, #868983)}.ds-tecla-clara:active{transform:translateY(1px);border-bottom-width:2px}.ds-tecla-clara:focus-visible{outline:2px solid var(--foco, #2559c4);outline-offset:2px}@media (prefers-reduced-motion: reduce){.ds-tecla-clara{transition:none}}"
+    },
+    {
+      "name": "Linha de lista",
+      "kind": "list",
+      "refersTo": "linha",
+      "description": "Toda lista do painel: o LED do estado, o nome com o detalhe embaixo (o estado escrito primeiro) e as teclas claras à direita; com muitas teclas, ou num módulo estreito, elas descem para baixo do nome.",
+      "html": "<ul class=\"ds-itens\"><li class=\"ds-item\"><span class=\"ds-led\"></span><div><div class=\"ds-item-nome\"><strong>ntfy</strong></div><div class=\"ds-item-detalhe\">no ar há 6 h · saudável · CPU 0,0% · RAM 49,1 MB</div></div><div class=\"ds-item-acoes\"><button type=\"button\" class=\"ds-tecla-clara\">Logs</button><button type=\"button\" class=\"ds-tecla-clara\">Reiniciar</button></div></li></ul>",
+      "css": ".ds-itens{list-style:none;margin:0;padding:0}.ds-item{display:grid;grid-template-columns:.5rem minmax(min(13rem,100%),1fr) minmax(0,max-content);align-items:center;gap:.35rem .75rem;padding:.7rem 0;border-top:1px solid var(--risco, #c3c6c1);font:400 1rem/1.45 var(--fonte, \"Archivo\", system-ui, sans-serif);color:var(--tinta, #161716)}.ds-item:first-child{border-top:0}.ds-led{align-self:start;margin-top:.48rem;width:.5rem;height:.5rem;border-radius:50%;background:var(--led-verde, #2bd46a);box-shadow:inset 0 -1px 1px rgb(0 0 0 / .2),0 0 6px rgb(43 212 106 / .55)}.ds-item-nome strong{font-weight:650}.ds-item-detalhe{margin-top:.1rem;font-size:.8rem;line-height:1.4;color:var(--tinta-2, #585b57);font-variant-numeric:tabular-nums}.ds-item-acoes{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:.4rem}"
+    },
+    {
+      "name": "Tecla de trava",
+      "kind": "toggle",
+      "refersTo": "tecla-trava",
+      "description": "Escolha que fica ligada (os dias da semana): tecla clara pequena com um LED no alto; ligada, afunda no poço e o LED acende em verde.",
+      "html": "<label class=\"ds-trava\"><input type=\"checkbox\" checked><span>seg</span></label><label class=\"ds-trava\"><input type=\"checkbox\"><span>sáb</span></label>",
+      "css": ".ds-trava{position:relative;display:inline-grid;margin-right:.35rem}.ds-trava input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}.ds-trava span{display:grid;justify-items:center;gap:.3rem;min-width:2.75rem;padding:.4rem .45rem .45rem;font:650 .62rem var(--fonte, \"Archivo\", system-ui, sans-serif);font-stretch:112%;letter-spacing:.1em;text-transform:uppercase;color:var(--tinta-2, #585b57);background:var(--tecla-clara, #f8f8f5);border:1px solid var(--tecla-clara-borda, #a4a7a1);border-bottom:3px solid var(--tecla-clara-lado, #868983);border-radius:var(--raio-tecla, 5px)}.ds-trava span::before{content:\"\";width:.4rem;height:.4rem;border-radius:50%;background:var(--led-apagado, #aeb1ac)}.ds-trava input:checked+span{color:var(--tinta, #161716);background:var(--poco, #d3d5d1);border-bottom-width:1px;margin-top:2px;box-shadow:inset 0 1px 3px rgb(0 0 0 / .16)}.ds-trava input:checked+span::before{background:var(--led-verde, #2bd46a);box-shadow:0 0 6px rgb(43 212 106 / .55)}.ds-trava input:focus-visible+span{outline:2px solid var(--foco, #2559c4);outline-offset:2px}"
     }
   ],
   "narrative": {
@@ -1100,7 +1219,7 @@
     "rules": [
       {
         "name": "A Regra da Tecla Amarela",
-        "body": "Entre as teclas, só a ação principal é amarela, uma por módulo ou janela; todas as outras são grafite, nos dois temas. Fora das teclas, o amarelo só aponta para o dono e para onde ele está: a faixa e a contagem de aprovações, o ponto da tela ativa, o sublinhado dos links, a seleção de texto, os marcadores do mostrador da agenda, o tampo da placa sob o ponteiro na vista explodida e a varredura dos LEDs ao entrar.",
+        "body": "Entre as teclas, só a ação principal é amarela, uma por módulo ou janela. As outras são grafite (a ação do módulo que não é a principal) ou claras (as de cada linha e as secundárias), nos dois temas. Fora das teclas, o amarelo só aponta para o dono e para onde ele está: a faixa e a contagem de aprovações, o ponto da tela ativa, o sublinhado dos links, a seleção de texto, os marcadores do mostrador da agenda, o tampo da placa sob o ponteiro na vista explodida e a varredura dos LEDs ao entrar.",
         "section": "colors"
       },
       {
@@ -1120,7 +1239,7 @@
       },
       {
         "name": "A Regra do Número de Máquina",
-        "body": "Número medido no visor sai em 7 segmentos, com os segmentos apagados visíveis por trás. Códigos, unidades, registros e chaves saem em Martian Mono. Números em linhas de texto usam algarismos tabulares.",
+        "body": "Número medido no visor sai em 7 segmentos, com os segmentos apagados visíveis por trás. Códigos, unidades, registros e chaves saem em Martian Mono. Números em linhas de texto usam algarismos tabulares e se escrevem como aqui (15,0 GB, US$ 0,98, 1.304 RPM, 0,3%), pelo num() do comum.js.",
         "section": "typography"
       },
       {
@@ -1156,7 +1275,9 @@
     ],
     "dos": [
       "**Do** montar todo módulo com o cabeçalho de etiqueta: título em Rótulo, o código do que ele mede em Martian Mono e a peça posicional (IN-01), que o painel numera sozinho.",
-      "**Do** usar uma única tecla amarela (principal) por módulo ou janela; as outras são grafite, discretas ou de perigo.",
+      "**Do** usar uma única tecla amarela (principal) por módulo ou janela; a ação do módulo é grafite, e as de cada linha e as secundárias são claras.",
+      "**Do** montar toda lista com item() (LED, nome, detalhe com o estado escrito, teclas) e todo formulário com campo().",
+      "**Do** escrever números com num() (e gb(), dinheiro(), plural()): vírgula decimal e ponto de milhar.",
       "**Do** dizer todo estado com um LED e o texto do lado (selo), nas cores verde, âmbar, vermelho e azul.",
       "**Do** desenhar número medido em 7 segmentos no visor preto, com os segmentos apagados visíveis, e só com dado de verdade do executor.",
       "**Do** desenhar pictogramas novos no próprio painel, na grade de 24 com traço de 1,75, pontas redondas e `currentColor`.",

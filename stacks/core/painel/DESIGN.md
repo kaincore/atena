@@ -12,6 +12,9 @@ colors:
   tecla-lado: "#0b0c0b"
   tecla-tinta: "#f1f2ef"
   tecla-perigo: "#ff8a7f"
+  tecla-clara: "#f8f8f5"
+  tecla-clara-borda: "#a4a7a1"
+  tecla-clara-lado: "#868983"
   led-verde: "#2bd46a"
   led-ambar: "#ffa51f"
   led-vermelho: "#ff4433"
@@ -42,6 +45,9 @@ colors:
   tecla-borda-escuro: "#444946"
   tecla-lado-escuro: "#080908"
   tecla-tinta-escuro: "#ecedea"
+  tecla-clara-escuro: "#262927"
+  tecla-clara-borda-escuro: "#3b3f3c"
+  tecla-clara-lado-escuro: "#0a0b0a"
   led-apagado-escuro: "#3a3e3b"
   verde-escuro: "#3ddc7a"
   ambar-escuro: "#ffb347"
@@ -77,6 +83,12 @@ typography:
     fontWeight: 400
     lineHeight: 1.45
     fontVariation: "'wdth' 100"
+  detalhe:
+    fontFamily: "Archivo, system-ui, sans-serif"
+    fontSize: "0.8rem"
+    fontWeight: 400
+    lineHeight: 1.4
+    fontFeature: "'tnum'"
   corpo-fraco:
     fontFamily: "Archivo, system-ui, sans-serif"
     fontSize: "0.875rem"
@@ -178,13 +190,25 @@ components:
     rounded: "{rounded.raio-tecla}"
     padding: "0.5rem 0.95rem"
     height: "2.5rem"
-  tecla-discreta:
-    backgroundColor: "{colors.tecla}"
-    textColor: "{colors.tecla-tinta}"
+  tecla-clara:
+    backgroundColor: "{colors.tecla-clara}"
+    textColor: "{colors.tinta}"
     typography: "{typography.tecla}"
     rounded: "{rounded.raio-tecla}"
     padding: "0.4rem 0.72rem"
     height: "2.2rem"
+  tecla-clara-escuro:
+    backgroundColor: "{colors.tecla-clara-escuro}"
+    textColor: "{colors.tinta-escuro}"
+  tecla-trava:
+    backgroundColor: "{colors.tecla-clara}"
+    textColor: "{colors.tinta-2}"
+    typography: "{typography.rotulo-pequeno}"
+    rounded: "{rounded.raio-tecla}"
+    padding: "0.4rem 0.45rem 0.45rem"
+  tecla-trava-ligada:
+    backgroundColor: "{colors.poco}"
+    textColor: "{colors.tinta}"
   tecla-perigo:
     backgroundColor: "{colors.tecla}"
     textColor: "{colors.tecla-perigo}"
@@ -199,6 +223,13 @@ components:
     rounded: "{rounded.campo}"
     padding: "0.5rem 0.65rem"
     height: "2.5rem"
+  linha:
+    textColor: "{colors.tinta}"
+    typography: "{typography.corpo}"
+    padding: "0.7rem 0"
+  linha-detalhe:
+    textColor: "{colors.tinta-2}"
+    typography: "{typography.detalhe}"
   modulo:
     backgroundColor: "{colors.modulo}"
     textColor: "{colors.tinta}"
@@ -304,13 +335,13 @@ components:
 
 O painel é um aparelho de mesa da família Braun e Teenage Engineering, feito para um servidor caseiro: um chassi de alumínio (tema claro) ou grafite (tema escuro) onde se aparafusam módulos com etiqueta de engenharia, uma fileira de teclas físicas e um visor preto que desenha o estado da máquina em tempo real. O tema segue o aparelho do dono (`prefers-color-scheme`); só o chassi muda: o visor é o mesmo e as teclas continuam grafite nos dois.
 
-A densidade é de instrumento, não de site. Os títulos são rótulos pequenos em versalete espaçado, e quem carrega a hierarquia é o visor, com números em 7 segmentos e desenhos vivos (carretéis de fita que giram na velocidade da CPU, termômetros, o tanque da RAM, a torre do PC, o mostrador de 24 h). O estado se lê pelos LEDs, sempre com o texto do lado. Uma tecla amarela por módulo diz qual é a ação principal; todas as outras são grafite.
+A densidade é de instrumento, não de site. Os títulos são rótulos pequenos em versalete espaçado, e quem carrega a hierarquia é o visor, com números em 7 segmentos e desenhos vivos (carretéis de fita que giram na velocidade da CPU, termômetros, o tanque da RAM, a torre do PC, o mostrador de 24 h). O estado se lê pelos LEDs, sempre com o texto do lado. Uma tecla amarela por módulo diz qual é a ação principal; a ação do módulo é grafite, e as de cada linha são teclas claras.
 
 O sistema recusa duas coisas, confirmadas pelo dono: a cara de SaaS genérico (cartões cinza iguais com ícones de biblioteca) e o temático demais (ficção científica, cara de jogo). A "cena" existe, mas só nos momentos que importam: entrar, chegar uma aprovação, um agendamento rodar, o PC ligar. O uso de todo dia é rápido e quieto.
 
 **Key Characteristics:**
 - Chassi de alumínio ou grafite que segue o tema do aparelho; visor sempre preto.
-- Teclas grafite com lado de 3px que afundam ao toque; amarelo sinal só na ação principal.
+- Teclas com lado de 3px que afundam ao toque, em três pesos: amarelo sinal só na ação principal, grafite na ação do módulo e clara (as cinzas da ET66) nas ações de cada linha.
 - LEDs verde, âmbar, vermelho e azul como único vocabulário de estado, sempre com legenda.
 - Módulos com parafusos nos cantos, régua na borda e etiqueta de engenharia (título em versalete, código em mono, peça posicional como IN-01).
 - Placa de modelo "ATENA AT-1" na marca.
@@ -331,7 +362,8 @@ Uma paleta de instrumento: neutros de alumínio ou grafite quase sem croma, uma 
 - **Tecla Grafite** (#2c2f2d; #353937 no escuro): a face de toda tecla que não é a principal, nos dois temas. No alumínio ela contrasta como uma tecla de calculadora escura; no grafite, fica um tom acima do chassi.
 - **Borda e Lado da Tecla** (#1f2120 e #0b0c0b; #444946 e #080908 no escuro): o contorno de 1px e o lado de 3px que dão volume à tecla.
 - **Tinta da Tecla** (#f1f2ef; #ecedea no escuro): o texto das teclas grafite.
-- **Coral de Perigo** (#ff8a7f): o texto da tecla que apaga ou desfaz, acompanhado de um ponto de LED vermelho; o mesmo nos dois temas porque a tecla é sempre grafite.
+- **Coral de Perigo** (#ff8a7f): o texto da tecla grafite que apaga ou desfaz, acompanhado de um ponto de LED vermelho. Na tecla clara, o perigo usa o Texto de Estado vermelho.
+- **Tecla Clara** (#f8f8f5, contorno #a4a7a1, lado #868983; no escuro #262927, #3b3f3c e #0a0b0a): a face das teclas de cada linha (Logs, Reiniciar, Editar, Desconectar), das secundárias (Atualizar, Cancelar, Fechar) e das teclas de trava. Fica um degrau abaixo da grafite nos dois temas: no alumínio é clara com texto escuro, no grafite fica abaixo da face da tecla grafite.
 
 ### Tertiary
 - **Luz Verde** (#2bd46a): no ar, ok, concluído; também o nível dos desenhos do visor e os segmentos acesos do medidor.
@@ -359,7 +391,7 @@ Uma paleta de instrumento: neutros de alumínio ou grafite quase sem croma, uma 
 - **Foco** (#2559c4; #6aa4ff no escuro): o contorno de foco do teclado.
 
 ### Named Rules
-**A Regra da Tecla Amarela.** Entre as teclas, só a ação principal é amarela, uma por módulo ou janela; todas as outras são grafite, nos dois temas. Fora das teclas, o amarelo só aponta para o dono e para onde ele está: a faixa e a contagem de aprovações, o ponto da tela ativa, o sublinhado dos links, a seleção de texto, os marcadores do mostrador da agenda, o tampo da placa sob o ponteiro na vista explodida e a varredura dos LEDs ao entrar.
+**A Regra da Tecla Amarela.** Entre as teclas, só a ação principal é amarela, uma por módulo ou janela. As outras são grafite (a ação do módulo que não é a principal, como Recusar, Ver ou Procurar) ou claras (as de cada linha e as secundárias), nos dois temas. Fora das teclas, o amarelo só aponta para o dono e para onde ele está: a faixa e a contagem de aprovações, o ponto da tela ativa, o sublinhado dos links, a seleção de texto, os marcadores do mostrador da agenda, o tampo da placa sob o ponteiro na vista explodida e a varredura dos LEDs ao entrar.
 
 **A Regra do LED com Legenda.** Estado só se diz com os quatro LEDs (verde ok, âmbar perto do limite, vermelho falha, azul informação ou em andamento), e sempre com o texto do lado. Cor sozinha não é estado, e nenhum outro matiz entra nesse vocabulário.
 
@@ -378,6 +410,7 @@ Uma paleta de instrumento: neutros de alumínio ou grafite quase sem croma, uma 
 - **Título** (700, 1rem, altura 1.2): o texto da faixa de aprovações e o título das janelas. Não há manchete maior que essa: a ênfase grande é dos números do visor.
 - **Corpo** (400, 1rem, altura 1.45): o texto corrido e os valores das linhas; a pergunta de um pedido do Claude Code sobe para 1.05rem.
 - **Corpo Fraco** (400, .875rem, Tinta Secundária): explicações, metadados de pedidos, estados vazios.
+- **Detalhe** (400, .8rem, altura 1.4, algarismos tabulares, Tinta Secundária): a linha de baixo de cada item de lista, com o estado escrito primeiro ("no ar há 6 h · saudável · CPU 0,3%").
 - **Tecla** (600, .84rem, largura 106): o texto das teclas; .95rem nas teclas grandes de decisão (Aprovar, Ligar) e na frente de entrada.
 - **Trilho** (550, .9rem): os nomes das telas no trilho do PC.
 - **Rótulo** (650, .69rem, largura 112, espaço .14em, caixa alta): títulos de módulo, rótulos de linha e `h3`. Na versão pequena (650, .6rem, espaço .12em) vira o nome das telas na barra do celular (e, com .14em, o título dos grupos do trilho); o selo de estado usa .62rem.
@@ -388,7 +421,7 @@ Uma paleta de instrumento: neutros de alumínio ou grafite quase sem croma, uma 
 ### Named Rules
 **A Regra da Etiqueta.** Título de módulo é rótulo, não manchete: Archivo 650 a .69rem, largura 112, caixa alta com .14em de espaço. A hierarquia vem do visor e dos números, nunca do tamanho dos títulos.
 
-**A Regra do Número de Máquina.** Número medido no visor sai em 7 segmentos, com os segmentos apagados visíveis por trás. Códigos, unidades, registros e chaves saem em Martian Mono. Números em linhas de texto usam algarismos tabulares.
+**A Regra do Número de Máquina.** Número medido no visor sai em 7 segmentos, com os segmentos apagados visíveis por trás. Códigos, unidades, registros e chaves saem em Martian Mono. Números em linhas de texto usam algarismos tabulares e se escrevem como aqui (15,0 GB, US$ 0,98, 1.304 RPM, 0,3%), pelo `num()` do `comum.js`; o que vem do executor em outro formato (o `54.68MiB` do docker stats) é traduzido antes de entrar na tela.
 
 ## Layout
 
@@ -397,6 +430,8 @@ O celular e o PC têm o mesmo peso; nenhum é a versão capada do outro.
 **Celular (abaixo de 60rem).** No topo, a marca com a placa AT-1 e a fileira de LEDs das zonas, cada um com o nome da zona embaixo. O conteúdo é uma grade de colunas automáticas de no mínimo 21rem (uma coluna no telefone), com .85rem entre módulos, margem lateral de .75rem e respiro de baixo do tamanho da barra (4.4rem) mais a área segura. A barra fixa embaixo tem cinco teclas: Início, PC, Agenda, Serviços e Mais; o "Mais" abre uma folha de baixo para cima com as outras telas num teclado de três colunas. Abaixo de 40rem, o visor vira uma grade de duas colunas em que a primeira célula ocupa a linha toda.
 
 **PC (a partir de 60rem).** O aparelho vira duas colunas: um trilho fixo de 15.5rem à esquerda, com os grupos hoje, servidor, máquina, registro e conta, e a tecla Buscar com o atalho Ctrl K no pé; e a área de trabalho, até 82rem de largura, com margem de 1.4rem por 1.6rem. A tela do PC fica numa coluna só de até 46rem.
+
+**Módulo estreito.** Cada módulo é um container de CSS (`container: modulo`). Abaixo de 30rem (o celular e as colunas do PC), o código do que ele mede desce para baixo do título, inteiro, e as linhas de lista com mais de uma tecla põem as teclas embaixo do nome.
 
 **Ritmo.** Teclas ficam a .45rem umas das outras; módulos a 1rem no PC; o conteúdo do módulo tem 1rem de respiro em cima e 1.05rem nos lados e embaixo. O cabeçalho do módulo separa do conteúdo com uma linha de Risco e .8rem.
 
@@ -439,8 +474,8 @@ Teclas físicas de calculadora: firmes, com lado, que afundam ao toque.
 - **Shape:** cantos de 5px; contorno de 1px e lado de 3px embaixo.
 - **Grafite (padrão):** face Tecla Grafite com texto claro, 600 a .84rem, .5rem por .95rem, altura mínima de 2.5rem (2.75rem com toque grosso). Pictogramas de 1.15rem à esquerda do texto, com .45rem de folga.
 - **Principal:** a mesma tecla com face Amarelo Sinal, borda e lado do amarelo e texto quase preto. Uma por módulo ou janela.
-- **Discreta:** grafite menor (.4rem por .72rem, altura 2.2rem, .78rem de texto) para ações secundárias como Recusar ou Cancelar.
-- **Perigo:** grafite com texto Coral de Perigo e um ponto de LED vermelho de .42rem antes do texto. Toda ação destrutiva pede confirmação antes de rodar.
+- **Clara (`.discreto`):** face Tecla Clara, texto Tinta, menor (.4rem por .72rem, altura 2.2rem, .78rem de texto), com o mesmo lado de 3px. É a tecla das ações de cada linha (Logs, Reiniciar, Editar) e das secundárias (Atualizar, Cancelar, Fechar). No hover, o contorno escurece.
+- **Perigo:** texto de perigo e um ponto de LED vermelho de .42rem antes do texto: Coral de Perigo na grafite, Texto de Estado vermelho na clara. Toda ação destrutiva pede confirmação antes de rodar.
 - **Grandes:** na fila de decisão (Aprovar e Recusar, Ligar), as teclas dividem a largura e sobem para 3.1rem de altura e .95rem de texto.
 - **Hover / Focus / Active:** no hover, brilho de 3%; no foco do teclado, contorno de 2px na cor de Foco a 2px de distância; ao apertar, desce 1px e o lado vai para 2px em 80ms (ease-out). Desabilitada, fica a 45% de opacidade.
 
@@ -462,6 +497,8 @@ Teclas físicas de calculadora: firmes, com lado, que afundam ao toque.
 - **Largo:** o módulo largo ocupa a linha toda; no PC, o visor dele cresce (desenhos de 4.6rem, números de 3rem) e as células se espalham numa linha só.
 
 ### Inputs / Fields
+- **Campo (`campo()`):** o rótulo do aparelho (.62rem, versalete) em cima do controle. Num formulário, os campos ficam numa grade de colunas automáticas de no mínimo 9rem (duas no celular) e os largos (projeto, pedido) ocupam a linha toda; numa fileira de filtros, ficam lado a lado com a tecla alinhada embaixo.
+- **Teclas de trava:** para escolhas que ficam ligadas (os dias da semana), teclas claras pequenas com um LED no alto; ligada, a tecla afunda no poço (o lado vai a 1px) e o LED acende em verde.
 - **Style:** poço (fundo Poço com sombra interna), contorno de 1px em Risco Forte, cantos de 4px, .5rem por .65rem, altura mínima de 2.5rem, Archivo .95rem. Selects e campos com lista levam a seta própria desenhada em SVG, sem a do sistema. Caixas de seleção usam o amarelo como cor de destaque. A alça de redimensionar do textarea são três riscos diagonais em Risco Forte.
 - **Focus:** contorno de 2px na cor de Foco a 2px de distância.
 - **Error / Disabled:** a mensagem de erro sai em texto vermelho de estado logo abaixo, com altura reservada para não pular a tela.
@@ -471,6 +508,14 @@ Teclas físicas de calculadora: firmes, com lado, que afundam ao toque.
 - **Trilho (PC):** grupos com título em rótulo pequeno; cada tela é um item com pictograma de 1.15rem e nome em Archivo 550 .9rem. Hover em meio poço; a ativa afunda e acende o ponto amarelo à direita. A marca, a placa AT-1 e os LEDs das zonas ficam no alto; a tecla Buscar com Ctrl K, no pé.
 - **Mais (folha):** sobe de baixo, com cantos de 14px no topo, e mostra as outras telas como teclas grafite num teclado de três colunas.
 - **Paleta (Ctrl+K):** janela a 12% do topo, até 36rem, com campo grande de 3rem; os itens mostram pictograma, título e o grupo em versalete à direita. Setas movem a marcação, Enter executa; o item marcado afunda.
+
+### Linhas de lista
+Toda lista do painel é feita de linhas iguais (`item()` e `itens()` no `comum.js`), separadas por 1px de Risco.
+- **Estrutura:** o LED do estado numa coluna de .5rem, o nome (Corpo; o nome de stack, app ou agendamento em 650) com o Detalhe embaixo, e as teclas claras à direita. O nome tem sempre ao menos 13rem; as teclas ficam com o que sobra e quebram de linha.
+- **Estado:** o LED diz o estado e o detalhe começa por ele escrito ("no ar", "falhou", "pausado"), cumprindo a Regra do LED com Legenda.
+- **Teclas embaixo:** com quatro teclas ou mais, ou mais de uma num módulo estreito, elas descem para baixo do nome, alinhadas com ele.
+- **Presas a outra:** os containers de uma stack e as execuções de um agendamento ficam embaixo da linha dela, ligados pela guia tracejada da vista explodida (1px tracejado em Risco Forte, à esquerda).
+- **Registros:** na Atividade, uma linha por evento, com o nome em Martian Mono; no módulo largo, o nome e o detalhe ficam lado a lado e o detalhe corta com reticências (o inteiro aparece ao parar o mouse).
 
 ### O Visor
 A assinatura do aparelho: um vidro preto numa moldura, com células de desenho e leitura, sempre a partir dos dados de verdade.
@@ -490,13 +535,15 @@ Uma tecla larga em Amarelo Sinal, com lado de 3px, no topo de qualquer tela quan
 Retângulos de vidro preto com moldura de 3px, texto em Martian Mono e um LED à esquerda (azul informação, verde ok, vermelho erro). Ficam acima da barra no celular e no canto de baixo à direita no PC; somem em 4s (8s se for erro).
 
 ### Movimento
-**A Regra da Cena nos Momentos.** Movimento de cena só em quatro momentos: a varredura dos LEDs das zonas ao entrar (cada LED acende em amarelo por .5s, 70ms depois do anterior), o pulso da faixa quando chega aprovação (anel amarelo de 16px, 1.2s, duas vezes), a ventoinha que acelera no primeiro minuto depois de o PC ligar e o ponteiro do mostrador que gira quando um agendamento roda (1.4s, duas voltas). Os carretéis e as ventoinhas do visor giram na velocidade medida, porque ali o movimento é a leitura. Com `prefers-reduced-motion`, nada se move: animações e transições são desligadas.
+**A Regra da Cena nos Momentos.** Movimento de cena só em quatro momentos: a varredura dos LEDs das zonas ao entrar (cada LED acende em amarelo por .5s, 70ms depois do anterior), o pulso da faixa quando chega aprovação (anel amarelo de 16px, 1.2s, duas vezes), a ventoinha que acelera no primeiro minuto depois de o PC ligar e o ponteiro do mostrador que gira quando um agendamento roda (1.4s, duas voltas). Os carretéis e as ventoinhas do visor giram na velocidade medida, porque ali o movimento é a leitura. Pela mesma razão, enquanto a tela busca o dado novo, o ponto amarelo da tela ativa pisca (.8s, aceso e apagado), como o LED de leitura de um disco; com `prefers-reduced-motion`, ele só fica mais fraco. A tela que ainda não chegou mostra as placas vazias (esqueleto, sem movimento), e a tela já vista volta na hora com o que mostrava, até o dado novo entrar por cima. Com `prefers-reduced-motion`, nada se move: animações e transições são desligadas.
 
 ## Do's and Don'ts
 
 ### Do:
 - **Do** montar todo módulo com o cabeçalho de etiqueta: título em Rótulo, o código do que ele mede em Martian Mono e a peça posicional (IN-01), que o painel numera sozinho.
-- **Do** usar uma única tecla amarela (principal) por módulo ou janela; as outras são grafite, discretas ou de perigo.
+- **Do** usar uma única tecla amarela (principal) por módulo ou janela; a ação do módulo é grafite, e as de cada linha e as secundárias são claras.
+- **Do** montar toda lista com `item()` (LED, nome, detalhe com o estado escrito, teclas) e todo formulário com `campo()`.
+- **Do** escrever números com `num()` (e `gb()`, `dinheiro()`, `plural()`): vírgula decimal e ponto de milhar.
 - **Do** dizer todo estado com um LED e o texto do lado (selo), nas cores verde, âmbar, vermelho e azul.
 - **Do** desenhar número medido em 7 segmentos no visor preto, com os segmentos apagados visíveis, e só com dado de verdade do executor.
 - **Do** desenhar pictogramas novos no próprio painel, na grade de 24 com traço de 1,75, pontas redondas e `currentColor`.
