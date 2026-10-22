@@ -109,6 +109,29 @@ test("a interface sai com a CSP e o resto da API pede login", async () => {
   assert.equal((await pedir("GET", "/api/historico")).status, 401);
 });
 
+test("a interface sai comprimida, e o que não mudou volta como 304", async () => {
+  const r = await fetch(base + "/estilo.css", { headers: { "Accept-Encoding": "gzip" } });
+  assert.equal(r.headers.get("content-encoding"), "gzip");
+  assert.match(await r.text(), /--amarelo/);
+  const etag = r.headers.get("etag")!;
+  assert.match(etag, /^"[\w-]{22}"$/);
+  const igual = await fetch(base + "/estilo.css", { headers: { "If-None-Match": etag } });
+  assert.equal(igual.status, 304);
+  assert.equal(await igual.text(), "");
+  const fonte = await fetch(base + "/fontes/archivo.woff2", { headers: { "Accept-Encoding": "gzip" } });
+  assert.equal(fonte.headers.get("content-encoding"), null); // woff2 já é comprimido
+});
+
+test("respostas grandes da API saem comprimidas para quem aceita", async () => {
+  const cookie = await entrar();
+  const grande = { texto: "x".repeat(4000) };
+  const r = await pedir("POST", "/api/acao/status.servicos", { params: grande }, cookie, { "Accept-Encoding": "gzip" });
+  assert.equal(r.cabecalhos.get("content-encoding"), "gzip");
+  assert.deepEqual(r.corpo.resultado.eco.params, grande);
+  const pequena = await pedir("GET", "/saude", undefined, undefined, { "Accept-Encoding": "gzip" });
+  assert.equal(pequena.cabecalhos.get("content-encoding"), null);
+});
+
 test("caminhos fora da pasta da interface não existem", async () => {
   for (const caminho of ["/../src/servidor.ts", "/%2e%2e/package.json", "/senha", "/executor.token"])
     assert.equal((await fetch(base + caminho)).status, 404, caminho);

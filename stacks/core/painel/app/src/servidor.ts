@@ -1,8 +1,10 @@
 // Servidor HTTP do painel: arquivos da interface e a API (/api/...).
 // Toda ação passa pelo executor, que tem a lista fechada do servidor; esta aqui é a lista do painel.
+import { createHash } from "node:crypto";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { readdirSync, readFileSync } from "node:fs";
 import { extname, join } from "node:path";
+import { gzipSync } from "node:zlib";
 import { AGENDAVEIS, Agendador, EntradaInvalida, ler, proxima, validar } from "./agendador.ts";
 import type { Banco } from "./banco.ts";
 import { DURACAO_SESSAO } from "./banco.ts";
@@ -86,22 +88,39 @@ class ErroHttp extends Error {
   }
 }
 
-function carregarPublico(pasta: string): Map<string, { tipo: string; dados: Buffer }> {
-  const arquivos = new Map<string, { tipo: string; dados: Buffer }>();
+type Arquivo = { tipo: string; dados: Buffer; gzip: Buffer | null; etag: string };
+
+const aceitaGzip = (req: IncomingMessage) => /\bgzip\b/.test(String(req.headers["accept-encoding"] ?? ""));
+
+function carregarPublico(pasta: string): Map<string, Arquivo> {
+  const lidos = new Map<string, { tipo: string; dados: Buffer }>();
   for (const nome of readdirSync(pasta, { recursive: true }) as string[]) {
     const tipo = TIPOS[extname(nome)];
-    if (tipo) arquivos.set("/" + nome.split("\\").join("/"), { tipo, dados: readFileSync(join(pasta, nome)) });
+    if (tipo) lidos.set("/" + nome.split("\\").join("/"), { tipo, dados: readFileSync(join(pasta, nome)) });
+  }
+  const arquivos = new Map<string, Arquivo>();
+  for (const [caminho, { tipo, dados }] of lidos) {
+    // fonte e imagem já vêm comprimidas; texto cai para menos de um terço
+    const gzip = /^(text\/|application\/manifest|image\/svg)/.test(tipo) ? gzipSync(dados, { level: 9 }) : null;
+    arquivos.set(caminho, {
+      tipo, dados, gzip: gzip && gzip.length < dados.length ? gzip : null,
+      etag: `"${createHash("sha256").update(dados).digest("base64url").slice(0, 22)}"`,
+    });
   }
   return arquivos;
 }
 
 function responder(res: ServerResponse, status: number, corpo: unknown, cabecalhos: Record<string, string> = {}) {
-  const dados = Buffer.from(JSON.stringify(corpo));
+  let dados = Buffer.from(JSON.stringify(corpo));
+  // as listas grandes (atividade, processos, rede) viajam comprimidas até o celular
+  const comprimir = dados.length > 1024 && res.req && aceitaGzip(res.req);
+  if (comprimir) dados = gzipSync(dados);
   res.writeHead(status, {
     ...SEGURANCA,
     "Content-Type": "application/json; charset=utf-8",
     "Content-Length": String(dados.length),
     "Cache-Control": "no-store",
+    ...(comprimir ? { "Content-Encoding": "gzip", Vary: "Accept-Encoding" } : {}),
     ...cabecalhos,
   });
   res.end(dados);
@@ -381,13 +400,20 @@ export function criarServidor(config: Config, banco: Banco, agendador?: Agendado
       if (req.method !== "GET" && req.method !== "HEAD") throw new ErroHttp(405, "método não permitido");
       const arquivo = publico.get(url.pathname === "/" ? "/index.html" : url.pathname);
       if (!arquivo) throw new ErroHttp(404, "não encontrado");
+      // no-cache com ETag: o navegador sempre pergunta, e o que não mudou volta como 304, sem corpo
+      const cabecalhos = { ...SEGURANCA, "Cache-Control": "no-cache", ETag: arquivo.etag, Vary: "Accept-Encoding" };
+      if (req.headers["if-none-match"] === arquivo.etag) {
+        res.writeHead(304, cabecalhos);
+        return res.end();
+      }
+      const corpo = arquivo.gzip && aceitaGzip(req) ? arquivo.gzip : arquivo.dados;
       res.writeHead(200, {
-        ...SEGURANCA,
+        ...cabecalhos,
         "Content-Type": arquivo.tipo,
-        "Content-Length": String(arquivo.dados.length),
-        "Cache-Control": "no-cache",
+        "Content-Length": String(corpo.length),
+        ...(corpo === arquivo.gzip ? { "Content-Encoding": "gzip" } : {}),
       });
-      res.end(req.method === "HEAD" ? undefined : arquivo.dados);
+      res.end(req.method === "HEAD" ? undefined : corpo);
     } catch (e) {
       if (e instanceof ErroHttp) return responder(res, e.status, { ok: false, erro: e.message });
       console.error(e);
