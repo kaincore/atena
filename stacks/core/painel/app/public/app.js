@@ -237,14 +237,19 @@ function prepararEntrada() {
   estampa = gravura("/gravuras/criacao-de-adao.webp",
     "as mãos de Deus e de Adão na Criação de Adão, o afresco de Michelangelo na Capela Sistina",
     { canais: true, inverterNoEscuro: true, densidade: 0.7, centro: VAO });
-  $(".cena-entrada").replaceChildren(estampa);
+  const centelha = document.createElement("span");
+  centelha.className = "centelha";
+  centelha.setAttribute("aria-hidden", "true");
+  $(".cena-entrada").replaceChildren(estampa, centelha);
+  $(".cena-entrada").classList.remove("acesa");
   $(".cena-entrada").style.setProperty("--centro", VAO);
   $("#form-entrada").classList.remove("aceita", "recusa");
   if (!reduzido()) {
     $("#entrada").classList.add("construindo");
     setTimeout(() => $("#entrada").classList.remove("construindo"), 3000);
   }
-  requestAnimationFrame(() => estampa.imprimir());
+  // a centelha se acende quando as mãos terminam de se imprimir
+  requestAnimationFrame(() => estampa.imprimir().then(() => $(".cena-entrada").classList.add("acesa")));
 }
 
 function mostrarEntrada() {
