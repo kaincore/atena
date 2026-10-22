@@ -1,6 +1,6 @@
 {
   "name": "atena-painel",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "Painel do servidor Atena: estado, serviços, PC e lab, pelo navegador ou como app (PWA)",
   "license": "MIT",
   "private": true,
