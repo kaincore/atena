@@ -1,6 +1,7 @@
-# Painel Atena: o servidor no navegador do PC e do celular (PWA), só pelo Tailscale.
-# Sem rede nenhuma: o tailscale serve entrega as visitas pelo socket em /srv/core/painel/run, e as
-# ações vão para o executor pelo socket dele (lista fechada). Sem socket do Docker, sem root.
+# Painel Atena: o servidor no navegador do PC e do celular (PWA), pelo Tailscale e, se ligado, na rede de casa.
+# Sem rede nenhuma: o tailscale serve entrega as visitas pelo socket em /srv/core/painel/run (e o
+# atena-painel-casa.socket, as da rede de casa, por outro ao lado), e as ações vão para o executor pelo
+# socket dele (lista fechada). Sem socket do Docker, sem root.
 # Senha: sudo atena-painel-senha. Dados (banco, hash da senha, token do executor): /srv/core/painel.
 services:
   painel:
@@ -20,6 +21,7 @@ services:
     pids_limit: 64
     environment:
       TZ: {{ATENA_TZ}}
+      PAINEL_CASA: {{ATENA_PAINEL_CASA}}   # sim: também o socket da rede de casa, em HTTP
     volumes:
       - /srv/core/painel:/dados
       # a pasta, e não o arquivo: o socket é recriado sempre que o executor reinicia

@@ -42,6 +42,9 @@ case "$ATENA_CLAUDE_SKILLS" in sim|nao) ;; *) erro "ATENA_CLAUDE_SKILLS deve ser
 case "$ATENA_SENSORES_MODULO" in
   *[!a-z0-9_]*) erro "ATENA_SENSORES_MODULO deve ser o nome de um módulo do kernel (ex.: nct6683) ou vazio" ;;
 esac
+# chave da versão 0.17 (o painel também na rede de casa)
+: "${ATENA_PAINEL_CASA:=nao}"
+case "$ATENA_PAINEL_CASA" in sim|nao) ;; *) erro "ATENA_PAINEL_CASA deve ser sim ou nao" ;; esac
 
 ip link show "$ATENA_LAN_IF" >/dev/null 2>&1 \
   || erro "a interface $ATENA_LAN_IF não existe (veja as interfaces com: ip -br link)"

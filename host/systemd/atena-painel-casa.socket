@@ -1,0 +1,11 @@
+[Unit]
+Description=Atena: o painel na rede de casa, em HTTP (ATENA_PAINEL_CASA=sim)
+
+[Socket]
+# só no IP da rede de casa: no do Tailscale, a mesma porta é do tailscale serve, em HTTPS
+ListenStream={{ATENA_LAN_IP}}:3100
+# escuta mesmo antes de a placa de rede ganhar o IP, no boot
+FreeBind=yes
+
+[Install]
+WantedBy=sockets.target

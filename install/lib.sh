@@ -17,6 +17,7 @@ renderizar() {
       -e "s|{{ATENA_ADMIN_USER}}|$ATENA_ADMIN_USER|g" \
       -e "s|{{ATENA_TZ}}|$ATENA_TZ|g" \
       -e "s|{{ATENA_NTFY_URL}}|$ATENA_NTFY_URL|g" \
+      -e "s|{{ATENA_PAINEL_CASA}}|$ATENA_PAINEL_CASA|g" \
       "$src" > "$dst"
   if grep -q '{{ATENA_' "$dst"; then
     erro "sobrou um {{ATENA_...}} sem valor em $dst"

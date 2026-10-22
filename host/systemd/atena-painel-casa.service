@@ -1,0 +1,30 @@
+[Unit]
+Description=Atena: entrega as visitas da rede de casa ao socket do painel
+Requires=atena-painel-casa.socket
+After=atena-painel-casa.socket
+
+[Service]
+# o systemd recebe a visita na porta e o repassador só a entrega ao socket do container, sem ler nada;
+# parado quando ninguém usa, ele volta na próxima visita
+ExecStart=/usr/lib/systemd/systemd-socket-proxyd --exit-idle-time=5min /srv/core/painel/run/painel-casa.sock
+User=atena-painel
+Group=atena-painel
+# /srv/core é só do administrador (750), e o atena-painel não a atravessa: o systemd, como root, põe
+# no lugar dela uma pasta vazia com só a pasta dos sockets do painel dentro; o resto ele nem enxerga
+TemporaryFileSystem=/srv/core:ro
+BindReadOnlyPaths=/srv/core/painel/run
+# isolamento: sem rede própria (a porta vem do systemd) e sem nada além do socket do painel
+PrivateNetwork=yes
+RestrictAddressFamilies=AF_UNIX
+CapabilityBoundingSet=
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+SystemCallArchitectures=native

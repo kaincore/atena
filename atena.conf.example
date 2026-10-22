@@ -60,6 +60,13 @@ ATENA_CLAUDE_VERSAO=2.1.302
 # (atena-tela, com um Chromium sem tela). Baixa cerca de 400 MB.
 ATENA_CLAUDE_SKILLS=nao
 
+# --- Painel (opcional, ./install.sh --painel) -----------------------------------
+# Fora de casa o painel abre só pelo Tailscale, em HTTPS. Com "sim", ele também abre na rede de casa,
+# sem o Tailscale, em http://<ATENA_LAN_IP>:3100. Lá é HTTP puro: a senha e a sessão passam abertas no
+# Wi-Fi (qualquer aparelho da rede consegue lê-las), o cookie vai também para os outros serviços do
+# mesmo IP, e o painel não instala como app nem guarda as telas no celular.
+ATENA_PAINEL_CASA=nao
+
 # --- PC da rede de casa (opcional) -------------------------------------------
 # Um PC com placa de vídeo e LM Studio que a Atena liga (Wake-on-LAN), usa para textos
 # maiores e desliga quando você pede. Deixe ATENA_PC_IP vazio para não usar.

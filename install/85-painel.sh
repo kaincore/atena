@@ -1,4 +1,5 @@
-# Etapa 85 (só com --painel): o painel do servidor no navegador e no celular (PWA), só pelo Tailscale.
+# Etapa 85 (só com --painel): o painel do servidor no navegador e no celular (PWA), pelo Tailscale e,
+# com ATENA_PAINEL_CASA=sim, também na rede de casa, em HTTP.
 # O container não tem rede: o tailscale serve entrega as visitas por um socket, e o painel pede as
 # ações ao executor por outro, com um token só dele (38 ações; só apaga apps do lab e só edita stacks de apps, confirmando na tela).
 # O código do painel é atualizado a cada execução. Depois, falta você: sudo atena-painel-senha.
@@ -87,7 +88,7 @@ done
   || erro "o painel subiu, mas não respondeu (docker logs painel)"
 ok "painel no ar, sem rede, no socket $D/run/painel.sock"
 
-# entrada só pelo Tailscale: HTTPS na porta do painel, entregue no socket. Nada na rede de casa.
+# a entrada pelo Tailscale: HTTPS na porta do painel, entregue no socket
 ufw allow in on tailscale0 to any port "$PORTA_PAINEL" proto tcp comment 'painel (tailscale serve)' >/dev/null
 PAINEL_ENDERECO="https://<servidor>.<seu-tailnet>.ts.net:$PORTA_PAINEL"
 if tailscale status >/dev/null 2>&1; then
@@ -102,5 +103,30 @@ if tailscale status >/dev/null 2>&1; then
 else
   aviso "o Tailscale ainda não está logado. Depois do tailscale up, rode:"
   aviso "sudo tailscale serve --bg --https=$PORTA_PAINEL unix:$D/run/painel.sock"
+fi
+# a entrada da rede de casa (ATENA_PAINEL_CASA=sim): HTTP na mesma porta, só no IP de casa. O systemd
+# escuta e entrega cada visita ao segundo socket do painel; desligada, as unidades e a regra saem.
+REGRA_CASA=(in on "$ATENA_LAN_IF" from "$ATENA_LAN_CIDR" to "$ATENA_LAN_IP" port "$PORTA_PAINEL" proto tcp)
+PAINEL_CASA_ENDERECO=
+if [ "$ATENA_PAINEL_CASA" = sim ]; then
+  for u in atena-painel-casa.socket atena-painel-casa.service; do
+    tmp=$(mktemp)
+    renderizar "$RAIZ/host/systemd/$u" "$tmp"
+    instalar_arquivo "$tmp" "/etc/systemd/system/$u"
+    rm -f "$tmp"
+  done
+  systemctl daemon-reload
+  systemctl enable atena-painel-casa.socket >/dev/null 2>&1
+  systemctl stop atena-painel-casa.service     # o repassador volta na próxima visita, com a unidade nova
+  systemctl restart atena-painel-casa.socket   # pega um IP novo do atena.conf
+  ufw allow "${REGRA_CASA[@]}" comment 'painel na rede de casa (http)' >/dev/null
+  PAINEL_CASA_ENDERECO="http://$ATENA_LAN_IP:$PORTA_PAINEL"
+  ok "painel na rede de casa: $PAINEL_CASA_ENDERECO (HTTP: a senha passa aberta no Wi-Fi)"
+elif [ -f /etc/systemd/system/atena-painel-casa.socket ]; then
+  systemctl disable --now atena-painel-casa.socket atena-painel-casa.service >/dev/null 2>&1 || true
+  rm -f /etc/systemd/system/atena-painel-casa.socket /etc/systemd/system/atena-painel-casa.service
+  systemctl daemon-reload
+  ufw delete allow "${REGRA_CASA[@]}" >/dev/null 2>&1 || true
+  ok "painel fora da rede de casa (ATENA_PAINEL_CASA=nao)"
 fi
 [ -s "$D/senha" ] || aviso "falta a senha do painel: sudo atena-painel-senha"

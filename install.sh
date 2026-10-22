@@ -7,7 +7,8 @@
 #   sudo ./install.sh --ssh            # também endurece o SSH (só chave, sem root)
 #   sudo ./install.sh --hermes         # também instala a Atena (Hermes, pelo Telegram)
 #   sudo ./install.sh --hermes --lab   # e o lab: o Claude Code programa para você, pela Atena
-#   sudo ./install.sh --painel         # o painel do servidor no navegador e no celular (Tailscale)
+#   sudo ./install.sh --painel         # o painel do servidor no navegador e no celular (Tailscale;
+#                                      # na rede de casa também, com ATENA_PAINEL_CASA=sim)
 #
 # Pode rodar de novo quando quiser: o que já existe é mantido ou atualizado.
 set -euo pipefail
@@ -26,7 +27,7 @@ for arg in "$@"; do
     --hermes) INSTALAR_HERMES=sim ;;
     --lab) INSTALAR_LAB=sim ;;
     --painel) INSTALAR_PAINEL=sim ;;
-    -h|--help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) erro "opção desconhecida: $arg (veja: ./install.sh --help)" ;;
   esac
 done
@@ -80,6 +81,11 @@ if [ "$INSTALAR_PAINEL" = sim ]; then
                           ligado no celular ou no PC, abra $PAINEL_ENDERECO
                           e, no Chrome do celular, menu ⋮ → Instalar app
 EOF
+  if [ -n "$PAINEL_CASA_ENDERECO" ]; then
+    cat <<EOF
+                          Na rede de casa, sem o Tailscale: $PAINEL_CASA_ENDERECO (HTTP)
+EOF
+  fi
 fi
 if [ "$REINICIAR" = 1 ]; then
   aviso "reinicie o servidor para terminar (driver da NVIDIA): sudo reboot"

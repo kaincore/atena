@@ -67,7 +67,8 @@ composes() (
     d=$(mktemp -d -p "$tmp")
     cp -r "$(dirname "$f")/." "$d/"
     sed -e "s|{{ATENA_LAN_IP}}|$ATENA_LAN_IP|g" -e "s|{{ATENA_TZ}}|$ATENA_TZ|g" \
-        -e "s|{{ATENA_NTFY_URL}}|$ATENA_NTFY_URL|g" "$f" > "$d/compose.yaml"
+        -e "s|{{ATENA_NTFY_URL}}|$ATENA_NTFY_URL|g" -e "s|{{ATENA_PAINEL_CASA}}|$ATENA_PAINEL_CASA|g" \
+        "$f" > "$d/compose.yaml"
     if [ -f "$d/.env.example" ]; then cp "$d/.env.example" "$d/.env"; fi
     docker compose -f "$d/compose.yaml" config --quiet || { echo "compose inválido: $f"; return 1; }
   done
