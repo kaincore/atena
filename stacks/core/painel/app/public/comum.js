@@ -261,11 +261,6 @@ export function statusDocker(status, semEstado = false) {
   return semEstado ? "" : ESTADOS_DOCKER[status.toLowerCase()] ?? status;
 }
 
-export function estadoContainer(c) {
-  const ok = containerOk(c);
-  return h("span", { class: `selo ${ok ? "ok" : "ruim"}` }, ok ? "no ar" : c.estado === "running" ? "com problema" : ESTADOS_DOCKER[c.estado] ?? c.estado);
-}
-
 // --- central de aprovações e atividade do executor (os tempos do executor vêm em segundos) ---------
 
 export const hora = (s) => new Date(s * 1000).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit" });
