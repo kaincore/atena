@@ -206,7 +206,7 @@ main {
 .pincel.parado { transition: none; }
 .contagem {
   position: absolute; top: .15rem; left: calc(50% + .5rem); min-width: 1.15rem; height: 1.15rem; padding: 0 .3rem;
-  border-radius: .6rem; background: var(--ocre); color: #fff; font: 700 .64rem/1.15rem var(--letra);
+  border-radius: .6rem; background: var(--ocre); color: #1b1307; font: 700 .64rem/1.15rem var(--letra);
   text-align: center; letter-spacing: 0; font-variant-numeric: tabular-nums;
 }
 /* enquanto a tela lê do servidor, o ícone ativo respira de leve */
