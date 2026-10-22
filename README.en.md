@@ -143,7 +143,7 @@ Then:
 | Open WebUI 0.11.4 | apps | 3000 | Talks only to LiteLLM |
 | Arca | apps | 3002 | Browser file uploads, no password |
 | Hermes Agent 0.22.2 | agents | none | Atena (with `--hermes`). Talks over Telegram |
-| Panel 0.7.0 | core | 3100, Tailscale only | The panel (with `--painel`). No network, no root, no npm packages, with a password |
+| Panel 0.8.0 | core | 3100, Tailscale only | The panel (with `--painel`). No network, no root, no npm packages, with a password |
 | Claude Code 2.1.302 | lab | apps on 8000-8999 | The lab (with `--lab`). Runs in a sandbox, with no sudo and no Docker; uses your Claude subscription |
 
 Versions are pinned on purpose. Before upgrading, read the security advisories and release notes.
