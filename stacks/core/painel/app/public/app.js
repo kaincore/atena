@@ -112,6 +112,10 @@ function manterAbertos(antes, depois) {
 
 const montar = async (nome) => [await TELAS[nome]()].flat(Infinity).filter(Boolean);
 
+// a faixa de aprovações que já está na tela fica (se ela acabou de chegar, a luz dela termina de passar);
+// a contagem que muda troca a faixa pelo marcarPendentes
+const faixaDaTela = () => (telaAtual() === "aprovacoes" ? null : $("#tela .faixa") ?? faixaAprovacoes());
+
 async function atualizar() {
   const nome = telaAtual();
   const minha = ++geracao;
@@ -124,7 +128,7 @@ async function atualizar() {
       rolagens.set(tela.dataset.tela, scrollY);
     }
     tela.dataset.tela = nome;
-    tela.replaceChildren(...[faixaAprovacoes(), vistas.get(nome) ?? esqueleto()].flat().filter(Boolean));
+    tela.replaceChildren(...[faixaDaTela(), vistas.get(nome) ?? esqueleto()].flat().filter(Boolean));
     scrollTo(0, vistas.has(nome) ? rolagens.get(nome) ?? 0 : 0);
   }
   tela.setAttribute("aria-busy", "true");
@@ -132,7 +136,7 @@ async function atualizar() {
   if (minha !== geracao || !$("#entrada").hidden) return; // outra tela foi aberta enquanto esta carregava
   manterAbertos([...tela.children], conteudo);
   vistas.set(nome, conteudo);
-  tela.replaceChildren(...[faixaAprovacoes(), conteudo].flat().filter(Boolean));
+  tela.replaceChildren(...[faixaDaTela(), conteudo].flat().filter(Boolean));
   tela.removeAttribute("aria-busy");
 }
 
@@ -200,7 +204,8 @@ setInterval(() => {
   tiques++;
   const cada = ATUALIZAM_SOZINHAS[telaAtual()];
   if (cada && tiques % cada === 0 && !$("#janela").open && !escrevendo()) atualizar();
-  else if (telaAtual() !== "aprovacoes" && tiques % 3 === 0) contarPendentes();
+  // a contagem das aprovações vale em toda tela (antes, nas que se atualizam sozinhas, ela nunca vinha)
+  if (telaAtual() !== "aprovacoes" && tiques % 3 === 0) contarPendentes();
 }, TIQUE);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState !== "visible") return;

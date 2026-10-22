@@ -28,9 +28,12 @@ function marcarPendentes(n) {
 
 export function faixaAprovacoes(pulsar = false) {
   if (!pendentes || telaAtual() === "aprovacoes") return null;
-  return h("a", { class: `faixa${pulsar ? " pulsa" : ""}`, href: "#aprovacoes" },
+  const faixa = h("a", { class: `faixa${pulsar ? " pulsa" : ""}`, href: "#aprovacoes" },
     h("strong", null, picto("aprovacoes"), ` ${pendentes} ${pendentes === 1 ? "aprovação esperando" : "aprovações esperando"} você`),
     h("span", { class: "rotulo" }, "ver", picto("seguir")));
+  // a luz passa uma vez: a faixa fica na tela entre as trocas, e não pode chamar de novo a cada uma
+  if (pulsar) setTimeout(() => faixa.classList.remove("pulsa"), 2200);
+  return faixa;
 }
 
 export async function contarPendentes() {
