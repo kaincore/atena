@@ -1,5 +1,12 @@
 # Mudanças
 
+## 0.15.1 (2026-10-22)
+
+O `pc.estado` responde em meio segundo com o PC desligado.
+
+- **Executor:** com o PC desligado, ninguém responde ao ARP, e a tentativa na porta do LM Studio esperava os 2 s inteiros: o painel, a Atena e o `local.processar` com o modelo "pc" esperavam isso a cada consulta. Na rede de casa, o PC ligado responde em menos de 1 ms (o ARP e a porta), então a espera agora é de meio segundo. O resto da conta, com a tabela de vizinhos, não muda.
+- Testado: o `teste_pc.py` confere a espera e falha no código antigo; o CI inteiro pelo `ci-local.sh`. No servidor de origem, com o PC desligado, o `pc.estado` pelo socket do executor caiu de 1 a 2 s para 506 a 517 ms, e a conferência do executor passou. Ficou sem testar com o PC ligado.
+
 ## 0.15.0 (2026-10-22)
 
 O painel mais rápido e mais fácil de ler (painel 0.7.0), a ronda que não repete o que já disse e as habilidades da Atena com o que só o servidor de origem sabia.
