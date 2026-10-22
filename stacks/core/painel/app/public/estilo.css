@@ -38,6 +38,10 @@
   --tecla-lado: #0b0c0b;
   --tecla-tinta: #f1f2ef;
   --tecla-perigo: #ff8a7f;
+  /* a tecla clara (as cinzas da ET66): ações de linha e secundárias, um degrau abaixo da grafite */
+  --tecla-clara: #f8f8f5;
+  --tecla-clara-borda: #a4a7a1;
+  --tecla-clara-lado: #868983;
   --borda-visor: transparent;
   --amarelo: #ffc400;
   --amarelo-borda: #c99a00;
@@ -88,6 +92,9 @@
     --tecla-borda: #444946;
     --tecla-lado: #080908;
     --tecla-tinta: #ecedea;
+    --tecla-clara: #262927;
+    --tecla-clara-borda: #3b3f3c;
+    --tecla-clara-lado: #0a0b0a;
     --borda-visor: #343835;
     --verde: #3ddc7a;
     --ambar: #ffb347;
@@ -326,8 +333,15 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 button.principal, .tecla.principal {
   background: var(--amarelo); color: var(--amarelo-tinta); border-color: var(--amarelo-borda); border-bottom-color: var(--amarelo-lado);
 }
-button.discreto { min-height: 2.2rem; padding: .4rem .72rem; font-size: .78rem; }
-@media (max-width: 40rem) { button.discreto { padding: .4rem .55rem; } .botoes { gap: .4rem; } }
+/* tecla clara: as ações de cada linha e as secundárias; a grafite fica para a ação do módulo */
+button.discreto, .tecla.discreta {
+  min-height: 2.2rem; padding: .4rem .72rem; font-size: .78rem;
+  color: var(--tinta); background: var(--tecla-clara);
+  border-color: var(--tecla-clara-borda); border-bottom-color: var(--tecla-clara-lado); box-shadow: 0 1px 2px rgb(0 0 0 / .08);
+}
+button.discreto:hover, .tecla.discreta:hover { filter: none; border-color: var(--tinta-2); border-bottom-color: var(--tecla-clara-lado); }
+button.discreto.perigo { color: var(--vermelho); }
+@media (max-width: 40rem) { button.discreto { padding: .4rem .6rem; } .botoes { gap: .4rem; } }
 button .picto { width: 1.15rem; height: 1.15rem; flex: none; }
 .botoes.grandes .picto { width: 1.3rem; height: 1.3rem; }
 button.perigo { color: var(--tecla-perigo); }
