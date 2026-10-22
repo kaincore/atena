@@ -288,8 +288,6 @@ main {
 .lista li { padding: .55rem 0; border-top: 1px solid var(--risco); overflow-wrap: anywhere; }
 .lista li:first-child { border-top: 0; }
 .lista .resumo { font: .76rem/1.5 var(--mono); overflow-wrap: anywhere; }
-.stack { border-top: 1px solid var(--risco); padding: .75rem 0; }
-.stack:first-of-type { border-top: 0; padding-top: 0; }
 .stack-topo { display: flex; justify-content: space-between; align-items: center; gap: .5rem; flex-wrap: wrap; }
 /* um campo e a tecla dele na mesma linha (nova pendência) */
 .nova { display: flex; gap: .5rem; margin-top: .75rem; }

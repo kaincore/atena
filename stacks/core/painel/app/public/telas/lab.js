@@ -1,20 +1,20 @@
 // Lab: os apps que o Claude Code fez e os trabalhos dele.
-import { $, abrirJanela, atualizar, botaoAtualizar, cartao, consultar, estadoTexto, falha, h, linha, mudar, semAcao,
-  statusDocker } from "../comum.js";
+import { $, abrirJanela, atualizar, botaoAtualizar, campo, cartao, consultar, estadoTexto, falha, h, item, itens, ledEstado, linha,
+  mudar, semAcao, statusDocker } from "../comum.js";
 
 const NOME_PROJETO = "[a-z0-9][a-z0-9\\-]{0,39}";
 const rascunho = { projeto: "", pedido: "", conta: "", modelo: "", esforco: "", minutos: "60", somente_plano: false, publicar: false,
   skill: "", continuar: null };
 
-// os botões de um app; cada um confirma, pede e recarrega a tela
+// as teclas de um app; cada uma confirma, pede e recarrega a tela
 function botoesApp(p) {
   const publicado = p.app !== "não publicado";
   const noAr = /^Up/.test(p.app);
   const fazer = (nome, pergunta, params = {}) => async () => {
     if (await mudar(nome, { projeto: p.projeto, ...params }, pergunta)) atualizar();
   };
-  return h("span", { class: "botoes" },
-    p.em_andamento && h("button", { type: "button", onclick: fazer("app.cancelar",
+  return [
+    p.em_andamento && h("button", { type: "button", class: "discreto", onclick: fazer("app.cancelar",
       `Parar o que está em andamento em ${p.projeto} (trabalho do Claude Code, construção ou pedido esperando o celular)?`) }, "Cancelar"),
     p.codigo && !p.em_andamento && h("button", { type: "button", onclick: fazer("app.publicar",
       `${publicado ? "Publicar de novo" : "Publicar"} ${p.projeto} na rede de casa? Constrói pelo Dockerfile; pode levar alguns minutos.`) },
@@ -22,7 +22,8 @@ function botoesApp(p) {
     publicado && h("button", { type: "button", class: "discreto", onclick: fazer("app.reiniciar", `Reiniciar o app ${p.projeto}?`) }, "Reiniciar"),
     noAr && h("button", { type: "button", class: "discreto", onclick: fazer("app.parar", `Tirar o app ${p.projeto} do ar? Os dados ficam.`) }, "Parar"),
     noAr && h("button", { type: "button", class: "discreto", onclick: () => janelaComando(p.projeto) }, "Comando"),
-    !p.em_andamento && h("button", { type: "button", class: "discreto perigo", onclick: () => janelaApagar(p) }, "Apagar"));
+    !p.em_andamento && h("button", { type: "button", class: "discreto perigo", onclick: () => janelaApagar(p) }, "Apagar"),
+  ];
 }
 
 function janelaComando(projeto) {
@@ -76,11 +77,11 @@ const ESTADOS_TRABALHO = { planejando: "planejando", executando: "rodando", agua
 function itemTrabalho(t) {
   const rodando = t.estado === "planejando" || t.estado === "executando";
   const quem = t.cliente && t.cliente !== "painel" ? (t.cliente === "hermes" ? "pela Atena" : `por ${t.cliente}`) : null;
-  return h("li", null,
-    h("div", { class: "stack-topo" },
-      h("span", null,
-        h("span", { class: `selo ${t.estado === "concluido" ? "ok" : ESTADOS_TRABALHO[t.estado] ? "neutro" : "ruim"}` }, ESTADOS_TRABALHO[t.estado] ?? estadoTexto(t.estado)),
-        ` ${t.projeto ?? "?"} `),
+  return item({
+    led: ESTADOS_TRABALHO[t.estado] ? "info" : ledEstado(t.estado), nome: h("strong", null, t.projeto ?? "?"),
+    detalhe: [ESTADOS_TRABALHO[t.estado] ?? estadoTexto(t.estado), quem, t.conta, t.modelo, t.esforco, t.criado, `trabalho ${t.id}`,
+      t.commits ? `${t.commits} commits` : null].filter(Boolean).join(" · "),
+    acoes: [
       rodando && h("button", { type: "button", class: "discreto", onclick: async () => {
         if (await mudar("claude.cancelar", { pedido: t.id }, `Interromper o trabalho ${t.id} em ${t.projeto}? A conversa fica guardada.`)) atualizar();
       } }, "Cancelar"),
@@ -88,11 +89,14 @@ function itemTrabalho(t) {
         Object.assign(rascunho, { continuar: t.id, projeto: t.projeto, conta: t.conta ?? rascunho.conta, pedido: "", publicar: false });
         atualizar();
         scrollTo({ top: 0, behavior: "smooth" });
-      } }, "Continuar")),
-    h("div", null, t.pedido),
-    h("small", null, [quem, t.conta, t.modelo, t.esforco, t.criado, `trabalho ${t.id}`, t.commits ? `${t.commits} commits` : null].filter(Boolean).join(" · ")),
-    t.esperando_permissao_no_celular && h("div", null, h("a", { href: "#aprovacoes" }, "Esperando a sua permissão: ver em Aprovações")),
-    t.resumo && h("details", null, h("summary", null, "Resumo"), h("pre", { class: "texto-pedido" }, t.resumo)));
+      } }, "Continuar"),
+    ],
+    extra: [
+      h("p", { class: "pedido-trabalho" }, t.pedido),
+      t.esperando_permissao_no_celular && h("p", null, h("a", { href: "#aprovacoes" }, "Esperando a sua permissão: ver em Aprovações")),
+      t.resumo && h("details", null, h("summary", null, "Resumo"), h("pre", { class: "texto-pedido" }, t.resumo)),
+    ],
+  });
 }
 
 function cartaoNovoTrabalho(trabalhos, projetos) {
@@ -129,18 +133,18 @@ function cartaoNovoTrabalho(trabalhos, projetos) {
         atualizar();
       }
     } },
-      h("label", null, "Projeto ", h("input", { name: "projeto", list: "projetos-lab", required: true, pattern: NOME_PROJETO,
-        value: rascunho.projeto, placeholder: "lista-compras", autocomplete: "off", title: "minúsculas, números e hífen", readonly: Boolean(continuando) })),
-      h("datalist", { id: "projetos-lab" }, projetos.map((p) => h("option", { value: p.projeto }))),
-      h("textarea", { name: "pedido", rows: "4", minlength: "3", maxlength: "4000", required: true,
-        placeholder: continuando ? "O que ele deve fazer agora" : "O que o Claude Code deve fazer (um nome de projeto novo cria a pasta)" }, rascunho.pedido),
-      h("div", { class: "filtros" },
-        h("label", null, "Conta ", opcoes("conta", contas.map((c) => [c, c]))),
-        h("label", null, "Modelo ", opcoes("modelo", [["", "padrão"], ["fable", "fable"], ["opus", "opus"], ["sonnet", "sonnet"], ["haiku", "haiku"]])),
-        h("label", null, "Esforço ", opcoes("esforco", [["", "padrão"], ...["low", "medium", "high", "xhigh", "max"].map((e) => [e, e])])),
-        h("label", null, "Tempo ", opcoes("minutos", [["15", "15 min"], ["30", "30 min"], ["60", "1 h"], ["120", "2 h"], ["240", "4 h"], ["600", "10 h"]])),
+      h("div", { class: "campos" },
+        campo("Projeto", h("input", { name: "projeto", list: "projetos-lab", required: true, pattern: NOME_PROJETO,
+          value: rascunho.projeto, placeholder: "lista-compras", autocomplete: "off", title: "minúsculas, números e hífen", readonly: Boolean(continuando) }), true),
+        h("datalist", { id: "projetos-lab" }, projetos.map((p) => h("option", { value: p.projeto }))),
+        campo("Pedido", h("textarea", { name: "pedido", rows: "4", minlength: "3", maxlength: "4000", required: true,
+          placeholder: continuando ? "O que ele deve fazer agora" : "O que o Claude Code deve fazer (um nome de projeto novo cria a pasta)" }, rascunho.pedido), true),
+        campo("Conta", opcoes("conta", contas.map((c) => [c, c]))),
+        campo("Modelo", opcoes("modelo", [["", "padrão"], ["fable", "fable"], ["opus", "opus"], ["sonnet", "sonnet"], ["haiku", "haiku"]])),
+        campo("Esforço", opcoes("esforco", [["", "padrão"], ...["low", "medium", "high", "xhigh", "max"].map((e) => [e, e])])),
+        campo("Tempo", opcoes("minutos", [["15", "15 min"], ["30", "30 min"], ["60", "1 h"], ["120", "2 h"], ["240", "4 h"], ["600", "10 h"]])),
         // só o executor do servidor de origem tem skills do Claude Code; nos outros, o campo não aparece
-        trabalhos.skills && h("label", null, "Skill ", opcoes("skill", [["", "nenhuma"], ...trabalhos.skills.map((s) => [s, s])]))),
+        trabalhos.skills && campo("Skill", opcoes("skill", [["", "nenhuma"], ...trabalhos.skills.map((s) => [s, s])]))),
       h("div", { class: "filtros" },
         marcar("somente_plano", "só planejar (não muda nada)"),
         marcar("publicar", "publicar quando terminar bem")),
@@ -151,9 +155,7 @@ function cartaoNovoTrabalho(trabalhos, projetos) {
 
 async function cartaoTrabalhos(trabalhos) {
   const c = trabalhos.ok === false ? cartao("Trabalhos do Claude Code", falha(trabalhos), semAcao(trabalhos, "claude.trabalhos"))
-    : cartao("Trabalhos do Claude Code", trabalhos.resultado.trabalhos.length
-      ? h("ul", { class: "lista" }, trabalhos.resultado.trabalhos.map(itemTrabalho))
-      : h("p", { class: "fraco" }, "Nenhum trabalho ainda."));
+    : cartao("Trabalhos do Claude Code", itens(trabalhos.resultado.trabalhos.map(itemTrabalho), "Nenhum trabalho ainda."));
   c.append(botaoAtualizar(async () => c.replaceWith(await cartaoTrabalhos(await consultar("claude.trabalhos")))));
   return c;
 }
@@ -162,23 +164,26 @@ export async function telaLab() {
   const [r, trabalhos] = await Promise.all([consultar("app.lista"), consultar("claude.trabalhos")]);
   if (r.ok === false) return [cartao("Lab", falha(r))];
   const { projetos, lixeira } = r.resultado;
-  const apps = cartao("Apps do lab", projetos.length ? projetos.map((p) => h("div", { class: "stack" },
-    h("div", { class: "stack-topo" }, h("strong", null, p.projeto), botoesApp(p)),
-    linha("App", statusDocker(p.app)),
-    p.fora_de_casa && linha("Endereço", h("a", { href: p.fora_de_casa, target: "_blank", rel: "noopener" }, p.fora_de_casa)),
-    p.endereco && linha("Na rede de casa", h("a", { href: p.endereco, target: "_blank", rel: "noopener" }, p.endereco)),
-    linha("Guardado", [p.codigo ? "código" : "sem código", p.dados_guardados ? "dados" : "sem dados"].join(" · ")),
-    p.em_andamento && linha("Em andamento", `pedido ${p.em_andamento}`),
-  )) : h("p", { class: "fraco" }, "Nenhum projeto no lab ainda. Mande um trabalho ao Claude Code para começar."));
+  const apps = cartao("Apps do lab", itens(projetos.map((p) => item({
+    led: p.em_andamento ? "info" : /^Up/.test(p.app) ? (/unhealthy/.test(p.app) ? "ruim" : "ok") : "apagado",
+    nome: h("strong", null, p.projeto),
+    detalhe: [p.em_andamento ? `em andamento: pedido ${p.em_andamento}` : statusDocker(p.app),
+      p.codigo ? "código" : "sem código", p.dados_guardados ? "dados guardados" : "sem dados"].join(" · "),
+    acoes: botoesApp(p),
+    extra: [
+      p.fora_de_casa && linha("Endereço", h("a", { href: p.fora_de_casa, target: "_blank", rel: "noopener" }, p.fora_de_casa)),
+      p.endereco && linha("Na rede de casa", h("a", { href: p.endereco, target: "_blank", rel: "noopener" }, p.endereco)),
+    ],
+  })), "Nenhum projeto no lab ainda. Mande um trabalho ao Claude Code para começar."));
   return [
     trabalhos.ok === false ? null : cartaoNovoTrabalho(trabalhos.resultado, projetos),
     await cartaoTrabalhos(trabalhos),
     apps,
-    lixeira.length ? cartao("Lixeira", h("ul", { class: "lista" }, lixeira.map((l) => h("li", null,
-      h("div", { class: "stack-topo" },
-        h("span", null, l.projeto, h("small", null, ` apagado em ${l.apagado_em}; some de vez em ${l.some_de_vez_em}`)),
-        h("button", { type: "button", class: "discreto", onclick: async () => {
-          if (await mudar("app.restaurar", { projeto: l.projeto }, `Trazer o código de ${l.projeto} de volta da lixeira?`)) atualizar();
-        } }, "Restaurar")))))) : null,
+    lixeira.length ? cartao("Lixeira", itens(lixeira.map((l) => item({
+      nome: l.projeto, detalhe: `apagado em ${l.apagado_em} · some de vez em ${l.some_de_vez_em}`,
+      acoes: h("button", { type: "button", class: "discreto", onclick: async () => {
+        if (await mudar("app.restaurar", { projeto: l.projeto }, `Trazer o código de ${l.projeto} de volta da lixeira?`)) atualizar();
+      } }, "Restaurar"),
+    })))) : null,
   ];
 }
