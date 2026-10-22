@@ -1,5 +1,20 @@
 # Mudanças
 
+## 0.16.0 (2026-10-22)
+
+O painel com visual grego (painel 0.8.0): a policromia contida, a coruja de Atena na entrada e as zonas como os degraus do templo, em 3D.
+
+- **O mundo:** os templos gregos eram pintados, e aqui a pintura é pouca e precisa: mármore e tinta de dia, uma noite azul-escura quase preta, o azul egípcio como único acento e os pigmentos antigos (malaquita, ocre e cinábrio) só como pontos de estado. O meandro é o ornamento e também a medida. Escolhido pelo dono, que no meio do trabalho pediu menos cor e nada de cara de desenho animado.
+- **A letra:** Commissioner (Kostas Bartsokas, OFL), servida pelo painel, no lugar da Archivo e da Martian Mono. Os eixos FLAR e VOLM dão as serifas de pedra nos títulos e números; a caixa-alta fica só nas inscrições gregas (ΑΘΗΝΑ, ΑΘΕ).
+- **A entrada:** a coruja das moedas de Atenas, em traço de gravura, se desenha ao abrir, fecha os olhos enquanto você digita a senha, inclina a cabeça na senha errada, e o meandro da borda só fecha com a certa.
+- **As zonas:** a crepidoma, uma escada de mármore em CSS 3D, com um degrau por zona e um ponto por container. Os degraus sobem ao entrar, a escada respira devagar, e a zona com problema escorrega para o lado; a legenda ao lado é a parte que se lê e se toca.
+- **Os números:** medalhões com o meandro da borda pintado até o valor (servidor, sensores e PC), barras em faixa de meandro e um relógio de sol na agenda, cuja sombra dá a volta quando um agendamento roda.
+- **O movimento:** a troca de tela é uma View Transition (a velha se apaga, a nova chega do desfoque); o marcador da tela ativa desliza numa mola suave feita só com CSS (`linear()`), e o ícone dela se redesenha. Nada de quique, tremor ou cascata; com redução de movimento, nada se move.
+- **Ícones:** redesenhados no mesmo traço (o Início é a frente do templo, os serviços uma ânfora, o sistema a engrenagem de Anticítera), e o ícone do app é a coruja.
+- **Consertos:** a faixa de uma aprovação nova não aparecia no Início, em Serviços e no PC até trocar de tela (a contagem estava num else); o número e a unidade não se separam mais na quebra de linha; e o número da contagem de aprovações ficou legível sobre o ocre (5,0:1).
+- Continua sem dependências: nada do npm, nenhum build, CSP só com o próprio painel. O `DESIGN.md` do painel descreve o mundo novo.
+- Testado: os 48 testes do painel; no ensaio com o executor falso e os dados do servidor de origem, os cliques de ponta a ponta no celular e no PC sem erro no console, as fotos de todas as telas nos dois temas, a entrada em oito momentos, uma troca de tela quadro a quadro e as cenas provocadas (zona com problema, aprovação chegando, PC ligando, agendamento rodando); cada commit do painel abre sem erro em todas as telas. Um revisor separado, com as instruções da skill de design, pediu duas rodadas de correção; as da segunda foram conferidas nas fotos, sem um terceiro veredito. No servidor de origem, o painel 0.8.0 subiu saudável e serve a casca nova com gzip e 304. Ficou sem testar no celular de verdade (o ensaio emula o Chrome do Android).
+
 ## 0.15.1 (2026-10-22)
 
 O `pc.estado` responde em meio segundo com o PC desligado.
