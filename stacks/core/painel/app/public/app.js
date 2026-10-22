@@ -167,8 +167,8 @@ function cabecalho(nome, desenhar) {
   return c;
 }
 
-// o que entra na tela sobe de leve, um módulo depois do outro; o conteúdo novo que chega no meio da
-// entrada continua o movimento de onde ele estava (ja = quanto já passou)
+// o conteúdo que chega no lugar do esqueleto aparece de leve, todo junto (o anel se pinta e a escada se
+// assenta); o que chega no meio dessa entrada continua de onde ela estava (ja = quanto já passou)
 let entrouEm = 0;
 let aberta = null; // a tela aberta (o data-tela do #tela só muda dentro da transição)
 function surgir(elementos, ja = 0) {

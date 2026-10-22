@@ -1,4 +1,4 @@
-// Pictogramas do painel: desenhados aqui, numa grade de 24 e num traço só (1,6), com as coisas do
+// Pictogramas do painel: desenhados aqui, numa grade de 24 e num traço só (1,5), com as coisas do
 // mundo grego no lugar das de sempre quando elas dizem o mesmo (o Início é a frente do templo; os
 // serviços, que são contêineres, uma ânfora). A parte "tinta" é a área que os gregos pintavam (o
 // tímpano, a faixa da ânfora, o líquido do frasco): só se acende na tela ativa. Nada de caractere

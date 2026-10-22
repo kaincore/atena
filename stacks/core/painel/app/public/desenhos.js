@@ -72,7 +72,7 @@ export function chave() {
 // --- os medalhões: o número no meio, e o meandro da borda pintado até onde ele chega -----------------
 
 // alerta: a fração em que a medida passa do limite (a cor vai do azul ao ocre e ao cinábrio);
-// cor: uma cor fixa no lugar dessa conta (o PC ligado é malaquita)
+// cor: uma cor fixa no lugar dessa conta (o PC ligado fica no azul de acento)
 export function medalhao({ rotulo, numero, unidade, fracao, alerta = 1, nota, desenho, cor, classe }) {
   const f = fracao == null ? null : limite(fracao);
   const anel = caminhoMeandroCircular(56, 3.6);

@@ -1,4 +1,4 @@
-// Aprovações: a central do que espera o dono (os tempos do executor vêm em segundos) e a faixa amarela.
+// Aprovações: a central do que espera o dono (os tempos do executor vêm em segundos) e a faixa de aprovações.
 import { $, atualizar, avisar, cartao, consultar, estadoTexto, falha, h, hora, item, itens, ledEstado, mudar, semCentral, telaAtual } from "../comum.js";
 import { picto } from "../pictos.js";
 
@@ -11,7 +11,7 @@ function relativo(s) {
 let pendentes = 0;
 
 // a contagem vai para a tecla das Aprovações (trilho e "Mais"), para o "Mais" da barra e para o título;
-// quando cresce, a faixa amarela aparece (ou pulsa) na tela aberta
+// quando cresce, a faixa aparece (ou a luz passa por ela) na tela aberta
 function marcarPendentes(n) {
   const cresceu = n > pendentes;
   pendentes = n;

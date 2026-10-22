@@ -70,7 +70,7 @@ export async function api(metodo, caminho, corpo) {
   return { status: resposta.status, ...dados };
 }
 
-// a mesma consulta pedida duas vezes ao mesmo tempo (o Início e os LEDs do topo, por exemplo) vai uma
+// a mesma consulta pedida duas vezes ao mesmo tempo (o Início e os pontos das zonas no topo, por exemplo) vai uma
 // vez só ao executor; o que muda algo (as de NOMES) nunca se junta
 const emCurso = new Map();
 export function consultar(nome, params = {}) {
@@ -178,7 +178,7 @@ export function linha(rotulo, valor, extra) {
   return h("div", { class: "linha" }, h("span", { class: "rotulo" }, rotulo), h("span", null, valor), extra);
 }
 
-// Uma linha de lista, igual em todas as telas: o LED do estado (o texto dele vem no detalhe), o nome,
+// Uma linha de lista, igual em todas as telas: o ponto do estado (o texto dele vem no detalhe), o nome,
 // o detalhe embaixo e as teclas à direita (num módulo estreito, várias teclas descem para baixo do
 // nome). O extra ocupa a largura toda embaixo: um resumo, um registro, os "detalhes".
 export function item({ led, nome, detalhe, acoes, extra, classe }) {
@@ -196,10 +196,10 @@ export function itens(lista, vazio, classe) {
   return linhas.length ? h("ul", { class: `itens${classe ? ` ${classe}` : ""}` }, linhas) : vazio && h("p", { class: "fraco" }, vazio);
 }
 
-// o LED de cada estado de pedido: verde terminou bem, azul em andamento, vermelho o resto
+// o ponto de cada estado de pedido: malaquita terminou bem, azul em andamento, cinábrio o resto
 export const ledEstado = (estado) => (estado === "concluido" ? "ok" : TERMINADOS.has(estado) || estado === "perdida" ? "ruim" : "info");
 
-// um campo de formulário: o rótulo do aparelho em cima, o controle embaixo (largo: a linha toda)
+// um campo de formulário: o rótulo em cima, o controle embaixo (largo: a linha toda)
 export function campo(rotulo, controle, largo = false) {
   return h("label", { class: `campo${largo ? " largo" : ""}` }, h("span", { class: "rotulo" }, rotulo), controle);
 }
@@ -227,7 +227,7 @@ function tempoDocker(texto) {
 }
 
 // "Up 3 days (unhealthy)", "Exited (137) 5 hours ago" → "no ar há 3 dias · saúde falhando", "parado há 5 h (erro 137)";
-// semEstado: só "há 3 dias · …" (para o lado de um LED que já diz o estado)
+// semEstado: só "há 3 dias · …" (para o lado de um ponto que já diz o estado)
 export function statusDocker(status, semEstado = false) {
   let m = status.match(/^Up (.+?)(?: \((healthy|unhealthy|health: starting)\))?$/);
   if (m) {

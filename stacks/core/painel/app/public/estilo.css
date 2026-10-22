@@ -305,7 +305,6 @@ main {
 .surge { animation: surgir .35s ease-out backwards; animation-delay: calc(0ms - var(--ja, 0ms)); }
 @keyframes surgir { from { opacity: 0; } }
 
-.destaque { font-weight: 600; font-size: 1.45rem; font-variant-numeric: tabular-nums; margin: 0 0 .4rem; }
 .numero-grande {
   display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; margin: 0 0 .75rem;
   font-variation-settings: var(--titulo-letra); font-weight: 350; font-size: 2.4rem; line-height: 1; letter-spacing: -.025em;
@@ -492,7 +491,6 @@ input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]:
 }
 .medalhao.ocre .tinta { stroke: var(--ocre); }
 .medalhao.cinabrio .tinta { stroke: var(--cinabrio); }
-.medalhao.malaquita .tinta { stroke: var(--malaquita); }
 .surge .medalhao-anel .tinta, .medalhao.pintando .tinta { animation: pintar-anel 1.3s var(--suave) both; animation-delay: calc(var(--i, 0) * 40ms + .1s - var(--ja, 0ms)); }
 @keyframes pintar-anel { from { stroke-dashoffset: 1; } }
 .medalhao-miolo { position: absolute; inset: 21%; display: grid; place-items: center; align-content: center; gap: .15rem; }
@@ -654,7 +652,7 @@ input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]:
 .coruja.nao .cabeca { animation: negar .9s both; }
 @keyframes negar {
   0% { transform: rotate(0); animation-timing-function: cubic-bezier(.22, 1, .36, 1); }
-  22% { transform: rotate(-8deg); animation-timing-function: linear(0, 0.0273, 0.0955, 0.1875, 0.2909, 0.3965, 0.4982, 0.5921, 0.6759, 0.7488, 0.8104, 0.8615, 0.9028, 0.9355, 0.9607, 0.9796, 0.9933, 1.0029, 1.0091, 1.0129, 1.0147, 1.0152, 1.0147, 1.0136, 1.0122, 1.0107, 1.0091, 1.0075, 1.0061, 1.0048, 1.0038, 1.0028, 1.0021, 1.0014, 1.001, 1.0006, 1.0003, 1.0001, 0.9999, 0.9999, 1); }
+  22% { transform: rotate(-8deg); animation-timing-function: var(--mola); }
   100% { transform: rotate(0); }
 }
 /* certa: os olhos se abrem um pouco mais */
