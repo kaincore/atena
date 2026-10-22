@@ -1,5 +1,14 @@
 # Mudanças
 
+## 0.16.1 (2026-10-22)
+
+A entrada nova do painel (painel 0.8.1): a construção do templo, no lugar da coruja.
+
+- **A entrada:** a coruja pareceu desenho animado ao dono. No lugar dela, a fachada de um templo se constrói em três atos, como numa prancha de arquiteto. Primeiro a geometria, em linha fina: o chão, o eixo, um quadrado e o arco do compasso, que estende o quadrado até o retângulo de ouro (o corpo da fachada). Depois a obra a tinta: os três degraus, as seis colunas subindo do centro para fora, os capitéis, a arquitrave, o friso com os tríglifos e o frontão, cujas duas linhas se encontram no topo. Por fim, a geometria recua para um fantasma e ΑΘΗΝΑ chega letra a letra. Nada reage à digitação; na senha errada, a inscrição fica em cinábrio por um instante, e na certa o tímpano se pinta de azul egípcio, como eram os templos.
+- **O ícone do app:** a chave do meandro, em mármore sobre o azul egípcio.
+- O DESIGN.md, o design.json, o brief e a arquitetura descrevem a entrada nova, com o azul pigmento (o tímpano) como token.
+- Testado: os 48 testes do painel e os cliques de ponta a ponta no celular; a entrada fotografada em oito momentos (os três atos, pronta, senha errada, senha certa e o painel chegando) no celular, claro e escuro, e no PC, sem erro na página. No servidor de origem, o painel 0.8.1 subiu saudável e serve o templo da entrada. Sem revisor separado nesta rodada.
+
 ## 0.16.0 (2026-10-22)
 
 O painel com visual grego (painel 0.8.0): a policromia contida, a coruja de Atena na entrada e as zonas como os degraus do templo, em 3D.
