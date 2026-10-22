@@ -12,6 +12,9 @@ from .base import Erro, ler_conf, rodar
 
 PC_CHAVE = "/etc/atena/executor/pc-chave"     # no Windows, essa chave só desliga, reinicia ou cancela
 PC_HOSTS = "/etc/atena/executor/pc-known-hosts"
+# na rede de casa o PC ligado responde em menos de 1 ms (o ARP e a porta); desligado, ninguém
+# responde e a tentativa espera até o fim: meio segundo basta para saber
+PC_ESPERA = 0.5
 
 
 def pc_conf():
@@ -26,7 +29,7 @@ def acao_pc_estado(cliente, params):
     ip, porta = conf["ATENA_PC_IP"], int(conf.get("ATENA_PC_PORTA") or "1234")
     api = False
     try:
-        with socket.create_connection((ip, porta), timeout=2):
+        with socket.create_connection((ip, porta), timeout=PC_ESPERA):
             api = True
     except OSError:
         pass

@@ -13,9 +13,11 @@ c = {"cliente": "hermes", "zonas": ["apps"], "acoes": []}
 
 # --- estado: a porta do LM Studio e a tabela de vizinhos (ARP) ---
 REDE = {"porta": False, "vizinho": "192.168.0.50 dev enp3s0 FAILED"}
+ESPERAS = []
 
 
 def conectar_falso(endereco, timeout=None):
+    ESPERAS.append(timeout)
     if not REDE["porta"]:
         raise OSError("recusada")
 
@@ -35,6 +37,8 @@ REDE["vizinho"] = "192.168.0.50 dev enp3s0 lladdr 00:11:22:33:44:55 REACHABLE"
 confere("placa de rede responde, LM Studio ainda não", ex.acao_pc_estado(c, {}) == {"ligado": True, "lm_studio": False})
 REDE["porta"] = True
 confere("LM Studio respondendo", ex.acao_pc_estado(c, {}) == {"ligado": True, "lm_studio": True})
+# desligado, ninguém responde e a tentativa espera até o fim: o painel e a Atena não podem ficar 2 s nela
+confere("a porta do LM Studio espera no máximo meio segundo", ESPERAS and all(e is not None and e <= 0.5 for e in ESPERAS))
 
 # --- Wake-on-LAN ---
 ENVIADOS = []
