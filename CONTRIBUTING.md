@@ -49,7 +49,7 @@ Os jobs estão em `.github/workflows/verificar.yml`; os testes de Python ficam e
 - **Sem pacote do npm:** o servidor é TypeScript que o Node 22 roda direto (só a sintaxe que ele apaga; o CI confere com `tsc --noEmit`), e a interface é JavaScript puro, sem build.
 - **Uma tela por arquivo** em `app/public/telas`; o que todas usam fica no `comum.js`, e a casca (`app.js`) cuida da navegação. As telas chamam `atualizar`, `telaAtual` e `mostrarEntrada` pelo `comum.js`.
 - **Tudo vem do próprio painel:** a CSP é `default-src 'self'`, e o container não tem rede. Estilo muda pelo CSSOM (`el.style.setProperty`), e os dados do servidor entram na tela como texto, pelo `h()`.
-- **Arquivo novo na interface:** entra na lista `CASCA` do `sw.js`, e o `CACHE` sobe de versão (senão o celular continua com a casca velha).
+- **O cache do celular se renova sozinho:** o servidor do painel põe no `sw.js` a lista de todos os arquivos da interface e uma versão que é o resumo deles. Arquivo novo ou mudado já instala a casca nova; não há lista nem número para atualizar à mão.
 - **O visual** segue o `DESIGN.md`, e o que o painel é e para quem está no `PRODUCT.md`. Confira a tela de verdade, no celular e no PC, nos temas claro e escuro.
 
 ## Instalador e scripts (`install/`, `host/sbin/`)

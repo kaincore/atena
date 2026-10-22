@@ -92,11 +92,23 @@ type Arquivo = { tipo: string; dados: Buffer; gzip: Buffer | null; etag: string 
 
 const aceitaGzip = (req: IncomingMessage) => /\bgzip\b/.test(String(req.headers["accept-encoding"] ?? ""));
 
+// O sw.js sai com a versão (um resumo de todos os outros arquivos) e a lista da casca: mudar qualquer
+// arquivo da interface instala um cache novo no celular, sem lista nem número para lembrar de subir.
 function carregarPublico(pasta: string): Map<string, Arquivo> {
   const lidos = new Map<string, { tipo: string; dados: Buffer }>();
   for (const nome of readdirSync(pasta, { recursive: true }) as string[]) {
     const tipo = TIPOS[extname(nome)];
     if (tipo) lidos.set("/" + nome.split("\\").join("/"), { tipo, dados: readFileSync(join(pasta, nome)) });
+  }
+  const caminhos = [...lidos.keys()].filter((c) => c !== "/sw.js").sort();
+  const sw = lidos.get("/sw.js");
+  if (sw) {
+    const resumo = createHash("sha256");
+    for (const c of caminhos) resumo.update(c).update(lidos.get(c)!.dados);
+    const casca = caminhos.map((c) => (c === "/index.html" ? "/" : c));
+    sw.dados = Buffer.from(sw.dados.toString("utf8")
+      .replace('const VERSAO = "dev";', `const VERSAO = "${resumo.digest("hex").slice(0, 12)}";`)
+      .replace('const CASCA = ["/"];', `const CASCA = ${JSON.stringify(casca)};`));
   }
   const arquivos = new Map<string, Arquivo>();
   for (const [caminho, { tipo, dados }] of lidos) {

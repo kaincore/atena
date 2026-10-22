@@ -109,6 +109,17 @@ test("a interface sai com a CSP e o resto da API pede login", async () => {
   assert.equal((await pedir("GET", "/api/historico")).status, 401);
 });
 
+test("o sw.js sai com a versão dos arquivos e a lista inteira da casca", async () => {
+  const texto = await (await fetch(base + "/sw.js")).text();
+  const versao = texto.match(/const VERSAO = "([0-9a-f]{12})";/);
+  assert.ok(versao, "a versão não foi trocada");
+  const casca: string[] = JSON.parse(texto.match(/const CASCA = (\[.*\]);/)![1]);
+  for (const caminho of ["/", "/app.js", "/comum.js", "/estilo.css", "/telas/inicio.js", "/fontes/archivo.woff2", "/icone-192.png"])
+    assert.ok(casca.includes(caminho), caminho);
+  assert.ok(!casca.includes("/sw.js") && !casca.includes("/index.html"));
+  assert.equal((await (await fetch(base + "/sw.js")).text()).match(/const VERSAO = "(\w+)"/)![1], versao[1]);
+});
+
 test("a interface sai comprimida, e o que não mudou volta como 304", async () => {
   const r = await fetch(base + "/estilo.css", { headers: { "Accept-Encoding": "gzip" } });
   assert.equal(r.headers.get("content-encoding"), "gzip");

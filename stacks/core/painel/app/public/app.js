@@ -144,23 +144,37 @@ $("#janela-fechar").addEventListener("click", () => $("#janela").close());
 $("#abrir-paleta").addEventListener("click", () => abrirPaleta());
 montarNavegacao();
 addEventListener("hashchange", atualizar);
+// não apaga uma resposta que você está escrevendo, nem um campo em que você está
+function escrevendo() {
+  const campo = document.activeElement;
+  return [...document.querySelectorAll("#tela textarea")].some((t) => t.value || t === campo)
+    || (campo && $("#tela").contains(campo) && /^(INPUT|SELECT|TEXTAREA)$/.test(campo.tagName));
+}
+
 let tiques = 0;
 setInterval(() => {
   if (document.visibilityState !== "visible" || !$("#entrada").hidden) return;
   tiques++;
   const cada = ATUALIZAM_SOZINHAS[telaAtual()];
-  // não apaga uma resposta que você está escrevendo, nem um campo em que você está
-  const campo = document.activeElement;
-  const escrevendo = [...document.querySelectorAll("#tela textarea")].some((t) => t.value || t === campo)
-    || (campo && $("#tela").contains(campo) && /^(INPUT|SELECT|TEXTAREA)$/.test(campo.tagName));
-  if (cada && tiques % cada === 0 && !$("#janela").open && !escrevendo) atualizar();
+  if (cada && tiques % cada === 0 && !$("#janela").open && !escrevendo()) atualizar();
   else if (telaAtual() !== "aprovacoes" && tiques % 3 === 0) contarPendentes();
 }, TIQUE);
 document.addEventListener("visibilitychange", () => {
-  if (document.visibilityState === "visible" && $("#entrada").hidden) atualizar();
+  if (document.visibilityState !== "visible") return;
+  if ($("#entrada").hidden) atualizar();
+  navigator.serviceWorker?.getRegistration().then((r) => r?.update()).catch(() => {}); // o app aberto há dias também vê a versão nova
 });
 
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js").catch(() => {});
+// a casca abre do cache; quando o painel muda no servidor, o sw.js novo instala a versão nova inteira
+// e assume a página: recarrega uma vez (se você não estiver escrevendo; senão fica para a próxima)
+if ("serviceWorker" in navigator) {
+  let controlada = Boolean(navigator.serviceWorker.controller); // a primeira instalação não recarrega
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (controlada && !escrevendo() && !$("#janela").open) location.reload();
+    controlada = true;
+  });
+  navigator.serviceWorker.register("/sw.js").catch(() => {});
+}
 
 const eu = await api("GET", "/api/eu");
 if (eu.ok === false && eu.status !== 401) {

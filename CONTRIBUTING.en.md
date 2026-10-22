@@ -49,7 +49,7 @@ The jobs are in `.github/workflows/verificar.yml`; the Python tests live in `tes
 - **No npm packages:** the server is TypeScript that Node 22 runs directly (only the syntax it erases; CI checks it with `tsc --noEmit`), and the interface is plain JavaScript, with no build step.
 - **One screen per file** in `app/public/telas`; what they all use lives in `comum.js`, and the shell (`app.js`) handles navigation. Screens call `atualizar`, `telaAtual` and `mostrarEntrada` through `comum.js`.
 - **Everything comes from the panel itself:** the CSP is `default-src 'self'`, and the container has no network. Style changes go through the CSSOM (`el.style.setProperty`), and server data reaches the screen as text, through `h()`.
-- **A new interface file:** goes into the `CASCA` list in `sw.js`, and `CACHE` gets a new version (otherwise the phone keeps the old shell).
+- **The phone cache renews itself:** the panel server writes into `sw.js` the list of every interface file and a version that is a digest of them. A new or changed file already installs the new shell; there is no list or number to update by hand.
 - **The look** follows `DESIGN.md`, and what the panel is and who it is for is in `PRODUCT.md`. Check the real screen, on the phone and on the PC, in the light and dark themes.
 
 ## Installer and scripts (`install/`, `host/sbin/`)
