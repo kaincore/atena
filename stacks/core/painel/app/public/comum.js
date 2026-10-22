@@ -118,9 +118,25 @@ export function avisar(texto, tipo = "") {
   setTimeout(() => aviso.remove(), tipo === "erro" ? 8000 : 4000);
 }
 
-export const gb = (mb) => `${(mb / 1024).toFixed(1)} GB`;
+// números como se escreve aqui: 15,0 GB, US$ 0,98, 1.304 RPM
+export const num = (n, casas = 0) => Number(n).toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas });
+export const gb = (mb) => `${num(mb / 1024, 1)} GB`;
 export const data = (ms) => new Date(ms).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
-export const dinheiro = (usd) => `US$ ${Number(usd).toFixed(2)}`;
+export const dinheiro = (usd) => `US$ ${num(usd, 2)}`;
+export const plural = (n, um, varios) => `${num(n)} ${n === 1 ? um : varios}`;
+
+// o docker stats escreve "54.68MiB", "1.2GiB" e "0.01%": aqui sai "54,7 MB", "1,2 GB" e "0,0%"
+const UNIDADES_DOCKER = { B: "B", kB: "KB", KiB: "KB", MB: "MB", MiB: "MB", GB: "GB", GiB: "GB", TB: "TB", TiB: "TB" };
+export function tamanhoDocker(texto) {
+  const m = String(texto).match(/^([\d.]+)\s*([kKMGT]?i?B)$/);
+  if (!m || !UNIDADES_DOCKER[m[2]]) return texto;
+  const n = Number(m[1]);
+  return `${num(n, n >= 100 || m[2] === "B" ? 0 : 1)} ${UNIDADES_DOCKER[m[2]]}`;
+}
+export function porcento(texto) {
+  const n = parseFloat(texto);
+  return Number.isFinite(n) ? `${num(n, n >= 10 ? 0 : 1)}%` : texto;
+}
 
 export function medidor(fracao, alerta = 0.85) {
   const pct = Math.max(0, Math.min(1, fracao || 0));

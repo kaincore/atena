@@ -81,7 +81,8 @@ export function visor(...celulas) {
   return h("div", "visor", h("div", "visor-vidro", celulas));
 }
 
-const numero = (n, casas = 0) => Number(n).toFixed(casas);
+// "47,9": vírgula como aqui (o 7 segmentos acende o ponto do dígito do mesmo jeito), sem ponto de milhar
+const numero = (n, casas = 0) => Number(n).toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas, useGrouping: false });
 const cor = (fracao) => (fracao >= 1 ? "quente" : fracao >= 0.85 ? "morno" : "frio");
 
 // dois carretéis de fita que giram na velocidade da carga da CPU
@@ -137,7 +138,7 @@ export function visorInicio(r) {
   const cpu = r.temperaturas.cpu_c;
   return visor(
     celula("cpu", carreteis(carga), seteSegmentos(numero(Math.min(99.9, carga * 100), carga < 0.1 ? 1 : 0)), "%",
-      `carga ${r.carga[0].toFixed(2)} em ${r.nucleos} núcleos`),
+      `carga ${numero(r.carga[0], 2)} em ${r.nucleos} núcleos`),
     cpu != null && celula("temp cpu", termometro(cpu / 85), seteSegmentos(numero(cpu, 1)), "°C"),
     celula("ram", tanque(usada / total), seteSegmentos(numero(usada, 1)), "GB", `de ${numero(total, 1)} GB`),
     r.gpu && celula("gpu", chip(r.gpu.uso_pct / 100), seteSegmentos(numero(r.gpu.temperatura_c)), "°C",
