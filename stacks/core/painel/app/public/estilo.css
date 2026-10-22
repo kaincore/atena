@@ -225,7 +225,7 @@ main {
 /* --- módulos: placas do aparelho, com parafusos nos cantos e etiqueta de engenharia --- */
 
 .modulo {
-  position: relative; min-width: 0; padding: 1rem 1.05rem 1.05rem;
+  position: relative; min-width: 0; padding: 1rem 1.05rem 1.05rem; container: modulo / inline-size;
   border: 1px solid var(--risco); border-radius: var(--raio); box-shadow: var(--sombra-modulo);
   background:
     var(--parafuso) left 5px top 5px / 9px 9px no-repeat, var(--parafuso) right 5px top 5px / 9px 9px no-repeat,
@@ -250,11 +250,18 @@ main {
   display: flex; align-items: baseline; justify-content: space-between; gap: .75rem;
   margin: 0 .35rem .8rem; padding-bottom: .55rem; border-bottom: 1px solid var(--risco);
 }
-.modulo-topo h2 { flex: 1 1 auto; min-width: 0; }
+.modulo-topo h2 { flex: 1 1 auto; min-width: 0; text-wrap: balance; }
 .modulo-topo .etiqueta { display: inline-flex; align-items: baseline; gap: .6rem; margin-left: auto; flex: none; max-width: 60%; }
 .modulo-topo .peca { font: 700 .62rem var(--mono); color: var(--tinta); letter-spacing: .04em; padding: .05rem .3rem; border: 1px solid var(--risco-forte); border-radius: 2px; }
 .modulo-topo .codigo { font: 500 .64rem var(--mono); color: var(--tinta-2); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .modulo-topo .peca { flex: none; }
+/* módulo estreito (celular, colunas do PC): o código do que ele mede desce para baixo do título, inteiro */
+@container modulo (max-width: 30rem) {
+  .modulo-topo { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .3rem .75rem; align-items: baseline; }
+  .modulo-topo .etiqueta { display: contents; }
+  .modulo-topo .peca { grid-area: 1 / 2; }
+  .modulo-topo .codigo { grid-area: 2 / 1 / 3 / 3; white-space: normal; overflow: visible; }
+}
 .modelo { font: 700 .6rem var(--mono); letter-spacing: .06em; padding: .08rem .32rem; border-radius: 2px; color: var(--chassi); background: var(--tinta); vertical-align: .2em; margin-left: .45rem; }
 /* régua na borda de cima de todo módulo: marcas a cada 8 px, maiores a cada 40 */
 .modulo::before {
