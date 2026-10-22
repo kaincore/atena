@@ -1,5 +1,14 @@
 # Mudanças
 
+## 0.17.2 (2026-10-22)
+
+A entrada do painel sem moldura, e o reboco só atrás dela (painel 0.9.2). Pedido do dono, que quer fechar a entrada antes de cuidar do fundo do painel.
+
+- **Sem moldura:** a cornija da Sistina em cima e embaixo, com os filetes dos lados no PC, formava um quadrado em volta da entrada e saiu. A entrada fica solta na tela, com as mãos, a centelha e o reboco.
+- **O reboco só na entrada:** atrás da entrada, a 5%, derivando devagar; dentro do painel a camada nem é criada, e o chão volta a ser liso.
+- O DESIGN.md e os documentos deixam de falar da cornija; a Regra do Meandro que Mede volta a valer sem exceção.
+- Testado: os 49 testes do painel e o CI reproduzido com `tools/ci-local.sh`; os cliques de ponta a ponta no celular e no PC; a entrada fotografada no celular e no PC, claro e escuro, sem moldura; no navegador do ensaio, a camada do reboco existe na entrada e não existe dentro do painel; o commit intermediário (só sem a moldura) rodado sozinho no ensaio, sem erro. No servidor de origem, o painel 0.9.2 subiu saudável pelas duas entradas. Sem revisor separado nesta rodada.
+
 ## 0.17.1 (2026-10-22)
 
 O fundo e a moldura da entrada do painel (painel 0.9.1). Pedido do dono, que escolheu os três elementos, quase invisíveis e com movimento lento.
