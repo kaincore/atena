@@ -1,5 +1,14 @@
 # Mudanças
 
+## 0.17.0 (2026-10-22)
+
+O painel também na rede de casa, e a entrada com as mãos da Criação de Adão (painel 0.9.0).
+
+- **Na rede de casa:** com `ATENA_PAINEL_CASA=sim` no `atena.conf` (padrão: `nao`), o painel também abre em `http://<ATENA_LAN_IP>:3100`, sem o Tailscale. O systemd escuta só no IP de casa (`atena-painel-casa.socket`) e entrega cada visita a um segundo socket do painel (`atena-painel-casa.service`, com o `systemd-socket-proxyd`, como `atena-painel`, sem rede própria e vendo de `/srv/core` só a pasta dos sockets); o ufw abre a porta só para a faixa da rede de casa. Lá é HTTP: o cookie sai sem `Secure`, a senha passa aberta no Wi-Fi e o painel não instala como app. O bloqueio da senha errada vale para as duas entradas. Escolha do dono, que preferiu o HTTP simples a instalar um certificado em cada aparelho; os riscos estão em `docs/pt/seguranca.md`.
+- **A entrada:** as mãos de Deus e de Adão da Criação de Adão de Michelangelo, no lugar da Atena Partenos, escolhidas pelo dono depois de ver as duas. A imagem vem de uma foto do afresco (Jörg Bittner Unna, 2011, domínio público): as mãos foram recortadas do reboco com o GrabCut e tonalizadas como uma impressão, em azul egípcio de dia e claras sobre o escuro à noite. A impressão por pontos vem das bordas para o vão entre os dedos; no celular a imagem atravessa a tela, e no PC fica em cima da entrada. Uma gravura de 1772 foi tentada antes, mas nela os dedos ficavam pouco nítidos.
+- **A imagem em WebP:** o painel passa a servir `.webp`, e a imagem tem 62 KB, com a tinta no cinza e o recorte no alfa. A `gravura()` ganha as opções `canais`, `inverterNoEscuro`, `densidade` e `centro`, e o canvas passa a reduzir e ampliar a imagem com a suavização de alta qualidade.
+- Testado: os 49 testes do painel (um novo: pela rede de casa o cookie sai sem `Secure`, e a senha errada conta nas duas entradas) e o CI reproduzido com `tools/ci-local.sh`; os cliques de ponta a ponta no celular e no PC; a entrada fotografada no celular e no PC, claro e escuro, sem erro na página, com os dedos conferidos na densidade do aparelho; o `systemd-socket-proxyd` repassando para um socket unix (no ensaio) e as duas unidades no `systemd-analyze verify`. No servidor de origem, o painel 0.9.0 subiu saudável com as duas entradas, e `http://<IP de casa>:3100` responde (a saúde, a página e a imagem) com as unidades e a regra do ufw postas por um script que faz o mesmo que esta parte do instalador; a primeira tentativa barrou o repassador em `/srv/core` (750), o que levou ao `TemporaryFileSystem` da unidade. Sem testar: a etapa 85 do instalador inteira com `ATENA_PAINEL_CASA` (`sim` e `nao`) e a entrada pela rede de casa num celular de verdade. Sem revisor separado nesta rodada.
+
 ## 0.16.2 (2026-10-22)
 
 A entrada do painel com uma gravura clássica (painel 0.8.2).
