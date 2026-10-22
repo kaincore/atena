@@ -1,7 +1,7 @@
 // Interface do painel: telas montadas com elementos (nunca innerHTML com dados do servidor).
 // O visual é o da policromia (estilo.css); os desenhos (o meandro, a coruja) ficam em desenhos.js.
 import { $, TIQUE, api, consultar, esqueleto, h, ligarCasca, mudar } from "./comum.js";
-import { faixa } from "./desenhos.js";
+import { caminhoMeandroCircular, coruja, faixa, prepararTracos, s } from "./desenhos.js";
 import { telaAgenda } from "./telas/agenda.js";
 import { telaAjustes } from "./telas/ajustes.js";
 import { contarPendentes, faixaAprovacoes, telaAprovacoes } from "./telas/aprovacoes.js";
@@ -227,6 +227,23 @@ async function atualizar() {
   tela.removeAttribute("aria-busy");
 }
 
+// a entrada: a coruja de Atena se desenha num medalhão azul, e o meandro da borda fica aberto até a
+// senha certa fechá-lo
+function prepararEntrada() {
+  const tondo = $(".tondo-entrada");
+  const ave = prepararTracos(coruja());
+  tondo.replaceChildren(s("svg", { viewBox: "-50 -50 100 100", class: "anel" },
+    s("circle", { r: 49.4, class: "disco" }), s("circle", { r: 48.2, class: "aro" }), s("circle", { r: 41.5, class: "aro" }),
+    s("path", { d: caminhoMeandroCircular(47.2, 1.7), class: "anel-meandro", pathLength: 1 }),
+    ["Α", "Θ", "Ε"].map((letra, i) => s("text", { x: 30, y: -9 + i * 8.5, class: "inscricao", "text-anchor": "middle" }, letra))), ave);
+  tondo.classList.remove("fechado");
+  if (reduzido()) return;
+  tondo.classList.add("abrindo");
+  ave.classList.add("desenhando");
+  setTimeout(() => { tondo.classList.remove("abrindo"); ave.classList.remove("desenhando"); }, 2700);
+}
+const ave = () => $(".tondo-entrada .coruja");
+
 function mostrarEntrada() {
   $(".painel").hidden = true;
   $("#tela").replaceChildren();
@@ -234,6 +251,7 @@ function mostrarEntrada() {
   aberta = null;
   vistas.clear();
   $("#senha").value = "";
+  prepararEntrada();
   $("#entrada").hidden = false;
   $("#senha").focus();
 }
@@ -263,6 +281,9 @@ async function mostrarPainel(primeira = atualizar()) {
   prepararBarra();
 }
 
+// enquanto você digita a senha, a coruja fecha os olhos
+$("#senha").addEventListener("input", () => ave()?.classList.toggle("olhos-fechados", $("#senha").value.length > 0));
+
 $("#form-entrada").addEventListener("submit", async (evento) => {
   evento.preventDefault();
   const botao = evento.target.querySelector("button");
@@ -271,12 +292,26 @@ $("#form-entrada").addEventListener("submit", async (evento) => {
   botao.disabled = false;
   if (r.ok === false) {
     $("#msg-entrada").textContent = r.erro;
+    // errada: ela balança a cabeça
+    ave()?.classList.remove("nao");
+    requestAnimationFrame(() => ave()?.classList.add("nao"));
     $("#senha").select();
     return;
   }
   $("#senha").value = "";
   $("#msg-entrada").textContent = "";
-  // certa: a entrada se desfaz e o painel chega
+  // certa: ela abre os olhos, o meandro fecha, e a entrada se afasta para o painel chegar
+  ave()?.classList.remove("olhos-fechados", "nao");
+  ave()?.classList.add("sim");
+  const anel = $(".tondo-entrada .anel-meandro");
+  // espera o traço fechar (a cor muda antes, e também dispara um transitionend)
+  const fechou = new Promise((ok) => {
+    anel.addEventListener("transitionend", function fim(e) { if (e.propertyName === "stroke-dashoffset") { anel.removeEventListener("transitionend", fim); ok(); } });
+    setTimeout(ok, 1200);
+  });
+  $(".tondo-entrada").classList.add("fechado");
+  if (!reduzido()) await fechou;
+  await espera(340);
   $("#entrada").classList.add("saindo");
   await espera(420);
   $("#entrada").classList.remove("saindo");
