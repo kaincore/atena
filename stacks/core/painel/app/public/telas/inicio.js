@@ -68,7 +68,7 @@ export async function telaInicio() {
     const servidor = modulo("Servidor", `${r.nucleos} núcleos · ${gb(r.ram_total_mb)}`,
       visorInicio(r),
       h("div", { class: "discos" }, Object.entries(r.discos).map(([ponto, d]) => [
-        linha(`Disco ${ponto}`, `${num(d.livre_gb, 1)} GB livres de ${num(d.total_gb, 1)} GB`), medidor(1 - d.livre_gb / d.total_gb, 0.9),
+        linha(`Disco ${ponto}`, `${num(d.livre_gb, 1)}\u00a0GB livres de ${num(d.total_gb, 1)}\u00a0GB`), medidor(1 - d.livre_gb / d.total_gb, 0.9),
       ])));
     servidor.classList.add("largo");
     cartoes.push(servidor);

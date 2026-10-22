@@ -4,7 +4,7 @@ import { visorSistema } from "../visor.js";
 
 function grau(rotulo, c, quente) {
   if (c == null) return linha(rotulo, "sem leitura");
-  return [linha(rotulo, `${num(c, 1)} °C`), medidor(c / quente, 1)];
+  return [linha(rotulo, `${num(c, 1)}\u00a0°C`), medidor(c / quente, 1)];
 }
 
 async function cartaoSensores() {
@@ -16,16 +16,16 @@ async function cartaoSensores() {
       visorSistema(s),
       linha("Avaliação", h("span", { class: `selo ${s.avaliacao === "normal" ? "ok" : "ruim"}` }, s.avaliacao)),
       grau("CPU", s.cpu.temperatura_c, s.cpu.quente_a_partir_de_c),
-      s.cpu.nucleos_c && linha("Núcleos", Object.entries(s.cpu.nucleos_c).map(([n, t]) => `${n} ${num(t, 1)} °C`).join(" · ")),
+      s.cpu.nucleos_c && linha("Núcleos", Object.entries(s.cpu.nucleos_c).map(([n, t]) => `${n} ${num(t, 1)}\u00a0°C`).join(" · ")),
       grau("NVMe", s.nvme.temperatura_c, s.nvme.alerta_c),
       s.gpu && [grau("GPU", s.gpu.temperatura_c, s.gpu.quente_a_partir_de_c),
-        linha("GPU agora", [s.gpu.uso_pct != null && `uso ${num(s.gpu.uso_pct)}%`, s.gpu.consumo_w != null && `${num(s.gpu.consumo_w, 1)} W`,
+        linha("GPU agora", [s.gpu.uso_pct != null && `uso ${num(s.gpu.uso_pct)}%`, s.gpu.consumo_w != null && `${num(s.gpu.consumo_w, 1)}\u00a0W`,
           s.gpu.ventoinha_pct != null && `ventoinha ${num(s.gpu.ventoinha_pct)}%`].filter(Boolean).join(" · ") || "sem leitura")],
-      Object.entries(placa.ventoinhas_rpm ?? {}).map(([f, rpm]) => linha(`Ventoinha ${f}`, `${num(rpm)} RPM`)),
+      Object.entries(placa.ventoinhas_rpm ?? {}).map(([f, rpm]) => linha(`Ventoinha ${f}`, `${num(rpm)}\u00a0RPM`)),
       placa.temperaturas_c && h("details", null, h("summary", null, "Sensores da placa"),
-        Object.entries(placa.temperaturas_c).map(([n, t]) => linha(n, `${num(t, 1)} °C`))),
+        Object.entries(placa.temperaturas_c).map(([n, t]) => linha(n, `${num(t, 1)}\u00a0°C`))),
       placa.obs && h("p", { class: "fraco" }, placa.obs),
-      s.cpu.quente_a_partir_de_c && h("p", { class: "fraco" }, `As barras enchem até o ponto de alerta (CPU ${s.cpu.quente_a_partir_de_c} °C).`));
+      s.cpu.quente_a_partir_de_c && h("p", { class: "fraco" }, `As barras enchem até o ponto de alerta (CPU ${s.cpu.quente_a_partir_de_c}\u00a0°C).`));
     m.classList.add("largo");
     return m;
   })();
@@ -37,12 +37,12 @@ async function cartaoSensores() {
 function duracao(etime) {
   const [dias, resto] = etime.includes("-") ? etime.split("-") : ["0", etime];
   const [s = 0, m = 0, hr = 0] = resto.split(":").reverse().map(Number);
-  if (+dias) return `${+dias} d ${hr} h`;
-  if (hr) return `${hr} h ${m} min`;
-  return m ? `${m} min` : `${s} s`;
+  if (+dias) return `${+dias}\u00a0d ${hr}\u00a0h`;
+  if (hr) return `${hr}\u00a0h ${m}\u00a0min`;
+  return m ? `${m}\u00a0min` : `${s}\u00a0s`;
 }
 
-const tamanho = (kb) => (kb >= 1024 * 1024 ? gb(kb / 1024) : `${num(Math.round(kb / 1024))} MB`);
+const tamanho = (kb) => (kb >= 1024 * 1024 ? gb(kb / 1024) : `${num(Math.round(kb / 1024))}\u00a0MB`);
 
 // a saída do ps: PID USER %CPU %MEM RSS ELAPSED COMMAND
 function lerProcessos(texto) {

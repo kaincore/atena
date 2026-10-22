@@ -5,7 +5,7 @@ import { picto } from "../pictos.js";
 function relativo(s) {
   const minutos = Math.round((s * 1000 - Date.now()) / 60000);
   if (minutos === 0) return "agora";
-  return minutos > 0 ? `em ${minutos} min` : `há ${-minutos} min`;
+  return minutos > 0 ? `em ${minutos}\u00a0min` : `há ${-minutos}\u00a0min`;
 }
 
 let pendentes = 0;

@@ -11,7 +11,7 @@ function linhaAtividade(i) {
     i.params && Object.entries(i.params).map(([k, v]) => `${k}=${v}`).join(" "),
     i.decisao && `decisão ${i.decisao}${i.por ? ` por ${i.por}` : ""}`,
     i.pedido && `pedido ${i.pedido}`, i.aprovacao && `aprovação ${i.aprovacao}`,
-    i.origem && `origem ${i.origem}`, i.segundos != null && `${num(i.segundos, 2)} s`,
+    i.origem && `origem ${i.origem}`, i.segundos != null && `${num(i.segundos, 2)}\u00a0s`,
   ].filter(Boolean).join(" · ");
   const texto = [erro ? "erro" : i.ok ? "ok" : "evento", i.cliente ?? "executor", hora(i.quando), detalhes].filter(Boolean).join(" · ");
   const linhaItem = item({
