@@ -114,7 +114,7 @@ test("o sw.js sai com a versão dos arquivos e a lista inteira da casca", async 
   const versao = texto.match(/const VERSAO = "([0-9a-f]{12})";/);
   assert.ok(versao, "a versão não foi trocada");
   const casca: string[] = JSON.parse(texto.match(/const CASCA = (\[.*\]);/)![1]);
-  for (const caminho of ["/", "/app.js", "/comum.js", "/estilo.css", "/telas/inicio.js", "/fontes/archivo.woff2", "/icone-192.png"])
+  for (const caminho of ["/", "/app.js", "/comum.js", "/estilo.css", "/telas/inicio.js", "/fontes/commissioner-latin.woff2", "/icone-192.png"])
     assert.ok(casca.includes(caminho), caminho);
   assert.ok(!casca.includes("/sw.js") && !casca.includes("/index.html"));
   assert.equal((await (await fetch(base + "/sw.js")).text()).match(/const VERSAO = "(\w+)"/)![1], versao[1]);
@@ -129,7 +129,7 @@ test("a interface sai comprimida, e o que não mudou volta como 304", async () =
   const igual = await fetch(base + "/estilo.css", { headers: { "If-None-Match": etag } });
   assert.equal(igual.status, 304);
   assert.equal(await igual.text(), "");
-  const fonte = await fetch(base + "/fontes/archivo.woff2", { headers: { "Accept-Encoding": "gzip" } });
+  const fonte = await fetch(base + "/fontes/commissioner-latin.woff2", { headers: { "Accept-Encoding": "gzip" } });
   assert.equal(fonte.headers.get("content-encoding"), null); // woff2 já é comprimido
 });
 
