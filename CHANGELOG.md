@@ -1,5 +1,23 @@
 # Mudanças
 
+## 0.15.0 (2026-10-22)
+
+O painel mais rápido e mais fácil de ler (painel 0.7.0), a ronda que não repete o que já disse e as habilidades da Atena com o que só o servidor de origem sabia.
+
+- **Telas na hora:** voltar a uma tela já vista mostra o que estava lá (de 100 a 2.150 ms para 4 a 16 ms), com o dado novo entrando por cima; a primeira visita mostra um esqueleto do módulo, e o ponto da tela ativa pisca enquanto ela busca. Ao abrir, o painel já prepara as telas da barra (PC, Agenda e Serviços), e a pergunta "quem sou eu" vai junto com a primeira tela. Duas telas que pedem a mesma consulta ao mesmo tempo esperam uma resposta só.
+- **Serviços sem esperar o `docker stats`:** a tela sai com o estado dos containers (de 2.150 para 120 ms) e o uso de CPU e RAM entra quando chegar, mostrando o último visto enquanto isso.
+- **A casca do cache se renova sozinha:** a versão do service worker é um resumo dos arquivos, e o servidor põe no `sw.js` a versão e a lista inteira da casca. O app abre do cache (318 para 215 ms) e, quando a versão muda, troca tudo e recarrega a página, sem perder o que você está digitando. Não é mais preciso trocar o número do cache a cada mudança.
+- **gzip e ETag:** a interface sai comprimida, um arquivo que não mudou volta como 304, e as respostas da API acima de 1 KB também saem comprimidas.
+- **Visual (o mesmo aparelho, com quatro consertos):**
+  - **Linhas de lista:** todas as telas usam a mesma linha: o LED do estado, o nome, o estado escrito embaixo e as teclas à direita (ou embaixo do nome, quando são muitas). Em Serviços, os containers ficam presos à stack por uma guia tracejada.
+  - **Tecla clara:** as ações de cada linha (Logs, Reiniciar, Editar…) são teclas claras, como as cinzas da calculadora ET66; a grafite fica para a ação do módulo e a amarela para a principal.
+  - **Cortes e números:** num módulo estreito, o código do que ele mede desce para baixo do título, inteiro. Os números saem em pt-BR (15,0 GB, US$ 0,98, 54,7 MB, "1 chamada").
+  - **Formulários:** o rótulo em cima de cada campo, numa grade; os dias da semana da Agenda viram teclas de trava, com LED. A Atividade mostra uma linha por evento, com 100 por padrão. Arquivos ganha pictogramas e o caminho clicável.
+  - O `DESIGN.md` do painel registra a tecla clara, a linha de lista, o campo, a tecla de trava e o ponto que pisca.
+- **A ronda fala só do que mudou:** a unidade com falha que um timer roda de novo (o `fwupd-refresh`, cujo CDN responde 504 de hora em hora) só sai da lista depois de 15 min sem falhar, e o fim de um trabalho do Claude Code aparece numa ronda só. O estado fica em `/opt/data/cron/ronda-estado.json`. Antes, a Atena mandava o resumo do mesmo trabalho a cada ida e volta da unidade.
+- **Habilidades da Atena:** servidor-atena 1.6.1 e lab 1.2.1, com o que só o servidor de origem sabia (os projetos do lab no terminal, onde ficam documentos e anexos, o 504, dado privado só no `local.processar`), o que fazer sem aprovação no celular e no 409 do `app.publicar`, e o texto da ronda. A ronda carrega também a habilidade lab, e o instalador deixa o texto dela igual ao do modelo nas atualizações.
+- Testado: os 48 testes do painel (três novos: a versão e a casca no `sw.js`, o gzip e o 304, a resposta grande da API comprimida) e o `teste_ronda.py`; o CI inteiro pelo `ci-local.sh`. No navegador, num ensaio com o executor falso e os dados do servidor de origem, com 90 ms de latência: as medidas acima, os cliques de cada tela no celular e no PC (criar, editar e apagar agendamento, navegar e abrir arquivos, reiniciar um serviço, recusar uma aprovação), a troca de versão do cache, e cada commit do visual abrindo sem erro. No servidor de origem, o painel 0.7.0 subiu saudável e serve a casca nova com gzip e 304, e a ronda nova está no ar desde 2026-10-21.
+
 ## 0.14.0 (2026-10-21)
 
 As regras de trabalho escritas, e o fim da falha intermitente do CI.
