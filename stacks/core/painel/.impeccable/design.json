@@ -987,7 +987,7 @@
       {
         "name": "gravura-imprimir",
         "value": "canvas: pontilhado ordenado (Bayer 8×8, pontos de 2 px) de -0,05 a 1,1 em 1,9s, com ease-in-out cúbico; ΑΘΗΝΑ com surgir-letra .8s var(--suave) a partir de 1,45s, 90ms por letra",
-        "purpose": "A entrada: a gravura da Atena Partenos se imprime por pontos, de cima para baixo e da tinta mais escura para a mais clara; a página aceita a senha desde o começo."
+        "purpose": "A entrada: as mãos da Criação de Adão se imprimem por pontos, das bordas para o vão entre os dedos e da tinta mais escura para a mais clara; a página aceita a senha desde o começo."
       },
       {
         "name": "entrada-recusa",
@@ -997,7 +997,7 @@
       {
         "name": "gravura-desfazer",
         "value": "o mesmo pontilhado, de 1,1 a -0,05 em .65s; a entrada se desfaz junto (afastar .5s)",
-        "purpose": "Senha certa: o ΑΘΗΝΑ fica azul e a gravura se desfaz em pontos enquanto o painel chega."
+        "purpose": "Senha certa: o ΑΘΗΝΑ fica azul e a imagem se desfaz em pontos enquanto o painel chega."
       },
       {
         "name": "afastar-entrada",
@@ -1237,7 +1237,7 @@
       },
       {
         "name": "A Regra da Cena nos Momentos",
-        "body": "A cena só acontece quando importa: ao entrar, a gravura se imprime por um pontilhado ordenado (a matriz de Bayer 8×8, em pontos de 2 px; 1,9s), que se adensa de cima para baixo e da tinta mais escura para a mais clara, e o ΑΘΗΝΑ chega letra a letra; nada reage à digitação; na senha errada, a inscrição fica em cinábrio por um instante, e na certa ela fica azul e a gravura se desfaz no mesmo pontilhado antes de a entrada se desfazer e o painel chegar, com os pontos das zonas aparecendo um a um; quando chega uma aprovação, uma luz passa pela faixa e a coroa se redesenha, uma vez; quando um agendamento roda, a sombra do relógio de sol dá a volta (2.2s); quando o PC liga, o anel dele se pinta de novo; a zona com problema escorrega para o lado.",
+        "body": "A cena só acontece quando importa: ao entrar, as mãos se imprimem por um pontilhado ordenado (a matriz de Bayer 8×8, em pontos de 2 px; 1,9s), que se adensa das bordas para o vão entre os dedos e da tinta mais escura para a mais clara, e o ΑΘΗΝΑ chega letra a letra; nada reage à digitação; na senha errada, a inscrição fica em cinábrio por um instante, e na certa ela fica azul e a imagem se desfaz no mesmo pontilhado antes de a entrada se desfazer e o painel chegar, com os pontos das zonas aparecendo um a um; quando chega uma aprovação, uma luz passa pela faixa e a coroa se redesenha, uma vez; quando um agendamento roda, a sombra do relógio de sol dá a volta (2.2s); quando o PC liga, o anel dele se pinta de novo; a zona com problema escorrega para o lado.",
         "section": "components"
       },
       {
