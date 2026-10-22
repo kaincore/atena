@@ -1,5 +1,5 @@
 // Os desenhos do painel, no mundo da policromia (os templos gregos eram pintados): o meandro, que
-// também mede; a coruja de Atena na entrada, em traço de gravura; os medalhões dos números; a
+// também mede; a construção do templo na entrada, como uma prancha de arquiteto; os medalhões dos números; a
 // crepidoma das zonas (os degraus do templo, em 3D) e o relógio de sol da agenda. Tudo em SVG ou em
 // elementos montados um a um, a partir dos dados de verdade. O movimento vem do CSS e para com
 // prefers-reduced-motion.
@@ -182,67 +182,67 @@ export function relogioDeSol(agendamentos, girando) {
     s("circle", { cx: 50, cy: 50, r: 2.4, class: "centro" }));
 }
 
-// --- a coruja de Atena, como nas moedas de Atenas: a cabeça de frente, o corpo de perfil, num ramo ----
-// Traço de gravura, numa cor só. Desenha-se traço a traço ao abrir; fecha os olhos enquanto você
-// digita a senha; inclina a cabeça quando a senha está errada e abre bem os olhos quando está certa
-// (as classes vêm do app.js).
+// --- a entrada: a construção do templo, como numa prancha de arquiteto --------------------------------
+// Três atos. A geometria, em linha fina: o chão, o eixo, um quadrado e o arco do compasso (centrado no
+// meio da base dele) que estende o quadrado até o retângulo de ouro, que é o corpo da fachada. O templo
+// a tinta: os três degraus (a crepidoma), as seis colunas subindo do centro para fora, os capitéis, a
+// arquitrave, o friso com os tríglifos, a cornija e o frontão, cujas duas linhas se encontram no topo.
+// O acabamento: a geometria recua para um fantasma, como num desenho técnico. Quando a senha está certa,
+// o tímpano se pinta de azul egípcio, como eram os templos (as classes vêm do app.js).
 
-const tracar = (d, classe, atraso) => s("path", { d, class: `traco ${classe}`.trim(), pathLength: 1, "data-atraso": atraso });
+const traco = (d, classe, atraso, duracao) =>
+  s("path", { d, class: `traco ${classe}`.trim(), pathLength: 1, "data-atraso": atraso, "data-duracao": duracao });
 
-function folha(x, y, angulo, comprimento, largura, atraso) {
-  const L = comprimento, w = largura;
-  return s("g", { transform: `translate(${x} ${y}) rotate(${angulo})` },
-    tracar(`M0 0 C${r2(L * 0.3)} ${-w} ${r2(L * 0.72)} ${r2(-w * 0.8)} ${L} 0 C${r2(L * 0.72)} ${r2(w * 0.8)} ${r2(L * 0.3)} ${w} 0 0Z`, "folha", atraso),
-    tracar(`M2 0 L${L - 3} 0`, "nervura fino", atraso + 0.08));
-}
+const COLUNAS = [82, 113.2, 144.4, 175.6, 206.8, 238];
 
-function olho(cx, cy, lado) {
-  return s("g", { class: `olho olho-${lado}` },
-    s("circle", { cx, cy, r: 9.2, class: "olho-disco traco", pathLength: 1, "data-atraso": 1.1 }),
-    s("g", { class: "iris-grupo" },
-      s("circle", { cx, cy, r: 6, class: "iris" }),
-      s("circle", { cx, cy, r: 3.4, class: "pupila" }),
-      s("circle", { cx: cx + 1.6, cy: cy - 1.6, r: 0.9, class: "brilho" })),
-    s("path", { d: `M${cx - 9} ${cy + 1} Q${cx} ${cy + 6.5} ${cx + 9} ${cy + 1}`, class: "palpebra" }));
-}
-
-// pequenas escamas (as penas cobertas da asa) e as estrias do peito
-const escamas = [[86, 124], [94, 123], [102, 126], [84, 136], [92, 135], [100, 138], [86, 148], [94, 148], [102, 151], [89, 160], [97, 161]]
-  .map(([x, y]) => `M${x - 2.4} ${y - 1.2} L${x} ${y + 1.2} L${x + 2.4} ${y - 1.2}`).join(" ");
-const estrias = [[118, 117], [126, 124], [120, 131], [129, 139], [122, 146], [130, 154], [121, 161], [128, 169]]
-  .map(([x, y]) => `M${x} ${y} q1.4 2.8 0 5.6`).join(" ");
-const pintas = [[90, 49], [100, 46], [110, 47], [119, 51], [84, 56], [125, 58], [95, 53], [113, 53]];
-
-export function coruja() {
-  const ramo = s("g", { class: "ramo" },
-    tracar("M16 204 C 58 195, 120 199, 188 183", "galho", 0),
-    folha(38, 200, -158, 23, 4.2, 0.1), folha(56, 198, 24, 22, 4, 0.16),
-    folha(146, 193, -164, 21, 4, 0.22), folha(164, 189, 20, 23, 4.2, 0.28), folha(183, 184, -14, 19, 3.8, 0.34),
-    tracar("M66.4 205 a3.6 2.8 0 1 0 7.2 0 a3.6 2.8 0 1 0 -7.2 0", "azeitona", 0.3),
-    tracar("M150.6 198 a3.4 2.6 0 1 0 6.8 0 a3.4 2.6 0 1 0 -6.8 0", "azeitona", 0.36));
-  const corpo = s("g", { class: "corpo" },
-    // as costas (à esquerda), o peito (à direita, a ave olha para a direita), a asa dobrada e a cauda
-    tracar("M75 98 C 60 120, 60 160, 82 179 C 92 188, 104 192, 114 192", "", 0.42),
-    tracar("M133 98 C 148 118, 150 156, 135 176 C 129 184, 122 190, 114 192", "", 0.48),
-    tracar("M80 108 C 98 114, 112 134, 112 156 C 112 172, 102 186, 88 198", "asa", 0.6),
-    tracar(escamas, "escamas fino", 0.7),
-    tracar("M99 172 L 86 200 M105 166 L 93 199 M109 158 L 101 195", "remiges fino", 0.78),
-    tracar(estrias, "estrias fino", 0.82),
-    tracar("M92 192 L 84 209 M98 193 L 92 211", "cauda", 0.86),
-    tracar("M108 192 l -2 5 M111 193 l 0 5.5 M114 192 l 2 5 M118 190 l -1.5 5 M121 190 l .5 5.5 M124 189 l 2 4.5", "pes fino", 0.92));
-  const cabeca = s("g", { class: "cabeca" },
-    tracar("M72 76 C 71 52, 88 40, 104 40 C 120 40, 137 52, 136 76 C 135 94, 122 106, 104 106 C 86 106, 73 94, 72 76 Z", "", 0.95),
-    tracar("M78 82 C 76 66, 86 58, 97 60 M130 82 C 132 66, 122 58, 111 60", "disco-facial fino", 1.02),
-    tracar("M80 64 Q 93 57 103 70 M128 64 Q 115 57 105 70", "sobrancelhas", 1.06),
-    pintas.map(([x, y]) => s("circle", { cx: x, cy: y, r: 0.85, class: "pinta" })),
-    olho(92, 77, "esquerdo"), olho(116, 77, "direito"),
-    s("path", { d: "M100.5 86 Q104 83 107.5 86 Q105.6 91 104 95 Q102.4 91 100.5 86 Z", class: "bico" }));
-  return s("svg", { viewBox: "8 34 188 184", class: "coruja", role: "img", "aria-label": "a coruja de Atena num ramo de oliveira" },
-    ramo, corpo, cabeca);
+export function templo() {
+  // o quadrado de lado 136 sobre a base (50 a 186), o raio do meio da base (118, 200) até o canto de cima
+  // (186, 64) e o arco desse raio, que cai na base em 270: 220 por 136 é a razão de ouro
+  const raio = Math.hypot(186 - 118, 200 - 64);
+  const geometria = s("g", { class: "geometria" },
+    traco("M20 200 H300", "guia", 0, 0.8),
+    traco("M160 214 V22", "guia", 0.15, 0.8),
+    traco("M50 200 V64 H186 V200", "guia", 0.4, 0.9),
+    traco("M118 200 L186 64", "guia", 0.95, 0.4),
+    traco(`M186 64 A${raio.toFixed(2)} ${raio.toFixed(2)} 0 0 1 ${(118 + raio).toFixed(2)} 200`, "guia compasso", 1.15, 0.8),
+    traco("M186 64 H270 V200", "guia", 1.7, 0.5),
+    s("circle", { cx: 118, cy: 200, r: 1.7, class: "pivo" }),
+    s("circle", { cx: 186, cy: 64, r: 1.3, class: "pivo" }));
+  // as colunas sobem do centro para fora: as duas do meio, depois as do lado, depois as das pontas
+  const ordem = (cx) => [144.4, 175.6].includes(cx) ? 0 : [113.2, 206.8].includes(cx) ? 1 : 2;
+  const colunas = COLUNAS.map((cx) => {
+    const a = 1.95 + ordem(cx) * 0.1;
+    return s("g", { class: "coluna" },
+      traco(`M${cx - 6.5} 164 L${cx - 5.3} 103`, "pedra", a, 0.6),
+      traco(`M${cx + 6.5} 164 L${cx + 5.3} 103`, "pedra", a, 0.6),
+      s("path", { d: `M${cx - 2.2} 162 L${cx - 1.8} 105 M${cx + 2.2} 162 L${cx + 1.8} 105`, class: "estria" }),
+      traco(`M${cx - 5.3} 103 Q${cx - 8} 101.5 ${cx - 8} 100 H${cx + 8} Q${cx + 8} 101.5 ${cx + 5.3} 103 M${cx - 8} 100 V97 H${cx + 8} V100`, "pedra capitel", a + 0.5, 0.35));
+  });
+  // os tríglifos: sobre cada coluna e no meio de cada vão
+  const xs = COLUNAS.flatMap((x, i) => (i ? [(x + COLUNAS[i - 1]) / 2, x] : [x]));
+  const triglifos = s("path", { d: xs.map((x) => `M${(x - 2).toFixed(1)} 82 V72 M${x.toFixed(1)} 82 V72 M${(x + 2).toFixed(1)} 82 V72`).join(" "), class: "triglifos" });
+  const pedra = s("g", { class: "obra" },
+    traco("M50 200 V188 H270 V200", "pedra", 1.75, 0.45),
+    traco("M58 188 V176 H262 V188", "pedra", 1.85, 0.45),
+    traco("M66 176 V164 H254 V176", "pedra", 1.95, 0.45),
+    colunas,
+    traco("M58 97 H262 V84 H58 Z", "pedra", 2.55, 0.55),
+    traco("M58 84 V70 H262 V84", "pedra", 2.65, 0.5),
+    triglifos,
+    traco("M50 70 H270 V64 H50 Z", "pedra", 2.75, 0.5),
+    s("path", { d: "M64 61 L160 40 L256 61 Z", class: "timpano" }),
+    traco("M50 64 L160 36", "pedra", 2.95, 0.5),
+    traco("M270 64 L160 36", "pedra", 2.95, 0.5),
+    s("path", { d: "M66 60.4 L160 41.6 L254 60.4 Z", class: "timpano-tinta" }));
+  return s("svg", { viewBox: "14 18 292 200", class: "templo", role: "img", "aria-label": "a fachada de um templo grego, desenhada a partir do retângulo de ouro" },
+    geometria, pedra);
 }
 
 // cada traço começa a se desenhar no seu atraso (em segundos, do mais antigo ao mais novo)
 export function prepararTracos(svg, escala = 1) {
-  for (const el of svg.querySelectorAll("[data-atraso]")) el.style.setProperty("--atraso", `${(+el.dataset.atraso * escala).toFixed(2)}s`);
+  for (const el of svg.querySelectorAll("[data-atraso]")) {
+    el.style.setProperty("--atraso", `${(+el.dataset.atraso * escala).toFixed(2)}s`);
+    if (el.dataset.duracao) el.style.setProperty("--duracao", `${(+el.dataset.duracao * escala).toFixed(2)}s`);
+  }
   return svg;
 }

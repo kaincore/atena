@@ -37,6 +37,7 @@
   --azul-forte: #1a3275;
   --azul-claro: #e9edf7;
   --azul-tinta: #f7f8fc;
+  --azul-pigmento: #24418f;   /* o azul egípcio como tinta de parede (o tímpano), igual nos dois temas */
   /* os pigmentos de estado */
   --ocre: #b07c1e;
   --ocre-claro: #f7f1e4;
@@ -88,6 +89,7 @@
     --azul-forte: #bfcdf7;
     --azul-claro: #1b2441;
     --azul-tinta: #0b0f1a;
+    --azul-pigmento: #3556b8;
     --ocre: #d6a24a;
     --ocre-claro: #231d10;
     --ocre-tinta: #e8bf74;
@@ -610,7 +612,7 @@ input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]:
 @keyframes luz { to { transform: translateX(100%); } }
 .faixa.pulsa .picto-aprovacoes :not(.tinta, .cheio) { stroke-dasharray: 1 1; animation: tracar 1s var(--traco) both; }
 
-/* --- entrar: a coruja de Atena, em traço de gravura, e o meandro que só se fecha com a senha certa --- */
+/* --- entrar: a construção do templo, e o tímpano que se pinta com a senha certa --- */
 
 .entrada { min-height: 100dvh; display: grid; place-items: center; padding: 1.5rem 1rem 2rem; }
 .frente { width: min(100%, 22rem); display: grid; gap: .8rem; }
@@ -618,51 +620,42 @@ input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]:
 .frente input { min-height: 3rem; font-size: 1.05rem; }
 .frente button { margin-top: .25rem; min-height: 3rem; font-size: .95rem; }
 .frente .erro { text-align: center; }
-.tondo-entrada { position: relative; justify-self: center; width: min(76vw, 17rem); aspect-ratio: 1; }
-.tondo-entrada .anel { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.tondo-entrada .disco { fill: var(--placa); filter: drop-shadow(0 14px 28px rgb(21 27 39 / .12)); }
-.tondo-entrada .aro { fill: none; stroke: var(--veio-forte); stroke-width: .4; }
-.tondo-entrada .anel-meandro { fill: none; stroke: var(--tinta-3); stroke-width: .6; stroke-dasharray: 1 1; stroke-dashoffset: .16; transition: stroke-dashoffset .9s var(--suave), stroke .6s var(--suave); }
-.tondo-entrada.abrindo .anel-meandro { animation: tracar-aberto 1.8s var(--traco) both; }
-@keyframes tracar-aberto { from { stroke-dashoffset: 1; } to { stroke-dashoffset: .16; } }
-.tondo-entrada.fechado .anel-meandro { stroke-dashoffset: 0; stroke: var(--azul); }
-.tondo-entrada .inscricao { font: 500 6.4px var(--letra); font-variation-settings: var(--titulo-letra); fill: var(--tinta-2); letter-spacing: .5px; }
-.tondo-entrada.abrindo .inscricao { animation: aparecer .8s var(--suave) 1.7s both; }
-.tondo-entrada.abrindo { animation: chegar-tondo .9s var(--suave) backwards; }
-@keyframes chegar-tondo { from { opacity: 0; transform: scale(.96); filter: blur(4px); } }
-.tondo-entrada .coruja { position: absolute; left: 10%; top: 8%; width: 80%; height: auto; overflow: visible; }
-.coruja .traco { fill: none; stroke: var(--tinta); stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
-.coruja .fino { stroke-width: .85; }
-.coruja .folha { stroke: var(--tinta-2); }
-.coruja .galho { stroke-width: 1.2; }
-.coruja .azeitona { stroke: var(--tinta-2); }
-.coruja .pinta { fill: var(--tinta-2); }
-.coruja .olho-disco { fill: var(--placa); stroke-width: 1; }
-.coruja .iris { fill: color-mix(in srgb, var(--tinta-3) 45%, transparent); stroke: none; }
-.coruja .pupila { fill: var(--tinta); }
-.coruja .brilho { fill: var(--placa); }
-.coruja .bico { fill: var(--tinta-2); stroke: var(--tinta); stroke-width: .8; stroke-linejoin: round; }
-.coruja .palpebra { fill: none; stroke: var(--tinta); stroke-width: 1.2; stroke-linecap: round; opacity: 0; transition: opacity .2s var(--suave); }
-.coruja .iris-grupo { transform-box: fill-box; transform-origin: center; transition: transform .35s var(--suave); }
-/* enquanto você digita a senha, ela fecha os olhos devagar (não olha) */
-.coruja.olhos-fechados .iris-grupo { transform: scaleY(.04); }
-.coruja.olhos-fechados .palpebra { opacity: 1; transition-delay: .12s; }
-/* senha errada: ela inclina a cabeça e volta, numa mola */
-.coruja .cabeca { transform-box: view-box; transform-origin: 104px 104px; }
-.coruja.nao .cabeca { animation: negar .9s both; }
-@keyframes negar {
-  0% { transform: rotate(0); animation-timing-function: cubic-bezier(.22, 1, .36, 1); }
-  22% { transform: rotate(-8deg); animation-timing-function: var(--mola); }
-  100% { transform: rotate(0); }
-}
-/* certa: os olhos se abrem um pouco mais */
-.coruja.sim .iris-grupo { animation: arregalar .7s var(--suave); }
-@keyframes arregalar { 40% { transform: scale(1.12); } }
-.coruja.desenhando .pinta, .coruja.desenhando .bico { animation: aparecer .6s var(--suave) 1.5s both; }
-.coruja.desenhando .iris-grupo { animation: abrir-olho .7s var(--suave) 1.75s both; }
-.coruja.desenhando .olho-disco { animation: tracar .9s var(--traco) var(--atraso) forwards; }
+.cena-entrada { justify-self: center; width: min(88vw, 22rem); margin-bottom: .2rem; }
+.templo { display: block; width: 100%; height: auto; overflow: visible; }
+.templo .traco { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+/* a geometria: linha fina, que recua para um fantasma depois da obra, como num desenho técnico */
+.templo .guia { stroke: var(--tinta-3); stroke-width: .6; opacity: .35; }
+.templo .pivo { fill: var(--tinta-3); opacity: .55; }
+/* a obra, a tinta */
+.templo .pedra { stroke: var(--tinta); stroke-width: 1.1; }
+.templo .capitel { stroke-width: .9; }
+.templo :is(.estria, .triglifos) { fill: none; stroke: var(--tinta-2); stroke-width: .45; }
+.templo .timpano { fill: none; stroke: var(--tinta-2); stroke-width: .5; transition: stroke .35s var(--suave); }
+.templo .timpano-tinta { fill: var(--azul-pigmento); transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); transition: transform .9s var(--suave); }
+/* os três atos: a geometria se traça, a obra sobe e o acabamento chega */
+.construindo .templo .traco { stroke-dasharray: 1 1; stroke-dashoffset: 1; animation: tracar var(--duracao, .6s) var(--traco) var(--atraso, 0s) forwards; }
+.construindo .templo .guia { animation: tracar var(--duracao, .6s) var(--traco) var(--atraso, 0s) forwards, recuar 4.2s ease-in-out both; }
+@keyframes recuar { 0%, 72% { opacity: .95; } 100% { opacity: .35; } }
+.construindo .templo :is(.pivo, .estria, .triglifos, .timpano) { animation: aparecer .9s var(--suave) backwards; }
+.construindo .templo .pivo { animation-delay: .95s; }
+.construindo .templo .estria { animation-delay: 2.75s; }
+.construindo .templo .triglifos { animation-delay: 3.1s; }
+.construindo .templo .timpano { animation-delay: 3.35s; }
 @keyframes aparecer { from { opacity: 0; } }
-@keyframes abrir-olho { from { transform: scaleY(.04); } }
+/* ΑΘΗΝΑ letra a letra, no fim da obra */
+.marca .letras > span { display: inline-block; transition: color .5s var(--suave); }
+.marca .letras > span:nth-child(2) { --i: 1; }
+.marca .letras > span:nth-child(3) { --i: 2; }
+.marca .letras > span:nth-child(4) { --i: 3; }
+.marca .letras > span:nth-child(5) { --i: 4; }
+.construindo .marca .letras > span { animation: surgir-letra .8s var(--suave) backwards; animation-delay: calc(3.2s + var(--i, 0) * 90ms); }
+@keyframes surgir-letra { from { opacity: 0; transform: translateY(5px); filter: blur(3px); } }
+/* a senha errada: a inscrição e o tímpano ficam em cinábrio por um instante */
+.cena-entrada.recusa ~ .marca .letras > span { color: var(--cinabrio-tinta); }
+.recusa .templo .timpano { stroke: var(--cinabrio); }
+/* a certa: o tímpano se pinta de azul egípcio, do topo para baixo, e a inscrição também */
+.aceita .templo .timpano-tinta { transform: scaleY(1); }
+.cena-entrada.aceita ~ .marca .letras > span { color: var(--azul); }
 /* entrou: a entrada se desfaz e o painel chega */
 .entrada.saindo { animation: afastar .5s var(--suave) forwards; }
 @keyframes afastar { to { opacity: 0; transform: scale(1.02); filter: blur(10px); } }
@@ -675,7 +668,7 @@ input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]:
   }
   .entrada::before { top: 2rem; }
   .entrada::after { bottom: 2rem; }
-  .tondo-entrada { width: 19.5rem; }
+  .cena-entrada { width: 30rem; }
 }
 
 /* ao chegar no painel, os pontos das zonas aparecem um a um */
