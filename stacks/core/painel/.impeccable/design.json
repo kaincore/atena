@@ -64,6 +64,21 @@
           "#edeef2"
         ]
       },
+      "azul-pigmento": {
+        "role": "primary",
+        "displayName": "Azul Pigmento",
+        "canonical": "#24418f",
+        "tonalRamp": [
+          "#010036",
+          "#061864",
+          "#1f3a88",
+          "#3c5cad",
+          "#5b7ed2",
+          "#7ca2f9",
+          "#b0c9fe",
+          "#e7efff"
+        ]
+      },
       "foco": {
         "role": "primary",
         "displayName": "Foco",
@@ -439,6 +454,21 @@
           "#e8eefe"
         ]
       },
+      "azul-pigmento-escuro": {
+        "role": "primary",
+        "displayName": "Azul Pigmento (noite)",
+        "canonical": "#3556b8",
+        "tonalRamp": [
+          "#040130",
+          "#171f50",
+          "#313d72",
+          "#4f5d95",
+          "#6f7fb9",
+          "#90a2df",
+          "#b7c7fd",
+          "#e9eefe"
+        ]
+      },
       "foco-escuro": {
         "role": "primary",
         "displayName": "Foco (tema escuro)",
@@ -743,7 +773,7 @@
     "typographyMeta": {
       "inscricao": {
         "displayName": "Inscrição",
-        "purpose": "O ΑΘΗΝΑ da marca, em letras gregas (1.1rem no topo, 1.3rem no trilho, 1.7rem na entrada); a única caixa-alta do painel, com o ΑΘΕ da moeda."
+        "purpose": "O ΑΘΗΝΑ da marca, em letras gregas (1.1rem no topo, 1.3rem no trilho, 1.7rem na entrada, onde chega letra a letra); a única caixa-alta do painel."
       },
       "titulo-tela": {
         "displayName": "Título da Tela",
@@ -833,11 +863,6 @@
         "purpose": "Os avisos na Noite."
       },
       {
-        "name": "disco-entrada",
-        "value": "drop-shadow(0 14px 28px rgb(21 27 39 / .12))",
-        "purpose": "O medalhão da coruja na entrada (como filter)."
-      },
-      {
         "name": "anel-foco-campo",
         "value": "0 0 0 4px color-mix(in srgb, var(--azul) 14%, transparent)",
         "purpose": "O campo em foco, junto com a borda azul."
@@ -862,7 +887,7 @@
       {
         "name": "traco",
         "value": "cubic-bezier(.65, 0, .25, 1)",
-        "purpose": "O traço que se desenha (--traco): o meandro, os ícones, a coruja."
+        "purpose": "O traço que se desenha (--traco): o meandro, os ícones, o templo da entrada."
       },
       {
         "name": "sair-tela",
@@ -960,24 +985,19 @@
         "purpose": "No esqueleto, a faixa de meandro se faz e se desfaz enquanto o dado chega."
       },
       {
-        "name": "coruja-desenhar",
-        "value": "tracar var(--duracao, .9s) var(--traco) var(--atraso) forwards; o tondo chega em .9s var(--suave) backwards",
-        "purpose": "A coruja se desenha traço a traço ao abrir a entrada (2.7s no todo); o meandro do medalhão se traça em 1.8s e fica aberto."
+        "name": "templo-construir",
+        "value": "tracar var(--duracao) var(--traco) var(--atraso) forwards; a geometria recua com recuar 4.2s ease-in-out; ΑΘΗΝΑ com surgir-letra .8s var(--suave) a partir de 3.2s, 90ms por letra",
+        "purpose": "A entrada: o templo se constrói em três atos (a geometria, a obra a tinta, o acabamento), 4,3s no todo; a página aceita a senha desde o começo."
       },
       {
-        "name": "coruja-negar",
-        "value": "negar .9s both (vai em var(--suave) a -8°, volta na mola)",
-        "purpose": "Senha errada: a coruja inclina a cabeça e volta."
+        "name": "templo-recusa",
+        "value": "color e stroke .35s var(--suave), por 1,6s",
+        "purpose": "Senha errada: o ΑΘΗΝΑ e o contorno do tímpano ficam em cinábrio por um instante."
       },
       {
-        "name": "coruja-olhos",
-        "value": "transform .35s var(--suave); arregalar .7s var(--suave)",
-        "purpose": "Ela fecha os olhos enquanto você digita e abre bem na senha certa."
-      },
-      {
-        "name": "fechar-meandro",
-        "value": "stroke-dashoffset .9s var(--suave), stroke .6s var(--suave)",
-        "purpose": "Na senha certa, o meandro do medalhão da entrada se fecha em azul."
+        "name": "templo-aceita",
+        "value": "transform .9s var(--suave) (scaleY de 0 a 1, do topo do tímpano)",
+        "purpose": "Senha certa: o tímpano se pinta de Azul Pigmento do topo para baixo, e a entrada espera .95s antes de se desfazer."
       },
       {
         "name": "afastar-entrada",
@@ -1137,14 +1157,14 @@
   ],
   "narrative": {
     "northStar": "A Policromia Contida",
-    "overview": "O painel é um templo grego visto de perto, em mármore e tinta. Os templos eram pintados; aqui a pintura foi reduzida ao essencial: um mármore frio de dia e uma noite azul-escura quase preta, o azul egípcio como único acento e o meandro como ornamento e como medida. O tema segue o aparelho do dono (`prefers-color-scheme`); os dois temas trocam só os valores das mesmas custom properties.\n\nA densidade é de ferramenta. A casca é do mesmo mármore, com um meandro fino na borda (embaixo do topo no celular, descendo pelo trilho no PC); cada tela abre com o nome na letra de pedra sobre uma faixa de meandro, e cada módulo é uma placa de mármore com a chave do meandro antes do título. O estado se lê em um olhar pelos medalhões, cujo meandro da borda se pinta de azul até o valor, e pela crepidoma das zonas, a escada do templo em 3D, um degrau por zona e um ponto por container. Os pigmentos antigos (malaquita, ocre e cinábrio) só aparecem para dizer o estado.\n\nO sistema recusa, por decisão do dono, a cara de SaaS genérico (o dashboard de cartões cinza), a Grécia de souvenir (colunas de enfeite, dourado, creme) e o que pareça desenho animado, jogo ou fantasia. O movimento é fluido e quieto no dia a dia; a cena fica para os momentos que importam: entrar pela coruja de Atena, chegar uma aprovação, um agendamento rodar, o PC ligar, uma zona ter problema.",
+    "overview": "O painel é um templo grego visto de perto, em mármore e tinta. Os templos eram pintados; aqui a pintura foi reduzida ao essencial: um mármore frio de dia e uma noite azul-escura quase preta, o azul egípcio como único acento e o meandro como ornamento e como medida. O tema segue o aparelho do dono (`prefers-color-scheme`); os dois temas trocam só os valores das mesmas custom properties.\n\nA densidade é de ferramenta. A casca é do mesmo mármore, com um meandro fino na borda (embaixo do topo no celular, descendo pelo trilho no PC); cada tela abre com o nome na letra de pedra sobre uma faixa de meandro, e cada módulo é uma placa de mármore com a chave do meandro antes do título. O estado se lê em um olhar pelos medalhões, cujo meandro da borda se pinta de azul até o valor, e pela crepidoma das zonas, a escada do templo em 3D, um degrau por zona e um ponto por container. Os pigmentos antigos (malaquita, ocre e cinábrio) só aparecem para dizer o estado.\n\nO sistema recusa, por decisão do dono, a cara de SaaS genérico (o dashboard de cartões cinza), a Grécia de souvenir (colunas de enfeite, dourado, creme) e o que pareça desenho animado, jogo ou fantasia. O movimento é fluido e quieto no dia a dia; a cena fica para os momentos que importam: entrar pela construção do templo, chegar uma aprovação, um agendamento rodar, o PC ligar, uma zona ter problema.",
     "keyCharacteristics": [
       "Mármore frio de dia, noite azul-escura à noite; a casca no mesmo mármore, com o meandro fino na borda.",
       "O azul egípcio é o único acento: a ação principal, a tela ativa, o foco e o que mede.",
       "Malaquita, ocre e cinábrio só como pontos de estado, sempre com o texto do lado; o ocre também na faixa de aprovações.",
       "O meandro é ornamento (a borda da casca, a faixa do nome da tela, a chave do módulo) e medida (o anel dos medalhões, o medidor).",
       "A crepidoma das zonas em 3D é a assinatura e a única profundidade de verdade.",
-      "Commissioner, de um tipógrafo grego, com as serifas de pedra nos títulos e números; caixa-alta só nas inscrições ΑΘΗΝΑ e ΑΘΕ.",
+      "Commissioner, de um tipógrafo grego, com as serifas de pedra nos títulos e números; caixa-alta só na inscrição ΑΘΗΝΑ.",
       "Ícones de traço fino com a área \"pintada\" que acende na tela ativa.",
       "Ease-out no dia a dia, uma mola amortecida só no que assenta; com `prefers-reduced-motion`, nada se move.",
       "Sem dependências: fonte, desenhos e ícones servidos pelo próprio painel, sob CSP `default-src 'self'`."
@@ -1162,7 +1182,7 @@
       },
       {
         "name": "A Regra do Ornamento Mudo",
-        "body": "A Tinta de Ornamento (2,5:1 sobre a placa) é só para o ornamento (o meandro fino, a íris da coruja), nunca para texto. Todo texto usa Tinta ou Tinta Segunda (6,2:1 sobre a placa de dia, 7,7:1 à noite).",
+        "body": "A Tinta de Ornamento (2,5:1 sobre a placa) é só para o ornamento (o meandro fino, a geometria da entrada), nunca para texto. Todo texto usa Tinta ou Tinta Segunda (6,2:1 sobre a placa de dia, 7,7:1 à noite).",
         "section": "colors"
       },
       {
@@ -1172,7 +1192,7 @@
       },
       {
         "name": "A Regra da Inscrição",
-        "body": "A caixa-alta só existe nas inscrições gregas: o ΑΘΗΝΑ da marca e o ΑΘΕ da moeda na entrada. Títulos, rótulos, selos, nomes da barra e grupos do trilho ficam em caixa comum; nenhum estilo usa `text-transform: uppercase`.",
+        "body": "A caixa-alta só existe na inscrição grega: o ΑΘΗΝΑ da marca. Títulos, rótulos, selos, nomes da barra e grupos do trilho ficam em caixa comum; nenhum estilo usa `text-transform: uppercase`.",
         "section": "typography"
       },
       {
@@ -1207,7 +1227,7 @@
       },
       {
         "name": "A Regra da Mola que Assenta",
-        "body": "A mola é só do que assenta no lugar: o marcador da tela ativa, as janelas, a folha, os avisos, os degraus da crepidoma, a seta dos detalhes, o ponto da trava, os pontos das zonas ao chegar e a cabeça da coruja que volta. Todo o resto é ease-out em `--suave`. Nada de quique, tremor ou cascata de módulos.",
+        "body": "A mola é só do que assenta no lugar: o marcador da tela ativa, as janelas, a folha, os avisos, os degraus da crepidoma, a seta dos detalhes, o ponto da trava, e os pontos das zonas ao chegar. Todo o resto é ease-out em `--suave`. Nada de quique, tremor ou cascata de módulos.",
         "section": "components"
       },
       {
@@ -1217,7 +1237,7 @@
       },
       {
         "name": "A Regra da Cena nos Momentos",
-        "body": "A cena só acontece quando importa: ao entrar, a coruja se desenha traço a traço (2.7s), fecha os olhos enquanto você digita, inclina a cabeça e volta na mola na senha errada, abre bem os olhos na certa e o meandro do medalhão se fecha em azul antes de a entrada se desfazer e o painel chegar, com os pontos das zonas aparecendo um a um; quando chega uma aprovação, uma luz passa pela faixa e a coroa se redesenha, uma vez; quando um agendamento roda, a sombra do relógio de sol dá a volta (2.2s); quando o PC liga, o anel dele se pinta de novo; a zona com problema escorrega para o lado.",
+        "body": "A cena só acontece quando importa: ao entrar, o templo se constrói em três atos (4,3s: a geometria se traça, com o arco do compasso; a obra sobe, os degraus, as colunas do centro para fora, o entablamento e as duas linhas do frontão que se encontram no topo; a geometria recua e o ΑΘΗΝΑ chega letra a letra), sem nada que reaja à digitação; na senha errada, a inscrição fica em cinábrio por um instante, e na certa o tímpano se pinta de azul antes de a entrada se desfazer e o painel chegar, com os pontos das zonas aparecendo um a um; quando chega uma aprovação, uma luz passa pela faixa e a coroa se redesenha, uma vez; quando um agendamento roda, a sombra do relógio de sol dá a volta (2.2s); quando o PC liga, o anel dele se pinta de novo; a zona com problema escorrega para o lado.",
         "section": "components"
       },
       {
@@ -1240,7 +1260,7 @@
       "**Do** manter os alvos de toque em 2.75rem no toque grosso e a barra embaixo no celular."
     ],
     "donts": [
-      "**Don't** usar caixa-alta fora das inscrições gregas (ΑΘΗΝΑ, ΑΘΕ), nem `text-transform: uppercase`.",
+      "**Don't** usar caixa-alta fora das inscrições gregas (ΑΘΗΝΑ), nem `text-transform: uppercase`.",
       "**Don't** trazer um segundo acento, nem pintar com malaquita, ocre ou cinábrio o que não é estado (a única exceção é o ocre das aprovações).",
       "**Don't** escrever texto na Tinta de Ornamento.",
       "**Don't** medir com barra lisa ou anel liso: a medida é o meandro pintado.",

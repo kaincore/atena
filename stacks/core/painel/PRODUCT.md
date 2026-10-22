@@ -36,7 +36,7 @@ O painel é o servidor no navegador e no celular (PWA): o estado da máquina e d
 
 - O nome é Atena (o servidor e a assistente).
 - O painel tem identidade própria, separada da do README (que é neon com tema grego): decisão do dono.
-- O painel é "meio grego" desde 2026-10-22, por pedido do dono: elegante e sofisticado, com o grego como sistema (as cores dos templos pintados, o meandro, a letra de inscrição, a coruja e a oliveira de Atena), nunca como fantasia.
+- O painel é "meio grego" desde 2026-10-22, por pedido do dono: elegante e sofisticado, com o grego como sistema (as cores dos templos pintados, o meandro, a letra de inscrição, a arquitetura do templo), nunca como fantasia nem personagem.
 - O que o dono marcou como errado: cara de SaaS genérico, ser ruim de usar no celular, e ser temático demais (parecer jogo ou fantasia em vez de ferramenta).
 - Intensidade: "show" nos momentos certos (entrar, um alerta, uma aprovação, um agendamento que roda); o resto limpo e rápido.
 

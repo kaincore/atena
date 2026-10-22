@@ -7,6 +7,7 @@ colors:
   azul-forte: "#1a3275"
   azul-claro: "#e9edf7"
   azul-tinta: "#f7f8fc"
+  azul-pigmento: "#24418f"
   foco: "#24418f"
   malaquita: "#2b8059"
   malaquita-tinta: "#1c6946"
@@ -33,6 +34,7 @@ colors:
   azul-forte-escuro: "#bfcdf7"
   azul-claro-escuro: "#1b2441"
   azul-tinta-escuro: "#0b0f1a"
+  azul-pigmento-escuro: "#3556b8"
   foco-escuro: "#a3b5f3"
   malaquita-escuro: "#57b98a"
   malaquita-tinta-escuro: "#7fd0a8"
@@ -365,7 +367,7 @@ O painel é um templo grego visto de perto, em mármore e tinta. Os templos eram
 
 A densidade é de ferramenta. A casca é do mesmo mármore, com um meandro fino na borda (embaixo do topo no celular, descendo pelo trilho no PC); cada tela abre com o nome na letra de pedra sobre uma faixa de meandro, e cada módulo é uma placa de mármore com a chave do meandro antes do título. O estado se lê em um olhar pelos medalhões, cujo meandro da borda se pinta de azul até o valor, e pela crepidoma das zonas, a escada do templo em 3D, um degrau por zona e um ponto por container. Os pigmentos antigos (malaquita, ocre e cinábrio) só aparecem para dizer o estado.
 
-O sistema recusa, por decisão do dono, a cara de SaaS genérico (o dashboard de cartões cinza), a Grécia de souvenir (colunas de enfeite, dourado, creme) e o que pareça desenho animado, jogo ou fantasia. O movimento é fluido e quieto no dia a dia; a cena fica para os momentos que importam: entrar pela coruja de Atena, chegar uma aprovação, um agendamento rodar, o PC ligar, uma zona ter problema.
+O sistema recusa, por decisão do dono, a cara de SaaS genérico (o dashboard de cartões cinza), a Grécia de souvenir (colunas de enfeite, dourado, creme) e o que pareça desenho animado, jogo ou fantasia. O movimento é fluido e quieto no dia a dia; a cena fica para os momentos que importam: entrar pela construção do templo, chegar uma aprovação, um agendamento rodar, o PC ligar, uma zona ter problema.
 
 **Key Characteristics:**
 - Mármore frio de dia, noite azul-escura à noite; a casca no mesmo mármore, com o meandro fino na borda.
@@ -373,7 +375,7 @@ O sistema recusa, por decisão do dono, a cara de SaaS genérico (o dashboard de
 - Malaquita, ocre e cinábrio só como pontos de estado, sempre com o texto do lado; o ocre também na faixa de aprovações.
 - O meandro é ornamento (a borda da casca, a faixa do nome da tela, a chave do módulo) e medida (o anel dos medalhões, o medidor).
 - A crepidoma das zonas em 3D é a assinatura e a única profundidade de verdade.
-- Commissioner, de um tipógrafo grego, com as serifas de pedra nos títulos e números; caixa-alta só nas inscrições ΑΘΗΝΑ e ΑΘΕ.
+- Commissioner, de um tipógrafo grego, com as serifas de pedra nos títulos e números; caixa-alta só na inscrição ΑΘΗΝΑ.
 - Ícones de traço fino com a área "pintada" que acende na tela ativa.
 - Ease-out no dia a dia, uma mola amortecida só no que assenta; com `prefers-reduced-motion`, nada se move.
 - Sem dependências: fonte, desenhos e ícones servidos pelo próprio painel, sob CSP `default-src 'self'`.
@@ -383,6 +385,7 @@ O sistema recusa, por decisão do dono, a cara de SaaS genérico (o dashboard de
 Uma paleta de templo pintado, mas contida: neutros de mármore (de dia) ou de noite azul (à noite) quase sem croma, um único acento azul e três pigmentos que só falam de estado. Todas as cores são custom properties em `:root`; o tema escuro troca só os valores, sob `@media (prefers-color-scheme: dark)`. As chaves `-escuro` do frontmatter são esses valores do tema escuro.
 
 ### Primary
+- **Azul Pigmento** (#24418f; #3556b8 à noite): o azul egípcio como tinta de parede, só no tímpano da entrada quando a senha está certa.
 - **Azul Egípcio** (#24418f; #a3b5f3 à noite): a face da tecla principal, o texto e o ícone da tela ativa, links, seleção de texto, cursor, a chave do meandro antes de cada título, a tinta do anel dos medalhões e do medidor, a trava ligada, as próximas vezes no relógio de sol, o meandro que fecha na entrada e o ponto de informação (em andamento, este aparelho).
 - **Azul Fundo** (#1a3275; #bfcdf7 à noite): só o hover da tecla principal.
 - **Véu Azul** (#e9edf7; #1b2441 à noite): o fundo do que está escolhido ou sob o dedo: o marcador da tela ativa na barra e no trilho, a tecla do "Mais" ativa, o item marcado da paleta, a trava ligada, o degrau aceso da crepidoma e a linha dele na legenda.
@@ -403,13 +406,13 @@ Uma paleta de templo pintado, mas contida: neutros de mármore (de dia) ou de no
 ### Neutral
 - **Chão de Mármore** (#f0f1ef; Noite Azul #0b0f1a): o fundo da página e o `theme-color` do navegador.
 - **Casca** (#f6f7f6; #0e1320 à noite): o topo do celular e o trilho do PC.
-- **Placa** (#fcfcfb; #121827 à noite): módulos, janelas, teclas, o disco da entrada e as faces dos degraus.
+- **Placa** (#fcfcfb; #121827 à noite): módulos, janelas, teclas e as faces dos degraus.
 - **Placa Funda** (#f4f5f4; #0e1320 à noite): campos em repouso, hover de teclas, as teclas do "Mais", as marcas do esqueleto e o texto de um pedido.
 - **Veio** (#e1e4e2; #1f2738 à noite): a borda dos módulos e das janelas, as divisórias entre itens, a régua depois do título do módulo, o fio das sublistas e o meandro apagado dos medalhões.
 - **Veio Forte** (#b8bfbb; #374157 à noite): o contorno das teclas, dos campos e das travas, o fundo apagado do medidor, a borda do relógio de sol e a barra de rolagem.
-- **Tinta** (#151b27; #e7e9ee à noite): o texto principal, o traço da coruja e o gnômon do relógio.
+- **Tinta** (#151b27; #e7e9ee à noite): o texto principal, o traço da obra do templo na entrada e o gnômon do relógio.
 - **Tinta Segunda** (#556070; #a3acba à noite): rótulos, detalhes, códigos, placeholders, os ícones em repouso e as folhas do ramo de oliveira.
-- **Tinta de Ornamento** (#9aa3ad; #4f5a72 à noite): só o meandro fino da casca, da faixa do nome da tela, do relógio de sol, do anel ainda aberto da entrada e da moldura da entrada no PC, e a íris da coruja (a 45%).
+- **Tinta de Ornamento** (#9aa3ad; #4f5a72 à noite): só o meandro fino da casca, da faixa do nome da tela, do relógio de sol e da moldura da entrada no PC, e a geometria da prancha da entrada (a 35%, depois que a obra fica pronta).
 - **Noite** (#141a27; #06090f no tema escuro) e **Tinta da Noite** (#e4e8ee): o fundo e o texto dos textos de máquina (registros e avisos), escuros nos dois temas.
 
 ### Named Rules
@@ -417,7 +420,7 @@ Uma paleta de templo pintado, mas contida: neutros de mármore (de dia) ou de no
 
 **A Regra dos Pigmentos de Estado.** Malaquita, ocre e cinábrio só dizem estado: como pontos, sempre com o texto do lado escrito na tinta deles; na tecla de perigo e no erro; e no anel ou no medidor, que só trocam o azul por ocre perto do limite e por cinábrio passado dele. Fora do estado, só o ocre aparece, e só nas aprovações: a faixa e a contagem.
 
-**A Regra do Ornamento Mudo.** A Tinta de Ornamento (2,5:1 sobre a placa) é só para o ornamento (o meandro fino, a íris da coruja), nunca para texto. Todo texto usa Tinta ou Tinta Segunda (6,2:1 sobre a placa de dia, 7,7:1 à noite).
+**A Regra do Ornamento Mudo.** A Tinta de Ornamento (2,5:1 sobre a placa) é só para o ornamento (o meandro fino, a geometria da entrada), nunca para texto. Todo texto usa Tinta ou Tinta Segunda (6,2:1 sobre a placa de dia, 7,7:1 à noite).
 
 **A Regra da Noite dos Textos de Máquina.** Registros e avisos ficam na Noite nos dois temas. O ponto do aviso usa os pigmentos da noite fixos (#a3b5f3 informação, #57b98a ok, #e8705c erro), porque o fundo dele não muda com o tema.
 
@@ -443,7 +446,7 @@ Uma paleta de templo pintado, mas contida: neutros de mármore (de dia) ou de no
 - **Máquina** (monoespaçada do sistema): registros a .74rem, altura 1.55; o editor de stacks a .8rem, altura 1.5; as linhas da Atividade em 500 a .78rem; o caminho dos arquivos em 500 a .78rem; o atalho (`kbd`) em 600 a .66rem.
 
 ### Named Rules
-**A Regra da Inscrição.** A caixa-alta só existe nas inscrições gregas: o ΑΘΗΝΑ da marca e o ΑΘΕ da moeda na entrada. Títulos, rótulos, selos, nomes da barra e grupos do trilho ficam em caixa comum; nenhum estilo usa `text-transform: uppercase`.
+**A Regra da Inscrição.** A caixa-alta só existe na inscrição grega: o ΑΘΗΝΑ da marca. Títulos, rótulos, selos, nomes da barra e grupos do trilho ficam em caixa comum; nenhum estilo usa `text-transform: uppercase`.
 
 **A Regra da Serifa de Pedra.** A serifa de pedra (FLAR 100, VOLM 100) é dos títulos, dos números e da inscrição; os rótulos usam a meia pedra (FLAR 100, VOLM 50); o corpo e as unidades ao lado dos números, a letra lisa (FLAR 0, VOLM 0).
 
@@ -459,7 +462,7 @@ O celular e o PC têm o mesmo peso; nenhum é a versão capada do outro.
 
 **Módulo estreito.** Cada módulo é um container de CSS (`container: modulo`). Abaixo de 26rem, o que ele mede desce para baixo do título, inteiro, alinhado depois da chave; abaixo de 30rem, as linhas com mais de uma tecla põem as teclas embaixo do nome; abaixo de 19rem, a crepidoma empilha a escada sobre a legenda; a partir de 46rem, as linhas de registro põem o nome (15rem) e o detalhe lado a lado.
 
-**A entrada.** A frente fica no centro da tela, com até 22rem: o medalhão da coruja (min(76vw, 17rem); 19.5rem no PC), o ΑΘΗΝΑ, o rótulo, o campo e a tecla principal, ambos com 3rem de altura. No PC, duas faixas de meandro fino emolduram a página, a 2rem de cima e de baixo e 2.5rem dos lados.
+**A entrada.** A frente fica no centro da tela, com até 22rem: a prancha do templo (min(88vw, 22rem); 30rem no PC), o ΑΘΗΝΑ, o rótulo, o campo e a tecla principal, ambos com 3rem de altura. No PC, duas faixas de meandro fino emolduram a página, a 2rem de cima e de baixo e 2.5rem dos lados.
 
 **Ritmo.** Teclas a .45rem umas das outras (.4rem nas linhas); o módulo tem 1.15rem em cima e 1.25rem nos lados e embaixo; o cabeçalho do módulo fica 1rem acima do conteúdo; os itens têm .75rem de respiro e 1px de Veio entre eles; os medalhões ficam numa grade auto-fit de no mínimo 8.2rem, com 1.2rem por 1.3rem de folga.
 
@@ -477,7 +480,6 @@ O mármore é plano. A profundidade vem das camadas de tom (o chão, a casca um 
 - **Sombra Alta** (`box-shadow: 0 30px 80px -24px rgb(10 14 26 / .45)`): janelas, a folha "Mais" e a paleta, sobre um fundo de `rgb(10 14 26 / .42)` com desfoque de 3px.
 - **Brilho da Tecla Principal** (`box-shadow: 0 1px 0 rgb(255 255 255 / .12) inset, 0 6px 16px -8px color-mix(in srgb, var(--azul) 70%, transparent)`): só na tecla azul.
 - **Sombra do Aviso** (`box-shadow: 0 18px 40px -16px rgb(0 0 0 / .55)`): os avisos na Noite.
-- **Disco da Entrada** (`filter: drop-shadow(0 14px 28px rgb(21 27 39 / .12))`): o medalhão da coruja.
 - **Anel de Foco do Campo** (`box-shadow: 0 0 0 4px color-mix(in srgb, var(--azul) 14%, transparent)`): o campo em foco, junto com a borda azul.
 - **Halo do Cinábrio** (`box-shadow: 0 0 0 3px color-mix(in srgb, var(--cinabrio) 18%, transparent)`): só o ponto de falha.
 
@@ -494,7 +496,7 @@ Cantos discretos e quase iguais: 6px em quase tudo (módulos, teclas, campos, tr
 
 **Os ícones.** Desenhados em `pictos.js`, numa grade de 24, com traço de 1.5 (1.05 nos finos), pontas e quinas redondas, em `currentColor`. As coisas gregas entram no lugar das de sempre quando dizem o mesmo: o Início é a frente do templo, as Aprovações uma coroa de louros com o visto, os Serviços uma ânfora, o Sistema a engrenagem de Anticítera, o Histórico uma ampulheta, os Arquivos um pergaminho. A área "tinta" (o tímpano, a faixa da ânfora, o líquido do frasco) fica vazia em repouso e se pinta a 16% na tela ativa.
 
-**A coruja.** A coruja de Atena das moedas de Atenas: cabeça de frente, corpo de perfil, num ramo de oliveira, em traço de gravura de uma cor só (Tinta a 1.35, finos a .85), com as folhas e as azeitonas em Tinta Segunda. Cada traço tem `pathLength` 1, para se desenhar do começo ao fim.
+**O templo da entrada.** A fachada de um templo hexastilo desenhada como numa prancha de arquiteto (`templo()` em `desenhos.js`, viewBox de 292 por 200). A geometria vem primeiro e é de verdade: um quadrado de lado 136 sobre a base e o arco do compasso centrado no meio da base dele, que estende o quadrado até o retângulo de ouro de 220 por 136, o corpo da fachada (do chão à cornija). Sobre ele, a obra a tinta (Tinta a 1.1): os três degraus da crepidoma, as seis colunas com leve êntase, duas estrias e o capitel dórico (equino e ábaco), a arquitrave, o friso com os tríglifos sobre cada coluna e no meio de cada vão (Tinta Segunda a .45), a cornija e o frontão de 14°. O tímpano tem o contorno fino e, por baixo, a tinta de Azul Pigmento que só aparece na senha certa. Cada traço tem `pathLength` 1, atraso e duração próprios.
 
 ### Named Rules
 **A Regra do Meandro que Mede.** O meandro é ornamento e é medida. Uma fração se mostra pintando o meandro (o anel do medalhão, o medidor), nunca numa barra lisa ou num anel liso; e o ornamento é sempre o mesmo traço, nunca um friso de outra forma.
@@ -563,7 +565,7 @@ O mostrador da agenda: 24 horas num disco com o meandro circular na borda, marca
 No topo de qualquer tela quando há pedido esperando: uma faixa de Ocre Claro com borda de Ocre a 38%, o ícone da coroa de louros em Ocre, "N aprovações esperando você" em 600 a .98rem e, à direita, "Ver" com a seta em Tinta de Ocre. No hover, a borda fica Ocre cheia. Atravessa todas as colunas no PC.
 
 ### A Entrada
-A coruja de Atena num medalhão de Placa, entre dois aros de Veio Forte, com o meandro circular em Tinta de Ornamento deixado aberto num trecho e a inscrição ΑΘΕ em pé à direita, como na moeda. Embaixo, o ΑΘΗΝΑ a 1.7rem, o campo da senha e a tecla principal Entrar.
+A prancha do templo direto sobre o chão, sem moldura: a geometria em Tinta de Ornamento recuada a 35% e a obra a tinta. Embaixo, o ΑΘΗΝΑ a 1.7rem, o campo da senha e a tecla principal Entrar. Na senha errada, o ΑΘΗΝΑ e o contorno do tímpano ficam em cinábrio por 1,6 s; na certa, o tímpano se pinta de Azul Pigmento do topo para baixo e o ΑΘΗΝΑ fica azul.
 
 ### Avisos e Textos de Máquina
 - **Aviso:** retângulo de Noite com cantos de 10px, texto a .85rem em Tinta da Noite e um ponto de .5rem à esquerda (azul informação, malaquita ok, cinábrio erro, nos tons da noite). Fica acima da barra no celular e no canto de baixo à direita no PC; some em 4s (8s se for erro). Com uma janela aberta, vai dentro dela.
@@ -581,18 +583,18 @@ Três curvas, todas em custom properties: `--suave` (cubic-bezier(.22, 1, .36, 1
 - **Janelas, folha e avisos:** chegam na mola (.5s, .55s, .55s); as janelas e os avisos vêm de um desfoque de 4px.
 - **Contínuos:** só os que leem um dado ou dão vida à assinatura: a escada respira devagar (12s, ida e volta), o ponto ruim pulsa (1.8s), a roseta gira na velocidade da ventoinha.
 
-**A Regra da Mola que Assenta.** A mola é só do que assenta no lugar: o marcador da tela ativa, as janelas, a folha, os avisos, os degraus da crepidoma, a seta dos detalhes, o ponto da trava, os pontos das zonas ao chegar e a cabeça da coruja que volta. Todo o resto é ease-out em `--suave`. Nada de quique, tremor ou cascata de módulos.
+**A Regra da Mola que Assenta.** A mola é só do que assenta no lugar: o marcador da tela ativa, as janelas, a folha, os avisos, os degraus da crepidoma, a seta dos detalhes, o ponto da trava, e os pontos das zonas ao chegar. Todo o resto é ease-out em `--suave`. Nada de quique, tremor ou cascata de módulos.
 
 **A Regra do Que Não Fica.** Animação de opacidade ou desfoque num módulo, na tela ou num degrau usa `animation-fill-mode: backwards` (ou nenhum), nunca `forwards` nem `both`: uma opacidade ou um filtro que ficasse no elemento achataria o 3D da crepidoma.
 
-**A Regra da Cena nos Momentos.** A cena só acontece quando importa: ao entrar, a coruja se desenha traço a traço (2.7s), fecha os olhos enquanto você digita, inclina a cabeça e volta na mola na senha errada, abre bem os olhos na certa e o meandro do medalhão se fecha em azul antes de a entrada se desfazer e o painel chegar, com os pontos das zonas aparecendo um a um; quando chega uma aprovação, uma luz passa pela faixa e a coroa se redesenha, uma vez; quando um agendamento roda, a sombra do relógio de sol dá a volta (2.2s); quando o PC liga, o anel dele se pinta de novo; a zona com problema escorrega para o lado.
+**A Regra da Cena nos Momentos.** A cena só acontece quando importa: ao entrar, o templo se constrói em três atos (4,3s: a geometria se traça, com o arco do compasso; a obra sobe, os degraus, as colunas do centro para fora, o entablamento e as duas linhas do frontão que se encontram no topo; a geometria recua e o ΑΘΗΝΑ chega letra a letra), sem nada que reaja à digitação; na senha errada, a inscrição fica em cinábrio por um instante, e na certa o tímpano se pinta de azul antes de a entrada se desfazer e o painel chegar, com os pontos das zonas aparecendo um a um; quando chega uma aprovação, uma luz passa pela faixa e a coroa se redesenha, uma vez; quando um agendamento roda, a sombra do relógio de sol dá a volta (2.2s); quando o PC liga, o anel dele se pinta de novo; a zona com problema escorrega para o lado.
 
 **A Regra do Parado.** Com `prefers-reduced-motion`, nada se move: animações, transições e View Transitions são desligadas, os traços aparecem já desenhados e o ícone que lia só fica a 60%.
 
 ### Proveniência
 - **Fonte:** Commissioner, de Kostas Bartsokas, sob a SIL Open Font License 1.1, tirada do Fontsource 5.2.8. Os arquivos ficam em `app/public/fontes` (`commissioner-latin.woff2`, `commissioner-grego.woff2`) com a licença ao lado (`commissioner-LICENSE.txt`).
-- **Ícone do app:** `app/public/icone.svg` é desenhado à mão: a cabeça da coruja em #eff2fb sobre um quadrado de cantos redondos em Azul Egípcio, com o meandro circular a 55%. `app/public/icone-192.png` e `app/public/icone-512.png` (o de 512 também como ícone mascarável) são renderizados desse SVG com o Chromium sem interface. Não há imagem gerada no painel.
-- **Desenhos e ícones:** o meandro, os medalhões, a crepidoma, o relógio de sol, a coruja e os pictogramas são montados em código (`desenhos.js`, `pictos.js`, `estilo.css`) a partir dos dados de verdade; nada vem de biblioteca nem de outro endereço.
+- **Ícone do app:** `app/public/icone.svg` é desenhado à mão: a chave do meandro (uma volta, num traço só de 30) em #f3f5f9 sobre um quadrado de cantos redondos em Azul Egípcio. `app/public/icone-192.png` e `app/public/icone-512.png` (o de 512 também como ícone mascarável) são renderizados desse SVG com o Chromium sem interface. Não há imagem gerada no painel.
+- **Desenhos e ícones:** o meandro, os medalhões, a crepidoma, o relógio de sol, o templo da entrada e os pictogramas são montados em código (`desenhos.js`, `pictos.js`, `estilo.css`) a partir dos dados de verdade; nada vem de biblioteca nem de outro endereço.
 
 ## Do's and Don'ts
 
@@ -610,7 +612,7 @@ Três curvas, todas em custom properties: `--suave` (cubic-bezier(.22, 1, .36, 1
 - **Do** manter os alvos de toque em 2.75rem no toque grosso e a barra embaixo no celular.
 
 ### Don't:
-- **Don't** usar caixa-alta fora das inscrições gregas (ΑΘΗΝΑ, ΑΘΕ), nem `text-transform: uppercase`.
+- **Don't** usar caixa-alta fora das inscrições gregas (ΑΘΗΝΑ), nem `text-transform: uppercase`.
 - **Don't** trazer um segundo acento, nem pintar com malaquita, ocre ou cinábrio o que não é estado (a única exceção é o ocre das aprovações).
 - **Don't** escrever texto na Tinta de Ornamento.
 - **Don't** medir com barra lisa ou anel liso: a medida é o meandro pintado.
