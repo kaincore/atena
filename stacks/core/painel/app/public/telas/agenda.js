@@ -1,5 +1,5 @@
 // Agenda: o agendador do painel roda as ações na hora marcada.
-import { api, atualizar, avisar, cartao, consultar, data, estadoTexto, falha, h, modulo } from "../comum.js";
+import { api, atualizar, avisar, campo, cartao, consultar, data, estadoTexto, falha, h, item, itens, ledEstado, modulo } from "../comum.js";
 import { visorAgenda } from "../visor.js";
 
 const DIAS = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
@@ -75,33 +75,30 @@ function cartaoNovoAgendamento(agendaveis, stacks, projetos) {
       agenda = agendaVazia();
       atualizar();
     } },
-      h("div", { class: "filtros" },
-        h("label", null, "Fazer ", opcoes("acao", Object.keys(agendaveis).map((n) => [n, NOMES_AGENDAVEIS[n] ?? n]), { onchange: muda })),
-        alvo && h("label", null, alvo === "stack" ? "Serviço " : "App ", alvos.length ? opcoes("alvo", alvos.map((x) => [x, x]))
-          : h("input", { name: "alvo", value: a.alvo, required: true, autocomplete: "off" }))),
-      h("div", { class: "filtros" },
-        h("label", null, "Quando ", opcoes("tipo", [["semana", "toda semana"], ["mes", "todo mês"], ["uma_vez", "uma vez"]], { onchange: muda })),
-        a.tipo === "uma_vez" && h("input", { type: "datetime-local", name: "em", value: a.em, required: true }),
-        a.tipo === "mes" && h("label", null, "dia ", h("input", { type: "number", name: "dia", min: "1", max: "31", value: String(a.dia), required: true })),
-        a.tipo !== "uma_vez" && h("label", null, "às ", h("input", { type: "time", name: "hora", value: a.hora, required: true }))),
-      a.tipo === "semana" && h("div", { class: "filtros" },
-        DIAS.map((d, i) => h("label", { class: "opcao" }, h("input", { type: "checkbox", name: "dias", value: String(i), checked: a.dias.includes(i) }), ` ${d}`))),
-      a.tipo === "semana" && h("div", { class: "botoes" },
-        h("button", { type: "button", class: "discreto", onclick: dias([1, 2, 3, 4, 5]) }, "Dias úteis"),
-        h("button", { type: "button", class: "discreto", onclick: dias([0, 1, 2, 3, 4, 5, 6]) }, "Todo dia")),
-      h("div", { class: "filtros" },
-        h("label", null, "Aviso no celular ", opcoes("aviso", Object.entries(NOMES_AVISO))),
-        h("label", null, "Se o painel estiver fora do ar, roda até ", opcoes("tolerancia", [[5, "5 min"], [15, "15 min"], [60, "1 h"], [240, "4 h"]]), " depois")),
-      h("label", null, "Nome ", h("input", { name: "nome", value: a.nome, maxlength: "80", placeholder: "automático", autocomplete: "off" })),
+      h("div", { class: "campos" },
+        campo("Fazer", opcoes("acao", Object.keys(agendaveis).map((n) => [n, NOMES_AGENDAVEIS[n] ?? n]), { onchange: muda })),
+        alvo && campo(alvo === "stack" ? "Serviço" : "App", alvos.length ? opcoes("alvo", alvos.map((x) => [x, x]))
+          : h("input", { name: "alvo", value: a.alvo, required: true, autocomplete: "off" })),
+        campo("Quando", opcoes("tipo", [["semana", "toda semana"], ["mes", "todo mês"], ["uma_vez", "uma vez"]], { onchange: muda })),
+        a.tipo === "uma_vez" && campo("Dia e hora", h("input", { type: "datetime-local", name: "em", value: a.em, required: true })),
+        a.tipo === "mes" && campo("Dia do mês", h("input", { type: "number", name: "dia", min: "1", max: "31", value: String(a.dia), required: true })),
+        a.tipo !== "uma_vez" && campo("Às", h("input", { type: "time", name: "hora", value: a.hora, required: true }))),
+      a.tipo === "semana" && h("div", { class: "campo largo", role: "group", "aria-label": "Dias da semana" },
+        h("span", { class: "rotulo" }, "Dias"),
+        h("div", { class: "travas" },
+          DIAS.map((d, i) => h("label", { class: "trava" },
+            h("input", { type: "checkbox", name: "dias", value: String(i), checked: a.dias.includes(i) }), h("span", null, d))),
+          h("button", { type: "button", class: "discreto", onclick: dias([1, 2, 3, 4, 5]) }, "Dias úteis"),
+          h("button", { type: "button", class: "discreto", onclick: dias([0, 1, 2, 3, 4, 5, 6]) }, "Todo dia"))),
+      h("div", { class: "campos" },
+        campo("Aviso no celular", opcoes("aviso", Object.entries(NOMES_AVISO))),
+        campo("Tolerância", opcoes("tolerancia", [[5, "5 min"], [15, "15 min"], [60, "1 h"], [240, "4 h"]])),
+        campo("Nome", h("input", { name: "nome", value: a.nome, maxlength: "80", placeholder: "automático", autocomplete: "off" }))),
       h("div", { class: "botoes" },
         h("button", { type: "submit", class: "principal" }, a.id ? "Gravar" : "Agendar"),
         a.id && h("button", { type: "button", class: "discreto", onclick: () => { agenda = agendaVazia(); refazer(); } }, "Cancelar edição"))),
-    h("p", { class: "fraco" }, "Passou da tolerância, a vez fica perdida e o celular fica sabendo: um \"ligar o PC às 19h\" não roda às 3h da manhã."));
+    h("p", { class: "fraco" }, "Se o painel estiver fora do ar na hora, ele roda até a tolerância depois. Passou dela, a vez fica perdida e o celular fica sabendo: um \"ligar o PC às 19h\" não roda às 3h da manhã."));
   return c;
-}
-
-function seloEstado(estado) {
-  return h("span", { class: `selo ${estado === "concluido" ? "ok" : estado === "executando" ? "neutro" : "ruim"}` }, estadoTexto(estado));
 }
 
 function itemAgendamento(a) {
@@ -116,26 +113,31 @@ function itemAgendamento(a) {
       setTimeout(atualizar, 3000);
     } else atualizar();
   };
-  return h("li", null,
-    h("div", { class: "stack-topo" },
-      h("span", null, h("strong", null, a.nome), " ", !a.ativo && h("span", { class: "selo neutro" }, feito ? "feito" : "pausado")),
-      h("span", { class: "botoes" },
-        h("button", { type: "button", class: "discreto", onclick: fazer("/api/agendamentos/rodar", { id: a.id }, `Rodar "${a.nome}" agora?`) }, "Rodar agora"),
-        !feito && h("button", { type: "button", class: "discreto", onclick: fazer("/api/agendamentos/ativar", { id: a.id, ativo: !a.ativo }) }, a.ativo ? "Pausar" : "Retomar"),
-        h("button", { type: "button", class: "discreto", onclick: () => {
-          const q = a.quando;
-          agenda = { ...agendaVazia(), id: a.id, nome: a.nome, acao: a.acao, alvo: Object.values(a.params)[0] ?? "", tipo: q.tipo,
-            dias: q.dias ?? [1, 2, 3, 4, 5], hora: q.hora ?? "19:00", em: q.em ? paraCampo(q.em) : "", dia: q.dia ?? 1,
-            aviso: a.aviso, tolerancia: a.tolerancia };
-          atualizar();
-          scrollTo({ top: 0, behavior: "smooth" });
-        } }, "Editar"),
-        h("button", { type: "button", class: "discreto perigo", onclick: fazer("/api/agendamentos/apagar", { id: a.id }, `Apagar "${a.nome}"?`) }, "Apagar"))),
-    h("div", null, descreverQuando(a.quando), h("small", null, ` · aviso ${NOMES_AVISO[a.aviso]} · tolerância ${a.tolerancia} min`)),
-    h("small", null, [a.ativo && a.proxima && `próxima: ${quandoTexto(a.proxima)}`, a.ultima && `última: ${data(a.ultima)} (${estadoTexto(a.ultimo_estado)})`].filter(Boolean).join(" · ")),
-    a.execucoes.length > 0 && h("details", null, h("summary", null, "Últimas execuções"),
-      h("ul", { class: "lista historico" }, a.execucoes.map((x) => h("li", null, seloEstado(x.estado), ` ${data(x.quando)}`,
-        x.resumo && h("div", { class: "fraco resumo" }, x.resumo))))));
+  return item({
+    led: a.ativo ? "ok" : "apagado", nome: h("strong", null, a.nome),
+    detalhe: [
+      h("div", null, `${a.ativo ? "" : feito ? "feito · " : "pausado · "}${descreverQuando(a.quando)} · aviso ${NOMES_AVISO[a.aviso]} · tolerância ${a.tolerancia} min`),
+      h("div", null, [a.ativo && a.proxima && `próxima: ${quandoTexto(a.proxima)}`, a.ultima && `última: ${data(a.ultima)} (${estadoTexto(a.ultimo_estado)})`].filter(Boolean).join(" · ")),
+    ],
+    acoes: [
+      h("button", { type: "button", class: "discreto", onclick: fazer("/api/agendamentos/rodar", { id: a.id }, `Rodar "${a.nome}" agora?`) }, "Rodar agora"),
+      !feito && h("button", { type: "button", class: "discreto", onclick: fazer("/api/agendamentos/ativar", { id: a.id, ativo: !a.ativo }) }, a.ativo ? "Pausar" : "Retomar"),
+      h("button", { type: "button", class: "discreto", onclick: () => {
+        const q = a.quando;
+        agenda = { ...agendaVazia(), id: a.id, nome: a.nome, acao: a.acao, alvo: Object.values(a.params)[0] ?? "", tipo: q.tipo,
+          dias: q.dias ?? [1, 2, 3, 4, 5], hora: q.hora ?? "19:00", em: q.em ? paraCampo(q.em) : "", dia: q.dia ?? 1,
+          aviso: a.aviso, tolerancia: a.tolerancia };
+        atualizar();
+        scrollTo({ top: 0, behavior: "smooth" });
+      } }, "Editar"),
+      h("button", { type: "button", class: "discreto perigo", onclick: fazer("/api/agendamentos/apagar", { id: a.id }, `Apagar "${a.nome}"?`) }, "Apagar"),
+    ],
+    extra: a.execucoes.length > 0 && h("details", null, h("summary", null, "Últimas execuções"),
+      itens(a.execucoes.map((x) => item({
+        led: ledEstado(x.estado), nome: data(x.quando), detalhe: estadoTexto(x.estado),
+        extra: x.resumo && h("div", { class: "fraco resumo" }, x.resumo),
+      })), null, "sub")),
+  });
 }
 
 let agendaRodouEm = 0;
@@ -148,10 +150,10 @@ export async function telaAgenda() {
   const projetos = apps.ok === false ? [] : apps.resultado.projetos.map((p) => p.projeto);
   const rodando = Date.now() - agendaRodouEm < 8000 || r.agendamentos.some((a) => a.execucoes[0]?.estado === "executando");
   const mostradorAgenda = modulo("Agenda", `${r.agendamentos.filter((a) => a.ativo).length} ativos`, visorAgenda(r.agendamentos, rodando));
+  mostradorAgenda.classList.add("largo");
   return [
     mostradorAgenda,
     cartaoNovoAgendamento(r.agendaveis, stacks, projetos),
-    cartao("Agendamentos", r.agendamentos.length ? h("ul", { class: "lista" }, r.agendamentos.map(itemAgendamento))
-      : h("p", { class: "fraco" }, "Nada agendado ainda.")),
+    cartao("Agendamentos", itens(r.agendamentos.map(itemAgendamento), "Nada agendado ainda.")),
   ];
 }
