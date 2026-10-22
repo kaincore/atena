@@ -1,6 +1,6 @@
 // Serviços: as zonas em vista explodida, os containers, os registros e o editor das stacks de apps.
-import { ORDEM_ZONAS, abrirJanela, atualizar, avisar, cartao, consultar, estadoContainer, falha, h, modulo, mudar,
-  semAcao, statusDocker } from "../comum.js";
+import { ORDEM_ZONAS, abrirJanela, atualizar, avisar, cartao, consultar, containerOk, falha, h, item, itens, modulo, mudar,
+  plural, porcento, semAcao, statusDocker, tamanhoDocker } from "../comum.js";
 import { abrirZona, marcarZonas, resumirZonas, tirarFoco } from "../zonas.js";
 import { vistaExplodida } from "../visor.js";
 
@@ -95,19 +95,17 @@ export function janelaEditor(stack) {
     fotos.replaceChildren(h("p", { class: "fraco" }, "Carregando…"));
     const r = await consultar("stack.fotos", { stack });
     if (r.ok === false) return fotos.replaceChildren(falha(r));
-    fotos.replaceChildren(h("h3", null, "Fotos (o arquivo antes de cada edição)"), r.resultado.fotos.length
-      ? h("ul", { class: "lista" }, r.resultado.fotos.map((f) => h("li", null,
-        h("div", { class: "stack-topo" },
-          h("span", null, f.arquivo, h("small", null, ` ${f.quando}${f.existia ? "" : " (o arquivo não existia)"}`)),
-          h("button", { type: "button", class: "discreto", onclick: async () => {
-            const x = await mudar("stack.desfazer", { stack, foto: f.foto }, `Voltar ${f.arquivo} como estava antes da edição de ${f.quando}?`);
-            if (x && x.ok !== false) {
-              if (x.resultado?.aviso) avisar(x.resultado.aviso, "erro");
-              verFotos();
-              if (aberto === f.arquivo) abrir(f.arquivo);
-            }
-          } }, "Desfazer")))))
-      : h("p", { class: "fraco" }, "Nenhuma edição guardada."));
+    fotos.replaceChildren(h("h3", null, "Fotos (o arquivo antes de cada edição)"), itens(r.resultado.fotos.map((f) => item({
+      nome: f.arquivo, detalhe: `${f.quando}${f.existia ? "" : " · o arquivo não existia"}`,
+      acoes: h("button", { type: "button", class: "discreto", onclick: async () => {
+        const x = await mudar("stack.desfazer", { stack, foto: f.foto }, `Voltar ${f.arquivo} como estava antes da edição de ${f.quando}?`);
+        if (x && x.ok !== false) {
+          if (x.resultado?.aviso) avisar(x.resultado.aviso, "erro");
+          verFotos();
+          if (aberto === f.arquivo) abrir(f.arquivo);
+        }
+      } }, "Desfazer"),
+    })), "Nenhuma edição guardada."));
   }
 
   abrirJanela(`Editar a stack ${stack}`,
@@ -123,12 +121,35 @@ export function janelaEditor(stack) {
 // O uso de CPU e RAM vem do docker stats, que leva uns 2 s: a tela sai com o estado dos containers e
 // o último uso visto, e o de agora entra quando chegar
 let consumoVisto = {};
-const textoConsumo = (c) => (c ? `CPU ${c.cpu} · RAM ${c.ram}` : "");
+const textoConsumo = (c) => (c ? ` · CPU ${porcento(c.cpu)} · RAM ${tamanhoDocker(c.ram)}` : "");
 
 function consumoDe(container, uso) {
   const el = h("span", { class: "consumo" }, textoConsumo(consumoVisto[container]));
   uso.then((x) => el.replaceChildren(textoConsumo(x[container])));
   return el;
+}
+
+const linhaContainer = (c, uso, nome = c.container, acoes = null) => item({
+  led: containerOk(c) ? "ok" : "ruim", nome, detalhe: [statusDocker(c.status), consumoDe(c.container, uso)], acoes,
+});
+
+// uma stack: com um container só (do mesmo nome), uma linha; com vários, a stack e os containers presos a ela
+function linhaStack(zona, stack, containers, uso) {
+  const acoes = [
+    zona === "apps" && h("button", { type: "button", class: "discreto", onclick: () => janelaEditor(stack) }, "Editar"),
+    h("button", { type: "button", class: "discreto", onclick: () => verLogs(stack) }, "Logs"),
+    h("button", { type: "button", class: "discreto", onclick: async () => {
+      if (await mudar("servico.reiniciar", { stack }, `Reiniciar ${stack}?`)) atualizar();
+    } }, "Reiniciar"),
+  ];
+  if (containers.length === 1 && containers[0].container === stack) return linhaContainer(containers[0], uso, h("strong", null, stack), acoes);
+  const ruins = containers.filter((c) => !containerOk(c)).length;
+  return item({
+    led: ruins ? "ruim" : "ok", nome: h("strong", null, stack), acoes,
+    detalhe: ruins ? `${ruins} de ${plural(containers.length, "container", "containers")} com problema`
+      : `${plural(containers.length, "container", "containers")} no ar`,
+    extra: itens(containers.map((c) => linhaContainer(c, uso)), null, "sub"),
+  });
 }
 
 export async function telaServicos() {
@@ -147,23 +168,9 @@ export async function telaServicos() {
   const foco = tirarFoco();
   if (foco) requestAnimationFrame(() => document.getElementById(`zona-${foco}`)?.scrollIntoView({ behavior: "smooth", block: "start" }));
   return [desenho, ordem.map((zona) => {
-    const stacks = Object.keys(zonas[zona]).length;
-    const containers = Object.values(zonas[zona]).flat().length;
-    const m = modulo(`Zona ${zona}`, `${stacks} ${stacks === 1 ? "stack" : "stacks"} · ${containers} containers`,
-    Object.entries(zonas[zona]).sort(([a], [b]) => a.localeCompare(b)).map(([stack, containers]) =>
-      h("div", { class: "stack" },
-        h("div", { class: "stack-topo" },
-          h("strong", null, stack),
-          h("span", { class: "botoes" },
-            zona === "apps" && h("button", { type: "button", class: "discreto", onclick: () => janelaEditor(stack) }, "Editar"),
-            h("button", { type: "button", class: "discreto", onclick: () => verLogs(stack) }, "Logs"),
-            h("button", { type: "button", onclick: async () => {
-              if (await mudar("servico.reiniciar", { stack }, `Reiniciar ${stack}?`)) atualizar();
-            } }, "Reiniciar"))),
-        h("ul", { class: "lista" }, containers.map((c) => h("li", null,
-          estadoContainer(c), c.container !== stack && ` ${c.container} `,
-          h("small", null, statusDocker(c.status, true), " ", consumoDe(c.container, uso))))),
-      )));
+    const stacks = Object.entries(zonas[zona]).sort(([a], [b]) => a.localeCompare(b));
+    const m = modulo(`Zona ${zona}`, `${plural(stacks.length, "stack", "stacks")} · ${plural(stacks.flatMap(([, c]) => c).length, "container", "containers")}`,
+      itens(stacks.map(([stack, containers]) => linhaStack(zona, stack, containers, uso))));
     m.id = `zona-${zona}`;
     return m;
   })];
