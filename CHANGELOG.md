@@ -1,5 +1,15 @@
 # Mudanças
 
+## 0.16.2 (2026-10-22)
+
+A entrada do painel com uma gravura clássica (painel 0.8.2).
+
+- **A gravura:** a pedido do dono, com referências dele (gravuras clássicas numa cor só, azul sobre claro ou osso sobre preto, e um pontilhado), a entrada passa a ser a Atena Partenos, a estátua do Partenon, numa xilogravura de 1851 em domínio público (da *Iconographic Encyclopaedia*, pelo Wikimedia Commons). Ela está guardada só como máscara (`gravuras/atena-partenos.png`, com a origem e o preparo em `gravuras/ORIGEM.txt`), e a cor vem do CSS: azul egípcio de dia e cor de osso à noite.
+- **A impressão:** a gravura se imprime na tela por um pontilhado ordenado (a matriz de Bayer 8×8, em pontos de 2 px) que se adensa de cima para baixo e da tinta mais escura para a mais clara, num canvas na densidade do aparelho; ao entrar, o mesmo pontilhado a desfaz. Na senha errada, ΑΘΗΝΑ fica em cinábrio por um instante; na certa, fica azul.
+- **No PC:** a gravura à esquerda e a entrada à direita.
+- Sai o templo desenhado da 0.16.1; o ícone da chave do meandro fica.
+- Testado: os 48 testes do painel e os cliques de ponta a ponta no celular e no PC; a entrada fotografada em oito momentos (a impressão, pronta, senha errada, senha certa e o painel chegando) no celular e no PC, claro e escuro, sem erro na página. No servidor de origem, o painel 0.8.2 subiu saudável e serve a gravura. Sem revisor separado nesta rodada.
+
 ## 0.16.1 (2026-10-22)
 
 A entrada nova do painel (painel 0.8.1): a construção do templo, no lugar da coruja.
