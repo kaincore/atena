@@ -1035,14 +1035,9 @@
         "purpose": "No vão entre os dedos, a luz da criação respira devagar depois que as mãos se imprimem; some quando a senha é aceita."
       },
       {
-        "name": "cornija-abrir",
-        "value": "clip-path inset(0 50%) até 0 em 1,8s var(--traco), com .1s de atraso",
-        "purpose": "A moldura da entrada, a cornija da Sistina, se abre do meio para as bordas ao entrar."
-      },
-      {
         "name": "reboco-derivar",
         "value": "translate de -2% 1,5% a 2% -1,5% em 70s ease-in-out alternate, só com a entrada aberta",
-        "purpose": "O reboco do afresco deriva quase parado atrás da entrada; dentro do painel fica parado, sem animação."
+        "purpose": "O reboco do afresco deriva quase parado atrás da entrada; dentro do painel não há reboco."
       },
       {
         "name": "afastar-entrada",
@@ -1267,7 +1262,7 @@
       },
       {
         "name": "A Regra do Meandro que Mede",
-        "body": "O meandro é ornamento e é medida. Uma fração se mostra pintando o meandro (o anel do medalhão, o medidor), nunca numa barra lisa ou num anel liso; e, dentro do painel, o ornamento é sempre o mesmo traço, nunca um friso de outra forma. A exceção é a entrada, emoldurada pela cornija da Sistina.",
+        "body": "O meandro é ornamento e é medida. Uma fração se mostra pintando o meandro (o anel do medalhão, o medidor), nunca numa barra lisa ou num anel liso; e o ornamento é sempre o mesmo traço, nunca um friso de outra forma.",
         "section": "shapes"
       },
       {
@@ -1282,7 +1277,7 @@
       },
       {
         "name": "A Regra da Cena nos Momentos",
-        "body": "A cena só acontece quando importa: ao entrar, as mãos se imprimem por um pontilhado ordenado (a matriz de Bayer 8×8, em pontos de 2 px; 1,9s), que se adensa das bordas para o vão entre os dedos e da tinta mais escura para a mais clara, e o ΑΘΗΝΑ chega letra a letra, enquanto a cornija se abre do meio para as bordas (1.8s); quando as mãos terminam, a centelha se acende no vão entre os dedos e respira (6s), e o reboco deriva quase parado (70s) enquanto a entrada está aberta; nada reage à digitação; na senha errada, a inscrição fica em cinábrio por um instante, e na certa ela fica azul e a imagem se desfaz no mesmo pontilhado antes de a entrada se desfazer e o painel chegar, com os pontos das zonas aparecendo um a um; quando chega uma aprovação, uma luz passa pela faixa e a coroa se redesenha, uma vez; quando um agendamento roda, a sombra do relógio de sol dá a volta (2.2s); quando o PC liga, o anel dele se pinta de novo; a zona com problema escorrega para o lado.",
+        "body": "A cena só acontece quando importa: ao entrar, as mãos se imprimem por um pontilhado ordenado (a matriz de Bayer 8×8, em pontos de 2 px; 1,9s), que se adensa das bordas para o vão entre os dedos e da tinta mais escura para a mais clara, e o ΑΘΗΝΑ chega letra a letra; quando as mãos terminam, a centelha se acende no vão entre os dedos e respira (6s), e o reboco deriva quase parado (70s) enquanto a entrada está aberta; nada reage à digitação; na senha errada, a inscrição fica em cinábrio por um instante, e na certa ela fica azul e a imagem se desfaz no mesmo pontilhado antes de a entrada se desfazer e o painel chegar, com os pontos das zonas aparecendo um a um; quando chega uma aprovação, uma luz passa pela faixa e a coroa se redesenha, uma vez; quando um agendamento roda, a sombra do relógio de sol dá a volta (2.2s); quando o PC liga, o anel dele se pinta de novo; a zona com problema escorrega para o lado.",
         "section": "components"
       },
       {
