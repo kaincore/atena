@@ -640,8 +640,8 @@ dialog::backdrop { background: rgb(10 11 10 / .5); }
 }
 .pergunta { font-size: 1.05rem; margin: .5rem 0; white-space: pre-wrap; }
 textarea.codigo { width: 100%; min-height: 40dvh; font: .8rem/1.5 var(--mono); white-space: pre; overflow: auto; }
-.processos .comando { font: .78rem var(--mono); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.processos .comando.aberto { white-space: pre-wrap; overflow-wrap: anywhere; }
+.processo .comando { font: .78rem var(--mono); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.processo .comando.aberto { white-space: pre-wrap; overflow-wrap: anywhere; }
 .item.arquivo { padding: .3rem 0; }
 .item.arquivo a { display: inline-flex; align-items: center; gap: .6rem; text-decoration: none; overflow-wrap: anywhere; }
 .item.arquivo a.pasta { font-weight: 650; }
