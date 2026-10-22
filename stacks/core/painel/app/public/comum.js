@@ -151,6 +151,13 @@ export function cartao(titulo, ...conteudo) {
   return modulo(titulo, null, ...conteudo);
 }
 
+// a tela que ainda não chegou: placas vazias no lugar dos módulos (sem movimento; o LED de rede pisca)
+export function esqueleto() {
+  return [3, 5].map((linhas) => h("section", { class: "modulo esqueleto", "aria-hidden": "true" },
+    h("header", { class: "modulo-topo" }, h("span", { class: "marca-vazia curta" })),
+    Array.from({ length: linhas }, (_, i) => h("span", { class: `marca-vazia${i % 3 === 2 ? " curta" : ""}` }))));
+}
+
 // um número em 7 segmentos num visorzinho dentro do módulo
 export function mostrador(texto, unidade) {
   return h("div", { class: "mostrador-numero" }, seteSegmentos(texto), unidade && h("span", { class: "celula-unidade" }, unidade));

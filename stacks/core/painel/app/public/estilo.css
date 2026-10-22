@@ -175,6 +175,9 @@ main {
   content: ""; position: absolute; top: .32rem; right: .45rem; width: .38rem; height: .38rem; border-radius: 50%;
   background: var(--amarelo); box-shadow: 0 0 5px rgb(255 196 0 / .7);
 }
+/* enquanto a tela lê do servidor, o ponto da tela ativa pisca, como o LED de leitura de um disco */
+.aparelho:has(#tela[aria-busy]) .ativa::before { animation: lendo .8s step-end infinite; }
+@keyframes lendo { 50% { opacity: .2; box-shadow: none; } }
 .contagem {
   position: absolute; top: .2rem; left: calc(50% + .45rem); min-width: 1.1rem; height: 1.1rem; padding: 0 .3rem;
   border-radius: .6rem; background: var(--amarelo); color: var(--amarelo-tinta); border: 1px solid var(--amarelo-borda);
@@ -254,6 +257,14 @@ main {
     repeating-linear-gradient(90deg, var(--risco-forte) 0 1px, transparent 1px 8px) top left / 100% 4px no-repeat;
   opacity: .8;
 }
+
+/* o esqueleto: a placa já montada, com as marcas do que vai aparecer */
+.esqueleto .marca-vazia {
+  display: block; height: .7rem; margin: .8rem .35rem; border-radius: 2px;
+  background: var(--poco); box-shadow: inset 0 1px 2px rgb(0 0 0 / .1);
+}
+.esqueleto .modulo-topo .marca-vazia { width: 7rem; height: .6rem; margin: 0; }
+.esqueleto .marca-vazia.curta { width: 55%; }
 
 .destaque { font-weight: 700; font-size: 1.45rem; font-variant-numeric: tabular-nums; margin: 0 0 .4rem; }
 .linha { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem 1rem; margin: .4rem 0; flex-wrap: wrap; }
@@ -544,4 +555,5 @@ textarea.codigo { width: 100%; min-height: 40dvh; font: .8rem/1.5 var(--mono); w
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before { animation: none !important; transition: none !important; }
+  .aparelho:has(#tela[aria-busy]) .ativa::before { opacity: .35; } /* lendo, sem piscar */
 }

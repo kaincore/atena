@@ -1,6 +1,6 @@
 // Interface do painel: telas montadas com elementos (nunca innerHTML com dados do servidor).
 // O visual é o de um aparelho (estilo.css); os desenhos do visor ficam em visor.js.
-import { $, TIQUE, api, cartao, consultar, falha, h, ligarCasca, mudar } from "./comum.js";
+import { $, TIQUE, api, cartao, consultar, esqueleto, falha, h, ligarCasca, mudar } from "./comum.js";
 import { telaAgenda } from "./telas/agenda.js";
 import { telaAjustes } from "./telas/ajustes.js";
 import { contarPendentes, faixaAprovacoes, telaAprovacoes } from "./telas/aprovacoes.js";
@@ -91,24 +91,56 @@ function telaAtual() {
   return TELAS[nome] ? nome : "inicio";
 }
 
+// Cada tela guarda os módulos da última vez: voltar a ela mostra na hora o que você viu (na mesma
+// altura da rolagem), e o dado novo entra por cima assim que chega. Tela nunca vista abre com o esqueleto.
+const vistas = new Map();
+const rolagens = new Map();
+
+// o que estava aberto (os "detalhes") continua aberto quando a tela se refaz
+function chavesDetalhes(raizes) {
+  const vistos = new Map();
+  return raizes.flatMap((r) => (r instanceof Element ? [...r.querySelectorAll("details")] : [])).map((d) => {
+    const base = `${d.closest(".modulo")?.querySelector(".modulo-topo h2")?.textContent}|${d.querySelector("summary")?.textContent}`;
+    vistos.set(base, (vistos.get(base) ?? 0) + 1);
+    return [`${base}|${vistos.get(base)}`, d];
+  });
+}
+function manterAbertos(antes, depois) {
+  const abertos = new Set(chavesDetalhes(antes).filter(([, d]) => d.open).map(([k]) => k));
+  if (abertos.size) for (const [k, d] of chavesDetalhes(depois)) if (abertos.has(k)) d.open = true;
+}
+
+const montar = async (nome) => [await TELAS[nome]()].flat(Infinity).filter(Boolean);
+
 async function atualizar() {
   const nome = telaAtual();
   const minha = ++geracao;
   marcarAtiva(nome);
   const tela = $("#tela");
-  if (!tela.dataset.tela || tela.dataset.tela !== nome) {
+  if (tela.dataset.tela !== nome) {
+    const saindo = [...tela.children].filter((el) => !el.matches(".faixa"));
+    if (tela.dataset.tela && !saindo.some((el) => el.matches(".esqueleto"))) {
+      vistas.set(tela.dataset.tela, saindo); // como ficou: inclusive os módulos que se refizeram sozinhos
+      rolagens.set(tela.dataset.tela, scrollY);
+    }
     tela.dataset.tela = nome;
-    tela.replaceChildren(h("p", { class: "fraco" }, "Carregando…"));
+    tela.replaceChildren(...[faixaAprovacoes(), vistas.get(nome) ?? esqueleto()].flat().filter(Boolean));
+    scrollTo(0, vistas.has(nome) ? rolagens.get(nome) ?? 0 : 0);
   }
-  const conteudo = await TELAS[nome]();
+  tela.setAttribute("aria-busy", "true");
+  const conteudo = await montar(nome);
   if (minha !== geracao || !$("#entrada").hidden) return; // outra tela foi aberta enquanto esta carregava
-  tela.replaceChildren(...[faixaAprovacoes(), conteudo].flat(Infinity).filter(Boolean));
+  manterAbertos([...tela.children], conteudo);
+  vistas.set(nome, conteudo);
+  tela.replaceChildren(...[faixaAprovacoes(), conteudo].flat().filter(Boolean));
+  tela.removeAttribute("aria-busy");
 }
 
 function mostrarEntrada() {
   $(".aparelho").hidden = true;
   $("#tela").replaceChildren();
   delete $("#tela").dataset.tela;
+  vistas.clear();
   $("#entrada").hidden = false;
   $("#senha").focus();
 }
