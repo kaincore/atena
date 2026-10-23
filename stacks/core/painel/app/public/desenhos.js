@@ -415,3 +415,12 @@ export function prancha(aneis, rotulo) {
     s("circle", { class: "ponto", r: 1.3, "data-atraso": "1.3" })));
   return svg;
 }
+
+// a haste: o pé do instrumento, que o põe de pé sobre a crepidoma (o colar, o fuste afinando e a base);
+// se desenha depois do instrumento, de cima para baixo
+export function haste() {
+  return prepararTracos(s("svg", { class: "haste", viewBox: "0 0 40 64", "aria-hidden": "true" },
+    s("path", { class: "traco", d: "M11 4.5C11 1.5 29 1.5 29 4.5S11 7.5 11 4.5Z", pathLength: 1, "data-atraso": "1.5", "data-duracao": "0.4" }),
+    s("path", { class: "traco", d: "M16 6.5L17.6 52M24 6.5L22.4 52", pathLength: 1, "data-atraso": "1.7", "data-duracao": "0.5" }),
+    s("path", { class: "traco", d: "M8 56C8 52.5 32 52.5 32 56S8 59.5 8 56ZM8 56V59.5C8 63 32 63 32 59.5V56", pathLength: 1, "data-atraso": "2", "data-duracao": "0.5" })));
+}
