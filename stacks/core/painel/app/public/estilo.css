@@ -634,7 +634,10 @@ button .picto { width: 1.15rem; height: 1.15rem; flex: none; }
 .botoes { display: flex; gap: .45rem; flex-wrap: wrap; }
 .botoes.grandes { margin: 1rem 0 .5rem; }
 .botoes.grandes button { flex: 1; min-height: 3.1rem; font-size: .95rem; }
-@media (pointer: coarse) { button, .tecla { min-height: 2.75rem; } }
+@media (pointer: coarse) {
+  button, .tecla, button.discreto, .tecla.discreta, summary { min-height: 2.75rem; }
+  a.ir { display: inline-flex; align-items: center; min-height: 2.75rem; }
+}
 
 input, select, textarea {
   font: 400 .95rem var(--letra); color: var(--tinta); background: var(--placa-2);
@@ -645,6 +648,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--a
 textarea { min-height: auto; line-height: 1.45; resize: vertical; }
 input::placeholder, textarea::placeholder { color: var(--tinta-2); opacity: .8; }
 input[type=checkbox] { accent-color: var(--azul); width: 1.05rem; height: 1.05rem; min-height: 0; padding: 0; box-shadow: none; }
+input[type=checkbox]:focus-visible { outline: 2px solid var(--foco); outline-offset: 2px; }
 input[type=number] { width: 5rem; }
 select { appearance: none; -webkit-appearance: none; padding-right: 2rem; background-image: var(--seta); background-repeat: no-repeat; background-position: right .6rem center; background-size: .75rem; }
 input[list] { padding-right: 2rem; background-image: var(--seta); background-repeat: no-repeat; background-position: right .6rem center; background-size: .75rem; }
@@ -682,6 +686,7 @@ input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]:
 .resposta { display: grid; gap: .65rem; margin-top: .75rem; }
 .opcao { display: flex; gap: .45rem; align-items: flex-start; }
 .opcao input { margin-top: .2rem; }
+@media (pointer: coarse) { .item .opcao { min-height: 2.75rem; align-items: center; } .item .opcao input { margin-top: 0; } }
 
 /* --- os medalhões: o número no meio, e o meandro da borda pintado até onde ele chega --- */
 
@@ -768,6 +773,7 @@ input[type=time]::-webkit-calendar-picker-indicator, input[type=datetime-local]:
   min-height: 2.3rem; padding: .3rem .5rem; color: var(--tinta); background: transparent; border: 0; border-radius: var(--raio);
   text-align: left; font: inherit; box-shadow: none;
 }
+@media (pointer: coarse) { .crepidoma-zona { min-height: 2.75rem; } }
 .crepidoma-zona:hover, .crepidoma-zona.acesa { background: var(--azul-claro); }
 .crepidoma-zona:active:not(:disabled) { transform: none; }
 .crepidoma-nome { font-size: .86rem; color: var(--tinta-2); }
