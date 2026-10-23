@@ -4,7 +4,7 @@
 // e o systemd do outro. Rolando para baixo, as leituras não se perdem: uma régua presa no alto da tela as
 // mantém à vista.
 import { api, avisar, cartao, consultar, containerOk, dinheiro, falha, gb, h, item, itens, linha, medidor, modulo,
-  num, numeroGrande, plural, statusDocker } from "../comum.js";
+  num, plural, statusDocker } from "../comum.js";
 import { quandoTexto } from "./agenda.js";
 import { relativo } from "./aprovacoes.js";
 import { abrirZona, marcarZonas, resumirZonas } from "../zonas.js";
@@ -238,6 +238,24 @@ function cartaoProximos(r) {
     h("p", null, h("a", { href: "#agenda" }, "Ver a agenda")));
 }
 
+// o gasto do mês numa linha, na medida das leituras, com um medidor só (o de todos os tetos); o de cada
+// modelo fica recolhido
+function notaGasto(g) {
+  const mes = new Date(`${g.mes}-15T12:00:00`).toLocaleDateString("pt-BR", { month: "long" });
+  const comTeto = g.por_modelo.filter((m) => m.teto_usd);
+  const teto = comTeto.reduce((t, m) => t + m.teto_usd, 0);
+  const modelos = g.por_modelo.filter((m) => m.gasto_usd > 0 || m.teto_usd);
+  return modulo("Gasto de IA", mes === "Invalid Date" ? g.mes : mes,
+    h("p", { class: "gasto-total" }, h("strong", null, dinheiro(g.total_usd)), teto ? ` de ${dinheiro(teto)} no mês` : " no mês"),
+    teto > 0 && medidor(g.total_usd / teto),
+    h("details", null, h("summary", null, `Por modelo (${modelos.length})`),
+      modelos.map((m) => [
+        linha(m.modelo, [`${dinheiro(m.gasto_usd)}${m.teto_usd ? ` de ${dinheiro(m.teto_usd)}` : ""}`, h("small", null, ` · ${plural(m.chamadas, "chamada", "chamadas")}`)]),
+        m.teto_usd ? medidor(m.gasto_usd / m.teto_usd) : null,
+      ]),
+      h("p", { class: "fraco" }, g.obs)));
+}
+
 export async function telaInicio() {
   const [recursos, servicos, gasto, sistema, aprovacoes, pendencias, agenda] = await Promise.all([
     consultar("status.recursos"), consultar("status.servicos"), consultar("gasto.api"), consultar("status.sistema"),
@@ -253,25 +271,14 @@ export async function telaInicio() {
     abertas: pendencias.ok === false ? 0 : pendencias.pendencias.filter((p) => !p.feita).length, proximo,
   };
 
-  let notaGasto;
-  if (gasto.ok === false) notaGasto = cartao("Gasto de IA", falha(gasto));
-  else {
-    const g = gasto.resultado;
-    notaGasto = modulo("Gasto de IA", g.mes,
-      numeroGrande(dinheiro(g.total_usd), "no mês"),
-      g.por_modelo.filter((m) => m.gasto_usd > 0 || m.teto_usd).map((m) => [
-        linha(m.modelo, [`${dinheiro(m.gasto_usd)}${m.teto_usd ? ` de ${dinheiro(m.teto_usd)}` : ""}`, h("small", null, ` · ${plural(m.chamadas, "chamada", "chamadas")}`)]),
-        m.teto_usd ? medidor(m.gasto_usd / m.teto_usd) : null,
-      ]),
-      h("p", { class: "fraco" }, g.obs));
-  }
+  const gastoMes = gasto.ok === false ? cartao("Gasto de IA", falha(gasto)) : notaGasto(gasto.resultado);
 
   // o systemd: as falhas sobem para o que pede você; aqui ficam a conta e os timers
   let notaSistema;
   if (sistema.ok === false) notaSistema = cartao("Sistema", falha(sistema));
   else {
     const s = sistema.resultado;
-    notaSistema = modulo("Sistema", s.falhas.length ? `${s.falhas.length} com falha` : `${s.timers.length} timers`,
+    notaSistema = modulo("Sistema", s.falhas.length ? `${s.falhas.length} com falha` : null,
       h("p", { class: "fraco" }, s.falhas.length ? `${plural(s.falhas.length, "unidade falhou", "unidades falharam")}: estão no que pede você.`
         : "Nenhuma unidade do systemd com falha."),
       h("details", null, h("summary", null, `Timers (${s.timers.length})`),
@@ -288,5 +295,5 @@ export async function telaInicio() {
       h("div", { class: "margem esquerda" }, notaPede(dados), await cartaoPendencias(pendencias)),
       h("div", { class: "centro" }, servidor,
         servicos.ok === false ? nota(cartao("Zonas", falha(servicos)), "zonas") : pranchaZonas(lista)),
-      h("div", { class: "margem direita" }, nota(cartaoProximos(agenda), "agenda"), nota(notaGasto, "gasto"), nota(notaSistema, "sistema"))))];
+      h("div", { class: "margem direita" }, nota(cartaoProximos(agenda), "agenda"), nota(gastoMes, "gasto"), nota(notaSistema, "sistema"))))];
 }

@@ -369,6 +369,9 @@ main {
 .n-gasto { order: 5; }
 .n-sistema { order: 6; }
 .n-pendencias { order: 7; }
+/* o gasto do mês numa linha, na medida das leituras */
+.gasto-total { margin: 0 0 .55rem; font-size: .86rem; color: var(--tinta-2); }
+.gasto-total strong { color: var(--tinta); font-size: 1.05rem; font-variation-settings: var(--titulo-letra); font-weight: 500; font-variant-numeric: tabular-nums; }
 /* a nota é o módulo sem a placa: o título com a régua e o conteúdo direto no mármore */
 .lamina .nota { padding: 0; background: none; border: 0; border-radius: 0; box-shadow: none; }
 /* rolando, a régua do título de cada nota se estende enquanto ela entra na tela */
