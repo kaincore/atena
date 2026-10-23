@@ -31,6 +31,8 @@ function correr(el, passou = 0) {
   el.style.setProperty("--passou", `${Math.round(passou)}ms`);
   if (el.imprimir) el.imprimir(1700, passou);
   else el.classList.add("desenhando");
+  // quem acompanha o desenho (os números que contam junto com a tinta) fica sabendo quando ele começa
+  el.dispatchEvent(new CustomEvent("desenhar", { detail: passou }));
 }
 
 // pronto, ou continuando: o que já começou há pouco segue do mesmo ponto
