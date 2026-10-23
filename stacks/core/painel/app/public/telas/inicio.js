@@ -1,32 +1,36 @@
-// Início: uma folha só, planejada como uma prancha impressa. No alto, a data e a frase do dia escrita a partir
-// dos dados; no meio, o monumento (o instrumento do servidor de pé sobre a crepidoma das zonas); nas margens,
-// as notas: o que pede você e as pendências de um lado, os próximos agendamentos, o gasto e o systemd do outro.
+// Início: uma lâmina só, planejada como uma prancha impressa. No alto, a data e a frase do dia escrita a partir
+// dos dados; no meio, as duas pranchas (o instrumento do servidor, com a legenda das letras, e a crepidoma das
+// zonas); nas margens, as notas: o que pede você e as pendências de um lado, os próximos agendamentos, o gasto
+// e o systemd do outro. Rolando para baixo, as leituras não se perdem: uma régua presa no alto da tela as
+// mantém à vista.
 import { api, avisar, cartao, consultar, containerOk, dinheiro, falha, gb, h, item, itens, linha, medidor, modulo,
   num, numeroGrande, plural, statusDocker } from "../comum.js";
 import { quandoTexto } from "./agenda.js";
 import { relativo } from "./aprovacoes.js";
 import { abrirZona, marcarZonas, resumirZonas } from "../zonas.js";
-import { crepidoma, haste, prancha, tom } from "../desenhos.js";
+import { crepidoma, prancha, s, tom } from "../desenhos.js";
 import { desenhavel } from "../ornamentos.js";
 
 const GREGAS = ["Α", "Β", "Γ", "Δ", "Ε", "Ζ"];
 
 // as leituras do instrumento, de fora para dentro: a CPU, a RAM, a temperatura, a GPU e cada disco, com o
-// limite de cada uma (a tinta passa a ocre perto dele e a cinábrio passado dele, como nos medalhões)
+// limite de cada uma (a tinta passa a ocre perto dele e a cinábrio passado dele, como nos medalhões). n e fmt
+// deixam o número andar de um valor ao outro
 function leituras(r) {
   const carga = r.carga[0] / r.nucleos;
   const usada = (r.ram_total_mb - r.ram_disponivel_mb) / 1024, total = r.ram_total_mb / 1024;
   const cpu = r.temperaturas.cpu_c;
+  const leitura = (nome, n, casas, unidade, nota, fracao, alerta) => ({ nome, n, fmt: (x) => `${num(x, casas)}${unidade}`, nota, fracao, alerta });
   return [
-    { nome: "CPU", valor: `${num(Math.min(99.9, carga * 100), carga < 0.1 ? 1 : 0)}%`, nota: `carga ${num(r.carga[0], 2)} em ${r.nucleos} núcleos`, fracao: carga, alerta: 1 },
-    { nome: "RAM", valor: `${num(usada, 1)}\u00a0GB`, nota: `de ${num(total, 1)}\u00a0GB`, fracao: usada / total, alerta: 0.95 },
-    cpu != null && { nome: "Temperatura", valor: `${num(cpu, 1)}\u00a0°C`, nota: "da CPU", fracao: cpu / 85, alerta: 1 },
-    r.gpu && { nome: "GPU", valor: `${num(r.gpu.temperatura_c)}\u00a0°C`, fracao: r.gpu.temperatura_c / 85, alerta: 1,
-      nota: `uso ${num(r.gpu.uso_pct)}% · VRAM ${num(r.gpu.vram_usada_mb / 1024, 1)} de ${num(r.gpu.vram_total_mb / 1024, 1)}\u00a0GB` },
-    ...Object.entries(r.discos).map(([ponto, d]) => ({ nome: `Disco ${ponto}`, valor: `${num(100 * (1 - d.livre_gb / d.total_gb))}%`,
-      nota: `${num(d.livre_gb, 1)}\u00a0GB livres de ${num(d.total_gb, 1)}\u00a0GB`, fracao: 1 - d.livre_gb / d.total_gb, alerta: 0.9 })),
+    leitura("CPU", Math.min(99.9, carga * 100), carga < 0.1 ? 1 : 0, "%", `carga ${num(r.carga[0], 2)} em ${r.nucleos} núcleos`, carga, 1),
+    leitura("RAM", usada, 1, "\u00a0GB", `de ${num(total, 1)}\u00a0GB`, usada / total, 0.95),
+    cpu != null && leitura("Temperatura", cpu, 1, "\u00a0°C", "da CPU", cpu / 85, 1),
+    r.gpu && leitura("GPU", r.gpu.temperatura_c, 0, "\u00a0°C",
+      `uso ${num(r.gpu.uso_pct)}% · VRAM ${num(r.gpu.vram_usada_mb / 1024, 1)} de ${num(r.gpu.vram_total_mb / 1024, 1)}\u00a0GB`, r.gpu.temperatura_c / 85, 1),
+    ...Object.entries(r.discos).map(([ponto, d]) => leitura(`Disco ${ponto}`, 100 * (1 - d.livre_gb / d.total_gb), 0, "%",
+      `${num(d.livre_gb, 1)}\u00a0GB livres de ${num(d.total_gb, 1)}\u00a0GB`, 1 - d.livre_gb / d.total_gb, 0.9)),
   ].filter(Boolean).slice(0, GREGAS.length)
-    .map((l, i) => ({ ...l, letra: GREGAS[i], tom: tom(Math.min(1, l.fracao) / l.alerta) }));
+    .map((l, i) => ({ ...l, valor: l.fmt(l.n), letra: GREGAS[i], tom: tom(Math.min(1, l.fracao) / l.alerta) }));
 }
 
 // as notas da margem: o módulo sem a placa, só o título com a régua e o conteúdo (n-…: a ordem no celular)
@@ -35,29 +39,106 @@ const nota = (el, nome) => {
   return el;
 };
 
-// o monumento: o instrumento do servidor de pé sobre a crepidoma das zonas, com as letras explicadas dos dois
-// lados (as linhas de chamada apontam para ele) e o título embaixo
-function monumento(recursos, servicos) {
-  const r = recursos.ok === false ? null : recursos.resultado;
-  const lista = servicos.ok === false ? null : servicos.resultado;
-  const ls = r ? leituras(r) : [];
+const reduzido = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// o número anda do valor de antes ao novo, junto com a tinta do anel (o mesmo jeito de assentar)
+function contar(els, l, de, atraso, dura) {
+  if (reduzido() || Math.abs(de - l.n) < 1e-6) return;
+  const inicio = performance.now() + atraso;
+  for (const el of els) el.textContent = l.fmt(de);
+  const passo = (agora) => {
+    const x = Math.max(0, Math.min(1, (agora - inicio) / dura));
+    const v = de + (l.n - de) * (1 - (1 - x) ** 4);
+    for (const el of els) el.textContent = x < 1 ? l.fmt(v) : l.valor;
+    if (x < 1) requestAnimationFrame(passo);
+  };
+  requestAnimationFrame(passo);
+}
+const vistos = new Map(); // a última leitura mostrada de cada coisa
+
+// tocar (ou passar o mouse) numa linha da legenda acende o anel dela e apaga os outros
+function ligarLegenda(instrumento, linhas) {
+  let fixo = null;
+  const acender = (i) => {
+    instrumento.classList.toggle("focado", i != null);
+    for (const g of instrumento.querySelectorAll(".anel-g")) g.classList.toggle("acesa", g.dataset.i === i);
+    for (const li of linhas) li.classList.toggle("acesa", li.dataset.i === i);
+  };
+  for (const li of linhas) {
+    li.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") acender(li.dataset.i); });
+    li.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") acender(fixo); });
+    li.addEventListener("click", () => {
+      fixo = fixo === li.dataset.i ? null : li.dataset.i;
+      acender(fixo);
+    });
+  }
+}
+
+// Prancha I: o instrumento, com a legenda das letras dos dois lados (no celular, embaixo, em duas colunas).
+// Os números contam junto com a tinta: na primeira vez, do zero, quando o instrumento se grava; depois, do
+// valor de antes, quando a leitura muda
+function pranchaServidor(r, ls, regua) {
   const metade = Math.ceil(ls.length / 2);
-  const legenda = (parte, lado) => h("ul", { class: `prancha-legenda lado-${lado}` }, parte.map((l) => h("li", { class: l.tom },
+  const linhas = ls.map((l, i) => h("li", { class: l.tom, "data-i": String(i) },
     h("span", { class: "letra-legenda", "aria-hidden": "true" }, l.letra), h("span", { class: "nome" }, l.nome),
-    h("span", { class: "leitura" }, l.valor), h("span", { class: "nota-leitura" }, l.nota))));
-  const zonas = lista && resumirZonas(lista);
-  if (zonas) marcarZonas(zonas);
-  return h("figure", { class: "monumento n-monumento" },
-    r ? [legenda(ls.slice(0, metade), "esq"),
-      desenhavel(prancha(ls, `O servidor: ${ls.map((l) => `${l.nome}, ${l.valor}`).join("; ")}`), "prancha-servidor"),
-      legenda(ls.slice(metade), "dir")]
-      : h("div", { class: "monumento-falha" }, falha(recursos)),
-    desenhavel(haste(), "haste"),
-    zonas ? crepidoma(zonas, abrirZona) : h("div", { class: "monumento-falha" }, falha(servicos)),
-    h("figcaption", null, h("span", { class: "prancha-numero" }, "Prancha I"),
-      r ? ` · o servidor, com ${r.nucleos} núcleos e ${gb(r.ram_total_mb)}` : " · o servidor",
-      lista && [`, sobre as zonas: ${lista.filter(containerOk).length} de ${plural(lista.length, "container", "containers")} no ar · `,
-        h("a", { href: "#servicos" }, "ver os serviços")]));
+    h("span", { class: "leitura" }, l.valor), h("span", { class: "nota-leitura" }, l.nota)));
+  const instrumento = desenhavel(prancha(ls, `O servidor: ${ls.map((l) => `${l.nome}, ${l.valor}`).join("; ")}`), "prancha-servidor");
+  ligarLegenda(instrumento, linhas);
+  const primeira = ls.some((l) => !vistos.has(l.nome));
+  ls.forEach((l, i) => {
+    const els = [linhas[i].querySelector(".leitura"), regua?.querySelector(`[data-i="${i}"] .v`)].filter(Boolean);
+    const antes = vistos.get(l.nome);
+    vistos.set(l.nome, l.n);
+    if (antes != null && !primeira) contar(els, l, antes, 0, 1000);
+    else instrumento.addEventListener("desenhar", (e) => contar(els, l, 0, 950 + i * 120 - e.detail, 1400), { once: true });
+  });
+  return h("figure", { class: "prancha prancha-servidor n-servidor" },
+    h("ul", { class: "prancha-legenda lado-esq" }, linhas.slice(0, metade)), instrumento,
+    h("ul", { class: "prancha-legenda lado-dir" }, linhas.slice(metade)),
+    h("figcaption", null, h("span", { class: "prancha-numero" }, "Prancha I"), ` · o servidor, com ${r.nucleos} núcleos e ${gb(r.ram_total_mb)}`));
+}
+
+// Prancha II: a crepidoma das zonas; os degraus se assentam quando ela aparece na tela
+function pranchaZonas(lista) {
+  const zonas = resumirZonas(lista);
+  marcarZonas(zonas);
+  return h("figure", { class: "prancha prancha-zonas n-zonas" }, desenhavel(crepidoma(zonas, abrirZona), "crepidoma-inicio", "visivel"),
+    h("figcaption", null, h("span", { class: "prancha-numero" }, "Prancha II"),
+      ` · as zonas, com ${lista.filter(containerOk).length} de ${plural(lista.length, "container", "containers")} no ar · `,
+      h("a", { href: "#servicos" }, "ver os serviços")));
+}
+
+// a régua presa no alto: quando o instrumento sai da tela, ela desce com as leituras (um anel pequeno por
+// letra), as zonas e os pedidos; tocar nela volta ao instrumento
+function anelPequeno(f) {
+  const arco = s("circle", { class: "arco", r: 7, pathLength: 1 });
+  arco.style.setProperty("--f", Math.max(0, Math.min(1, f)).toFixed(4));
+  return s("svg", { class: "mini", viewBox: "-9 -9 18 18", "aria-hidden": "true" }, s("circle", { class: "fundo", r: 7 }), arco);
+}
+function reguaFixa(ls, lista, pedidos) {
+  const ruins = lista ? lista.filter((c) => !containerOk(c)).length : 0;
+  const regua = h("button", { type: "button", class: "regua-fixa", "aria-label": "Voltar às leituras do servidor" },
+    ls.map((l, i) => {
+      const sinal = h("span", { class: `sinal ${l.tom}`, "data-i": String(i) }, anelPequeno(l.fracao), h("b", null, l.letra), h("span", { class: "v" }, l.valor));
+      sinal.style.setProperty("--i", i);
+      return sinal;
+    }),
+    lista && h("span", { class: "sinal zonas" }, h("i", { class: `led ${ruins ? "ruim" : "ok"}` }), `${num(lista.length - ruins)}/${num(lista.length)} no ar`),
+    pedidos > 0 && h("span", { class: "sinal pede" }, h("i", { class: "led morno" }), plural(pedidos, "pedido", "pedidos")));
+  // a régua da atualização anterior já estava à vista: a nova entra no lugar dela, sem descer de novo
+  if (document.querySelector(".regua-fixa.visivel")) regua.classList.add("visivel", "ja");
+  return regua;
+}
+let vigia = null;
+function vigiar(alvo, regua) {
+  vigia?.disconnect();
+  vigia = new IntersectionObserver(([e]) => {
+    const passou = !e.isIntersecting && e.boundingClientRect.bottom < 80;
+    regua.classList.toggle("visivel", passou);
+    if (!passou) regua.classList.remove("ja");
+  }, { rootMargin: "-64px 0px 0px 0px" });
+  vigia.observe(alvo);
+  regua.addEventListener("click", () => alvo.scrollIntoView({ behavior: reduzido() ? "auto" : "smooth", block: "center" }));
 }
 
 // a frase do dia: primeiro o que está errado (o que caiu, o que falhou, a leitura que passou do limite),
@@ -185,9 +266,15 @@ export async function telaInicio() {
         itens(s.timers.map((t) => item({ nome: t.nome, detalhe: `próxima: ${t.proxima ?? "—"}` })))));
   }
 
-  return [h("section", { class: "lamina largo" }, topo(dados),
+  const r = recursos.ok === false ? null : recursos.resultado;
+  const ls = r ? leituras(r) : [];
+  const regua = r ? reguaFixa(ls, servicos.ok === false ? null : lista, listaPedidos.length) : null;
+  const servidor = r ? pranchaServidor(r, ls, regua) : nota(cartao("Servidor", falha(recursos)), "servidor");
+  if (regua) vigiar(servidor, regua);
+  return [h("section", { class: "lamina largo" }, regua, topo(dados),
     h("div", { class: "lamina-corpo" },
       h("div", { class: "margem esquerda" }, notaPede(dados), await cartaoPendencias(pendencias)),
-      monumento(recursos, servicos),
+      h("div", { class: "centro" }, servidor,
+        servicos.ok === false ? nota(cartao("Zonas", falha(servicos)), "zonas") : pranchaZonas(lista)),
       h("div", { class: "margem direita" }, nota(cartaoProximos(agenda), "agenda"), nota(notaGasto, "gasto"), nota(notaSistema, "sistema"))))];
 }

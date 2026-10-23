@@ -352,48 +352,51 @@ main {
 .gesto .traco { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
 .gesto.circulo .traco { stroke-width: 1.6; }
 .gesto.some { opacity: 0; }
-/* --- o Início: uma folha só, planejada como uma prancha impressa. No alto, a data e a frase, sobre um filete
-   duplo; no meio, o monumento (o instrumento do servidor de pé sobre a crepidoma das zonas, com a legenda dos
-   dois lados); nas margens, as notas, separadas do monumento por filetes duplos. No celular, tudo numa coluna,
-   na ordem de leitura (o order de cada nota) --- */
+/* --- o Início: uma lâmina só, planejada como uma prancha impressa. No alto, a data e a frase, sobre um filete
+   duplo; no meio, as duas pranchas (o instrumento do servidor, com a legenda das letras, e a crepidoma das
+   zonas); nas margens, as notas, separadas do meio por filetes duplos. No celular, tudo numa coluna, na ordem
+   de leitura (o order de cada parte). A régua presa no alto guarda as leituras quando o instrumento sai da tela */
 .lamina { display: grid; gap: 1.8rem; }
 .lamina-topo { padding: .2rem 0 1.4rem; border-bottom: 3px double var(--veio-forte); }
 .dia-data { margin: 0 0 .35rem; font-size: .86rem; color: var(--tinta-2); }
 .dia-frase { margin: 0; max-width: 38rem; font-size: 1.28rem; line-height: 1.38; font-weight: 500; font-variation-settings: var(--pedra-letra); text-wrap: pretty; }
-.lamina-corpo { display: grid; gap: 2.4rem; align-items: start; }
-.margem { display: contents; }
+.lamina-corpo { display: grid; gap: 2.6rem; align-items: start; }
+.margem, .centro { display: contents; }
 .n-pede { order: 1; }
-.n-monumento { order: 2; }
-.n-agenda { order: 3; }
-.n-gasto { order: 4; }
-.n-sistema { order: 5; }
-.n-pendencias { order: 6; }
+.n-servidor { order: 2; }
+.n-zonas { order: 3; }
+.n-agenda { order: 4; }
+.n-gasto { order: 5; }
+.n-sistema { order: 6; }
+.n-pendencias { order: 7; }
 /* a nota é o módulo sem a placa: o título com a régua e o conteúdo direto no mármore */
 .lamina .nota { padding: 0; background: none; border: 0; border-radius: 0; box-shadow: none; }
-/* o monumento: o disco em cima, a legenda dos dois lados (no celular, embaixo dele), a haste e a crepidoma */
-.monumento {
-  margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); justify-items: center; gap: 1rem 1.2rem;
-  grid-template-areas: "disco disco" "esq dir" "base base" "titulo titulo";
+/* rolando, a régua do título de cada nota se estende enquanto ela entra na tela */
+@supports (animation-timeline: view()) {
+  .lamina .nota .modulo-topo .regua { transform-origin: left center; animation: estender-regua linear both; animation-timeline: view(); animation-range: entry 0% entry 80%; }
+  @keyframes estender-regua { from { transform: scaleX(0); } }
 }
-.monumento .instrumento { grid-area: disco; width: min(100%, 17.5rem); }
-.monumento .lado-esq { grid-area: esq; }
-.monumento .lado-dir { grid-area: dir; }
-.monumento .haste { grid-area: haste; display: none; }
-.monumento .crepidoma { grid-area: base; width: min(100%, 25rem); grid-template-columns: minmax(0, 1fr); justify-items: center; margin: .5rem 0 0; }
-.monumento .crepidoma-cena { width: min(100%, 17rem); }
-.monumento .crepidoma-legenda { display: flex; flex-wrap: wrap; justify-content: center; gap: .1rem .3rem; }
-.monumento figcaption { grid-area: titulo; font-size: .8rem; line-height: 1.45; color: var(--tinta-2); text-align: center; }
-.monumento-falha { grid-column: 1 / -1; justify-self: stretch; }
+/* as pranchas: a figura, a legenda e o título embaixo */
+.prancha { margin: 0; min-width: 0; display: grid; justify-items: center; gap: 1rem 1.2rem; }
+.prancha figcaption { grid-area: titulo; font-size: .8rem; line-height: 1.45; color: var(--tinta-2); text-align: center; }
 .prancha-numero { font-variation-settings: var(--pedra-letra); font-weight: 600; color: var(--tinta); }
-.haste { overflow: visible; color: var(--tinta-2); }
-.haste .traco { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linejoin: round; }
+/* Prancha I: no celular, o disco em cima e a legenda embaixo em duas colunas */
+.prancha-servidor { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "disco disco" "esq dir" "titulo titulo"; }
+.prancha-servidor .instrumento { grid-area: disco; width: min(100%, 15.5rem); }
+.prancha-servidor .lado-esq { grid-area: esq; }
+.prancha-servidor .lado-dir { grid-area: dir; }
+/* Prancha II: a crepidoma com a legenda ao lado; os degraus se assentam quando ela aparece */
+.prancha-zonas { grid-template-areas: "figura" "titulo"; }
+.prancha-zonas .crepidoma { width: min(100%, 30rem); margin: 0; }
+.crepidoma.a-desenhar .laje { opacity: 0; }
+.crepidoma.desenhando .laje { animation: assentar 1s var(--mola) backwards; animation-delay: calc(var(--i) * 90ms + .1s - var(--passou, 0ms)); }
 .instrumento { display: block; width: min(100%, 17.5rem); height: auto; aspect-ratio: 1; overflow: visible; color: var(--tinta-3); }
 .instrumento .traco { fill: none; stroke: currentColor; stroke-width: .6; }
 .instrumento .graduacao { stroke-width: .55; }
 .instrumento .borda { stroke: var(--veio-forte); stroke-width: .5; }
 .instrumento .estrela { stroke: var(--tinta-2); stroke-width: .7; }
 .instrumento .ponto { fill: var(--tinta-2); }
-.instrumento .letra { font: 600 6.6px var(--letra); font-variation-settings: var(--pedra-letra); fill: var(--tinta-2); }
+.instrumento .letra { font: 600 8px var(--letra); font-variation-settings: var(--pedra-letra); fill: var(--tinta-2); }
 .hachura { stroke-width: .8; }
 .hachura.azul { stroke: var(--azul); }
 .hachura.ocre { stroke: var(--ocre); }
@@ -406,46 +409,80 @@ main {
 .instrumento .valor.andando { animation: andar-prancha 1s var(--suave); }
 @keyframes pintar-prancha { from { --f: 0; } }
 @keyframes andar-prancha { from { --f: var(--de); } }
+/* o anel que a legenda acendeu: os outros recuam */
+.instrumento .anel-g { transition: opacity .35s var(--suave); }
+.instrumento .valor { transition: stroke-width .35s var(--suave); }
+.instrumento.focado .anel-g:not(.acesa) { opacity: .3; }
+.instrumento .anel-g.acesa .valor { stroke-width: 8.6; }
 .prancha-legenda { list-style: none; margin: 0; padding: 0; width: 100%; display: grid; align-content: start; }
-.prancha-legenda li { position: relative; display: grid; grid-template-columns: 1.1rem minmax(0, 1fr); align-items: baseline; column-gap: .45rem; padding: .45rem 0; border-top: 1px solid var(--veio); }
-.prancha-legenda li:first-child { border-top: 0; }
+.prancha-legenda li {
+  position: relative; display: grid; grid-template-columns: 1.1rem minmax(0, 1fr); align-items: baseline; column-gap: .45rem;
+  padding: .45rem .3rem; border-top: 1px solid var(--veio); border-radius: 3px; cursor: pointer;
+  transition: background-color .25s var(--suave);
+}
+.prancha-legenda li:first-child { border-top-color: transparent; }
+.prancha-legenda li.acesa { background: var(--azul-claro); }
 .letra-legenda { font-variation-settings: var(--pedra-letra); font-weight: 600; color: var(--tinta-2); }
 .prancha-legenda .nome { font-size: .86rem; color: var(--tinta-2); }
 .prancha-legenda .leitura { grid-column: 2; font-size: 1.05rem; line-height: 1.3; font-variation-settings: var(--titulo-letra); font-weight: 500; font-variant-numeric: tabular-nums; }
 .prancha-legenda .ocre .leitura { color: var(--ocre-tinta); }
 .prancha-legenda .cinabrio .leitura { color: var(--cinabrio-tinta); }
 .nota-leitura { grid-column: 2 / -1; font-size: .76rem; line-height: 1.35; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+/* a régua presa no alto da tela: desce quando o instrumento sai de vista, com um anel pequeno por letra (a
+   tinta se pinta ao descer), as zonas e os pedidos; tocar nela volta ao instrumento */
+.regua-fixa {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 3; display: flex; align-items: center; gap: 1.1rem;
+  padding: calc(env(safe-area-inset-top) + .6rem) 1rem .6rem; overflow-x: auto; scrollbar-width: none;
+  border: 0; border-bottom: 1px solid var(--veio); border-radius: 0; box-shadow: none; min-height: 0;
+  background: var(--casca);
+  color: var(--tinta); font: inherit; text-align: left; cursor: pointer;
+  mask: linear-gradient(90deg, #000 calc(100% - 1.6rem), transparent);
+  transform: translateY(-105%); visibility: hidden; transition: transform .45s var(--suave), visibility 0s linear .45s;
+}
+.regua-fixa::-webkit-scrollbar { display: none; }
+.regua-fixa, .regua-fixa:hover { justify-content: flex-start; background: var(--casca); border-color: var(--veio); }
+.regua-fixa.visivel { transform: none; visibility: visible; transition: transform .45s var(--suave), visibility 0s; }
+.regua-fixa:active:not(:disabled) { transform: none; }
+.sinal { display: inline-flex; align-items: center; gap: .35rem; flex: none; font-size: .84rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sinal b { font-variation-settings: var(--pedra-letra); font-weight: 600; color: var(--tinta-2); }
+.sinal.ocre .v { color: var(--ocre-tinta); }
+.sinal.cinabrio .v { color: var(--cinabrio-tinta); }
+.sinal.zonas, .sinal.pede { color: var(--tinta-2); }
+.mini { width: 1.2rem; height: 1.2rem; flex: none; transform: rotate(-90deg); }
+.mini circle { fill: none; stroke-width: 3.2; }
+.mini .fundo { stroke: var(--veio); }
+.mini .arco { stroke: var(--azul); stroke-dasharray: var(--f) 1; }
+.ocre .mini .arco { stroke: var(--ocre); }
+.cinabrio .mini .arco { stroke: var(--cinabrio); }
+.regua-fixa.visivel:not(.ja) .mini .arco { animation: pintar-prancha .9s var(--suave) backwards; animation-delay: calc(var(--i, 0) * 60ms + .15s); }
 @media (min-width: 60rem) {
-  /* entre o celular e a folha larga: o monumento atravessa, com a legenda dos dois lados do disco, e as notas
-     vão em duas colunas embaixo */
+  /* entre o celular e a lâmina larga: o instrumento com a legenda dos dois lados, as zonas embaixo, e as
+     notas em duas colunas */
   .lamina-topo { text-align: center; }
   .dia-frase { margin-inline: auto; font-size: 1.55rem; }
   .lamina-corpo { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 2.6rem; }
-  .lamina .n-pede { grid-column: 1 / -1; }
-  .monumento {
-    grid-column: 1 / -1; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); column-gap: 1.4rem; row-gap: 0;
-    grid-template-areas: "esq disco dir" ". haste ." "base base base" "titulo titulo titulo";
-  }
-  .monumento .instrumento { width: 14rem; }
-  .monumento .lado-esq, .monumento .lado-dir { align-self: center; max-width: 14rem; }
-  .monumento .haste { display: block; width: 2.8rem; height: 4.4rem; margin: -.85rem 0 -.7rem; } /* encosta no aro de baixo do disco */
-  .monumento .crepidoma { margin: 0; }
-  .monumento figcaption { margin-top: .6rem; }
+  .lamina :is(.n-pede, .n-servidor, .n-zonas) { grid-column: 1 / -1; }
+  .prancha-servidor { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); column-gap: 1.4rem; grid-template-areas: "esq disco dir" "titulo titulo titulo"; }
+  .prancha-servidor .instrumento { width: 14rem; }
+  .prancha-servidor :is(.lado-esq, .lado-dir) { align-self: center; max-width: 14rem; }
   /* as linhas de chamada: de cada leitura até o disco */
-  .monumento .lado-esq li::after, .monumento .lado-dir li::before {
+  .prancha-servidor .lado-esq li::after, .prancha-servidor .lado-dir li::before {
     content: ""; position: absolute; top: 1rem; width: 1rem; border-top: 1px solid var(--veio-forte);
   }
-  .monumento .lado-esq li::after { right: -1.25rem; }
-  .monumento .lado-dir li::before { left: -1.25rem; }
+  .prancha-servidor .lado-esq li::after { right: -1.25rem; }
+  .prancha-servidor .lado-dir li::before { left: -1.25rem; }
+  .regua-fixa { left: 15.5rem; padding-inline: 1.6rem; }
 }
 @media (min-width: 75rem) {
-  /* a folha larga: as notas nas margens, o monumento no meio, filetes duplos entre eles */
+  /* a lâmina larga: as notas nas margens, as pranchas no meio, filetes duplos entre eles */
   .lamina-corpo { grid-template-columns: 16rem minmax(0, 1fr) 16rem; column-gap: 0; align-items: stretch; }
-  .margem { display: grid; align-content: start; gap: 2.4rem; }
+  .margem, .centro { display: grid; align-content: start; gap: 2.4rem; }
   .lamina .n-pede { grid-column: auto; }
+  .lamina :is(.n-servidor, .n-zonas) { grid-column: auto; }
   .margem.esquerda { grid-column: 1; grid-row: 1; padding-right: 1.6rem; border-right: 3px double var(--veio-forte); }
   .margem.direita { grid-column: 3; grid-row: 1; padding-left: 1.6rem; border-left: 3px double var(--veio-forte); }
-  .monumento { grid-column: 2; grid-row: 1; align-self: start; padding: 0 1.2rem; }
+  .centro { grid-column: 2; grid-row: 1; padding: 0 1.2rem; }
+  .centro .prancha-zonas { padding-top: 2.2rem; border-top: 1px solid var(--veio); }
 }
 /* a esfera armilar da rede: os anéis em 3D girando devagar, o eixo e o servidor parados; ao lado, os
    alcances com as portas de cada um */
