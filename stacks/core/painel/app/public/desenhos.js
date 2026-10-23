@@ -331,3 +331,39 @@ export function prepararTracos(svg, escala = 1) {
   }
   return svg;
 }
+
+// --- a esfera armilar da rede: um anel por alcance, do servidor para fora, e um ponto em cada anel por
+// porta aberta nele; o eixo e o servidor no meio ficam parados. Os anéis se desenham e os pontos chegam
+// na primeira vez; a esfera gira devagar e, quando a tela se refaz, continua do ângulo em que estava
+const INCLINACOES = [[0, 68], [28, 74], [-24, 64], [58, 72], [-58, 70]];
+const GIRO_MS = 90_000;
+
+export function esferaArmilar(aneis, rotulo) {
+  const giro = h("div", "esfera-giro");
+  giro.style.setProperty("--ja", `${-(performance.now() % GIRO_MS)}ms`);
+  aneis.forEach((anel, i) => {
+    const raio = 22 + i * 10;
+    const [z, x] = INCLINACOES[i % INCLINACOES.length];
+    const pontos = Array.from({ length: anel.portas }, (_, k) => {
+      const a = ((k + 0.5) / anel.portas) * 2 * Math.PI + i * 0.7;
+      return s("circle", { class: `porta${anel.exposto ? " exposta" : ""}`, cx: r2(raio * Math.cos(a)), cy: r2(raio * Math.sin(a)), r: 1.9,
+        "data-atraso": (0.35 + i * 0.16 + 0.5 + k * 0.03).toFixed(2) });
+    });
+    const plano = h("div", "anel",
+      prepararTracos(s("svg", { viewBox: `${-raio - 3} ${-raio - 3} ${2 * raio + 6} ${2 * raio + 6}`, "aria-hidden": "true" },
+        s("circle", { class: "traco", r: raio, pathLength: 1, "data-atraso": (0.35 + i * 0.16).toFixed(2), "data-duracao": "0.9" }), pontos)));
+    plano.style.setProperty("--raio", `${raio}px`);
+    plano.style.setProperty("--z", `${z}deg`);
+    plano.style.setProperty("--x", `${x}deg`);
+    giro.append(plano);
+  });
+  const lado = 22 + (aneis.length - 1) * 10 + 8;
+  const eixo = prepararTracos(s("svg", { class: "esfera-eixo", viewBox: `${-lado} ${-lado} ${2 * lado} ${2 * lado}`, "aria-hidden": "true" },
+    s("path", { class: "traco", d: `M0 ${-lado + 2}V${lado - 2}`, pathLength: 1, transform: "rotate(-16)", "data-atraso": "0", "data-duracao": "0.5" }),
+    s("circle", { class: "servidor", r: 4.2 })));
+  const esfera = h("div", "esfera", giro, eixo);
+  esfera.setAttribute("role", "img");
+  esfera.setAttribute("aria-label", rotulo);
+  esfera.style.setProperty("--lado", `${2 * lado}px`);
+  return esfera;
+}

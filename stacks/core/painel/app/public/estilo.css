@@ -352,6 +352,26 @@ main {
 .gesto .traco { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
 .gesto.circulo .traco { stroke-width: 1.6; }
 .gesto.some { opacity: 0; }
+/* a esfera armilar da rede: os anéis em 3D girando devagar, o eixo e o servidor parados; ao lado, os
+   alcances com as portas de cada um */
+.rede-esfera { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: .5rem 1.4rem; margin: .3rem 0 1rem; }
+.esfera { position: relative; width: var(--lado); height: var(--lado); perspective: 700px; color: var(--tinta-2); }
+.esfera-giro { position: absolute; inset: 0; transform-style: preserve-3d; animation: girar-esfera 90s linear var(--ja, 0s) infinite; }
+@keyframes girar-esfera { to { transform: rotateY(360deg); } }
+.anel { position: absolute; left: 50%; top: 50%; width: calc(var(--raio) * 2 + 6px); height: calc(var(--raio) * 2 + 6px);
+  transform: translate(-50%, -50%) rotateZ(var(--z)) rotateX(var(--x)); }
+.anel svg, .esfera-eixo { display: block; width: 100%; height: 100%; overflow: visible; }
+.esfera-eixo { position: absolute; inset: 0; }
+:is(.anel, .esfera-eixo) .traco { fill: none; stroke: currentColor; stroke-width: .9; }
+.porta { fill: var(--azul); }
+.porta.exposta { fill: var(--cinabrio); }
+.servidor { fill: var(--tinta); }
+.esfera-legenda { list-style: none; margin: 0; padding: 0; font-size: .86rem; }
+.esfera-legenda li { display: flex; justify-content: space-between; gap: .8rem; padding: .28rem 0; border-top: 1px solid var(--veio); }
+.esfera-legenda li:first-child { border-top: 0; }
+.anel-nome { color: var(--tinta-2); }
+.anel-conta { font-variant-numeric: tabular-nums; }
+.esfera-legenda .exposto .anel-conta { color: var(--cinabrio-tinta); font-weight: 600; }
 
 /* o conteúdo que chega no lugar do esqueleto só aparece, todo junto; o que se mexe é o que mede (o anel
    se pinta, a escada se assenta). backwards: nada da animação fica no módulo depois que ela acaba (uma

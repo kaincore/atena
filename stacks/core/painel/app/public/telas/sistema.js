@@ -1,6 +1,7 @@
 // Sistema: sensores, processos, rede e o registro do systemd.
 import { botaoAtualizar, campo, cartao, consultar, falha, gb, h, item, itens, linha, medidor, modulo, num, semAcao } from "../comum.js";
-import { medalhao, medalhoes, roseta } from "../desenhos.js";
+import { esferaArmilar, medalhao, medalhoes, roseta } from "../desenhos.js";
+import { desenhavel } from "../ornamentos.js";
 
 // as temperaturas (o meandro pintado até o ponto de alerta de cada uma) e a ventoinha da placa, que gira
 function medalhoesSensores(sens) {
@@ -126,6 +127,17 @@ function lerPortas(texto, interfaces) {
   return [...portas.values()].sort((a, b) => a.porta - b.porta || a.proto.localeCompare(b.proto));
 }
 
+// a esfera armilar: um anel por alcance, do servidor para fora, com um ponto por porta aberta nele (a porta
+// aberta em todas as redes conta lá, em cinábrio, como o selo dela na lista)
+const ALCANCES = ["só o servidor", "containers", "rede de casa", "Tailscale", "todas as redes"];
+function esferaDaRede(portas) {
+  const aneis = ALCANCES.map((nome) => ({ nome, portas: portas.filter((p) => p.alcances.has(nome)).length, exposto: nome === "todas as redes" }));
+  const esfera = desenhavel(esferaArmilar(aneis, `Portas abertas por alcance: ${aneis.map((a) => `${a.nome}, ${a.portas}`).join("; ")}`), "esfera");
+  return h("div", { class: "rede-esfera" }, esfera,
+    h("ul", { class: "esfera-legenda", "aria-hidden": "true" }, aneis.map((a) => h("li", { class: a.exposto && a.portas ? "exposto" : null },
+      h("span", { class: "anel-nome" }, a.nome), h("span", { class: "anel-conta" }, num(a.portas))))));
+}
+
 async function cartaoRede() {
   const r = await consultar("sistema.rede");
   const c = r.ok === false ? cartao("Rede", falha(r), semAcao(r, "sistema.rede")) : (() => {
@@ -133,6 +145,7 @@ async function cartaoRede() {
     const visiveis = interfaces.filter((i) => !i.nome.startsWith("veth"));
     const portas = lerPortas(r.resultado.portas, interfaces);
     return cartao("Rede",
+      esferaDaRede(portas),
       h("h3", null, "Endereços"),
       itens(visiveis.map((i) => item({
         led: i.estado === "DOWN" ? "apagado" : "ok",
