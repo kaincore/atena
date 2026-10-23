@@ -311,12 +311,19 @@ main {
   .modulo-topo .codigo { order: 3; flex-basis: 100%; max-width: none; padding-left: 1.55rem; white-space: normal; }
 }
 
-/* o esqueleto: a placa já posta, e o meandro se fazendo enquanto o dado chega */
+/* o esqueleto: a placa já posta, o meandro se fazendo e a hachura no lugar das linhas enquanto o dado chega */
 .esqueleto .faixa-meandro { width: 8rem; margin: .2rem 0 1rem; }
 .esqueleto .faixa-meandro .traco { stroke-dasharray: 1 1; animation: refazer 2s var(--traco) infinite; }
 @keyframes refazer { 0% { stroke-dashoffset: 1; } 55% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -1; } }
-.esqueleto .marca-vazia { display: block; height: .6rem; margin: .9rem 0; border-radius: 3px; background: var(--placa-2); }
+/* a hachura de quem espera: traçada da esquerda para a direita e apagada, uma linha depois da outra */
+.esqueleto .marca-vazia, .carregando::after {
+  display: block; height: .62rem; margin: .9rem 0;
+  background: repeating-linear-gradient(-58deg, var(--veio-forte) 0 1px, transparent 1px 5px);
+  animation: hachurar 2.4s var(--traco) calc(var(--k, 0) * .14s) infinite backwards;
+}
 .esqueleto .marca-vazia.curta { width: 55%; }
+.carregando::after { content: ""; width: min(100%, 9rem); height: .55rem; margin: .55rem 0 0; }
+@keyframes hachurar { 0% { clip-path: inset(0 100% 0 0); } 50%, 62% { clip-path: inset(0); } 100% { clip-path: inset(0 0 0 100%); } }
 
 /* o conteúdo que chega no lugar do esqueleto só aparece, todo junto; o que se mexe é o que mede (o anel
    se pinta, a escada se assenta). backwards: nada da animação fica no módulo depois que ela acaba (uma

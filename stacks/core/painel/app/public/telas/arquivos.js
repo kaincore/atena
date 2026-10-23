@@ -1,5 +1,5 @@
 // Arquivos: o servidor inteiro, menos os segredos (o executor decide o que sai).
-import { abrirJanela, atualizar, campo, cartao, consultar, falha, h, item, itens, num, semAcao } from "../comum.js";
+import { abrirJanela, atualizar, campo, cartao, carregando, consultar, falha, h, item, itens, num, semAcao } from "../comum.js";
 import { picto } from "../pictos.js";
 
 const arquivos = { caminho: "/srv" };
@@ -14,7 +14,7 @@ function baixar(nome, texto) {
 }
 
 async function abrirArquivo(caminho) {
-  abrirJanela(caminho, h("p", { class: "fraco" }, "Carregando…"));
+  abrirJanela(caminho, carregando("Carregando…"));
   const r = await consultar("arquivo.ler", { caminho });
   if (r.ok === false) return abrirJanela(caminho, falha(r));
   const x = r.resultado;
@@ -42,7 +42,7 @@ function cartaoProcurar(pasta) {
   const saida = h("div");
   const buscar = (acao, params, montar) => async (evento) => {
     evento.preventDefault();
-    saida.replaceChildren(h("p", { class: "fraco" }, "Procurando…"));
+    saida.replaceChildren(carregando("Procurando…"));
     const r = await consultar(acao, { pasta, ...params(evento.currentTarget) });
     saida.replaceChildren(...resultados(r, montar));
   };

@@ -1,6 +1,6 @@
 // Lab: os apps que o Claude Code fez e os trabalhos dele.
 import { $, abrirJanela, atualizar, botaoAtualizar, campo, cartao, consultar, estadoTexto, falha, h, item, itens, ledEstado, linha,
-  mudar, semAcao, statusDocker } from "../comum.js";
+  mudar, semAcao, statusDocker, carregando } from "../comum.js";
 
 const NOME_PROJETO = "[a-z0-9][a-z0-9\\-]{0,39}";
 const rascunho = { projeto: "", pedido: "", conta: "", modelo: "", esforco: "", minutos: "60", somente_plano: false, publicar: false,
@@ -35,7 +35,7 @@ function janelaComando(projeto) {
       evento.preventDefault();
       const botao = evento.currentTarget.querySelector("button");
       botao.disabled = true;
-      saida.replaceChildren(h("p", { class: "fraco" }, "Rodando…"));
+      saida.replaceChildren(carregando("Rodando…"));
       const r = await consultar("app.comando", { projeto, comando: campo.value });
       botao.disabled = false;
       saida.replaceChildren(...(r.ok === false ? [falha(r)] : [

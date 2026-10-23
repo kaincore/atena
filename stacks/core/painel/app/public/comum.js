@@ -158,12 +158,21 @@ export function cartao(titulo, ...conteudo) {
   return modulo(titulo, null, ...conteudo);
 }
 
-// a tela que ainda não chegou: as placas postas e o pintor fazendo o meandro enquanto o dado chega
+// a tela que ainda não chegou: as placas postas, o pintor fazendo o meandro e, no lugar de cada linha, a
+// hachura sendo traçada e apagada, uma linha depois da outra, enquanto o dado chega
 export function esqueleto() {
+  const marca = (k, curta) => {
+    const el = h("span", { class: `marca-vazia${curta ? " curta" : ""}` });
+    el.style.setProperty("--k", k);
+    return el;
+  };
   return [3, 5].map((linhas, i) => h("section", { class: "modulo esqueleto", "aria-hidden": "true" },
-    i === 0 ? faixa() : h("span", { class: "marca-vazia curta" }),
-    Array.from({ length: linhas }, (_, k) => h("span", { class: `marca-vazia${k % 3 === 2 ? " curta" : ""}` }))));
+    i === 0 ? faixa() : marca(0, true),
+    Array.from({ length: linhas }, (_, k) => marca(k + 1, k % 3 === 2))));
 }
+
+// o que espera uma resposta curta (abrir um arquivo, procurar, rodar um comando): o texto e a hachura
+export const carregando = (texto) => h("p", { class: "fraco carregando" }, texto);
 
 // um número na letra de pedra, com a unidade ao lado (o gasto do mês, a próxima vez da agenda)
 export function numeroGrande(texto, unidade) {
