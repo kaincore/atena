@@ -1,17 +1,19 @@
-// Início: uma lâmina só, planejada como uma prancha impressa. No alto, a data e a frase do dia escrita a partir
-// dos dados; no meio, as duas pranchas (o instrumento do servidor, com a legenda das letras, e a crepidoma das
-// zonas); nas margens, as notas: o que pede você e as pendências de um lado, os próximos agendamentos, o gasto
-// e o systemd do outro. Rolando para baixo, as leituras não se perdem: uma régua presa no alto da tela as
-// mantém à vista.
-import { api, avisar, cartao, consultar, containerOk, dinheiro, falha, gb, h, item, itens, linha, medidor, modulo,
-  num, plural, statusDocker } from "../comum.js";
+// Início: uma lâmina só, planejada como uma prancha impressa. No alto, a cabeça da folha: a data, a frase do dia
+// escrita a partir dos dados e, quando há algo, a rubrica com o que pede você. No meio, as duas pranchas (o
+// instrumento do servidor, com a legenda das letras, e a crepidoma das zonas); nas margens, as notas: a agenda e as
+// pendências de um lado, o gasto e o systemd do outro; embaixo, o colofão com a hora da leitura. Rolando para
+// baixo, as leituras não se perdem: uma régua presa no alto da tela as mantém à vista.
+import { api, atualizar, avisar, cartao, consultar, containerOk, dinheiro, falha, gb, h, item, itens, linha, medidor,
+  modulo, num, plural, statusDocker } from "../comum.js";
 import { quandoTexto } from "./agenda.js";
-import { relativo } from "./aprovacoes.js";
+import { abrirPedido, quem, relativo } from "./aprovacoes.js";
 import { abrirZona, marcarZonas, resumirZonas } from "../zonas.js";
 import { crepidoma, prancha, s, tom } from "../desenhos.js";
 import { desenhavel } from "../ornamentos.js";
 
 const GREGAS = ["Α", "Β", "Γ", "Δ", "Ε", "Ζ"];
+// como cada leitura se chama na régua (curto) e na frase do dia; os discos são "Disco /srv" e "o disco /srv"
+const CHAMAR = { CPU: ["CPU", "a CPU"], RAM: ["RAM", "a RAM"], Temperatura: ["Temp.", "a temperatura"], GPU: ["GPU", "a GPU"] };
 
 // as leituras do instrumento, de fora para dentro: a CPU, a RAM, a temperatura, a GPU e cada disco, com o
 // limite de cada uma (a tinta passa a ocre perto dele e a cinábrio passado dele, como nos medalhões). n e fmt
@@ -20,20 +22,21 @@ function leituras(r) {
   const carga = r.carga[0] / r.nucleos;
   const usada = (r.ram_total_mb - r.ram_disponivel_mb) / 1024, total = r.ram_total_mb / 1024;
   const cpu = r.temperaturas.cpu_c;
-  const leitura = (nome, n, casas, unidade, nota, fracao, alerta) => ({ nome, n, fmt: (x) => `${num(x, casas)}${unidade}`, nota, fracao, alerta });
+  const leitura = (nome, n, casas, unidade, nota, fracao, alerta, limite) => ({ nome, n, fmt: (x) => `${num(x, casas)}${unidade}`, nota, fracao, alerta, limite });
   return [
-    leitura("CPU", Math.min(99.9, carga * 100), carga < 0.1 ? 1 : 0, "%", `carga ${num(r.carga[0], 2)} em ${r.nucleos} núcleos`, carga, 1),
-    leitura("RAM", usada, 1, "\u00a0GB", `de ${num(total, 1)}\u00a0GB`, usada / total, 0.95),
-    cpu != null && leitura("Temperatura", cpu, 1, "\u00a0°C", "da CPU", cpu / 85, 1),
+    leitura("CPU", Math.min(99.9, carga * 100), carga < 0.1 ? 1 : 0, "%", `carga ${num(r.carga[0], 2)} em ${r.nucleos} núcleos`, carga, 1, "100% de carga"),
+    leitura("RAM", usada, 1, "\u00a0GB", `de ${num(total, 1)}\u00a0GB`, usada / total, 0.95, `${num(total * 0.95, 1)}\u00a0GB`),
+    cpu != null && leitura("Temperatura", cpu, 1, "\u00a0°C", "da CPU", cpu / 85, 1, "85\u00a0°C"),
     r.gpu && leitura("GPU", r.gpu.temperatura_c, 0, "\u00a0°C",
-      `uso ${num(r.gpu.uso_pct)}% · VRAM ${num(r.gpu.vram_usada_mb / 1024, 1)} de ${num(r.gpu.vram_total_mb / 1024, 1)}\u00a0GB`, r.gpu.temperatura_c / 85, 1),
+      `uso ${num(r.gpu.uso_pct)}% · VRAM ${num(r.gpu.vram_usada_mb / 1024, 1)} de ${num(r.gpu.vram_total_mb / 1024, 1)}\u00a0GB`, r.gpu.temperatura_c / 85, 1, "85\u00a0°C"),
     ...Object.entries(r.discos).map(([ponto, d]) => leitura(`Disco ${ponto}`, 100 * (1 - d.livre_gb / d.total_gb), 0, "%",
-      `${num(d.livre_gb, 1)}\u00a0GB livres de ${num(d.total_gb, 1)}\u00a0GB`, 1 - d.livre_gb / d.total_gb, 0.9)),
+      `${num(d.livre_gb, 1)}\u00a0GB livres de ${num(d.total_gb, 1)}\u00a0GB`, 1 - d.livre_gb / d.total_gb, 0.9, "90%")),
   ].filter(Boolean).slice(0, GREGAS.length)
-    .map((l, i) => ({ ...l, valor: l.fmt(l.n), letra: GREGAS[i], tom: tom(Math.min(1, l.fracao) / l.alerta) }));
+    .map((l, i) => ({ ...l, valor: l.fmt(l.n), letra: GREGAS[i], tom: tom(Math.min(1, l.fracao) / l.alerta),
+      curto: CHAMAR[l.nome]?.[0] ?? l.nome, frase: CHAMAR[l.nome]?.[1] ?? `o ${l.nome.toLowerCase()}` }));
 }
 
-// as notas da margem: o módulo sem a placa, só o título com a régua e o conteúdo (n-…: a ordem no celular)
+// as notas da margem: o módulo sem a placa, só o título com a régua e o conteúdo
 const nota = (el, nome) => {
   el?.classList.add("nota", `n-${nome}`);
   return el;
@@ -54,6 +57,7 @@ function contar(els, l, de, atraso, dura) {
   };
   requestAnimationFrame(passo);
 }
+
 // a última leitura vista neste aparelho: ao abrir de novo, o número conta dela até a de agora (nunca do zero,
 // que seria um número que o servidor não deu); a primeira vez no aparelho, ele já nasce certo
 const GUARDADAS = "atena-leituras";
@@ -65,9 +69,17 @@ function guardarVistos() {
   try { localStorage.setItem(GUARDADAS, JSON.stringify(Object.fromEntries(vistos))); } catch { /* sem onde guardar: na próxima abertura, só não conta */ }
 }
 
-
 // a linha acesa da legenda (pelo nome): continua acesa quando a folha se lê de novo
 let acesa = null;
+// leva ao instrumento que está na página e, com i, acende o anel daquela leitura (a régua e a rubrica chamam;
+// o da página, e não o da montagem: uma leitura descartada no meio não pode prender a tecla a uma cópia)
+function irParaLeitura(i) {
+  const instrumento = document.querySelector("#tela .lamina svg.instrumento");
+  if (!instrumento) return;
+  instrumento.scrollIntoView({ behavior: reduzido() ? "auto" : "smooth", block: "center" });
+  if (i != null) instrumento.fixar?.(String(i));
+}
+
 // tocar, passar o mouse ou dar Enter numa linha da legenda acende o anel dela e apaga os outros
 function ligarLegenda(instrumento, linhas, ls) {
   let fixo = acesa == null ? null : (() => { const i = ls.findIndex((l) => l.nome === acesa); return i < 0 ? null : String(i); })();
@@ -108,7 +120,7 @@ function pranchaServidor(r, ls, regua) {
     h("span", { class: "leitura" }, l.valor), h("span", { class: "nota-leitura" }, l.nota)));
   // o disco desenha o que a legenda diz: o leitor de tela lê a legenda, e o disco só se anuncia
   const instrumento = desenhavel(prancha(ls, "O instrumento do servidor: um anel por leitura da legenda"), "prancha-servidor");
-  ligarLegenda(instrumento, linhas, ls);
+  instrumento.fixar = ligarLegenda(instrumento, linhas, ls);
   ls.forEach((l, i) => {
     const els = [linhas[i].querySelector(".leitura"), regua?.querySelector(`[data-i="${i}"] .v`)].filter(Boolean);
     const antes = vistos.get(l.nome);
@@ -168,39 +180,63 @@ function vigiar(alvo, regua) {
   regua.addEventListener("click", () => alvo.scrollIntoView({ behavior: reduzido() ? "auto" : "smooth", block: "center" }));
 }
 
-// a frase do dia: primeiro o que está errado (o que caiu, o que falhou, a leitura que passou do limite),
-// depois o que espera você, por fim o próximo agendamento
-function fraseDoDia({ total, ruins, falhas, alertas, pedidos, abertas, proximo }) {
-  const partes = [];
-  if (!ruins.length && !falhas.length && !alertas.length) partes.push(`Tudo em ordem: ${plural(total, "container", "containers")} no ar.`);
-  if (ruins.length === 1) partes.push(`O container ${ruins[0].container} está fora do ar.`);
-  else if (ruins.length) partes.push(`${ruins.length} containers estão fora do ar.`);
-  if (falhas.length === 1) partes.push(`A unidade ${falhas[0]} falhou.`);
-  else if (falhas.length) partes.push(`${falhas.length} unidades do systemd falharam.`);
-  for (const l of alertas) partes.push(`${l.nome} passou do limite: ${l.valor}.`);
+const juntar = (...frases) => frases.filter(Boolean).join(" ");
+
+// a frase do dia, em duas no máximo: o veredito (o que está errado, ou "Tudo em ordem", que só se diz quando
+// tudo foi lido) e o que espera você; na calma, sem nada esperando, o próximo agendamento
+function fraseDoDia({ total, ruins, falhas, alertas, naoLidos, fora, pedidos, abertas, proximo }) {
   const esperando = [pedidos && plural(pedidos, "aprovação", "aprovações"), abertas && plural(abertas, "pendência", "pendências")].filter(Boolean);
-  if (esperando.length) partes.push(`${esperando.join(" e ")} ${pedidos + abertas === 1 ? "espera" : "esperam"} você.`);
-  if (proximo) partes.push(`O próximo agendamento é ${proximo.nome}, ${quandoTexto(proximo.proxima)}.`);
-  return partes.join(" ");
+  const espera = esperando.length > 0 && `${esperando.join(" e ")} ${pedidos + abertas === 1 ? "espera" : "esperam"} você.`;
+  if (fora) return juntar("Não consegui ler o servidor agora.", espera);
+  const males = [
+    ...ruins.map((c) => (c.estado === "running" ? `o ${c.container} falha na verificação de saúde` : `o ${c.container} está fora do ar`)),
+    ...falhas.map((u) => `a unidade ${u} falhou`),
+    ...alertas.map((l) => `${l.frase} passou do limite`),
+    ...naoLidos.map((n) => `não consegui ler ${n.oque}`),
+  ];
+  if (!males.length) return juntar(`Tudo em ordem: ${plural(total, "container", "containers")} no ar.`,
+    espera || (proximo && `O próximo agendamento é ${proximo.nome}, ${quandoTexto(proximo.proxima)}.`));
+  // com três ou mais, o primeiro e a conta do resto: os detalhes estão logo abaixo, na rubrica
+  const veredito = males.length <= 2 ? males.join(" e ") : `${males[0]} e mais ${num(males.length - 1)} coisas pedem atenção`;
+  return juntar(`${veredito[0].toUpperCase()}${veredito.slice(1)}.`, espera);
 }
 
-// o alto da folha: a data e a frase
+// a rubrica: o que pede você, na cabeça da folha, logo abaixo da frase (só quando há algo), com o título na
+// tinta do mais grave: o que não deu para ler, o que caiu, o que falhou, a leitura que passou do limite e, por
+// fim, os pedidos, cada um com o motivo e o "Ver" que abre ele mesmo
+function rubrica(dados) {
+  const tentar = () => h("button", { type: "button", class: "discreto", onclick: () => atualizar() }, "Tentar de novo");
+  const linhas = [
+    dados.fora ? item({ led: "ruim", nome: "Não consegui ler o servidor", detalhe: dados.fora, acoes: tentar(), chave: "fora" })
+      : dados.naoLidos.map((n) => item({ led: "ruim", nome: `Não consegui ler ${n.oque}`, detalhe: n.erro, acoes: tentar(), chave: `nao-lido:${n.oque}` })),
+    dados.ruins.map((c) => item({ led: "ruim", nome: c.container, detalhe: statusDocker(c.status), rachado: c.container, chave: `caiu:${c.container}`,
+      acoes: h("button", { type: "button", class: "discreto", onclick: () => abrirZona(c.zona) }, "Ver") })),
+    dados.falhas.map((u) => item({ led: "ruim", nome: u, detalhe: "unidade do systemd que falhou", rachado: u, chave: `falhou:${u}` })),
+    dados.alertas.map((l) => item({ led: "ruim", nome: l.nome, detalhe: `${l.valor} · passou do limite de ${l.limite}`, chave: `limite:${l.nome}`,
+      acoes: h("button", { type: "button", class: "discreto", onclick: () => irParaLeitura(dados.ls.indexOf(l)) }, "Ver") })),
+    dados.listaPedidos.map((p) => item({ led: "morno", nome: p.titulo ?? p.acao, detalhe: `${quem(p.cliente)} · vence ${relativo(p.expira)}`, chave: `pedido:${p.id}`,
+      extra: (p.texto ?? p.pergunta) && h("p", { class: "motivo" }, p.texto ?? p.pergunta),
+      acoes: h("button", { type: "button", class: "discreto", onclick: () => abrirPedido(p.id) }, "Ver") })),
+  ].flat();
+  if (!linhas.length) return null;
+  const grave = linhas.length > dados.listaPedidos.length;
+  return h("section", { class: `rubrica ${grave ? "grave" : "espera"}`, "aria-labelledby": "rubrica-titulo" },
+    h("h2", { class: "rubrica-titulo", id: "rubrica-titulo" }, "O que pede você"), itens(linhas));
+}
+
+// a cabeça da folha: a data, a frase e a rubrica
 function topo(dados) {
   const hoje = new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" });
   return h("header", { class: "lamina-topo" }, h("p", { class: "dia-data" }, hoje[0].toUpperCase() + hoje.slice(1)),
-    h("p", { class: "dia-frase" }, fraseDoDia(dados)));
+    h("p", { class: `dia-frase${dados.fora ? " erro" : ""}` }, fraseDoDia(dados)), rubrica(dados));
 }
 
-// o que pede você: os pedidos, o que caiu e o que falhou (só aparece quando há algo)
-function notaPede(dados) {
-  const pede = [
-    dados.listaPedidos.map((p) => item({ led: "morno", nome: p.titulo ?? p.acao, detalhe: `${p.cliente} · vence ${relativo(p.expira)}`,
-      acoes: h("button", { type: "button", class: "discreto", onclick: () => { location.hash = "#aprovacoes"; } }, "Ver") })),
-    dados.ruins.map((c) => item({ led: "ruim", nome: c.container, detalhe: statusDocker(c.status), rachado: c.container,
-      acoes: h("button", { type: "button", class: "discreto", onclick: () => abrirZona(c.zona) }, "Ver") })),
-    dados.falhas.map((u) => item({ led: "ruim", nome: u, detalhe: "unidade do systemd que falhou", rachado: u })),
-  ].flat();
-  return pede.length ? nota(modulo("O que pede você", null, itens(pede)), "pede") : null;
+// o fim da folha: quando ela foi lida (a tela se lê de novo sozinha a cada 30 s)
+function colofao(fora) {
+  const agora = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  return h("footer", { class: "colofao" }, fora
+    ? `Tentei ler o servidor às ${agora}; tento de novo a cada 30\u00a0s.`
+    : `Lido do servidor às ${agora} · uma leitura nova a cada 30\u00a0s, com o painel aberto.`);
 }
 
 // "**negrito**" e "`código`" do README, sem innerHTML
@@ -250,7 +286,7 @@ function cartaoProximos(r) {
   const proximos = r.agendamentos.filter((a) => a.ativo && a.proxima).slice(0, 3);
   return cartao("Próximos agendamentos",
     itens(proximos.map((a) => item({ led: "info", nome: a.nome, detalhe: quandoTexto(a.proxima) })), "Nada agendado."),
-    h("p", null, h("a", { href: "#agenda" }, "Ver a agenda")));
+    h("p", null, h("a", { href: "#agenda", class: "ir" }, "Ver a agenda")));
 }
 
 // o gasto do mês numa linha, na medida das leituras, com um medidor só (o de todos os tetos); o de cada
@@ -276,21 +312,32 @@ export async function telaInicio() {
     consultar("status.recursos"), consultar("status.servicos"), consultar("gasto.api"), consultar("status.sistema"),
     consultar("aprovacoes.lista"), api("GET", "/api/pendencias"), api("GET", "/api/agendamentos"),
   ]);
+  // o que não deu para ler não vira "nada": sem nenhuma das quatro, o servidor não respondeu; sem uma ou
+  // outra, a frase diz qual. Sem a central de aprovações (403 ou 404: o executor antigo ou o token sem a
+  // ação), não há o que ler, e isso não é falha
+  const semAprovacoes = aprovacoes.status === 403 || aprovacoes.status === 404;
+  const lidas = [[recursos, "as leituras do servidor"], [servicos, "os serviços"], [sistema, "o systemd"],
+    ...(semAprovacoes ? [] : [[aprovacoes, "as aprovações"]])];
+  const naoLidos = lidas.filter(([r]) => r.ok === false).map(([r, oque]) => ({ oque, erro: r.erro }));
+  const fora = naoLidos.length === lidas.length ? naoLidos[0].erro ?? "o executor não respondeu" : null;
+  // com o servidor fora, a rubrica diz o erro uma vez só, e as notas só dizem que não há leitura
+  const semLeitura = (r) => (fora ? h("p", { class: "fraco" }, "Sem leitura agora.") : falha(r));
+
   const lista = servicos.ok === false ? [] : servicos.resultado;
   const falhas = sistema.ok === false ? [] : sistema.resultado.falhas;
   const listaPedidos = aprovacoes.ok === false ? [] : aprovacoes.resultado.pendentes;
   const proximo = agenda.ok === false ? null : agenda.agendamentos.filter((a) => a.ativo && a.proxima).sort((a, b) => a.proxima - b.proxima)[0];
-  const alertas = recursos.ok === false ? [] : leituras(recursos.resultado).filter((l) => l.tom === "cinabrio");
+  const r = recursos.ok === false ? null : recursos.resultado;
+  const ls = r ? leituras(r) : [];
   const dados = {
-    total: lista.length, ruins: lista.filter((c) => !containerOk(c)), falhas, alertas, listaPedidos, pedidos: listaPedidos.length,
+    total: lista.length, ruins: lista.filter((c) => !containerOk(c)), falhas, ls, alertas: ls.filter((l) => l.tom === "cinabrio"),
+    naoLidos: fora ? [] : naoLidos, fora, listaPedidos, pedidos: listaPedidos.length,
     abertas: pendencias.ok === false ? 0 : pendencias.pendencias.filter((p) => !p.feita).length, proximo,
   };
 
-  const gastoMes = gasto.ok === false ? cartao("Gasto de IA", falha(gasto)) : notaGasto(gasto.resultado);
-
   // o systemd: as falhas sobem para o que pede você; aqui ficam a conta e os timers
   let notaSistema;
-  if (sistema.ok === false) notaSistema = cartao("Sistema", falha(sistema));
+  if (sistema.ok === false) notaSistema = cartao("Sistema", semLeitura(sistema));
   else {
     const s = sistema.resultado;
     notaSistema = modulo("Sistema", s.falhas.length ? `${s.falhas.length} com falha` : null,
@@ -300,15 +347,17 @@ export async function telaInicio() {
         itens(s.timers.map((t) => item({ nome: t.nome, detalhe: `próxima: ${t.proxima ?? "—"}` })))));
   }
 
-  const r = recursos.ok === false ? null : recursos.resultado;
-  const ls = r ? leituras(r) : [];
   const regua = r ? reguaFixa(ls, servicos.ok === false ? null : lista, listaPedidos.length) : null;
-  const servidor = r ? pranchaServidor(r, ls, regua) : nota(cartao("Servidor", falha(recursos)), "servidor");
+  const servidor = r ? pranchaServidor(r, ls, regua) : nota(cartao("Servidor", semLeitura(recursos)), "servidor");
   if (regua) vigiar(servidor, regua);
+  // no celular, uma coluna na ordem do código: o servidor, as zonas, a agenda, as pendências, o gasto, o
+  // systemd; na lâmina larga, a grade põe cada parte no seu lugar
   return [h("section", { class: "lamina largo" }, regua, topo(dados),
     h("div", { class: "lamina-corpo" },
-      h("div", { class: "margem esquerda" }, notaPede(dados), await cartaoPendencias(pendencias)),
       h("div", { class: "centro" }, servidor,
-        servicos.ok === false ? nota(cartao("Zonas", falha(servicos)), "zonas") : pranchaZonas(lista)),
-      h("div", { class: "margem direita" }, nota(cartaoProximos(agenda), "agenda"), nota(gastoMes, "gasto"), nota(notaSistema, "sistema"))))];
+        servicos.ok === false ? nota(cartao("Zonas", semLeitura(servicos)), "zonas") : pranchaZonas(lista)),
+      h("div", { class: "margem esquerda" }, nota(cartaoProximos(agenda), "agenda"), await cartaoPendencias(pendencias)),
+      h("div", { class: "margem direita" },
+        nota(gasto.ok === false ? cartao("Gasto de IA", semLeitura(gasto)) : notaGasto(gasto.resultado), "gasto"), nota(notaSistema, "sistema"))),
+    colofao(fora))];
 }

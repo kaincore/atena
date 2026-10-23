@@ -352,23 +352,36 @@ main {
 .gesto .traco { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
 .gesto.circulo .traco { stroke-width: 1.6; }
 .gesto.some { opacity: 0; }
-/* --- o Início: uma lâmina só, planejada como uma prancha impressa. No alto, a data e a frase, sobre um filete
-   duplo; no meio, as duas pranchas (o instrumento do servidor, com a legenda das letras, e a crepidoma das
-   zonas); nas margens, as notas, separadas do meio por filetes duplos. No celular, tudo numa coluna, na ordem
-   de leitura (o order de cada parte). A régua presa no alto guarda as leituras quando o instrumento sai da tela */
+/* --- o Início: uma lâmina só, planejada como uma prancha impressa. No alto, a cabeça da folha (a data, a frase
+   e a rubrica), sobre um filete duplo; no meio, as duas pranchas (o instrumento do servidor, com a legenda das
+   letras, e a crepidoma das zonas); nas margens, as notas, separadas do meio por filetes duplos; embaixo, o
+   colofão. No celular, tudo numa coluna, na ordem do código. A régua presa no alto guarda o que importa quando
+   o instrumento sai da tela */
 .lamina { display: grid; gap: 1.8rem; }
 .lamina-topo { padding: .2rem 0 1.4rem; border-bottom: 3px double var(--veio-forte); }
 .dia-data { margin: 0 0 .35rem; font-size: .86rem; color: var(--tinta-2); }
 .dia-frase { margin: 0; max-width: 38rem; font-size: 1.28rem; line-height: 1.38; font-weight: 500; font-variation-settings: var(--pedra-letra); text-wrap: pretty; }
 .lamina-corpo { display: grid; gap: 2.6rem; align-items: start; }
 .margem, .centro { display: contents; }
-.n-pede { order: 1; }
-.n-servidor { order: 2; }
-.n-zonas { order: 3; }
-.n-agenda { order: 4; }
-.n-gasto { order: 5; }
-.n-sistema { order: 6; }
-.n-pendencias { order: 7; }
+/* a rubrica: o que pede você na cabeça da folha, com o título entre dois fios, na tinta do mais grave
+   (cinábrio quando algo caiu, falhou, passou do limite ou não foi lido; ocre quando só há pedidos); as linhas
+   vão em colunas quando há largura, centradas sob a frase */
+.rubrica { margin-top: 1.5rem; text-align: left; }
+.rubrica-titulo {
+  display: grid; grid-template-columns: minmax(1rem, 1fr) auto minmax(1rem, 1fr); align-items: center; gap: .9rem;
+  margin: 0 0 .5rem; font-size: 1.02rem; font-variation-settings: var(--titulo-letra); font-weight: 500; text-align: center;
+}
+.rubrica-titulo::before, .rubrica-titulo::after { content: ""; height: 1px; background: var(--veio-forte); }
+.rubrica.grave .rubrica-titulo { color: var(--cinabrio-tinta); }
+.rubrica.espera .rubrica-titulo { color: var(--ocre-tinta); }
+.rubrica .itens { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 25rem)); justify-content: center; align-items: start; column-gap: 2.4rem; }
+.rubrica .item, .rubrica .item:first-child, .rubrica .item:last-child { padding: .75rem 0; border-top: 1px solid var(--veio); }
+.rubrica .motivo {
+  margin: .1rem 0 0; font-size: .82rem; line-height: 1.4; color: var(--tinta-2);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+/* o colofão: o fim da folha, com a hora da leitura, sobre o mesmo filete duplo da cabeça */
+.colofao { padding-top: 1.1rem; border-top: 3px double var(--veio-forte); font-size: .8rem; line-height: 1.45; color: var(--tinta-2); text-align: center; text-wrap: balance; }
 /* o gasto do mês numa linha, na medida das leituras */
 .gasto-total { margin: 0 0 .55rem; font-size: .86rem; color: var(--tinta-2); }
 .gasto-total strong { color: var(--tinta); font-size: 1.05rem; font-variation-settings: var(--titulo-letra); font-weight: 500; font-variant-numeric: tabular-nums; }
@@ -464,7 +477,7 @@ main {
   .lamina-topo { text-align: center; }
   .dia-frase { margin-inline: auto; font-size: 1.55rem; }
   .lamina-corpo { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 2.6rem; }
-  .lamina :is(.n-pede, .n-servidor, .n-zonas) { grid-column: 1 / -1; }
+  .lamina :is(.n-servidor, .n-zonas) { grid-column: 1 / -1; }
   .prancha-servidor { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); column-gap: 1.4rem; grid-template-areas: "esq disco dir" "titulo titulo titulo"; }
   .prancha-servidor .instrumento { width: 14rem; }
   .prancha-servidor :is(.lado-esq, .lado-dir) { align-self: center; max-width: 14rem; }
@@ -480,7 +493,6 @@ main {
   /* a lâmina larga: as notas nas margens, as pranchas no meio, filetes duplos entre eles */
   .lamina-corpo { grid-template-columns: 16rem minmax(0, 1fr) 16rem; column-gap: 0; align-items: stretch; }
   .margem, .centro { display: grid; align-content: start; gap: 2.4rem; }
-  .lamina .n-pede { grid-column: auto; }
   .lamina :is(.n-servidor, .n-zonas) { grid-column: auto; }
   .margem.esquerda { grid-column: 1; grid-row: 1; padding-right: 1.6rem; border-right: 3px double var(--veio-forte); }
   .margem.direita { grid-column: 3; grid-row: 1; padding-left: 1.6rem; border-left: 3px double var(--veio-forte); }
