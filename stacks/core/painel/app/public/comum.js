@@ -1,7 +1,7 @@
 // O que todas as telas usam: montar elementos, falar com a API, os textos de estado e os módulos do
 // painel. As três funções da casca (atualizar, telaAtual, mostrarEntrada) o app.js liga ao começar.
 import { chave, faixa } from "./desenhos.js";
-import { fecho } from "./ornamentos.js";
+import { fecho, rachadura } from "./ornamentos.js";
 
 export { vazio } from "./ornamentos.js";
 
@@ -193,10 +193,12 @@ export function linha(rotulo, valor, extra) {
 // Uma linha de lista, igual em todas as telas: o ponto do estado (o texto dele vem no detalhe), o nome,
 // o detalhe embaixo e as teclas à direita (num módulo estreito, várias teclas descem para baixo do
 // nome). O extra ocupa a largura toda embaixo: um resumo, um registro, os "detalhes".
-export function item({ led, nome, detalhe, acoes, extra, classe }) {
+// rachado: o nome do que caiu (a rachadura se desenha atrás da linha, sempre com a mesma forma para ele)
+export function item({ led, nome, detalhe, acoes, extra, classe, rachado }) {
   const teclas = [acoes].flat(Infinity).filter(Boolean);
   const embaixo = [extra].flat(Infinity).filter(Boolean);
-  return h("li", { class: ["item", !led && "sem-led", classe].filter(Boolean).join(" "), "data-acoes": teclas.length || null },
+  return h("li", { class: ["item", !led && "sem-led", rachado && "rachado", classe].filter(Boolean).join(" "), "data-acoes": teclas.length || null },
+    rachado && rachadura(rachado),
     led && h("span", { class: `led ${led}` }),
     h("div", { class: "item-texto" }, h("div", { class: "item-nome" }, nome), detalhe && h("div", { class: "item-detalhe" }, detalhe)),
     teclas.length > 0 && h("div", { class: "item-acoes" }, teclas),

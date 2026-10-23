@@ -341,6 +341,11 @@ main {
 .fecho { width: 9rem; height: auto; overflow: visible; color: var(--tinta-3); }
 .fecho .traco { fill: none; stroke: currentColor; stroke-width: .9; stroke-linecap: round; stroke-linejoin: round; }
 .fecho .ponto { fill: currentColor; }
+/* a rachadura atrás da linha do que caiu, como no reboco do afresco */
+.item.rachado { position: relative; }
+.item.rachado > :not(.rachadura) { position: relative; }
+.rachadura { position: absolute; left: 0; top: -1px; height: 1.5rem; width: auto; max-width: 100%; pointer-events: none; overflow: visible; color: var(--cinabrio); opacity: .5; }
+.rachadura .traco { fill: none; stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
 
 /* o conteúdo que chega no lugar do esqueleto só aparece, todo junto; o que se mexe é o que mede (o anel
    se pinta, a escada se assenta). backwards: nada da animação fica no módulo depois que ela acaba (uma

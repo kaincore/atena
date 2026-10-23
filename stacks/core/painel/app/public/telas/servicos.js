@@ -131,6 +131,7 @@ function consumoDe(container, uso) {
 
 const linhaContainer = (c, uso, nome = c.container, acoes = null) => item({
   led: containerOk(c) ? "ok" : "ruim", nome, detalhe: [statusDocker(c.status), consumoDe(c.container, uso)], acoes,
+  rachado: !containerOk(c) && c.container,
 });
 
 // uma stack: com um container só (do mesmo nome), uma linha; com vários, a stack e os containers presos a ela

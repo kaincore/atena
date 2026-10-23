@@ -116,3 +116,46 @@ export function fecho(chave) {
     lado(false), lado(true)));
   return desenhavel(h("li", "fecho-item", svg), `fecho|${chave}`, "visivel");
 }
+
+// --- a rachadura: o que caiu racha como o reboco do afresco, a partir da borda de cima da linha dele; a
+// forma vem do nome (é sempre a mesma) ---
+
+function sorteador(texto) {
+  let x = 2166136261;
+  for (const c of texto) x = Math.imul(x ^ c.codePointAt(0), 16777619);
+  return () => {
+    x = (Math.imul(x, 1664525) + 1013904223) >>> 0;
+    return x / 4294967296;
+  };
+}
+
+function veio(sorte, x, y, angulo, passos, tamanho) {
+  let d = `M${x.toFixed(1)} ${y.toFixed(1)}`;
+  const curva = [];
+  for (let i = 0; i < passos; i++) {
+    angulo = Math.max(-1.1, Math.min(1.1, angulo + (sorte() - 0.5) * 0.9));
+    const passo = tamanho * (0.7 + sorte() * 0.9);
+    x += Math.cos(angulo) * passo;
+    y += Math.sin(angulo) * passo * 0.75;
+    if (y < 2 || y > 46) {
+      y = Math.max(2, Math.min(46, y));
+      angulo = -angulo;
+    }
+    d += ` L${x.toFixed(1)} ${y.toFixed(1)}`;
+    curva.push([x, y, angulo]);
+  }
+  return [d, curva];
+}
+
+export function rachadura(nome) {
+  const sorte = sorteador(nome);
+  const [tronco, curva] = veio(sorte, 4 + sorte() * 30, 1, 0.55, 14, 11);
+  const galhos = [4, 9].map((i) => {
+    const [x, y, a] = curva[i];
+    return veio(sorte, x, y, a + (sorte() < 0.5 ? 1 : -1) * 0.9, 3, 7)[0];
+  });
+  const svg = prepararTracos(s("svg", { class: "rachadura", viewBox: "0 0 240 48", preserveAspectRatio: "xMinYMid meet", "aria-hidden": "true" },
+    s("path", { class: "traco", d: tronco, pathLength: 1, "data-atraso": 0.1, "data-duracao": 0.9 }),
+    galhos.map((d, i) => s("path", { class: "traco", d, pathLength: 1, "data-atraso": 0.45 + i * 0.3, "data-duracao": 0.35 }))));
+  return desenhavel(svg, `racha|${nome}`);
+}

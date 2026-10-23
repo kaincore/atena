@@ -98,7 +98,7 @@ export async function telaInicio() {
     const ruins = lista.filter((c) => !containerOk(c));
     const desenho = modulo("Zonas", `${lista.length - ruins.length} de ${lista.length} no ar`,
       crepidoma(zonas, abrirZona),
-      ruins.length ? itens(ruins.map((c) => item({ led: "ruim", nome: c.container, detalhe: statusDocker(c.status) })))
+      ruins.length ? itens(ruins.map((c) => item({ led: "ruim", nome: c.container, detalhe: statusDocker(c.status), rachado: c.container })))
         : h("p", { class: "fraco" }, "Todos os containers no ar. Toque numa zona para ver os serviços dela."),
       h("p", null, h("a", { href: "#servicos" }, "Ver os serviços")));
     cartoes.push(desenho);
@@ -121,7 +121,7 @@ export async function telaInicio() {
   else {
     const s = sistema.resultado;
     cartoes.push(modulo("Sistema", s.falhas.length ? `${s.falhas.length} com falha` : `${s.timers.length} timers`,
-      s.falhas.length ? itens(s.falhas.map((u) => item({ led: "ruim", nome: u, detalhe: "falhou" })))
+      s.falhas.length ? itens(s.falhas.map((u) => item({ led: "ruim", nome: u, detalhe: "falhou", rachado: u })))
         : h("p", { class: "fraco" }, "Nenhuma unidade do systemd com falha."),
       h("details", null, h("summary", null, `Timers (${s.timers.length})`),
         itens(s.timers.map((t) => item({ nome: t.nome, detalhe: `próxima: ${t.proxima ?? "—"}` })))),
