@@ -367,3 +367,51 @@ export function esferaArmilar(aneis, rotulo) {
   esfera.style.setProperty("--lado", `${2 * lado}px`);
   return esfera;
 }
+
+// --- a prancha do servidor: o instrumento gravado do Início, como numa prancha científica antiga. Um anel
+// por leitura, de fora para dentro, com as bordas finas e a tinta em hachura pintada até o valor, desde o
+// zero no alto; as letras gregas no eixo do zero, que a legenda embaixo explica; a graduação em volta e a
+// estrela no meio. Na primeira vez a graduação se desenha em volta e os anéis se pintam; nas outras, a
+// tinta anda do valor anterior até o novo
+const ultimasLeituras = new Map();
+let pranchas = 0;
+
+export function prancha(aneis, rotulo) {
+  const id = `hachura-${++pranchas}`;
+  const padroes = ["azul", "ocre", "cinabrio"].map((t) => s("pattern", { id: `${id}-${t}`, patternUnits: "userSpaceOnUse", width: 2.6, height: 2.6, patternTransform: "rotate(35)" },
+    s("line", { x1: 0, y1: 0, x2: 0, y2: 2.6, class: `hachura ${t}` })));
+  let graduacao = "";
+  for (let k = 0; k < 72; k++) {
+    const a = (k * 5 * Math.PI) / 180 - Math.PI / 2, dentro = k % 6 ? 89.5 : 85.5;
+    graduacao += `M${r2(dentro * Math.cos(a))} ${r2(dentro * Math.sin(a))}L${r2(93 * Math.cos(a))} ${r2(93 * Math.sin(a))}`;
+  }
+  const centro = Array.from({ length: 16 }, (_, k) => {
+    const a = (k * Math.PI) / 8 - Math.PI / 2, r = k % 2 ? 4.2 : 11;
+    return `${k ? "L" : "M"}${r2(r * Math.cos(a))} ${r2(r * Math.sin(a))}`;
+  }).join("") + "Z";
+  const partes = aneis.map((anel, i) => {
+    const r = 76 - i * 11, f = limite(anel.fracao);
+    const antes = ultimasLeituras.get(anel.letra);
+    ultimasLeituras.set(anel.letra, f);
+    const valor = s("circle", { r, pathLength: 1, transform: "rotate(-90)", stroke: `url(#${id}-${anel.tom})`,
+      class: `valor${antes != null && Math.abs(antes - f) > 0.004 ? " andando" : ""}`, "data-atraso": (0.95 + i * 0.12).toFixed(2) });
+    valor.style.setProperty("--f", f.toFixed(4));
+    if (antes != null) valor.style.setProperty("--de", antes.toFixed(4));
+    return [
+      s("circle", { r: r + 3.7, class: "traco borda", pathLength: 1, "data-atraso": (0.4 + i * 0.07).toFixed(2), "data-duracao": "0.7" }),
+      s("circle", { r: r - 3.7, class: "traco borda", pathLength: 1, "data-atraso": (0.45 + i * 0.07).toFixed(2), "data-duracao": "0.7" }),
+      valor,
+      s("text", { x: -3.4, y: r2(-r + 2.3), class: "letra", "text-anchor": "end", "data-atraso": (1.1 + i * 0.1).toFixed(2) }, anel.letra),
+    ];
+  });
+  const inicio = 76 - (aneis.length - 1) * 11 - 6;
+  const svg = prepararTracos(s("svg", { class: "instrumento", viewBox: "-100 -100 200 200", role: "img", "aria-label": rotulo },
+    s("defs", null, padroes),
+    s("path", { class: "traco graduacao", d: graduacao, pathLength: 1, "data-atraso": "0", "data-duracao": "1.2" }),
+    s("circle", { class: "traco", r: 93, pathLength: 1, "data-atraso": "0.1", "data-duracao": "1.1" }),
+    s("path", { class: "traco indice", d: `M0 ${-inicio}V-97`, pathLength: 1, "data-atraso": "0.3", "data-duracao": "0.5" }),
+    partes,
+    s("path", { class: "traco estrela", d: centro, pathLength: 1, "data-atraso": "0.6", "data-duracao": "0.9" }),
+    s("circle", { class: "ponto", r: 1.3, "data-atraso": "1.3" })));
+  return svg;
+}
