@@ -352,7 +352,15 @@ main {
 .gesto .traco { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
 .gesto.circulo .traco { stroke-width: 1.6; }
 .gesto.some { opacity: 0; }
-/* --- o instrumento do servidor (desenhos.js): a graduação, os anéis com a tinta em hachura e as letras --- */
+/* --- o Início: a data e a frase do dia, o que pede você ao lado e, embaixo, as duas pranchas impressas
+   direto na página (o instrumento do servidor e a crepidoma das zonas), cada uma com a legenda e o título --- */
+.dia { display: grid; gap: 1rem; align-items: start; }
+.dia-data { margin: 0 0 .35rem; font-size: .86rem; color: var(--tinta-2); }
+.dia-frase { margin: 0; max-width: 36rem; font-size: 1.28rem; line-height: 1.38; font-weight: 500; font-variation-settings: var(--pedra-letra); text-wrap: pretty; }
+.pranchas { display: grid; gap: 2.2rem; padding: .7rem 0 .9rem; }
+.prancha { margin: 0; display: grid; justify-items: center; gap: 1rem; min-width: 0; }
+.prancha figcaption { font-size: .8rem; line-height: 1.45; color: var(--tinta-2); text-align: center; }
+.prancha-numero { font-variation-settings: var(--pedra-letra); font-weight: 600; color: var(--tinta); }
 .instrumento { display: block; width: min(100%, 17.5rem); height: auto; aspect-ratio: 1; overflow: visible; color: var(--tinta-3); }
 .instrumento .traco { fill: none; stroke: currentColor; stroke-width: .6; }
 .instrumento .graduacao { stroke-width: .55; }
@@ -372,6 +380,23 @@ main {
 .instrumento .valor.andando { animation: andar-prancha 1s var(--suave); }
 @keyframes pintar-prancha { from { --f: 0; } }
 @keyframes andar-prancha { from { --f: var(--de); } }
+.prancha-legenda { list-style: none; margin: 0; padding: 0; width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr)); column-gap: 1.4rem; }
+.prancha-legenda li { display: grid; grid-template-columns: 1.1rem minmax(0, 1fr) auto; align-items: baseline; column-gap: .45rem; padding: .4rem 0; border-top: 1px solid var(--veio); }
+.letra-legenda { font-variation-settings: var(--pedra-letra); font-weight: 600; color: var(--tinta-2); }
+.prancha-legenda .nome { font-size: .86rem; color: var(--tinta-2); }
+.prancha-legenda .leitura { font-variant-numeric: tabular-nums; font-weight: 600; }
+.prancha-legenda .ocre .leitura { color: var(--ocre-tinta); }
+.prancha-legenda .cinabrio .leitura { color: var(--cinabrio-tinta); }
+.prancha-legenda .nota { grid-column: 2 / -1; font-size: .76rem; line-height: 1.35; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
+.prancha.zonas .crepidoma { width: 100%; }
+@media (min-width: 60rem) {
+  .dia:has(> .modulo) { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); column-gap: 2.2rem; }
+  .dia-frase { font-size: 1.55rem; }
+  .pranchas { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 2.6rem; align-items: start; }
+  .prancha.servidor { grid-template-columns: minmax(0, 15rem) minmax(0, 1fr); align-items: center; column-gap: 1.8rem; }
+  .prancha.servidor figcaption { grid-column: 1 / -1; }
+  .prancha.servidor .prancha-legenda { grid-template-columns: minmax(0, 1fr); }
+}
 /* a esfera armilar da rede: os anéis em 3D girando devagar, o eixo e o servidor parados; ao lado, os
    alcances com as portas de cada um */
 .rede-esfera { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: .5rem 1.4rem; margin: .3rem 0 1rem; }
