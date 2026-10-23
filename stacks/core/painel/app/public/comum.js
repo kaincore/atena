@@ -56,7 +56,10 @@ export function ligarCasca(funcoes) {
 
 // --- API -------------------------------------------------------------------------------------
 
+// cresce a cada entrada: o 401 de um pedido que saiu antes dela é da sessão velha e não fecha a nova
+let sessao = 0;
 export async function api(metodo, caminho, corpo) {
+  const minha = sessao;
   let resposta;
   try {
     resposta = await fetch(caminho, {
@@ -69,16 +72,18 @@ export async function api(metodo, caminho, corpo) {
     return { status: 0, ok: false, erro: "sem conexão com o servidor (o Tailscale está ligado?)" };
   }
   const dados = await resposta.json().catch(() => ({ ok: false, erro: `resposta inválida (${resposta.status})` }));
-  if (resposta.status === 401 && caminho !== "/api/entrar") mostrarEntrada();
+  if (caminho === "/api/entrar") {
+    if (resposta.ok) sessao++;
+  } else if (resposta.status === 401 && minha === sessao) mostrarEntrada();
   return { status: resposta.status, ...dados };
 }
 
 // a mesma consulta pedida duas vezes ao mesmo tempo (o Início e os pontos das zonas no topo, por exemplo) vai uma
-// vez só ao executor; o que muda algo (as de NOMES) nunca se junta
+// vez só ao executor; o que muda algo (as de NOMES) nunca se junta, nem a de antes de uma entrada com a de depois
 const emCurso = new Map();
 export function consultar(nome, params = {}) {
   if (nome in NOMES) return api("POST", `/api/acao/${nome}`, { params });
-  const chave = `${nome} ${JSON.stringify(params)}`;
+  const chave = `${sessao} ${nome} ${JSON.stringify(params)}`;
   if (!emCurso.has(chave)) emCurso.set(chave, api("POST", `/api/acao/${nome}`, { params }).finally(() => emCurso.delete(chave)));
   return emCurso.get(chave);
 }
