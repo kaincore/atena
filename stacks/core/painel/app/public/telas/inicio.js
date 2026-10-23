@@ -66,22 +66,36 @@ function guardarVistos() {
 }
 
 
-// tocar (ou passar o mouse) numa linha da legenda acende o anel dela e apaga os outros
-function ligarLegenda(instrumento, linhas) {
-  let fixo = null;
+// a linha acesa da legenda (pelo nome): continua acesa quando a folha se lê de novo
+let acesa = null;
+// tocar, passar o mouse ou dar Enter numa linha da legenda acende o anel dela e apaga os outros
+function ligarLegenda(instrumento, linhas, ls) {
+  let fixo = acesa == null ? null : (() => { const i = ls.findIndex((l) => l.nome === acesa); return i < 0 ? null : String(i); })();
   const acender = (i) => {
     instrumento.classList.toggle("focado", i != null);
     for (const g of instrumento.querySelectorAll(".anel-g")) g.classList.toggle("acesa", g.dataset.i === i);
-    for (const li of linhas) li.classList.toggle("acesa", li.dataset.i === i);
+    for (const li of linhas) {
+      li.classList.toggle("acesa", li.dataset.i === i);
+      li.setAttribute("aria-pressed", String(li.dataset.i === fixo));
+    }
+  };
+  const fixar = (i) => {
+    fixo = i;
+    acesa = i == null ? null : ls[Number(i)].nome;
+    acender(fixo);
   };
   for (const li of linhas) {
     li.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") acender(li.dataset.i); });
     li.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") acender(fixo); });
-    li.addEventListener("click", () => {
-      fixo = fixo === li.dataset.i ? null : li.dataset.i;
-      acender(fixo);
+    li.addEventListener("click", () => fixar(fixo === li.dataset.i ? null : li.dataset.i));
+    li.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      e.preventDefault();
+      li.click();
     });
   }
+  acender(fixo);
+  return fixar;
 }
 
 // Prancha I: o instrumento, com a legenda das letras dos dois lados (no celular, embaixo, em duas colunas).
@@ -89,11 +103,12 @@ function ligarLegenda(instrumento, linhas) {
 // se grava; depois, do valor de antes, quando a leitura muda
 function pranchaServidor(r, ls, regua) {
   const metade = Math.ceil(ls.length / 2);
-  const linhas = ls.map((l, i) => h("li", { class: l.tom, "data-i": String(i) },
+  const linhas = ls.map((l, i) => h("li", { class: l.tom, "data-i": String(i), "data-chave": `leitura:${l.nome}`, tabindex: "0", role: "button" },
     h("span", { class: "letra-legenda", "aria-hidden": "true" }, l.letra), h("span", { class: "nome" }, l.nome),
     h("span", { class: "leitura" }, l.valor), h("span", { class: "nota-leitura" }, l.nota)));
-  const instrumento = desenhavel(prancha(ls, `O servidor: ${ls.map((l) => `${l.nome}, ${l.valor}`).join("; ")}`), "prancha-servidor");
-  ligarLegenda(instrumento, linhas);
+  // o disco desenha o que a legenda diz: o leitor de tela lê a legenda, e o disco só se anuncia
+  const instrumento = desenhavel(prancha(ls, "O instrumento do servidor: um anel por leitura da legenda"), "prancha-servidor");
+  ligarLegenda(instrumento, linhas, ls);
   ls.forEach((l, i) => {
     const els = [linhas[i].querySelector(".leitura"), regua?.querySelector(`[data-i="${i}"] .v`)].filter(Boolean);
     const antes = vistos.get(l.nome);
