@@ -9,7 +9,7 @@
 // meio) continua de onde ele estava. A decisão sai quando o desenho entra na página (um MutationObserver),
 // antes de o navegador pintar: não pisca, e vale para qualquer caminho que o ponha lá. Com
 // prefers-reduced-motion, tudo aparece pronto, e os gestos não se desenham.
-import { gravura } from "./desenhos.js";
+import { gravura, prepararTracos, s } from "./desenhos.js";
 
 const reduzido = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -96,4 +96,23 @@ export function vazio(texto, figura) {
   vinheta.setAttribute("aria-hidden", "true");
   desenhavel(vinheta, `vazio|${figura}|${texto}`);
   return h("div", "vazio", vinheta, h("p", "fraco", texto));
+}
+
+// --- o fecho de livro: o enfeite de fim de capítulo, no fim de uma lista longa ------------------------
+
+const FECHO_LADO = [
+  ["M4.6 0C11 -5 18 -5.5 23 -1.5C27 1.5 32 4 37 2.4C40.6 1.2 42.4 -1.8 40.8 -3.8C39.5 -5.3 37 -4.2 37.6 -2.5", 0.3, 1.0],
+  ["M13.5 -3.6C15 -7.6 19 -9 22 -7.6C19.6 -5.6 16.6 -4 13.5 -3.6Z", 0.85, 0.45],
+  ["M28.5 3C30 6.2 33.6 7.4 36 6.2C34 4.6 31.4 3.4 28.5 3Z", 1.05, 0.45],
+  ["M46 0H57", 1.2, 0.4],
+];
+
+export function fecho(chave) {
+  const lado = (espelho) => s("g", espelho ? { transform: "scale(-1 1)" } : null,
+    FECHO_LADO.map(([d, atraso, duracao]) => s("path", { class: "traco", d, pathLength: 1, "data-atraso": atraso, "data-duracao": duracao })));
+  const svg = prepararTracos(s("svg", { class: "fecho", viewBox: "-60 -10 120 20", "aria-hidden": "true" },
+    s("path", { class: "traco", d: "M0 -4.6L4 0L0 4.6L-4 0Z", pathLength: 1, "data-atraso": 0, "data-duracao": 0.5 }),
+    s("circle", { class: "ponto", r: 1.1, "data-atraso": 0.35 }),
+    lado(false), lado(true)));
+  return desenhavel(h("li", "fecho-item", svg), `fecho|${chave}`, "visivel");
 }

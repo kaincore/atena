@@ -17,7 +17,7 @@ export async function telaHistorico() {
       detalhe: `${estadoTexto(x.estado)} · ${data(x.quando)}`,
       extra: x.resumo && h("div", { class: "fraco resumo" }, x.resumo),
     });
-  }), vazio("Nenhuma ação feita pelo painel ainda.", "pega")));
+  }), vazio("Nenhuma ação feita pelo painel ainda.", "pega"), null, "historico"));
   historico.classList.add("largo");
   return [historico];
 }

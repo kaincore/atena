@@ -336,6 +336,11 @@ main {
 .vazio { display: grid; justify-items: center; gap: .55rem; padding: .8rem 0 .2rem; text-align: center; }
 .vazio .fraco { max-width: 26rem; margin: 0; }
 .gravura.vinheta { width: 5.5rem; aspect-ratio: var(--proporcao, 1); }
+/* o fecho de livro no fim da lista longa */
+.itens > .fecho-item { display: flex; justify-content: center; padding: 1.2rem 0 .3rem; }
+.fecho { width: 9rem; height: auto; overflow: visible; color: var(--tinta-3); }
+.fecho .traco { fill: none; stroke: currentColor; stroke-width: .9; stroke-linecap: round; stroke-linejoin: round; }
+.fecho .ponto { fill: currentColor; }
 
 /* o conteúdo que chega no lugar do esqueleto só aparece, todo junto; o que se mexe é o que mede (o anel
    se pinta, a escada se assenta). backwards: nada da animação fica no módulo depois que ela acaba (uma

@@ -41,7 +41,7 @@ export async function telaAtividade() {
   const lista = r.resultado.itens;
   const c = cartao("Atividade do executor", controles,
     h("p", { class: "fraco" }, "Tudo o que a Atena, o painel e o lab pediram ao executor, as suas decisões e os eventos dele, do mais novo ao mais velho."),
-    itens(lista.map(linhaAtividade), vazio("Nada no registro com esse filtro.", "pega")));
+    itens(lista.map(linhaAtividade), vazio("Nada no registro com esse filtro.", "pega"), null, "atividade"));
   c.classList.add("largo");
   return [c];
 }

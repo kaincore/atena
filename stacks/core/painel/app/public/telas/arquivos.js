@@ -96,7 +96,7 @@ export async function telaArquivos() {
         return item({ classe: "arquivo", nome: ehPasta ? link("pasta", n.slice(0, -1), "pasta", () => navegar(caminho))
           : link("documento", n, null, () => abrirArquivo(caminho)) });
       }),
-    ], "Pasta vazia."),
+    ], "Pasta vazia.", null, "arquivos"),
     r.resultado.total > r.resultado.itens.length && h("p", { class: "fraco" }, `Mostrando ${r.resultado.itens.length} de ${r.resultado.total}.`),
     h("p", { class: "fraco" }, "Os segredos (.env, chaves, tokens) não saem do servidor, e o que é lido sai com as senhas ocultas."));
   return [lista, cartaoProcurar(pasta)];

@@ -1,6 +1,7 @@
 // O que todas as telas usam: montar elementos, falar com a API, os textos de estado e os módulos do
 // painel. As três funções da casca (atualizar, telaAtual, mostrarEntrada) o app.js liga ao começar.
 import { chave, faixa } from "./desenhos.js";
+import { fecho } from "./ornamentos.js";
 
 export { vazio } from "./ornamentos.js";
 
@@ -202,11 +203,12 @@ export function item({ led, nome, detalhe, acoes, extra, classe }) {
     embaixo.length > 0 && h("div", { class: "item-extra" }, embaixo));
 }
 
-// vazio: o texto (ou o vazio() com a vinheta) quando a lista não tem nada
-export function itens(lista, vazio, classe) {
+// vazio: o texto (ou o vazio() com a vinheta) quando a lista não tem nada; fim: a chave do fecho de livro
+// que termina a lista quando ela é longa
+export function itens(lista, vazio, classe, fim) {
   const linhas = [lista].flat(Infinity).filter(Boolean);
   if (!linhas.length) return vazio && (vazio instanceof Node ? vazio : h("p", { class: "fraco" }, vazio));
-  return h("ul", { class: `itens${classe ? ` ${classe}` : ""}` }, linhas);
+  return h("ul", { class: `itens${classe ? ` ${classe}` : ""}` }, linhas, fim && linhas.length >= 8 && fecho(fim));
 }
 
 // o ponto de cada estado de pedido: malaquita terminou bem, azul em andamento, cinábrio o resto
