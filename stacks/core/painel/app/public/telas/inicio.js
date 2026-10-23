@@ -54,7 +54,17 @@ function contar(els, l, de, atraso, dura) {
   };
   requestAnimationFrame(passo);
 }
-const vistos = new Map(); // a última leitura mostrada de cada coisa
+// a última leitura vista neste aparelho: ao abrir de novo, o número conta dela até a de agora (nunca do zero,
+// que seria um número que o servidor não deu); a primeira vez no aparelho, ele já nasce certo
+const GUARDADAS = "atena-leituras";
+const vistos = new Map((() => {
+  try { return Object.entries(JSON.parse(localStorage.getItem(GUARDADAS) ?? "{}")); } catch { return []; }
+})());
+const contados = new Set(); // as leituras já mostradas desde que o painel abriu
+function guardarVistos() {
+  try { localStorage.setItem(GUARDADAS, JSON.stringify(Object.fromEntries(vistos))); } catch { /* sem onde guardar: na próxima abertura, só não conta */ }
+}
+
 
 // tocar (ou passar o mouse) numa linha da legenda acende o anel dela e apaga os outros
 function ligarLegenda(instrumento, linhas) {
@@ -75,8 +85,8 @@ function ligarLegenda(instrumento, linhas) {
 }
 
 // Prancha I: o instrumento, com a legenda das letras dos dois lados (no celular, embaixo, em duas colunas).
-// Os números contam junto com a tinta: na primeira vez, do zero, quando o instrumento se grava; depois, do
-// valor de antes, quando a leitura muda
+// Os números contam junto com a tinta: ao abrir, da última leitura vista neste aparelho, quando o instrumento
+// se grava; depois, do valor de antes, quando a leitura muda
 function pranchaServidor(r, ls, regua) {
   const metade = Math.ceil(ls.length / 2);
   const linhas = ls.map((l, i) => h("li", { class: l.tom, "data-i": String(i) },
@@ -84,14 +94,16 @@ function pranchaServidor(r, ls, regua) {
     h("span", { class: "leitura" }, l.valor), h("span", { class: "nota-leitura" }, l.nota)));
   const instrumento = desenhavel(prancha(ls, `O servidor: ${ls.map((l) => `${l.nome}, ${l.valor}`).join("; ")}`), "prancha-servidor");
   ligarLegenda(instrumento, linhas);
-  const primeira = ls.some((l) => !vistos.has(l.nome));
   ls.forEach((l, i) => {
     const els = [linhas[i].querySelector(".leitura"), regua?.querySelector(`[data-i="${i}"] .v`)].filter(Boolean);
     const antes = vistos.get(l.nome);
     vistos.set(l.nome, l.n);
-    if (antes != null && !primeira) contar(els, l, antes, 0, 1000);
-    else instrumento.addEventListener("desenhar", (e) => contar(els, l, 0, 950 + i * 120 - e.detail, 1400), { once: true });
+    if (antes == null) return;
+    if (contados.has(l.nome)) contar(els, l, antes, 0, 1000);
+    else instrumento.addEventListener("desenhar", (e) => contar(els, l, antes, 950 + i * 120 - e.detail, 1400), { once: true });
   });
+  for (const l of ls) contados.add(l.nome);
+  guardarVistos();
   return h("figure", { class: "prancha prancha-servidor n-servidor" },
     h("ul", { class: "prancha-legenda lado-esq" }, linhas.slice(0, metade)), instrumento,
     h("ul", { class: "prancha-legenda lado-dir" }, linhas.slice(metade)),
