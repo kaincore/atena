@@ -397,12 +397,12 @@ export function prancha(aneis, rotulo) {
       class: `valor${antes != null && Math.abs(antes - f) > 0.004 ? " andando" : ""}`, "data-atraso": (0.95 + i * 0.12).toFixed(2) });
     valor.style.setProperty("--f", f.toFixed(4));
     if (antes != null) valor.style.setProperty("--de", antes.toFixed(4));
-    return [
+    // cada anel num grupo (data-i): a legenda acende o dela
+    return s("g", { class: "anel-g", "data-i": String(i) },
       s("circle", { r: r + 3.7, class: "traco borda", pathLength: 1, "data-atraso": (0.4 + i * 0.07).toFixed(2), "data-duracao": "0.7" }),
       s("circle", { r: r - 3.7, class: "traco borda", pathLength: 1, "data-atraso": (0.45 + i * 0.07).toFixed(2), "data-duracao": "0.7" }),
       valor,
-      s("text", { x: -3.4, y: r2(-r + 2.3), class: "letra", "text-anchor": "end", "data-atraso": (1.1 + i * 0.1).toFixed(2) }, anel.letra),
-    ];
+      s("text", { x: -3.4, y: r2(-r + 2.6), class: "letra", "text-anchor": "end", "data-atraso": (1.1 + i * 0.1).toFixed(2) }, anel.letra));
   });
   const inicio = 76 - (aneis.length - 1) * 11 - 6;
   const svg = prepararTracos(s("svg", { class: "instrumento", viewBox: "-100 -100 200 200", role: "img", "aria-label": rotulo },
