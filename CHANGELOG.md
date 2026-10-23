@@ -1,5 +1,14 @@
 # Mudanças
 
+## 0.21.0 (2026-10-23)
+
+O Início sem o pilar, mais vivo e sem perder as leituras ao rolar (painel 0.13.0). O dono achou que o pilar sob o instrumento não fazia sentido e pediu a página mais dinâmica, sem perder informação ao rolar e com a informação bem distribuída.
+
+- **Sem o pilar:** no meio da lâmina ficam duas pranchas. A Prancha I é o instrumento com a legenda das letras: no celular, o disco em cima e a legenda embaixo em duas colunas; do PC médio em diante, a legenda dos dois lados. A Prancha II é a escada das zonas com a legenda ao lado.
+- **Rolando, nada se perde:** quando o instrumento sai de vista, uma régua desce e fica presa no alto da tela, com um anel pequeno por letra, as leituras, as zonas no ar e os pedidos. Tocar nela volta ao instrumento.
+- **Movimento ligado ao dado:** os números contam junto com a tinta (do zero quando o instrumento se grava, do valor de antes quando a leitura muda); tocar numa linha da legenda acende o anel dela; os degraus das zonas se assentam quando aparecem na tela; e a régua de cada nota se estende enquanto a nota entra na tela, ligada à rolagem.
+- Testado: os 49 testes do painel e o CI reproduzido com `tools/ci-local.sh`; os cliques de ponta a ponta no celular e no PC; as cenas e o roteiro do traço; um roteiro novo de rolagem no celular, claro e escuro (os números contando, as zonas se assentando, a régua descendo, o toque nela voltando ao instrumento e a legenda acendendo o anel); o Início no celular, numa tela média e no PC, normal e com problema; os commits intermediários rodados sozinhos no ensaio, sem erro no console. No servidor de origem, o painel 0.13.0 subiu saudável pelas duas entradas. Sem testar: o movimento e a rolagem num celular de verdade. Sem revisor separado nesta rodada.
+
 ## 0.20.0 (2026-10-23)
 
 O Início como uma lâmina só (painel 0.12.0). O dono não quis os blocos soltos da 0.19.0: a página tinha de ser planejada por inteiro, com o desenho fazendo parte dela, e não como decoração.
