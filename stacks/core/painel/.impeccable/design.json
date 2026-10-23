@@ -1101,13 +1101,18 @@
       },
       {
         "name": "contar",
-        "value": "o número anda junto com a tinta do anel: do zero em 1.4s (a partir de .95s, .12s por anel) na primeira vez, do valor de antes em 1s quando a leitura muda; ease-out (1 - (1 - x)^4)",
-        "purpose": "O Início: os números da legenda e da régua presa contam até a leitura."
+        "value": "o número anda junto com a tinta do anel: ao abrir, da última leitura vista no aparelho (localStorage \"atena-leituras\") em 1.4s, a partir de .95s, .12s por anel; do valor de antes em 1s quando a leitura muda; na primeira vez no aparelho, sem contar; ease-out (1 - (1 - x)^4)",
+        "purpose": "O Início: os números da legenda e da régua presa contam até a leitura, sempre de uma leitura de verdade (nunca do zero)."
       },
       {
         "name": "regua-fixa",
-        "value": "translateY(-105%) até 0 em .45s var(--suave); os anéis pequenos se pintam em .9s, 60ms um depois do outro",
-        "purpose": "O Início: quando o instrumento sai de vista, a régua com as leituras desce e fica presa no alto; tocar nela volta ao instrumento."
+        "value": "translateY(-105%) até 0 em .45s var(--suave), conferida a cada rolagem (um requestAnimationFrame por quadro); os arcos da miniatura se pintam em .9s, 60ms um depois do outro",
+        "purpose": "O Início: quando o instrumento passa do alto da tela, a régua desce e fica presa, com uma tecla por sinal (os pedidos, as zonas, a miniatura do instrumento e as leituras fora do azul)."
+      },
+      {
+        "name": "chegar-no-pedido",
+        "value": "background do Véu Azul (Azul Claro) até o da placa em 2.4s var(--suave), parado no Véu até 35%",
+        "purpose": "As Aprovações: o pedido que o \"Ver\" do Início abriu é rolado para o meio da tela e o Véu Azul passa por ele uma vez."
       },
       {
         "name": "acender-anel",
