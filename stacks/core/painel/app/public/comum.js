@@ -1,7 +1,7 @@
 // O que todas as telas usam: montar elementos, falar com a API, os textos de estado e os módulos do
 // painel. As três funções da casca (atualizar, telaAtual, mostrarEntrada) o app.js liga ao começar.
 import { chave, faixa } from "./desenhos.js";
-import { fecho, rachadura } from "./ornamentos.js";
+import { fecho, origemDoGesto, rachadura, tracarGesto } from "./ornamentos.js";
 
 export { vazio } from "./ornamentos.js";
 
@@ -86,6 +86,7 @@ export function consultar(nome, params = {}) {
 // ações que mudam algo: confirma, pede, acompanha o pedido (202) e avisa o resultado.
 // acompanhar = false: só avisa que começou (o trabalho do Claude Code leva de minutos a horas)
 export async function mudar(nome, params, pergunta, acompanhar = true) {
+  const origem = origemDoGesto(); // o que você tocou: o traço do gesto sai em volta dele
   if (pergunta && !confirm(pergunta)) return null;
   const titulo = NOMES[nome] ?? nome;
   avisar(`${titulo}…`);
@@ -108,7 +109,10 @@ export async function mudar(nome, params, pergunta, acompanhar = true) {
   }
   if (r.ok === false) avisar(`${titulo}: ${r.erro}`, "erro");
   else if (!terminou) avisar(`${titulo}: ainda em andamento; o Histórico mostra quando terminar`);
-  else avisar(`${titulo}: feito`, "ok");
+  else {
+    avisar(`${titulo}: feito`, "ok");
+    await tracarGesto(nome, params, origem);
+  }
   return r;
 }
 

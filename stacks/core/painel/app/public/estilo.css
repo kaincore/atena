@@ -346,6 +346,12 @@ main {
 .item.rachado > :not(.rachadura) { position: relative; }
 .rachadura { position: absolute; left: 0; top: -1px; height: 1.5rem; width: auto; max-width: 100%; pointer-events: none; overflow: visible; color: var(--cinabrio); opacity: .5; }
 .rachadura .traco { fill: none; stroke: currentColor; stroke-width: 1.1; stroke-linecap: round; stroke-linejoin: round; }
+/* o gesto: o traço em volta do que você tocou (o louro, o círculo de pena, os raios), que some sozinho */
+#tracos { position: absolute; top: 0; left: 0; width: 0; height: 0; z-index: 30; pointer-events: none; }
+.gesto { position: absolute; overflow: visible; color: var(--azul); transition: opacity .6s var(--suave); }
+.gesto .traco { fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.gesto.circulo .traco { stroke-width: 1.6; }
+.gesto.some { opacity: 0; }
 
 /* o conteúdo que chega no lugar do esqueleto só aparece, todo junto; o que se mexe é o que mede (o anel
    se pinta, a escada se assenta). backwards: nada da animação fica no módulo depois que ela acaba (uma
