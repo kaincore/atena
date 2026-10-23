@@ -143,7 +143,7 @@ Depois:
 | Open WebUI 0.11.4 | apps | 3000 | Fala só com o LiteLLM |
 | Arca | apps | 3002 | Envio de arquivos pelo navegador, sem senha |
 | Hermes Agent 0.22.2 | agents | nenhuma | A Atena (com `--hermes`). Conversa pelo Telegram |
-| Painel 0.10.0 | core | 3100, pelo Tailscale (na rede de casa, opcional) | O painel (com `--painel`). Sem rede, sem root, sem pacotes do npm, com senha |
+| Painel 0.11.0 | core | 3100, pelo Tailscale (na rede de casa, opcional) | O painel (com `--painel`). Sem rede, sem root, sem pacotes do npm, com senha |
 | Claude Code 2.1.302 | lab | apps em 8000-8999 | O lab (com `--lab`). Roda em sandbox, sem sudo e sem Docker; usa a sua assinatura do Claude |
 
 As versões são fixas de propósito. Antes de atualizar, leia os avisos de segurança e as notas da versão.
