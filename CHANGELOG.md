@@ -1,5 +1,14 @@
 # Mudanças
 
+## 0.19.0 (2026-10-23)
+
+O Início como prancha (painel 0.11.0). O dono pediu o Início redesenhado na mesma forma do traço do sistema, escolheu a prancha entre três caminhos e manteve o gasto, as pendências, os próximos agendamentos e o systemd.
+
+- **A frase do dia:** no alto, a data e uma frase escrita a partir dos dados: primeiro o que está errado (o container que caiu, a unidade que falhou, a leitura que passou do limite), depois o que espera você (aprovações e pendências) e o próximo agendamento. Sem nada errado, "Tudo em ordem".
+- **O que pede você:** ao lado da frase (embaixo dela no celular), só quando há algo: os pedidos esperando, o que caiu e o que falhou, com a rachadura. A faixa de aprovações deixa de aparecer no Início, onde repetia o mesmo.
+- **As pranchas:** impressas direto na página, sem moldura, com o título embaixo. A Prancha I é o instrumento do servidor, no lugar dos quatro medalhões: a graduação, um anel por leitura (CPU, RAM, temperatura, GPU e cada disco) com a tinta em hachura pintada até o valor no tom do limite, as letras gregas no eixo do zero e a legenda. Na primeira vez ele se grava; depois, quando uma leitura muda, a tinta anda até o valor novo, como um ponteiro. A Prancha II é a crepidoma das zonas.
+- Testado: os 49 testes do painel e o CI reproduzido com `tools/ci-local.sh`; os cliques de ponta a ponta no celular e no PC; o Início fotografado no celular e no PC, claro e escuro, normal e com problema (um container caído, uma unidade com falha, a temperatura perto do limite e um disco passado dele); o instrumento quadro a quadro, na primeira vez e numa atualização com a CPU e a RAM subindo; os commits intermediários rodados sozinhos no ensaio, sem erro no console. No servidor de origem, o painel 0.11.0 subiu saudável pelas duas entradas. Sem testar: o movimento num celular de verdade. Sem revisor separado nesta rodada.
+
 ## 0.18.0 (2026-10-23)
 
 O traço do sistema (painel 0.10.0). O dono pediu ornamentos dentro do painel com animação feita à mão, "que sejam parte do sistema", e não um enfeite fixo num canto. O ornamento passa a nascer do conteúdo: aparece onde algo acontece, se desenha naquela hora, como pena ou buril, e depois fica quieto. Cada desenho corre uma vez por sessão para cada estado, e as atualizações da tela o mostram pronto.
