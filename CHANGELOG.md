@@ -1,5 +1,17 @@
 # Mudanças
 
+## 0.22.0 (2026-10-23)
+
+O Início que não tranquiliza à toa e põe o que pede você no alto (painel 0.14.0). Saiu de uma crítica da tela, em que o dono escolheu as quatro frentes, a letra grega como adorno e os números contando da última leitura.
+
+- **A frase honesta:** "Tudo em ordem" só aparece quando as leituras do servidor, dos serviços, do systemd e das aprovações vieram. Com o executor fora, a frase diz "Não consegui ler o servidor agora.", e o erro aparece uma vez, com "Tentar de novo"; com uma leitura faltando, a frase diz qual. No alarme, ela tem no máximo duas frases: o veredito ("O ollama está fora do ar e mais 4 coisas pedem atenção") e o que espera você. Sem a central de aprovações (executor antigo), nada muda.
+- **O que pede você no alto:** saiu da margem e virou a rubrica da folha, logo abaixo da frase, na tinta do mais grave, em colunas no PC. Os pedidos dizem quem pediu (Atena, Claude Code), quando vencem (em horas e minutos) e o motivo; o "Ver" abre o próprio pedido nas Aprovações. As leituras passadas do limite entram com o limite escrito, e o "Ver" acende o anel delas.
+- **A régua com nomes:** cada sinal é uma tecla que leva ao seu lugar: os pedidos, as zonas, o instrumento em miniatura e só as leituras fora do azul, com a letra e o nome curto ("Γ Temp. 88,4 °C"). Sem largura, ela quebra de linha em vez de esconder; e aparece também depois de um salto de rolagem.
+- **Números de verdade:** os números contam da última leitura vista no aparelho, nunca do zero; na primeira vez, já nascem certos.
+- **Mais quieto e com fim:** o gasto de IA virou uma linha com um medidor só (o de cada modelo fica recolhido), e a folha fecha com o colofão, a hora da leitura. No PC, a agenda e as pendências vão para a margem esquerda; no celular, as pendências sobem logo depois da agenda.
+- **Consertos:** a tela que se lê sozinha não tira mais o foco nem pula a página, e devolve o foco pela chave de quem a linha é (nunca à tecla de outro pedido); as teclas discretas, os detalhes, as zonas e as caixas de marcar têm 44 px no celular; a caixa de marcar mostra o foco; a legenda do instrumento funciona pelo teclado; um 401 atrasado de antes da senha não devolve mais a tela de entrada nem estraga a primeira leitura.
+- Testado: os 49 testes do painel e o CI reproduzido com `tools/ci-local.sh`; no ensaio, o Início no celular, numa tela média e no PC, claro e escuro, calmo, com problema, sem executor e sem a central de aprovações; roteiros da régua (saltos de rolagem, a releitura descartada no meio), da atualização com o foco numa tecla, na legenda e nos detalhes, do "Ver" até o pedido, da contagem com e sem leitura guardada, do 401 atrasado e de "reduzir movimento"; o foco no "Aprovar" de um pedido quando o de cima sai da lista; as outras telas no celular depois da regra dos 44 px; cada commit intermediário rodado sozinho no ensaio, sem erro no console. Um revisor separado leu o diff e achou quatro defeitos (o mais sério, o foco que caía no "Aprovar" de outro pedido), todos corrigidos e conferidos com os roteiros dele. Sem testar: num celular de verdade, e no servidor de origem (o painel 0.14.0 sobe lá depois desta versão).
+
 ## 0.21.0 (2026-10-23)
 
 O Início sem o pilar, mais vivo e sem perder as leituras ao rolar (painel 0.13.0). O dono achou que o pilar sob o instrumento não fazia sentido e pediu a página mais dinâmica, sem perder informação ao rolar e com a informação bem distribuída.
