@@ -189,23 +189,39 @@ export function relogioDeSol(agendamentos, girando) {
 // mais clara, de cima para baixo ou das bordas para um centro; ao entrar no painel, o mesmo pontilhado a
 // desfaz. Opções: canais (a tinta no cinza e o recorte no alfa, em vez de só o alfa), inverterNoEscuro (à
 // noite pinta o papel dentro do recorte: o claro fica claro), densidade (o expoente da tinta de dia: abaixo
-// de 1 adensa os meios-tons) e centro (a fração da largura para onde a impressão converge).
+// de 1 adensa os meios-tons), centro (a fração da largura para onde a impressão converge) e modo "buril"
+// (em vez dos pontos, a imagem aparece em passadas finas na direção da hachura, descendo pela chapa, cada
+// uma começando numa hora, como linhas gravadas uma a uma; é o das vinhetas).
 
 const BAYER = [0, 32, 8, 40, 2, 34, 10, 42, 48, 16, 56, 24, 50, 18, 58, 26, 12, 44, 4, 36, 14, 46, 6, 38, 60, 28, 52, 20, 62, 30, 54, 22,
   3, 35, 11, 43, 1, 33, 9, 41, 51, 19, 59, 27, 49, 17, 57, 25, 15, 47, 7, 39, 13, 45, 5, 37, 63, 31, 55, 23, 61, 29, 53, 21];
 
-export function gravura(src, rotulo, { canais = false, inverterNoEscuro = false, densidade = 1, centro = null } = {}) {
+// as gravuras na tela: quando a janela muda de tamanho ou de tema, as que estão na página se refazem já
+// prontas, e as que saíram dela saem da lista (as vinhetas se refazem a cada atualização da tela)
+const gravuras = new Set();
+const refazerGravuras = () => { for (const refazer of gravuras) refazer(); };
+addEventListener("resize", refazerGravuras);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", refazerGravuras);
+
+// um número de 0 a 1 que é sempre o mesmo para o mesmo n (a hora de cada passada do buril)
+const sorteio = (n) => {
+  let x = Math.imul(n ^ 0x9e3779b9, 0x85ebca6b);
+  x = Math.imul(x ^ (x >>> 13), 0xc2b2ae35);
+  return ((x ^ (x >>> 16)) >>> 0) / 4294967296;
+};
+
+export function gravura(src, rotulo, { canais = false, inverterNoEscuro = false, densidade = 1, centro = null, modo = "pontos" } = {}) {
   const tela = document.createElement("canvas");
   tela.className = "gravura";
   tela.setAttribute("role", "img");
   tela.setAttribute("aria-label", rotulo);
-  const imagem = new Image();
-  imagem.src = src;
+  const imagem = new Image(); // baixada só quando a gravura for para a tela
   let estado = null;
   let quadro = 0;
 
   // a máscara no tamanho da tela (na densidade do aparelho) e a ordem em que cada ponto aparece
   async function preparar() {
+    if (!imagem.src) imagem.src = src;
     await imagem.decode();
     const dpr = Math.min(devicePixelRatio || 1, 3);
     const w = Math.max(1, Math.round(tela.getBoundingClientRect().width * dpr));
@@ -222,6 +238,10 @@ export function gravura(src, rotulo, { canais = false, inverterNoEscuro = false,
     const ordem = new Float32Array(w * h);
     const passo = Math.max(1, Math.round(2 * dpr));
     const papel = inverterNoEscuro && matchMedia("(prefers-color-scheme: dark)").matches;
+    // o buril: passadas finas (1,4 px) a 35°, a direção da hachura, cada uma andando ao longo de si mesma; o
+    // gravador desce pela chapa, e num mesmo trecho as linhas entram em horas diferentes
+    const espaco = 1.4 * dpr, cos = Math.cos(-0.61), sen = Math.sin(-0.61);
+    const comprimento = w * Math.abs(cos) + h * Math.abs(sen) || 1;
     for (let y = 0; y < h; y++) {
       const linha = ((y / passo) | 0) % 8;
       for (let x = 0; x < w; x++) {
@@ -230,6 +250,12 @@ export function gravura(src, rotulo, { canais = false, inverterNoEscuro = false,
           const tinta = fonte[i * 4], recorte = fonte[i * 4 + 3];
           alfa[i] = ((papel ? 255 - tinta : 255 * (tinta / 255) ** densidade) * recorte) / 255;
         } else alfa[i] = fonte[i * 4 + 3];
+        if (modo === "buril") {
+          const passada = Math.floor((x * sen + y * cos) / espaco);
+          const aoLongo = (x * cos - y * sen + h * Math.abs(sen)) / comprimento;
+          ordem[i] = (y / h) * 0.45 + sorteio(passada) * 0.35 + aoLongo * 0.2;
+          continue;
+        }
         // de cima para baixo, ou das bordas para o centro (as mãos vão uma ao encontro da outra)
         const caminho = centro == null ? y / h : 1 - Math.abs(x / w - centro) / Math.max(centro, 1 - centro);
         ordem[i] = (BAYER[linha * 8 + (((x / passo) | 0) % 8)] / 64) * 0.5 + (1 - alfa[i] / 255) * 0.2 + caminho * 0.3;
@@ -237,6 +263,7 @@ export function gravura(src, rotulo, { canais = false, inverterNoEscuro = false,
     }
     const [r, g, b] = (getComputedStyle(tela).color.match(/\d+(\.\d+)?/g) ?? [0, 0, 0]).map(Number);
     estado = { ctx, w, h, alfa, ordem, cor: [r, g, b], saida: ctx.createImageData(w, h) };
+    gravuras.add(refazer);
   }
 
   // os pontos cuja ordem já passou de t aparecem com a tinta deles
@@ -255,13 +282,15 @@ export function gravura(src, rotulo, { canais = false, inverterNoEscuro = false,
     ctx.putImageData(saida, 0, 0);
   }
 
-  function animar(de, ate, ms) {
+  // ja: quanto da animação já passou (a cópia de uma gravura que a tela refez no meio continua dali)
+  function animar(de, ate, ms, ja = 0) {
     cancelAnimationFrame(quadro);
     return new Promise((pronto) => {
-      const inicio = performance.now();
+      const inicio = performance.now() - ja;
       const passo = (agora) => {
         const x = Math.min(1, (agora - inicio) / ms);
-        const suave = x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
+        // o buril anda num ritmo só, como a mão; a impressão por pontos acelera e assenta
+        const suave = modo === "buril" ? x : x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2;
         pintar(de + (ate - de) * suave);
         if (x < 1) quadro = requestAnimationFrame(passo);
         else pronto();
@@ -271,19 +300,26 @@ export function gravura(src, rotulo, { canais = false, inverterNoEscuro = false,
   }
 
   const reduzido = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-  tela.imprimir = async (ms = 1900) => {
+  tela.imprimir = async (ms = 1900, ja = 0) => {
+    const pedido = performance.now() - ja;
     await preparar();
     if (reduzido()) pintar(1.1);
-    else await animar(-0.05, 1.1, ms);
+    else await animar(-0.05, 1.1, ms, performance.now() - pedido);
   };
   tela.desfazer = async (ms = 650) => {
     if (!estado || reduzido()) return;
     await animar(1.1, -0.05, ms);
   };
-  // a janela muda de tamanho ou de tema: refaz já pronta
-  const refazer = async () => { if (estado && tela.isConnected) { await preparar(); pintar(1.1); } };
-  addEventListener("resize", refazer);
-  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", refazer);
+  // já pronta, sem a impressão (a vinheta que já se desenhou nesta sessão)
+  tela.mostrar = async () => {
+    await preparar();
+    pintar(1.1);
+  };
+  async function refazer() {
+    if (!tela.isConnected) return gravuras.delete(refazer);
+    await preparar();
+    pintar(1.1);
+  }
   return tela;
 }
 
