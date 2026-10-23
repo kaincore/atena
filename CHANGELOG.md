@@ -1,5 +1,14 @@
 # Mudanças
 
+## 0.20.0 (2026-10-23)
+
+O Início como uma lâmina só (painel 0.12.0). O dono não quis os blocos soltos da 0.19.0: a página tinha de ser planejada por inteiro, com o desenho fazendo parte dela, e não como decoração.
+
+- **Sem cartões:** o Início vira uma lâmina composta como uma prancha impressa, sem placas nem sombras. No alto, a data e a frase do dia, fechadas por um filete duplo.
+- **O monumento:** no meio, o instrumento do servidor de pé numa haste sobre a escada das zonas (o servidor apoiado nas zonas), com a legenda das letras dos dois lados do disco e linhas de chamada até ele. A haste se desenha depois do instrumento, de cima para baixo.
+- **As notas nas margens:** o módulo sem a placa, só o título e o conteúdo no mármore. De um lado, o que pede você e as pendências; do outro, os próximos agendamentos, o gasto e o systemd, separados do monumento por filetes duplos. Numa tela média, o monumento atravessa e as notas vão em duas colunas; no celular, tudo numa coluna, na ordem de leitura.
+- Testado: os 49 testes do painel e o CI reproduzido com `tools/ci-local.sh`; os cliques de ponta a ponta no celular e no PC; as cenas e o roteiro do traço no ensaio; o Início fotografado no celular, numa tela média (1100 px) e no PC (1440 px), claro e escuro, normal e com problema (um container caído, uma unidade com falha, a temperatura perto do limite e um disco passado dele). No servidor de origem, o painel 0.12.0 subiu saudável pelas duas entradas. Sem testar: o movimento num celular de verdade. Sem revisor separado nesta rodada.
+
 ## 0.19.0 (2026-10-23)
 
 O Início como prancha (painel 0.11.0). O dono pediu o Início redesenhado na mesma forma do traço do sistema, escolheu a prancha entre três caminhos e manteve o gasto, as pendências, os próximos agendamentos e o systemd.
