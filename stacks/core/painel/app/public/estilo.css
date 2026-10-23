@@ -444,32 +444,36 @@ main {
 .prancha-legenda .ocre .leitura { color: var(--ocre-tinta); }
 .prancha-legenda .cinabrio .leitura { color: var(--cinabrio-tinta); }
 .nota-leitura { grid-column: 2 / -1; font-size: .76rem; line-height: 1.35; color: var(--tinta-2); font-variant-numeric: tabular-nums; }
-/* a régua presa no alto da tela: desce quando o instrumento sai de vista, com um anel pequeno por letra (a
-   tinta se pinta ao descer), as zonas e os pedidos; tocar nela volta ao instrumento */
+/* a régua presa no alto da tela: desce quando o instrumento sai de vista, com o que não pode se perder, cada
+   sinal uma tecla que leva ao seu lugar: os pedidos, as zonas, o instrumento em miniatura (um arco por leitura,
+   que se pinta ao descer) e as leituras fora do azul, com a letra e o nome curto. Sem largura, ela quebra de
+   linha: nada fica escondido */
 .regua-fixa {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 3; display: flex; align-items: center; gap: 1.1rem;
-  padding: calc(env(safe-area-inset-top) + .6rem) 1rem .6rem; overflow-x: auto; scrollbar-width: none;
-  border: 0; border-bottom: 1px solid var(--veio); border-radius: 0; box-shadow: none; min-height: 0;
-  background: var(--casca);
-  color: var(--tinta); font: inherit; text-align: left; cursor: pointer;
-  mask: linear-gradient(90deg, #000 calc(100% - 1.6rem), transparent);
+  position: fixed; top: 0; left: 0; right: 0; z-index: 3; display: flex; flex-wrap: wrap; align-items: center; gap: .1rem .4rem;
+  padding: calc(env(safe-area-inset-top) + .25rem) .6rem .25rem;
+  border-bottom: 1px solid var(--veio); background: var(--casca); color: var(--tinta);
   transform: translateY(-105%); visibility: hidden; transition: transform .45s var(--suave), visibility 0s linear .45s;
 }
-.regua-fixa::-webkit-scrollbar { display: none; }
-.regua-fixa, .regua-fixa:hover { justify-content: flex-start; background: var(--casca); border-color: var(--veio); }
 .regua-fixa.visivel { transform: none; visibility: visible; transition: transform .45s var(--suave), visibility 0s; }
-.regua-fixa:active:not(:disabled) { transform: none; }
-.sinal { display: inline-flex; align-items: center; gap: .35rem; flex: none; font-size: .84rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.sinal b { font-variation-settings: var(--pedra-letra); font-weight: 600; color: var(--tinta-2); }
+html:has(.regua-fixa.visivel) { scroll-padding-top: 4.5rem; }
+.sinal {
+  display: inline-flex; align-items: center; gap: .4rem; flex: none; min-height: 2.2rem; padding: .2rem .5rem;
+  border: 0; border-radius: var(--raio); background: transparent; box-shadow: none;
+  color: var(--tinta-2); font: inherit; font-size: .84rem; font-variant-numeric: tabular-nums; white-space: nowrap; cursor: pointer;
+}
+.sinal:hover { background: var(--placa-2); }
+.sinal:active:not(:disabled) { transform: none; }
+.sinal b { font-variation-settings: var(--pedra-letra); font-weight: 600; }
+.sinal .v { color: var(--tinta); }
 .sinal.ocre .v { color: var(--ocre-tinta); }
 .sinal.cinabrio .v { color: var(--cinabrio-tinta); }
-.sinal.zonas, .sinal.pede { color: var(--tinta-2); }
-.mini { width: 1.2rem; height: 1.2rem; flex: none; transform: rotate(-90deg); }
-.mini circle { fill: none; stroke-width: 3.2; }
-.mini .fundo { stroke: var(--veio); }
+@media (pointer: coarse) { .sinal { min-height: 2.75rem; } }
+.mini { width: 1.35rem; height: 1.35rem; flex: none; transform: rotate(-90deg); overflow: visible; }
+.mini circle { fill: none; stroke-width: .8; }
+.mini .aro { stroke: var(--veio-forte); stroke-width: .5; }
 .mini .arco { stroke: var(--azul); stroke-dasharray: var(--f) 1; }
-.ocre .mini .arco { stroke: var(--ocre); }
-.cinabrio .mini .arco { stroke: var(--cinabrio); }
+.mini .arco.ocre { stroke: var(--ocre); }
+.mini .arco.cinabrio { stroke: var(--cinabrio); }
 .regua-fixa.visivel:not(.ja) .mini .arco { animation: pintar-prancha .9s var(--suave) backwards; animation-delay: calc(var(--i, 0) * 60ms + .15s); }
 @media (min-width: 60rem) {
   /* entre o celular e a lâmina larga: o instrumento com a legenda dos dois lados, as zonas embaixo, e as

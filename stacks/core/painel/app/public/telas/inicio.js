@@ -2,7 +2,8 @@
 // escrita a partir dos dados e, quando há algo, a rubrica com o que pede você. No meio, as duas pranchas (o
 // instrumento do servidor, com a legenda das letras, e a crepidoma das zonas); nas margens, as notas: a agenda e as
 // pendências de um lado, o gasto e o systemd do outro; embaixo, o colofão com a hora da leitura. Rolando para
-// baixo, as leituras não se perdem: uma régua presa no alto da tela as mantém à vista.
+// baixo, o que importa não se perde: uma régua presa no alto da tela guarda os pedidos, as zonas e as leituras
+// fora do limite.
 import { api, atualizar, avisar, cartao, consultar, containerOk, dinheiro, falha, gb, h, item, itens, linha, medidor,
   modulo, num, plural, statusDocker } from "../comum.js";
 import { quandoTexto } from "./agenda.js";
@@ -122,7 +123,7 @@ function pranchaServidor(r, ls, regua) {
   const instrumento = desenhavel(prancha(ls, "O instrumento do servidor: um anel por leitura da legenda"), "prancha-servidor");
   instrumento.fixar = ligarLegenda(instrumento, linhas, ls);
   ls.forEach((l, i) => {
-    const els = [linhas[i].querySelector(".leitura"), regua?.querySelector(`[data-i="${i}"] .v`)].filter(Boolean);
+    const els = [linhas[i].querySelector(".leitura"), regua?.querySelector(`.v[data-i="${i}"]`)].filter(Boolean);
     const antes = vistos.get(l.nome);
     vistos.set(l.nome, l.n);
     if (antes == null) return;
@@ -147,38 +148,61 @@ function pranchaZonas(lista) {
       h("a", { href: "#servicos" }, "ver os serviços")));
 }
 
-// a régua presa no alto: quando o instrumento sai da tela, ela desce com as leituras (um anel pequeno por
-// letra), as zonas e os pedidos; tocar nela volta ao instrumento
-function anelPequeno(f) {
-  const arco = s("circle", { class: "arco", r: 7, pathLength: 1 });
-  arco.style.setProperty("--f", Math.max(0, Math.min(1, f)).toFixed(4));
-  return s("svg", { class: "mini", viewBox: "-9 -9 18 18", "aria-hidden": "true" }, s("circle", { class: "fundo", r: 7 }), arco);
+// a régua presa no alto: quando o instrumento sai da tela, ela desce com o que não pode se perder, cada um
+// levando ao seu lugar: os pedidos, as zonas e, depois do instrumento em miniatura (que volta a ele), as
+// leituras fora do azul, com a letra e o nome curto
+function miniatura(ls) {
+  return s("svg", { class: "mini", viewBox: "-9 -9 18 18", "aria-hidden": "true" }, s("circle", { class: "aro", r: 8.6 }), ls.map((l, i) => {
+    const arco = s("circle", { class: `arco ${l.tom}`, r: 7.4 - i * 1.3, pathLength: 1 });
+    arco.style.setProperty("--f", Math.max(0, Math.min(1, l.fracao)).toFixed(4));
+    arco.style.setProperty("--i", i);
+    return arco;
+  }));
 }
 function reguaFixa(ls, lista, pedidos) {
-  const ruins = lista ? lista.filter((c) => !containerOk(c)).length : 0;
-  const regua = h("button", { type: "button", class: "regua-fixa", "aria-label": "Voltar às leituras do servidor" },
-    ls.map((l, i) => {
-      const sinal = h("span", { class: `sinal ${l.tom}`, "data-i": String(i) }, anelPequeno(l.fracao), h("b", null, l.letra), h("span", { class: "v" }, l.valor));
-      sinal.style.setProperty("--i", i);
-      return sinal;
-    }),
-    lista && h("span", { class: "sinal zonas" }, h("i", { class: `led ${ruins ? "ruim" : "ok"}` }), `${num(lista.length - ruins)}/${num(lista.length)} no ar`),
-    pedidos > 0 && h("span", { class: "sinal pede" }, h("i", { class: "led morno" }), plural(pedidos, "pedido", "pedidos")));
-  // a régua da atualização anterior já estava à vista: a nova entra no lugar dela, sem descer de novo
-  if (document.querySelector(".regua-fixa.visivel")) regua.classList.add("visivel", "ja");
+  const ruins = lista ? lista.filter((c) => !containerOk(c)) : [];
+  const fora = ls.filter((l) => l.tom !== "azul");
+  const sinal = (classe, acao, rotulo, ...conteudo) => h("button", { type: "button", class: `sinal ${classe}`, "data-chave": `regua:${classe}`, "aria-label": rotulo, onclick: acao }, conteudo);
+  const regua = h("nav", { class: "regua-fixa", "aria-label": "O servidor em resumo" },
+    pedidos.length > 0 && sinal("pede", () => (pedidos.length === 1 ? abrirPedido(pedidos[0].id) : (location.hash = "#aprovacoes")), null,
+      h("i", { class: "led morno" }), plural(pedidos.length, "pedido", "pedidos")),
+    lista && sinal("zonas", () => (ruins.length ? abrirZona(ruins[0].zona) : (location.hash = "#servicos")), null,
+      h("i", { class: `led ${ruins.length ? "ruim" : "ok"}` }), `${num(lista.length - ruins.length)}/${num(lista.length)} no ar`),
+    sinal("leituras", () => irParaLeitura(), fora.length ? "Voltar ao instrumento" : null, miniatura(ls), !fora.length && "Leituras em ordem"),
+    fora.map((l) => {
+      const i = ls.indexOf(l);
+      const tecla = sinal(l.tom, () => irParaLeitura(i), null, h("b", { "aria-hidden": "true" }, l.letra), `${l.curto} `, h("span", { class: "v", "data-i": String(i) }, l.valor));
+      tecla.dataset.chave = `regua:${l.nome}`;
+      return tecla;
+    }));
+  // a régua da atualização anterior já estava à vista: a nova entra no lugar dela sem descer de novo, e a
+  // posição se confere assim que ela chega à página (a rubrica pode ter crescido ou encolhido)
+  if (document.querySelector("#tela .regua-fixa.visivel")) regua.classList.add("visivel", "ja");
+  let tentativas = 120;
+  const chegou = () => {
+    if (regua.isConnected) conferirRegua();
+    else if (--tentativas > 0) requestAnimationFrame(chegou);
+  };
+  requestAnimationFrame(chegou);
   return regua;
 }
-let vigia = null;
-function vigiar(alvo, regua) {
-  vigia?.disconnect();
-  vigia = new IntersectionObserver(([e]) => {
-    const passou = !e.isIntersecting && e.boundingClientRect.bottom < 80;
-    regua.classList.toggle("visivel", passou);
-    if (!passou) regua.classList.remove("ja");
-  }, { rootMargin: "-64px 0px 0px 0px" });
-  vigia.observe(alvo);
-  regua.addEventListener("click", () => alvo.scrollIntoView({ behavior: reduzido() ? "auto" : "smooth", block: "center" }));
+// a régua desce quando o instrumento passou do alto da tela. Confere a cada rolagem (uma vez por quadro), e
+// não só quando ele cruza a borda: um salto de rolagem (a volta à tela, um "Ver") o leva de baixo para cima
+// sem ele nunca estar à vista. Olha a régua e o instrumento que estão na página
+function conferirRegua() {
+  const regua = document.querySelector("#tela .regua-fixa"), instrumento = document.querySelector("#tela .lamina svg.instrumento");
+  if (!regua || !instrumento) return;
+  const passou = instrumento.getBoundingClientRect().bottom < 64;
+  regua.classList.toggle("visivel", passou);
+  if (!passou) regua.classList.remove("ja");
 }
+let quadro = 0;
+addEventListener("scroll", () => {
+  quadro ||= requestAnimationFrame(() => {
+    quadro = 0;
+    conferirRegua();
+  });
+}, { passive: true });
 
 const juntar = (...frases) => frases.filter(Boolean).join(" ");
 
@@ -347,9 +371,8 @@ export async function telaInicio() {
         itens(s.timers.map((t) => item({ nome: t.nome, detalhe: `próxima: ${t.proxima ?? "—"}` })))));
   }
 
-  const regua = r ? reguaFixa(ls, servicos.ok === false ? null : lista, listaPedidos.length) : null;
+  const regua = r ? reguaFixa(ls, servicos.ok === false ? null : lista, listaPedidos) : null;
   const servidor = r ? pranchaServidor(r, ls, regua) : nota(cartao("Servidor", semLeitura(recursos)), "servidor");
-  if (regua) vigiar(servidor, regua);
   // no celular, uma coluna na ordem do código: o servidor, as zonas, a agenda, as pendências, o gasto, o
   // systemd; na lâmina larga, a grade põe cada parte no seu lugar
   return [h("section", { class: "lamina largo" }, regua, topo(dados),
