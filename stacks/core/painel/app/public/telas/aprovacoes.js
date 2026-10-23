@@ -5,7 +5,38 @@ import { picto } from "../pictos.js";
 export function relativo(s) {
   const minutos = Math.round((s * 1000 - Date.now()) / 60000);
   if (minutos === 0) return "agora";
-  return minutos > 0 ? `em ${minutos}\u00a0min` : `há ${-minutos}\u00a0min`;
+  const m = Math.abs(minutos);
+  const texto = m < 60 ? `${m}\u00a0min` : `${Math.floor(m / 60)}\u00a0h${m % 60 ? ` ${m % 60}\u00a0min` : ""}`;
+  return minutos > 0 ? `em ${texto}` : `há ${texto}`;
+}
+
+// quem pediu, como o dono chama: o cliente "hermes" é a Atena
+const QUEM = { hermes: "Atena", claude: "Claude Code" };
+export const quem = (cliente) => QUEM[cliente] ?? cliente;
+
+// abrir um pedido (o "Ver" do Início): a tela das Aprovações chega nele e o marca por um instante. O pedido
+// vale por alguns segundos e sai quando a tela chega nele: uma leitura que falhou ou foi descartada no meio não
+// o perde, e uma que vem muito depois não rola a tela sem você ter pedido
+let pedidoAlvo = null;
+export function abrirPedido(id) {
+  pedidoAlvo = { id, ate: performance.now() + 15000 };
+  if (telaAtual() === "aprovacoes") atualizar();
+  else location.hash = "#aprovacoes";
+}
+function chegarNo(el) {
+  let tentativas = 120; // a tela nova entra depois da transição: espera ela estar na página
+  const ir = () => {
+    if (!el.isConnected) {
+      if (--tentativas > 0) requestAnimationFrame(ir);
+      return;
+    }
+    pedidoAlvo = null;
+    el.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+    el.classList.remove("surge"); // a chegada da tela não pode recomeçar quando a marca sair
+    el.classList.add("alvo");
+    setTimeout(() => el.classList.remove("alvo"), 2400);
+  };
+  requestAnimationFrame(ir);
 }
 
 let pendentes = 0;
@@ -52,7 +83,7 @@ async function decidirPedido(p, decisao, resposta) {
 }
 
 function cartaoPendente(p) {
-  const meta = h("p", { class: "fraco" }, [p.cliente, p.acao, `pedido ${p.id}`, `pedido ${relativo(p.criado)}`,
+  const meta = h("p", { class: "fraco" }, [quem(p.cliente), p.acao, `pedido ${p.id}`, `pedido ${relativo(p.criado)}`,
     `vence ${relativo(p.expira)}`, p.origem && `origem ${p.origem}`].filter(Boolean).join(" · "));
   if (p.tipo === "pergunta") {
     const campo = h("textarea", { rows: "2", maxlength: "2000", placeholder: "Ou escreva a resposta" });
@@ -81,12 +112,19 @@ export async function telaAprovacoes() {
   if (r.ok === false) return [cartao("Aprovações", falha(r), semCentral(r))];
   const { pendentes, recentes } = r.resultado;
   marcarPendentes(pendentes.length);
+  const alvo = pedidoAlvo && performance.now() < pedidoAlvo.ate ? pedidoAlvo.id : null;
+  const cartoes = pendentes.map((p) => {
+    const c = cartaoPendente(p);
+    c.dataset.chave = `pedido:${p.id}`; // o foco volta ao pedido dele quando a tela se lê de novo
+    if (p.id === alvo) chegarNo(c);
+    return c;
+  });
   return [
-    pendentes.length ? pendentes.map(cartaoPendente)
+    pendentes.length ? cartoes
       : cartao("Aprovações", vazio("Nada esperando por você. Os pedidos da Atena e do Claude Code aparecem aqui e no celular.", "coruja")),
     cartao("Decididos há pouco", itens(recentes.map((x) => item({
       led: ledEstado(x.estado), nome: x.titulo ?? x.acao,
-      detalhe: [estadoTexto(x.estado), x.cliente, hora(x.quando), x.por && `por ${x.por}`].filter(Boolean).join(" · "),
+      detalhe: [estadoTexto(x.estado), quem(x.cliente), hora(x.quando), x.por && `por ${x.por}`].filter(Boolean).join(" · "),
       extra: x.erro && h("div", { class: "fraco resumo" }, x.erro),
     })), "Nenhum ainda.")),
   ];

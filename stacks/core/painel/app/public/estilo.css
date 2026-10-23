@@ -941,6 +941,9 @@ dialog::backdrop { background: rgb(10 14 26 / .42); backdrop-filter: blur(3px); 
   font: .74rem/1.55 var(--mono); color: var(--noite-tinta); background: var(--noite); padding: .85rem .95rem; border-radius: var(--raio);
   overflow: auto; max-height: 60dvh; white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-color: #3a4558 transparent;
 }
+/* o pedido que o "Ver" do Início abriu: o Véu Azul passa por ele uma vez */
+.modulo.alvo { animation: chegar-no-pedido 2.4s var(--suave); }
+@keyframes chegar-no-pedido { from, 35% { background: var(--azul-claro); } }
 .texto-pedido {
   font: .92rem/1.55 var(--letra); background: var(--placa-2); padding: .7rem .8rem; border-radius: var(--raio);
   border: 1px solid var(--veio); white-space: pre-wrap; overflow-wrap: anywhere; margin: .5rem 0;
