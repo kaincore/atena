@@ -495,7 +495,7 @@ Cantos discretos e quase iguais: 6px em quase tudo (módulos, teclas, campos, tr
 
 **O meandro.** Um traço só, que entra na espiral e sai pela base até a volta seguinte; cada volta ocupa 4 unidades de largura por 3 de altura (`desenhos.js`). Ele aparece de cinco jeitos: como máscara repetida (`--meandro` e `--meandro-em-pe`, traço de 1.2 numa célula de 16 por 14) na borda da casca, na moldura da entrada e no medidor; como faixa desenhada (traço de 1.3, quinas em ponta) sob o nome de cada tela e no esqueleto; como chave, uma volta só em azul, de .95rem por .72rem, antes de cada título de módulo; dando a volta num círculo, fechado sem emenda, na borda dos medalhões, do relógio de sol e da entrada; e como medida, pintado até o valor.
 
-**Os medalhões.** Dois aros finos de Veio (.6), o meandro circular apagado em Veio (1) e, por cima, o mesmo meandro em tinta (1.7) pintado até a fração em voltas inteiras (um valor acima de zero pinta ao menos uma). No miolo, o número na letra de pedra ou um desenho (o ícone do PC, a roseta de oito pétalas que gira na velocidade da ventoinha).
+**Os medalhões** (Sistema e PC). Dois aros finos de Veio (.6), o meandro circular apagado em Veio (1) e, por cima, o mesmo meandro em tinta (1.7) pintado até a fração em voltas inteiras (um valor acima de zero pinta ao menos uma). No miolo, o número na letra de pedra ou um desenho (o ícone do PC, a roseta de oito pétalas que gira na velocidade da ventoinha).
 
 **Os ícones.** Desenhados em `pictos.js`, numa grade de 24, com traço de 1.5 (1.05 nos finos), pontas e quinas redondas, em `currentColor`. As coisas gregas entram no lugar das de sempre quando dizem o mesmo: o Início é a frente do templo, as Aprovações uma coroa de louros com o visto, os Serviços uma ânfora, o Sistema a engrenagem de Anticítera, o Histórico uma ampulheta, os Arquivos um pergaminho. A área "tinta" (o tímpano, a faixa da ânfora, o líquido do frasco) fica vazia em repouso e se pinta a 16% na tela ativa.
 
@@ -559,6 +559,12 @@ Toda lista do painel é feita de linhas iguais (`item()` e `itens()` no `comum.j
 - **Presas a outra:** os containers de uma stack e as execuções de um agendamento ficam embaixo dela, presos por um fio de 1px de Veio à esquerda.
 - **Registros:** na Atividade, uma linha por evento, com o nome na monoespaçada.
 
+### O Início
+A primeira tela é uma página de prancha científica, não um painel de cartões iguais. No alto, a data na Tinta Segunda e a frase do dia, escrita a partir dos dados na letra de pedra (1.28rem no celular, 1.55rem no PC): primeiro o que está errado (o container que caiu, a unidade que falhou, a leitura que passou do limite), depois o que espera você (aprovações e pendências), por fim o próximo agendamento; sem nada errado, "Tudo em ordem". Logo depois (ao lado da frase, no PC) o módulo "O que pede você", só quando há algo: os pedidos esperando (ponto ocre, com "Ver"), o que caiu e o que falhou (ponto e rachadura de cinábrio). A faixa de aprovações não aparece no Início. Embaixo, as duas pranchas impressas direto no chão, sem moldura, cada uma com o título embaixo ("Prancha I · o servidor", "Prancha II · as zonas"), lado a lado no PC: o instrumento do servidor com a legenda das letras, e a crepidoma das zonas. Por último, nas colunas, os próximos agendamentos, o gasto de IA, o systemd (a conta e os timers) e as pendências.
+
+### Instrumento do Servidor
+Um disco de prancha científica antiga (até 17.5rem; 18rem no PC, com a legenda ao lado): a graduação de 72 marcas (as de 30° mais longas) e o aro fino em volta, o eixo do zero no alto e, de fora para dentro, um anel por leitura (CPU, RAM, temperatura da CPU, GPU, cada disco; até seis), cada um com duas bordas finas de Veio Forte e a tinta em hachura (traços a 35°) pintada desde o zero até o valor, no tom do limite (azul, ocre perto dele, cinábrio passado dele). As letras gregas (Α, Β, Γ, Δ, Ε, Ζ) ficam no eixo do zero, ao lado do começo de cada anel, e a legenda embaixo diz o que cada letra é, com o valor e a nota. No meio, uma estrela de oito pontas. Na primeira vez, a graduação se grava em volta, as bordas e o eixo se traçam e a tinta se pinta; depois, quando um valor muda, a tinta anda do valor anterior ao novo (1s).
+
 ### Medalhões
 A leitura do servidor (CPU, temperatura, RAM, GPU; o PC e o LM Studio; as ventoinhas): um disco de até 9.6rem com o número no meio e o meandro da borda pintado de azul até o valor, em voltas inteiras. Perto do limite (a 85% do alerta) a tinta passa a Ocre; passado dele, a Cinábrio. Embaixo, o nome em Rótulo a .86rem e uma nota a .78rem na Tinta Segunda. Ao chegar, o anel se pinta do zero até o valor em 1.3s; quando o valor muda, a tinta anda até o novo em 1s.
 
@@ -569,7 +575,7 @@ A assinatura do painel: a escada do templo, um degrau de mármore de 7.2rem por 
 O mostrador da agenda: 24 horas num disco com o meandro circular na borda, marcas a cada hora (mais fortes a cada seis), os numerais 0, 6, 12 e 18 na letra de pedra, a sombra (uma cunha de Tinta a 7% e o gnômon) na hora de agora e as próximas vezes das 24 h como pontos azuis, a primeira maior. Ao lado, a próxima vez e a conta do dia em Número.
 
 ### Faixa de Aprovações
-No topo de qualquer tela quando há pedido esperando: uma faixa de Ocre Claro com borda de Ocre a 38%, o ícone da coroa de louros em Ocre, "N aprovações esperando você" em 600 a .98rem e, à direita, "Ver" com a seta em Tinta de Ocre. No hover, a borda fica Ocre cheia. Atravessa todas as colunas no PC.
+No topo de qualquer tela quando há pedido esperando, menos nas Aprovações e no Início (lá o "O que pede você" mostra os pedidos): uma faixa de Ocre Claro com borda de Ocre a 38%, o ícone da coroa de louros em Ocre, "N aprovações esperando você" em 600 a .98rem e, à direita, "Ver" com a seta em Tinta de Ocre. No hover, a borda fica Ocre cheia. Atravessa todas as colunas no PC.
 
 ### A Entrada
 As mãos da Criação de Adão direto sobre o chão, sem moldura, com o reboco do afresco quase invisível atrás e a centelha no vão entre os dedos. Embaixo das mãos, o ΑΘΗΝΑ a 1.7rem, o campo da senha e a tecla principal Entrar. Na senha errada, o ΑΘΗΝΑ fica em cinábrio por 1,6 s; na certa, ele fica azul e a imagem se desfaz no mesmo pontilhado em que se imprimiu.
@@ -611,7 +617,7 @@ Três curvas, todas em custom properties: `--suave` (cubic-bezier(.22, 1, .36, 1
 - **A imagem da entrada:** `app/public/gravuras/criacao-de-adao.webp` vem de uma foto do afresco de Michelangelo feita por Jörg Bittner Unna (2011), reprodução fiel de uma obra em domínio público (PD-Art), pelo Wikimedia Commons. O preparo (o recorte com o GrabCut, a luz convertida em tinta e a redução) está em `app/public/gravuras/ORIGEM.txt`.
 - **As vinhetas:** `app/public/gravuras/vinhetas/` (a coruja, o galo, a andorinha e a pega) vêm de *L'Histoire de la nature des oyseaux*, de Pierre Belon (1555), em domínio público, pelo Wikimedia Commons; as páginas, os recortes e o preparo estão em `app/public/gravuras/ORIGEM.txt`.
 - **O reboco:** `app/public/gravuras/reboco.webp` é o céu da mesma foto do afresco, com a origem e o preparo em `app/public/gravuras/ORIGEM.txt`.
-- **Desenhos e ícones:** o meandro, os medalhões, a crepidoma, o relógio de sol e os pictogramas são montados em código (`desenhos.js`, `pictos.js`, `estilo.css`) a partir dos dados de verdade; nada vem de biblioteca nem de outro endereço.
+- **Desenhos e ícones:** o meandro, os medalhões, o instrumento do servidor, a crepidoma, o relógio de sol e os pictogramas são montados em código (`desenhos.js`, `pictos.js`, `estilo.css`) a partir dos dados de verdade; nada vem de biblioteca nem de outro endereço.
 
 ## Do's and Don'ts
 

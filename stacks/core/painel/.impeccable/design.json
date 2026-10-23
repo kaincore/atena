@@ -1088,6 +1088,16 @@
         "name": "esfera-girar",
         "value": "os anéis em .9s, .16s um depois do outro, os pontos em .45s com a mola; a volta em 90s linear infinita, continuando do ângulo em que estava quando a tela se refaz",
         "purpose": "A rede: a esfera armilar se desenha na primeira vez e gira devagar."
+      },
+      {
+        "name": "prancha-gravar",
+        "value": "a graduação em 1.2s, o aro e o eixo de .1s a .8s, as bordas dos anéis de .4s em diante (.07s cada), a tinta de .95s em diante (.12s cada, 1.4s cada uma, --f de 0 ao valor), as letras e a estrela em seguida",
+        "purpose": "O Início: o instrumento do servidor se grava na primeira vez."
+      },
+      {
+        "name": "prancha-andar",
+        "value": "--f do valor anterior ao novo em 1s var(--suave), quando a diferença passa de 0,4%",
+        "purpose": "O Início, a cada atualização: a tinta de cada anel anda até a leitura nova, como um ponteiro."
       }
     ],
     "breakpoints": [
