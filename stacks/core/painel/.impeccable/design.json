@@ -1100,9 +1100,29 @@
         "purpose": "O Início, a cada atualização: a tinta de cada anel anda até a leitura nova, como um ponteiro."
       },
       {
-        "name": "haste",
-        "value": "o colar em .4s a partir de 1.5s, o fuste em .5s a partir de 1.7s, a base em .5s a partir de 2s",
-        "purpose": "O Início: depois de o instrumento se gravar, a haste o põe de pé sobre a crepidoma, de cima para baixo."
+        "name": "contar",
+        "value": "o número anda junto com a tinta do anel: do zero em 1.4s (a partir de .95s, .12s por anel) na primeira vez, do valor de antes em 1s quando a leitura muda; ease-out (1 - (1 - x)^4)",
+        "purpose": "O Início: os números da legenda e da régua presa contam até a leitura."
+      },
+      {
+        "name": "regua-fixa",
+        "value": "translateY(-105%) até 0 em .45s var(--suave); os anéis pequenos se pintam em .9s, 60ms um depois do outro",
+        "purpose": "O Início: quando o instrumento sai de vista, a régua com as leituras desce e fica presa no alto; tocar nela volta ao instrumento."
+      },
+      {
+        "name": "acender-anel",
+        "value": "opacity dos outros anéis a .3 e a tinta do anel a 8.6 de espessura, em .35s var(--suave)",
+        "purpose": "O Início: a linha da legenda tocada acende o anel dela."
+      },
+      {
+        "name": "assentar-zonas",
+        "value": "assentar 1s var(--mola), 90ms por degrau, quando a crepidoma aparece na tela pela primeira vez na sessão",
+        "purpose": "O Início: os degraus das zonas se assentam quando você chega a eles."
+      },
+      {
+        "name": "estender-regua",
+        "value": "scaleX de 0 a 1 ligado à rolagem (animation-timeline: view(); entry 0% a 80%)",
+        "purpose": "O Início: a régua do título de cada nota se estende enquanto a nota entra na tela."
       }
     ],
     "breakpoints": [
