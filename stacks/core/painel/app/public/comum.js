@@ -202,11 +202,12 @@ export function linha(rotulo, valor, extra) {
 // Uma linha de lista, igual em todas as telas: o ponto do estado (o texto dele vem no detalhe), o nome,
 // o detalhe embaixo e as teclas à direita (num módulo estreito, várias teclas descem para baixo do
 // nome). O extra ocupa a largura toda embaixo: um resumo, um registro, os "detalhes".
-// rachado: o nome do que caiu (a rachadura se desenha atrás da linha, sempre com a mesma forma para ele)
-export function item({ led, nome, detalhe, acoes, extra, classe, rachado }) {
+// rachado: o nome do que caiu (a rachadura se desenha atrás da linha, sempre com a mesma forma para ele);
+// chave: quem a linha é (um pedido, uma leitura), para o foco voltar a ela quando a tela se lê de novo
+export function item({ led, nome, detalhe, acoes, extra, classe, rachado, chave }) {
   const teclas = [acoes].flat(Infinity).filter(Boolean);
   const embaixo = [extra].flat(Infinity).filter(Boolean);
-  return h("li", { class: ["item", !led && "sem-led", rachado && "rachado", classe].filter(Boolean).join(" "), "data-acoes": teclas.length || null },
+  return h("li", { class: ["item", !led && "sem-led", rachado && "rachado", classe].filter(Boolean).join(" "), "data-acoes": teclas.length || null, "data-chave": chave },
     rachado && rachadura(rachado),
     led && h("span", { class: `led ${led}` }),
     h("div", { class: "item-texto" }, h("div", { class: "item-nome" }, nome), detalhe && h("div", { class: "item-detalhe" }, detalhe)),

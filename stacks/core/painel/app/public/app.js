@@ -184,11 +184,30 @@ function surgir(elementos, ja = 0) {
   });
 }
 
+// onde está o foco dentro da tela, para a tela que se lê de novo devolver: pela chave do dono (o data-chave do
+// pedido, da leitura, da linha) e o texto da tecla dentro dele; sem dono, só quando nenhum outro elemento do mesmo
+// tipo tem aquele texto. Na dúvida o foco não volta: cair no botão de outro pedido seria pior do que perdê-lo
+const mesmos = (dentro, tag, texto) => [...dentro.getElementsByTagName(tag)].filter((el) => el.textContent.trim() === texto);
+function ondeEsta(tela) {
+  const ativo = document.activeElement;
+  if (!ativo || ativo === document.body || !tela.contains(ativo)) return null;
+  const dono = ativo.closest("[data-chave]"), texto = ativo.textContent.trim();
+  if (dono && tela.contains(dono)) return { chave: dono.dataset.chave, proprio: dono === ativo, tag: ativo.tagName, texto };
+  return mesmos(tela, ativo.tagName, texto).length === 1 ? { tag: ativo.tagName, texto } : null;
+}
+function voltarAo(tela, foco) {
+  const dentro = foco.chave ? [...tela.querySelectorAll("[data-chave]")].find((el) => el.dataset.chave === foco.chave) : tela;
+  if (!dentro) return;
+  const alvos = foco.proprio ? [dentro] : mesmos(dentro, foco.tag, foco.texto);
+  if (alvos.length === 1) alvos[0].focus({ preventScroll: true });
+}
+
 async function atualizar() {
   const nome = telaAtual();
   const minha = ++geracao;
   marcarAtiva(nome);
   const tela = $("#tela");
+  const mesmaTela = aberta === nome;
   let trocou = null;
   if (aberta !== nome) {
     const anterior = aberta;
@@ -222,7 +241,11 @@ async function atualizar() {
   const eraEsqueleto = [...tela.children].some((el) => el.matches(".esqueleto"));
   manterAbertos([...tela.children], conteudo);
   vistas.set(nome, conteudo);
+  // a mesma tela que se lê de novo: o foco e a rolagem ficam onde estavam
+  const foco = mesmaTela ? ondeEsta(tela) : null, y = scrollY;
   tela.replaceChildren(...[faixaDaTela(), cabecalho(nome), conteudo].flat().filter(Boolean));
+  if (foco) voltarAo(tela, foco);
+  if (mesmaTela && scrollY !== y) scrollTo(0, y);
   if (eraEsqueleto) surgir(conteudo);
   else if (decorrido < 700 && !trocou) surgir(conteudo, Math.round(decorrido));
   tela.removeAttribute("aria-busy");
