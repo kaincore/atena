@@ -27,8 +27,9 @@ function marcarPendentes(n) {
   else if (nova && $("#entrada").hidden) $("#tela").prepend(nova);
 }
 
+// nas Aprovações não há faixa, e no Início o "O que pede você" já mostra os pedidos
 export function faixaAprovacoes(pulsar = false) {
-  if (!pendentes || telaAtual() === "aprovacoes") return null;
+  if (!pendentes || ["aprovacoes", "inicio"].includes(telaAtual())) return null;
   const faixa = h("a", { class: `faixa${pulsar ? " pulsa" : ""}`, href: "#aprovacoes" },
     h("strong", null, picto("aprovacoes"), ` ${pendentes} ${pendentes === 1 ? "aprovação esperando" : "aprovações esperando"} você`),
     h("span", { class: "rotulo" }, "Ver", picto("seguir")));

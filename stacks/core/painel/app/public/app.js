@@ -149,8 +149,9 @@ function manterAbertos(antes, depois) {
 const montar = async (nome) => [await TELAS[nome]()].flat(Infinity).filter(Boolean);
 
 // a faixa de aprovações que já está na tela fica (se ela acabou de chegar, a luz dela termina de passar);
-// a contagem que muda troca a faixa pelo marcarPendentes
-const faixaDaTela = () => (telaAtual() === "aprovacoes" ? null : $("#tela .faixa") ?? faixaAprovacoes());
+// a contagem que muda troca a faixa pelo marcarPendentes. Nas Aprovações não há faixa, e no Início o
+// "O que pede você" já mostra os pedidos
+const faixaDaTela = () => (["aprovacoes", "inicio"].includes(telaAtual()) ? null : $("#tela .faixa") ?? faixaAprovacoes());
 
 // o cabeçalho de cada tela: o nome e a faixa de meandro, que se desenha ao entrar nela
 const cabecalhos = new Map();
