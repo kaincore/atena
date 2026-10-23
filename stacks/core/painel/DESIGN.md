@@ -506,6 +506,8 @@ Cantos discretos e quase iguais: 6px em quase tudo (módulos, teclas, campos, tr
 ### Named Rules
 **A Regra do Meandro que Mede.** O meandro é ornamento e é medida. Uma fração se mostra pintando o meandro (o anel do medalhão, o medidor), nunca numa barra lisa ou num anel liso; e o ornamento é sempre o mesmo traço, nunca um friso de outra forma.
 
+**A Regra do Traço que Nasce do Conteúdo.** Nenhum enfeite tem lugar fixo. O desenho aparece onde algo acontece (a lista que esvaziou, o serviço que caiu, o pedido que você aprovou, o fim da lista a que você chegou), se desenha naquela hora como pena ou buril e depois fica quieto. Ilustração é gravura antiga em domínio público; o que se desenha em código é geometria (o meandro, o louro, a rachadura, a esfera).
+
 ## Components
 
 ### Buttons
@@ -578,7 +580,14 @@ As mãos da Criação de Adão direto sobre o chão, sem moldura, com o reboco d
 - **Texto de pedido:** em Placa Funda com 1px de Veio, na letra lisa a .92rem.
 
 ### Esqueleto
-A tela que ainda não chegou mostra duas placas já postas, com marcas vazias em Placa Funda e uma faixa de meandro que se faz e se desfaz (2s, em `--traco`) enquanto o dado chega. A tela já vista volta na hora com o que mostrava, na mesma altura da rolagem, até o dado novo entrar por cima.
+A tela que ainda não chegou mostra duas placas já postas, uma faixa de meandro que se faz e se desfaz (2s, em `--traco`) e, no lugar de cada linha, uma hachura de Veio Forte (traços a -58°, de 1px a cada 5px) traçada da esquerda para a direita e apagada, uma linha depois da outra (2.4s). O que espera uma resposta curta (abrir um arquivo, procurar, rodar um comando) leva a mesma hachura embaixo do texto (`carregando()`). A tela já vista volta na hora com o que mostrava, na mesma altura da rolagem, até o dado novo entrar por cima.
+
+### O Traço do Sistema
+O ornamento do painel não tem lugar fixo: ele nasce do conteúdo, onde algo acontece, do tamanho do que acontece, e se desenha na hora, como pena ou buril, para depois ficar quieto (`ornamentos.js`). Cada desenho tem uma chave com o estado dele e corre uma vez por sessão; nas atualizações da tela ele já vem pronto. São quatro famílias:
+- **Quem carrega hachura:** o esqueleto e o `carregando()`, acima.
+- **O gesto deixa um traço** em volta do que você tocou, em Azul Egípcio, quando a ação dá certo, e some em seguida: o louro (dois ramos em parênteses, com folhas alternadas) ao aprovar um pedido ou publicar um app, e a tela espera ele terminar antes de tirar o pedido; o círculo de pena (uma volta e um pouco, fechando para dentro) em volta do nome do que você reiniciou; os raios (24, longos e curtos) em volta do medalhão do PC quando ele liga.
+- **O vazio e o fim:** a lista vazia ganha uma vinheta de gravura antiga de 5.5rem, gravada a buril (em passadas na direção da hachura, cada uma começando numa hora), na Tinta da Gravura, com o texto embaixo (`vazio(texto, figura)`). São quatro aves em xilogravura do livro de Pierre Belon de 1555, todas com o nome grego na legenda: a coruja (a vigília) nas Aprovações, o galo (as horas) na Agenda, a andorinha (a que constrói o ninho) no Lab e a pega (a que guarda) na Atividade e no Histórico. A lista longa (8 linhas ou mais) da Atividade, do Histórico e dos Arquivos termina com um fecho de livro em Tinta de Ornamento, um losango com dois ramos em S, que se desenha do meio para fora quando você chega ao fim.
+- **O dado vira desenho:** o que caiu (um container fora do ar, uma unidade do systemd com falha) ganha uma rachadura em Cinábrio a 50% saindo da borda de cima da linha dele, como o reboco do afresco, sempre com a mesma forma para o mesmo nome. Na Rede, a esfera armilar: um anel por alcance (só o servidor, containers, rede de casa, Tailscale, todas as redes), do servidor para fora, com um ponto Azul por porta aberta nele (Cinábrio nas abertas para todas as redes), o eixo e o servidor parados no meio, girando devagar (90s por volta); ao lado, os alcances com a conta de portas.
 
 ### Movimento
 Três curvas, todas em custom properties: `--suave` (cubic-bezier(.22, 1, .36, 1), sai rápido e assenta devagar) para o dia a dia; `--mola` (uma mola amortecida escrita em `linear()`, que passa 1,5% do alvo e assenta) para o que se assenta no lugar; `--traco` (cubic-bezier(.65, 0, .25, 1)) para o traço que se desenha.
@@ -600,6 +609,7 @@ Três curvas, todas em custom properties: `--suave` (cubic-bezier(.22, 1, .36, 1
 - **Fonte:** Commissioner, de Kostas Bartsokas, sob a SIL Open Font License 1.1, tirada do Fontsource 5.2.8. Os arquivos ficam em `app/public/fontes` (`commissioner-latin.woff2`, `commissioner-grego.woff2`) com a licença ao lado (`commissioner-LICENSE.txt`).
 - **Ícone do app:** `app/public/icone.svg` é desenhado à mão: a chave do meandro (uma volta, num traço só de 30) em #f3f5f9 sobre um quadrado de cantos redondos em Azul Egípcio. `app/public/icone-192.png` e `app/public/icone-512.png` (o de 512 também como ícone mascarável) são renderizados desse SVG com o Chromium sem interface. Não há imagem gerada no painel.
 - **A imagem da entrada:** `app/public/gravuras/criacao-de-adao.webp` vem de uma foto do afresco de Michelangelo feita por Jörg Bittner Unna (2011), reprodução fiel de uma obra em domínio público (PD-Art), pelo Wikimedia Commons. O preparo (o recorte com o GrabCut, a luz convertida em tinta e a redução) está em `app/public/gravuras/ORIGEM.txt`.
+- **As vinhetas:** `app/public/gravuras/vinhetas/` (a coruja, o galo, a andorinha e a pega) vêm de *L'Histoire de la nature des oyseaux*, de Pierre Belon (1555), em domínio público, pelo Wikimedia Commons; as páginas, os recortes e o preparo estão em `app/public/gravuras/ORIGEM.txt`.
 - **O reboco:** `app/public/gravuras/reboco.webp` é o céu da mesma foto do afresco, com a origem e o preparo em `app/public/gravuras/ORIGEM.txt`.
 - **Desenhos e ícones:** o meandro, os medalhões, a crepidoma, o relógio de sol e os pictogramas são montados em código (`desenhos.js`, `pictos.js`, `estilo.css`) a partir dos dados de verdade; nada vem de biblioteca nem de outro endereço.
 
@@ -617,6 +627,7 @@ Três curvas, todas em custom properties: `--suave` (cubic-bezier(.22, 1, .36, 1
 - **Do** usar a mola só no que assenta, `--suave` no resto, e `animation-fill-mode: backwards` em toda animação de opacidade ou desfoque num módulo.
 - **Do** deixar toda animação nova parada sob `prefers-reduced-motion`, com os traços já desenhados.
 - **Do** manter os alvos de toque em 2.75rem no toque grosso e a barra embaixo no celular.
+- **Do** pôr ornamento só onde algo acontece, pelo `ornamentos.js`: a hachura de quem carrega, o traço do gesto, a vinheta do vazio, o fecho da lista longa, a rachadura do que caiu, o dado desenhado. Cada um se desenha uma vez por estado e depois fica quieto.
 
 ### Don't:
 - **Don't** usar caixa-alta fora das inscrições gregas (ΑΘΗΝΑ), nem `text-transform: uppercase`.
@@ -625,7 +636,8 @@ Três curvas, todas em custom properties: `--suave` (cubic-bezier(.22, 1, .36, 1
 - **Don't** medir com barra lisa ou anel liso: a medida é o meandro pintado.
 - **Don't** pôr quique, tremor, cascata de módulos nem mola numa transição do dia a dia.
 - **Don't** deixar opacidade ou filtro preso num módulo com `forwards` ou `both`: achata a crepidoma.
-- **Don't** dar sombra deslocada, lado de tecla ou relevo a teclas e módulos: o único 3D é a crepidoma.
+- **Don't** dar sombra deslocada, lado de tecla ou relevo a teclas e módulos: o 3D é só o dos desenhos de dado, a crepidoma e a esfera armilar.
+- **Don't** pregar enfeite num lugar fixo (o canto do título, o rodapé de toda tela), nem repetir a mesma vinheta em todo lugar: o ornamento vem do conteúdo.
 - **Don't** carregar fonte, script, estilo ou imagem de outro endereço, nem usar o atributo `style` inline: a CSP é `default-src 'self'` e o container não tem rede.
 - **Don't** usar biblioteca de ícones nem caractere Unicode fazendo papel de ícone.
 - **Don't** fazer a Grécia de souvenir (colunas de enfeite, dourado, creme), nem algo que pareça desenho animado, jogo ou fantasia, nem o dashboard de cartões cinza do SaaS genérico.

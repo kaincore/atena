@@ -1048,6 +1048,46 @@
         "name": "reducao",
         "value": "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important } }",
         "purpose": "Com redução de movimento, nada se move: também as View Transitions; os traços aparecem já desenhados e o ícone que lia fica a 60%."
+      },
+      {
+        "name": "hachurar",
+        "value": "clip-path de inset(0 100% 0 0) a inset(0) e a inset(0 0 0 100%) em 2.4s var(--traco), infinito, .14s por linha",
+        "purpose": "Quem carrega (o esqueleto, o carregando()): a hachura de Veio Forte se traça e se apaga, uma linha depois da outra."
+      },
+      {
+        "name": "gesto-louro",
+        "value": "a haste em .55s, as folhas de .3s em diante, .07s cada, .3s cada uma; a tela espera 1s para tirar o pedido, e o louro some em .6s logo depois",
+        "purpose": "Aprovar um pedido ou publicar um app: dois ramos de louro coroam o botão que você tocou."
+      },
+      {
+        "name": "gesto-circulo",
+        "value": "uma volta e 7% em .7s var(--traco), fechando para dentro; fica 1.8s e some em .6s",
+        "purpose": "Reiniciar: o círculo de pena em volta do nome do que reiniciou."
+      },
+      {
+        "name": "gesto-raios",
+        "value": "24 raios de .3s, .02s um depois do outro em volta; ficam 1.5s e somem em .6s",
+        "purpose": "Ligar o PC: os raios saem do medalhão dele."
+      },
+      {
+        "name": "vinheta-buril",
+        "value": "canvas: passadas de 3px a 35°, cada uma numa hora (55%), andando ao longo de si (35%), a tinta escura antes (10%); 1.4s",
+        "purpose": "A lista vazia: a vinheta de gravura antiga se grava, uma vez por sessão."
+      },
+      {
+        "name": "fecho",
+        "value": "o losango em .5s, o ponto em .35s, os ramos em S de .3s a 1.6s, do meio para fora",
+        "purpose": "O fim da lista longa: o fecho de livro se desenha quando você chega a ele."
+      },
+      {
+        "name": "rachar",
+        "value": "o veio em .9s com .1s de atraso, os dois galhos em .35s a .45s e .75s",
+        "purpose": "O que caiu: a rachadura sai da borda de cima da linha dele."
+      },
+      {
+        "name": "esfera-girar",
+        "value": "os anéis em .9s, .16s um depois do outro, os pontos em .45s com a mola; a volta em 90s linear infinita, continuando do ângulo em que estava quando a tela se refaz",
+        "purpose": "A rede: a esfera armilar se desenha na primeira vez e gira devagar."
       }
     ],
     "breakpoints": [
@@ -1263,6 +1303,11 @@
       {
         "name": "A Regra do Meandro que Mede",
         "body": "O meandro é ornamento e é medida. Uma fração se mostra pintando o meandro (o anel do medalhão, o medidor), nunca numa barra lisa ou num anel liso; e o ornamento é sempre o mesmo traço, nunca um friso de outra forma.",
+        "section": "shapes"
+      },
+      {
+        "name": "A Regra do Traço que Nasce do Conteúdo",
+        "body": "Nenhum enfeite tem lugar fixo. O desenho aparece onde algo acontece (a lista que esvaziou, o serviço que caiu, o pedido que você aprovou, o fim da lista a que você chegou), se desenha naquela hora como pena ou buril e depois fica quieto. Ilustração é gravura antiga em domínio público; o que se desenha em código é geometria (o meandro, o louro, a rachadura, a esfera).",
         "section": "shapes"
       },
       {
