@@ -2,6 +2,8 @@
 // painel. As três funções da casca (atualizar, telaAtual, mostrarEntrada) o app.js liga ao começar.
 import { chave, faixa } from "./desenhos.js";
 
+export { vazio } from "./ornamentos.js";
+
 export const NOMES = {
   "servico.reiniciar": "Reiniciar serviço",
   "pc.ligar": "Ligar o PC",
@@ -200,9 +202,11 @@ export function item({ led, nome, detalhe, acoes, extra, classe }) {
     embaixo.length > 0 && h("div", { class: "item-extra" }, embaixo));
 }
 
+// vazio: o texto (ou o vazio() com a vinheta) quando a lista não tem nada
 export function itens(lista, vazio, classe) {
   const linhas = [lista].flat(Infinity).filter(Boolean);
-  return linhas.length ? h("ul", { class: `itens${classe ? ` ${classe}` : ""}` }, linhas) : vazio && h("p", { class: "fraco" }, vazio);
+  if (!linhas.length) return vazio && (vazio instanceof Node ? vazio : h("p", { class: "fraco" }, vazio));
+  return h("ul", { class: `itens${classe ? ` ${classe}` : ""}` }, linhas);
 }
 
 // o ponto de cada estado de pedido: malaquita terminou bem, azul em andamento, cinábrio o resto

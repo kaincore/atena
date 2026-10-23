@@ -162,7 +162,7 @@ h3 { color: var(--tinta-2); font-size: .9rem; margin: 1.2rem 0 .55rem; }
 
 /* o desenho que se faz: cada traço (pathLength 1) aparece do começo ao fim, num movimento contínuo */
 @keyframes tracar { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-.desenhando .traco { stroke-dasharray: 1 1; stroke-dashoffset: 1; animation: tracar var(--duracao, .9s) var(--traco) var(--atraso, 0s) forwards; }
+.desenhando .traco { stroke-dasharray: 1 1; stroke-dashoffset: 1; animation: tracar var(--duracao, .9s) var(--traco) calc(var(--atraso, 0s) - var(--passou, 0ms)) forwards; }
 
 /* --- a casca: o trilho no PC, o topo e a barra no celular; o meandro fino é a borda --- */
 
@@ -324,6 +324,18 @@ main {
 .esqueleto .marca-vazia.curta { width: 55%; }
 .carregando::after { content: ""; width: min(100%, 9rem); height: .55rem; margin: .55rem 0 0; }
 @keyframes hachurar { 0% { clip-path: inset(0 100% 0 0); } 50%, 62% { clip-path: inset(0); } 100% { clip-path: inset(0 0 0 100%); } }
+
+/* --- o traço do sistema (ornamentos.js): o que se desenha quando algo acontece, onde acontece. Pronto por
+   padrão; .a-desenhar o esconde até a vez dele, e .desenhando o traça (com o .traco do meandro) --- */
+.a-desenhar .traco { stroke-dasharray: 1 1; stroke-dashoffset: 1; }
+.a-desenhar :is(.ponto, .porta) { opacity: 0; }
+:is(.ponto, .porta) { transform-box: fill-box; transform-origin: center; }
+.desenhando :is(.ponto, .porta) { animation: pingar-traco .45s var(--suave) calc(var(--atraso, 0s) - var(--passou, 0ms)) backwards; }
+@keyframes pingar-traco { from { opacity: 0; transform: scale(0); } }
+/* o vazio: a vinheta de gravura, gravada a buril, e o texto embaixo */
+.vazio { display: grid; justify-items: center; gap: .55rem; padding: .8rem 0 .2rem; text-align: center; }
+.vazio .fraco { max-width: 26rem; margin: 0; }
+.gravura.vinheta { width: 5.5rem; aspect-ratio: var(--proporcao, 1); }
 
 /* o conteúdo que chega no lugar do esqueleto só aparece, todo junto; o que se mexe é o que mede (o anel
    se pinta, a escada se assenta). backwards: nada da animação fica no módulo depois que ela acaba (uma

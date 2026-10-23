@@ -1,6 +1,6 @@
 // Lab: os apps que o Claude Code fez e os trabalhos dele.
 import { $, abrirJanela, atualizar, botaoAtualizar, campo, cartao, consultar, estadoTexto, falha, h, item, itens, ledEstado, linha,
-  mudar, semAcao, statusDocker, carregando } from "../comum.js";
+  mudar, semAcao, statusDocker, carregando, vazio } from "../comum.js";
 
 const NOME_PROJETO = "[a-z0-9][a-z0-9\\-]{0,39}";
 const rascunho = { projeto: "", pedido: "", conta: "", modelo: "", esforco: "", minutos: "60", somente_plano: false, publicar: false,
@@ -155,7 +155,7 @@ function cartaoNovoTrabalho(trabalhos, projetos) {
 
 async function cartaoTrabalhos(trabalhos) {
   const c = trabalhos.ok === false ? cartao("Trabalhos do Claude Code", falha(trabalhos), semAcao(trabalhos, "claude.trabalhos"))
-    : cartao("Trabalhos do Claude Code", itens(trabalhos.resultado.trabalhos.map(itemTrabalho), "Nenhum trabalho ainda."));
+    : cartao("Trabalhos do Claude Code", itens(trabalhos.resultado.trabalhos.map(itemTrabalho), vazio("Nenhum trabalho ainda.", "andorinha")));
   c.append(botaoAtualizar(async () => c.replaceWith(await cartaoTrabalhos(await consultar("claude.trabalhos")))));
   return c;
 }

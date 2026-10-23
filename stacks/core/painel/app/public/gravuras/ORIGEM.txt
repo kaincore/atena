@@ -25,3 +25,26 @@ Preparo (2026-10-22): o céu acima das mãos (998 por 659 a partir de 1148, 40 d
 uma marca oval no meio (inpaint do OpenCV) e sem o ruído da foto; fica só o que é mais escuro que a
 parede em volta (as rachaduras, as emendas das jornadas e a mancha do pincel), suavizado e reduzido a
 800 px. O arquivo é só máscara, no alfa (WebP, alfa com qualidade 40); a cor e a força vêm do CSS.
+
+vinhetas/coruja.webp, vinhetas/galo.webp, vinhetas/andorinha.webp, vinhetas/pega.webp
+
+As vinhetas das listas vazias: quatro aves em xilogravura do livro de Pierre Belon, L'Histoire de la
+nature des oyseaux (Paris, Gilles Corrozet, 1555), todas com o nome grego na legenda. Domínio público
+(PD-old-100-expired). As páginas são do exemplar da Biblioteca Nacional da Polônia (Polona), pelo
+Wikimedia Commons, na categoria "L'Histoire de la nature des oyseaux (1555)":
+- coruja: a cheveche (coruja-mocho, Athene noctua), "Glaux en Grec", livro II
+  https://commons.wikimedia.org/wiki/File:L%27Histoire_de_la_nature_des_oyseaux_1555_(21224389).jpg
+  recorte 1670 por 2550 a partir de 1120, 1070
+- galo: "Alectrion en Grec, Gallus gallinaceus en Latin, Coc en Françoys", livro V
+  https://commons.wikimedia.org/wiki/File:L%27Histoire_de_la_nature_des_oyseaux_1555_(21225000).jpg
+  recorte 2840 por 2570 a partir de 420, 2220
+- pega: "Kitta en Grec, Pica en Latin, Pie en Françoys", livro VI
+  https://commons.wikimedia.org/wiki/File:L%27Histoire_de_la_nature_des_oyseaux_1555_(21225152).jpg
+  recorte 2820 por 1680 a partir de 440, 3180
+- andorinha: "Chelidon en Grec, Hirundo en Latin, Hirondelle en Françoys", pousada num pedestal, livro VII
+  https://commons.wikimedia.org/wiki/File:L%27Histoire_de_la_nature_des_oyseaux_1555_(21225622).jpg
+  recorte 2330 por 1520 a partir de 820, 1180 (o carimbo da biblioteca, à direita, fica de fora)
+
+Preparo (2026-10-23): o recorte só da figura, a tinta convertida em alfa com o papel e o texto do verso
+(que aparece por transparência) apagados por um limiar, redução para 330 px de largura, o alfa em 16
+níveis e as manchas soltas tiradas. As imagens são só máscara: a cor vem do CSS do painel.

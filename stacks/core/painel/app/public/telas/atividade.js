@@ -1,5 +1,5 @@
 // Atividade: o registro do executor (cada pedido, cada decisão e os eventos).
-import { atualizar, campo, cartao, consultar, falha, h, hora, item, itens, num, semCentral } from "../comum.js";
+import { atualizar, campo, cartao, consultar, falha, h, hora, item, itens, num, semCentral, vazio } from "../comum.js";
 
 const filtro = { cliente: "", so_erros: false, linhas: 100 };
 const clientesVistos = new Set(["hermes", "painel"]);
@@ -41,7 +41,7 @@ export async function telaAtividade() {
   const lista = r.resultado.itens;
   const c = cartao("Atividade do executor", controles,
     h("p", { class: "fraco" }, "Tudo o que a Atena, o painel e o lab pediram ao executor, as suas decisões e os eventos dele, do mais novo ao mais velho."),
-    itens(lista.map(linhaAtividade), "Nada no registro com esse filtro."));
+    itens(lista.map(linhaAtividade), vazio("Nada no registro com esse filtro.", "pega")));
   c.classList.add("largo");
   return [c];
 }

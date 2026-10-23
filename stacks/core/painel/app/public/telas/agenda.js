@@ -1,6 +1,6 @@
 // Agenda: o agendador do painel roda as ações na hora marcada.
 import { api, atualizar, avisar, campo, cartao, consultar, data, estadoTexto, falha, h, item, itens, ledEstado, modulo, num,
-  numeroGrande, plural } from "../comum.js";
+  numeroGrande, plural, vazio } from "../comum.js";
 import { relogioDeSol } from "../desenhos.js";
 
 const DIAS = ["dom", "seg", "ter", "qua", "qui", "sex", "sáb"];
@@ -169,6 +169,6 @@ export async function telaAgenda() {
   return [
     mostradorAgenda,
     cartaoNovoAgendamento(r.agendaveis, stacks, projetos),
-    cartao("Agendamentos", itens(r.agendamentos.map(itemAgendamento), "Nada agendado ainda.")),
+    cartao("Agendamentos", itens(r.agendamentos.map(itemAgendamento), vazio("Nada agendado ainda.", "galo"))),
   ];
 }

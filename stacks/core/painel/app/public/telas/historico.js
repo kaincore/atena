@@ -1,5 +1,5 @@
 // Histórico: o que o painel pediu ao executor.
-import { NOMES, TERMINADOS, api, cartao, data, estadoTexto, falha, h, item, itens, ledEstado } from "../comum.js";
+import { NOMES, TERMINADOS, api, cartao, data, estadoTexto, falha, h, item, itens, ledEstado, vazio } from "../comum.js";
 
 export async function telaHistorico() {
   let r = await api("GET", "/api/historico");
@@ -17,7 +17,7 @@ export async function telaHistorico() {
       detalhe: `${estadoTexto(x.estado)} · ${data(x.quando)}`,
       extra: x.resumo && h("div", { class: "fraco resumo" }, x.resumo),
     });
-  }), "Nenhuma ação feita pelo painel ainda."));
+  }), vazio("Nenhuma ação feita pelo painel ainda.", "pega")));
   historico.classList.add("largo");
   return [historico];
 }

@@ -1,5 +1,5 @@
 // Aprovações: a central do que espera o dono (os tempos do executor vêm em segundos) e a faixa de aprovações.
-import { $, atualizar, avisar, cartao, consultar, estadoTexto, falha, h, hora, item, itens, ledEstado, mudar, semCentral, telaAtual } from "../comum.js";
+import { $, atualizar, avisar, cartao, consultar, estadoTexto, falha, h, hora, item, itens, ledEstado, mudar, semCentral, telaAtual, vazio } from "../comum.js";
 import { picto } from "../pictos.js";
 
 function relativo(s) {
@@ -82,7 +82,7 @@ export async function telaAprovacoes() {
   marcarPendentes(pendentes.length);
   return [
     pendentes.length ? pendentes.map(cartaoPendente)
-      : cartao("Aprovações", h("p", { class: "fraco" }, "Nada esperando por você. Os pedidos da Atena e do Claude Code aparecem aqui e no celular.")),
+      : cartao("Aprovações", vazio("Nada esperando por você. Os pedidos da Atena e do Claude Code aparecem aqui e no celular.", "coruja")),
     cartao("Decididos há pouco", itens(recentes.map((x) => item({
       led: ledEstado(x.estado), nome: x.titulo ?? x.acao,
       detalhe: [estadoTexto(x.estado), x.cliente, hora(x.quando), x.por && `por ${x.por}`].filter(Boolean).join(" · "),
