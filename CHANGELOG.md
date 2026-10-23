@@ -1,5 +1,16 @@
 # Mudanças
 
+## 0.18.0 (2026-10-23)
+
+O traço do sistema (painel 0.10.0). O dono pediu ornamentos dentro do painel com animação feita à mão, "que sejam parte do sistema", e não um enfeite fixo num canto. O ornamento passa a nascer do conteúdo: aparece onde algo acontece, se desenha naquela hora, como pena ou buril, e depois fica quieto. Cada desenho corre uma vez por sessão para cada estado, e as atualizações da tela o mostram pronto.
+
+- **Quem carrega hachura:** a tela que ainda não chegou e o que espera uma resposta curta (abrir um arquivo, procurar, rodar um comando) mostram uma hachura traçada e apagada, uma linha depois da outra.
+- **O vazio e o fim:** a lista vazia ganha uma vinheta em xilogravura gravada a buril, em passadas finas na direção da hachura: quatro aves do livro de Pierre Belon de 1555 (domínio público), todas com o nome grego na legenda. A coruja fica nas Aprovações, o galo na Agenda, a andorinha no Lab e a pega na Atividade e no Histórico. A lista longa da Atividade, do Histórico e dos Arquivos termina com um fecho de livro que se desenha quando você chega ao fim.
+- **O dado vira desenho:** o container fora do ar e a unidade com falha ganham uma rachadura saindo da borda da linha, como o reboco do afresco. Na Rede, uma esfera armilar mostra um anel por alcance e um ponto por porta aberta, e gira devagar.
+- **O gesto deixa um traço:** quando a ação dá certo, um louro coroa o botão ao aprovar ou publicar, um círculo de pena fecha em volta do nome ao reiniciar, e raios saem do medalhão do PC quando ele liga.
+- **Por baixo:** o `ornamentos.js` novo; a `gravura()` com o modo buril, o `mostrar()`, a imagem baixada só quando vai para a tela e um ouvinte só de tamanho e de tema para todas (as vinhetas se refazem a cada atualização). A decisão de desenhar sai quando o desenho entra na página, inclusive nas telas da barra montadas antes por trás, e a cópia que a tela refaz no meio continua de onde estava.
+- Testado: os 49 testes do painel e o CI reproduzido com `tools/ci-local.sh`; os cliques de ponta a ponta no celular e no PC; um roteiro de cenas novo no ensaio (`tracos.cjs`, com as respostas da API trocadas) que provoca cada traço e fotografa no meio e no fim, no celular claro e no PC escuro; a gravação a buril quadro a quadro; cada um dos sete commits do traço rodado sozinho no ensaio, sem erro no console. No servidor de origem, o painel 0.10.0 subiu saudável e serve o módulo e as vinhetas pelas duas entradas. Sem testar: o movimento num celular de verdade (só no navegador sem tela). Sem revisor separado nesta rodada.
+
 ## 0.17.2 (2026-10-22)
 
 A entrada do painel sem moldura, e o reboco só atrás dela (painel 0.9.2). Pedido do dono, que quer fechar a entrada antes de cuidar do fundo do painel.

@@ -62,7 +62,7 @@
     <circle cx="470.3" cy="296.7" r="26" fill="url(#luz)"/>
     <path d="M440.3 296.7H500.3M470.3 278.7V314.7" stroke="#fffbe0" stroke-width="1.2" opacity=".85"/>
   </g>
-  <text x="128" y="66" font-size="12" fill="#05d9e8" letter-spacing="3">ΑΘΗΝΑ://v0.17.2</text>
+  <text x="128" y="66" font-size="12" fill="#05d9e8" letter-spacing="3">ΑΘΗΝΑ://v0.18.0</text>
   <text x="832" y="66" font-size="12" fill="#ff2a6d" text-anchor="end" letter-spacing="3">SYS.ONLINE ●</text>
   <text x="480.0" y="438" font-size="15" fill="#e0f7ff" text-anchor="middle">&gt; servidor caseiro · 6 zonas isoladas · ia local · assistente no telegram <tspan class="cursor" fill="#05d9e8">█</tspan></text>
   <rect width="960" height="490" fill="url(#varredura)"/>
