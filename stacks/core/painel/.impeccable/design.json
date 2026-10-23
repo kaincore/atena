@@ -1098,6 +1098,11 @@
         "name": "prancha-andar",
         "value": "--f do valor anterior ao novo em 1s var(--suave), quando a diferença passa de 0,4%",
         "purpose": "O Início, a cada atualização: a tinta de cada anel anda até a leitura nova, como um ponteiro."
+      },
+      {
+        "name": "haste",
+        "value": "o colar em .4s a partir de 1.5s, o fuste em .5s a partir de 1.7s, a base em .5s a partir de 2s",
+        "purpose": "O Início: depois de o instrumento se gravar, a haste o põe de pé sobre a crepidoma, de cima para baixo."
       }
     ],
     "breakpoints": [
