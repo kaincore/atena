@@ -82,7 +82,7 @@ jobs:
           # roda todos, mesmo depois de uma falha; cada FALHA vira uma anotação do GitHub,
           # que dá para ler sem abrir o log (a API pública mostra as anotações)
           falharam=""
-          for t in tests/executor/teste_*.py tests/hermes/teste_*.py tests/lab/teste_*.py; do
+          for t in tests/executor/teste_*.py tests/hermes/teste_*.py tests/host/teste_*.py tests/lab/teste_*.py; do
             echo "== $t"
             if ! (cd "$(dirname "$t")" && /usr/bin/python3 "$(basename "$t")") > saida.txt 2>&1; then
               falharam="$falharam $t"

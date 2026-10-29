@@ -1,0 +1,139 @@
+#!/usr/bin/env python3
+"""Atena: confere se cada container voltou como o compose da stack descreve (redes e portas).
+
+Depois de um corte de energia, o Docker pode religar um container sem uma das redes, sem erro nenhum:
+o LiteLLM já voltou fora da rede da zona dele, sem internet, e a Atena ficou muda por horas. Na
+primeira volta depois do boot, o reconciliador recria uma vez o serviço que voltou faltando rede ou
+porta; nas outras, só avisa, uma vez por problema. Nunca liga o que está parado (quem para é o dono)
+e nunca cria o container que sumiu: só avisa.
+
+  atena-reconciliar           confere; na primeira volta depois do boot, também conserta
+  atena-reconciliar --so-ver  só mostra as diferenças, sem consertar nem avisar
+"""
+import glob
+import json
+import os
+import subprocess
+import sys
+
+STACKS = "/opt/atena/stacks"
+ESTADO = "/run/atena-reconciliar"   # some no boot: a primeira volta de cada boot é a que conserta
+AVISAR = "/usr/local/sbin/atena-avisar"
+
+
+def docker(*args):
+    return subprocess.run(["docker", *args], capture_output=True, text=True, timeout=300)
+
+
+def esperado(pasta):
+    """O que o compose da stack descreve: [(container, serviço, redes, portas)]."""
+    r = docker("compose", "--project-directory", pasta, "config", "--format", "json")
+    if r.returncode != 0:
+        raise ValueError(r.stderr.strip().splitlines()[-1] if r.stderr.strip() else "compose inválido")
+    cfg = json.loads(r.stdout)
+    projeto = cfg.get("name") or os.path.basename(pasta)
+    redes_def = cfg.get("networks") or {}
+    servicos = []
+    for nome, svc in (cfg.get("services") or {}).items():
+        if svc.get("network_mode"):   # host ou none: não há rede do Docker para conferir
+            redes = set()
+        else:
+            chaves = svc.get("networks") or {"default": None}
+            redes = {(redes_def.get(k) or {}).get("name") or f"{projeto}_{k}" for k in chaves}
+        portas = {(p.get("host_ip") or "", str(p["published"])) for p in svc.get("ports") or [] if p.get("published")}
+        servicos.append((svc.get("container_name") or f"{projeto}-{nome}-1", nome, redes, portas))
+    return servicos
+
+
+def real(container):
+    """(estado, redes, portas) do container, ou None se ele não existe."""
+    r = docker("inspect", container)
+    if r.returncode != 0:
+        return None
+    info = json.loads(r.stdout)[0]
+    redes = set((info.get("NetworkSettings") or {}).get("Networks") or {})
+    portas = set()
+    for ligacoes in ((info.get("NetworkSettings") or {}).get("Ports") or {}).values():
+        for b in ligacoes or []:
+            portas.add((b.get("HostIp") or "", str(b.get("HostPort"))))
+    return info["State"]["Status"], redes, portas
+
+
+def diferencas(redes_esp, portas_esp, redes, portas):
+    faltam = sorted(redes_esp - redes)
+    publicadas = {p for _, p in portas}
+    sem_porta = sorted(f"{ip}:{p}" if ip else p for ip, p in portas_esp
+                       if (ip and (ip, p) not in portas) or (not ip and p not in publicadas))
+    return [f"sem a rede {n}" for n in faltam] + [f"sem a porta {p}" for p in sem_porta]
+
+
+def conferir():
+    """[(pasta, serviço, container, problema, dá para consertar)] de todas as stacks."""
+    achados = []
+    for arquivo in sorted(glob.glob(f"{STACKS}/*/*/compose.yaml")):
+        pasta = os.path.dirname(arquivo)
+        try:
+            servicos = esperado(pasta)
+        except (ValueError, OSError, subprocess.TimeoutExpired) as e:
+            achados.append((pasta, None, os.path.basename(pasta), f"não consegui ler o compose ({e})", False))
+            continue
+        for container, servico, redes_esp, portas_esp in servicos:
+            atual = real(container)
+            if atual is None:
+                achados.append((pasta, servico, container, "sumiu (o compose descreve, mas não existe)", False))
+                continue
+            estado, redes, portas = atual
+            if estado == "created":
+                achados.append((pasta, servico, container, "criado, mas nunca subiu", False))
+            elif estado == "running":
+                for problema in diferencas(redes_esp, portas_esp, redes, portas):
+                    achados.append((pasta, servico, container, problema, True))
+    return achados
+
+
+def avisar(titulo, texto):
+    if os.access(AVISAR, os.X_OK):
+        subprocess.run([AVISAR, titulo, texto[:3500], "4"], capture_output=True, timeout=30)
+
+
+def principal():
+    so_ver = "--so-ver" in sys.argv[1:]
+    achados = conferir()
+    for _, _, container, problema, _ in achados:
+        print(f"{container}: {problema}")
+    if so_ver:
+        return 0
+    os.makedirs(ESTADO, exist_ok=True)
+    marca = os.path.join(ESTADO, "consertou-neste-boot")
+    if not os.path.exists(marca):
+        consertar = sorted({(pasta, servico) for pasta, servico, _, _, pode in achados if pode})
+        feitos = []
+        for pasta, servico in consertar:
+            r = docker("compose", "--project-directory", pasta, "up", "-d", "--force-recreate", "--no-deps", servico)
+            feitos.append(f"{os.path.basename(pasta)}/{servico}: " + ("recriado" if r.returncode == 0 else
+                                                                         "falhou ao recriar"))
+        open(marca, "w").close()
+        if feitos:
+            print("consertado no boot: " + "; ".join(feitos))
+            achados = conferir()
+            restam = [f"{c}: {p}" for _, _, c, p, _ in achados]
+            avisar("Reconciliador: containers recriados no boot",
+                   "\n".join(feitos) + ("\n\nAinda diferente:\n" + "\n".join(restam) if restam else "\n\nTudo como o compose."))
+    # nas outras voltas, só avisa o que é novo, e avisa de novo se sumir e voltar
+    vistos_arq = os.path.join(ESTADO, "avisados.json")
+    try:
+        vistos = set(json.load(open(vistos_arq)))
+    except (OSError, ValueError):
+        vistos = set()
+    agora = {f"{c}: {p}" for _, _, c, p, _ in achados}
+    novos = sorted(agora - vistos)
+    if novos:
+        avisar("Container diferente do compose", "\n".join(novos))
+    with open(vistos_arq + ".tmp", "w") as f:
+        json.dump(sorted(agora), f)
+    os.replace(vistos_arq + ".tmp", vistos_arq)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(principal())

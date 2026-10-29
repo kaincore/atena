@@ -86,7 +86,7 @@ testes_python() {
         python3 -c \"import ast, sys; ast.parse(open(sys.argv[1]).read(), sys.argv[1])\" \$f || exit 1
       done
       falharam=
-      for t in tests/executor/teste_*.py tests/hermes/teste_*.py tests/lab/teste_*.py; do
+      for t in tests/executor/teste_*.py tests/hermes/teste_*.py tests/host/teste_*.py tests/lab/teste_*.py; do
         (cd \$(dirname \$t) && /usr/bin/python3 \$(basename \$t)) > /tmp/saida 2>&1 || { falharam=\"\$falharam \$t\"; cat /tmp/saida; }
       done
       [ -z \"\$falharam\" ] || { echo \"falharam:\$falharam\"; exit 1; }"'

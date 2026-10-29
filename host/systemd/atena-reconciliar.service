@@ -1,0 +1,11 @@
+[Unit]
+Description=Atena: confere se os containers voltaram com as redes e portas do compose
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/atena-reconciliar
+# /run/atena-reconciliar dura até o próximo boot: a primeira volta de cada boot é a que conserta
+RuntimeDirectory=atena-reconciliar
+RuntimeDirectoryPreserve=yes
