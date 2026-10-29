@@ -14,4 +14,4 @@ systemctl daemon-reload
 systemctl enable --now atena-stacks-sync.path atena-litellm-virada-mes.timer >/dev/null 2>&1
 systemctl start atena-stacks-sync.service
 ok "atalhos do Dockge se atualizam sozinhos"
-ok "tetos do LiteLLM zeram todo dia 1º às 00:00 UTC"
+ok "tetos do LiteLLM zeram todo dia 1º às 00:00 UTC (e no boot, se estava desligado)"

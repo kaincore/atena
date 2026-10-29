@@ -1,7 +1,16 @@
 #!/bin/sh
 # Atena: zera os tetos por modelo do LiteLLM no dia 1º (o LiteLLM só sabe contar a partir do primeiro gasto).
 # O teto total das chaves (budget_duration 1mo) já renova sozinho no dia 1º.
+# Se o servidor estava desligado na hora, o timer roda no boot: espera o Redis e o LiteLLM subirem (até
+# 10 min) e, se não der, sai com erro para a unidade tentar de novo.
 set -eu
+for _ in $(seq 1 60); do
+  [ "$(docker inspect -f '{{.State.Health.Status}}' litellm-redis 2>/dev/null)" = healthy ] &&
+    [ "$(docker inspect -f '{{.State.Status}}' litellm 2>/dev/null)" = running ] && break
+  sleep 10
+done
+[ "$(docker inspect -f '{{.State.Health.Status}}' litellm-redis 2>/dev/null)" = healthy ] ||
+  { echo "o Redis do LiteLLM não ficou pronto em 10 min" >&2; exit 1; }
 docker exec litellm-redis sh -c '
   for k in $(redis-cli -a "$REDIS_PASSWORD" --no-auth-warning --scan --pattern "deployment_spend:*") \
            $(redis-cli -a "$REDIS_PASSWORD" --no-auth-warning --scan --pattern "deployment_budget_start_time:*"); do

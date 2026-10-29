@@ -2,7 +2,12 @@
 Description=Atena: zera os tetos por modelo do LiteLLM (virada do mês)
 After=docker.service
 Requires=docker.service
+# até 5 tentativas em 2 h (no boot o LiteLLM pode demorar a subir)
+StartLimitIntervalSec=2h
+StartLimitBurst=5
 
 [Service]
 Type=oneshot
 ExecStart=/usr/local/sbin/atena-litellm-virada-mes
+Restart=on-failure
+RestartSec=5min
