@@ -93,13 +93,13 @@ testes_python() {
 }
 
 tipos_painel() {
-  docker run --rm -v "$copia/stacks/core/painel/app:/app:ro" -w /app node:22.23.3-alpine3.24 sh -c \
+  docker run --rm -v "$copia/stacks/core/painel/app:/app:ro" -w /app node:22.23.4-alpine3.24 sh -c \
     'npm install --prefix /tmp/tsc --no-audit --no-fund --loglevel=error typescript@6.0.3 @types/node@22.20.5 >/dev/null \
      && /tmp/tsc/node_modules/.bin/tsc -p /app --typeRoots /tmp/tsc/node_modules/@types'
 }
 
 testes_painel() {
-  docker run --rm --network none -v "$copia/stacks/core/painel/app:/app:ro" -w /app node:22.23.3-alpine3.24 npm test
+  docker run --rm --network none -v "$copia/stacks/core/painel/app:/app:ro" -w /app node:22.23.4-alpine3.24 npm test
 }
 
 gitleaks() {
