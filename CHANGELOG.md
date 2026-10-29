@@ -1,5 +1,16 @@
 # Mudanças
 
+## 0.23.0 (2026-10-29)
+
+O servidor que volta inteiro de um desligamento sujo. Depois de um corte de energia, o Docker já religou o LiteLLM sem a rede da zona (sem internet nem porta), e a Atena ficou muda por horas enquanto tudo parecia em pé.
+
+- **O reconciliador** (`atena-reconciliar`, timer): compara as redes e as portas de cada container com o compose da stack. 3 min depois do boot, recria uma vez o que voltou errado e avisa; depois, de 5 em 5 min, só avisa, uma vez por problema. Nunca liga o que o dono parou nem cria o que sumiu. `--so-ver` mostra sem mexer.
+- **Healthcheck em todo serviço da plataforma:** LiteLLM, Atena (o estado que o gateway grava, com o Telegram conectado), Ollama, Whisper, voz, Beszel e o agente. Dos 17 containers, só 7 diziam se estavam doentes.
+- **A virada do mês espera:** se o servidor estava desligado no dia 1º, a virada roda no boot, espera o Redis e o LiteLLM e tenta de novo de 5 em 5 min; antes, falhava calada e os tetos por modelo ficavam presos no mês anterior.
+- **O Docker só sobe com o `/srv` montado** (`RequiresMountsFor`): sem o disco de dados, os serviços ficam parados em vez de criar bancos vazios no disco do sistema.
+- **A ronda espera o LiteLLM:** com ele fora (ou ainda subindo no boot), ela repete a última saída, e a mudança espera a próxima volta, em vez de acordar a Atena só para falhar e perder o aviso.
+- Testado: `tests/host/teste_reconciliar.py` (18 casos, com um docker de mentira) e `tests/hermes/teste_ronda.py` (3 casos novos, com um LiteLLM de mentira); ruff e shellcheck limpos; `systemd-analyze verify` das unidades novas; o CI reproduzido com `tools/ci-local.sh`. No servidor de origem: cada healthcheck rodado dentro do container e os 7 serviços recriados e saudáveis; a ronda nova no ar; `atena-reconciliar --so-ver` sem diferença. Sem testar ainda: o reconciliador, a virada e o `RequiresMountsFor` instalados e passando por um boot de verdade (dependem do script de instalação com sudo).
+
 ## 0.22.1 (2026-10-29)
 
 Correções de segurança nas imagens, sem mudar comportamento (painel 0.14.1).
