@@ -2,7 +2,7 @@
 services:
   arca:
     build: ./app
-    image: atena/arca:1.1.0
+    image: atena/arca:1.1.1
     container_name: arca
     cgroup_parent: atena-apps.slice
     restart: unless-stopped
