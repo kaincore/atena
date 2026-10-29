@@ -1,5 +1,13 @@
 # Mudanças
 
+## 0.22.1 (2026-10-29)
+
+Correções de segurança nas imagens, sem mudar comportamento (painel 0.14.1).
+
+- **Node 22.23.4** no painel e no Arca: corrige 4 falhas altas (Brotli com execução remota, dois desvios na conferência do nome do host no TLS e um NUL no dns) e 3 médias. As imagens ganham tags novas (painel 0.14.1, Arca 1.1.1), e as antigas ficam no Docker para voltar. O CI e o `tools/ci-local.sh` testam o painel no mesmo Node.
+- **Open WebUI 0.12.5:** a 0.12.2 corrige o GHSA-3vvh, e a 0.12.0, a 0.12.4 e a 0.12.5 trazem correções de segurança ainda não divulgadas. A partida da 0.12 migra o banco e não há volta: antes de atualizar, guarde a pasta de dados inteira.
+- Testado: os 49 testes do painel no `node:22.23.4-alpine3.24`; a imagem do Arca construída e respondendo 200 num container sem rede; o CI reproduzido com `tools/ci-local.sh`. No servidor de origem: o painel 0.14.1 saudável pela etapa da rede de casa, o Arca 1.1.1 respondendo 200, os dois no Node 22.23.4; o Open WebUI 0.12.5 com as 8 migrações sem erro e `/health` 200, depois de guardar a pasta de dados. Sem testar: entrar no Open WebUI e conversar; uma instalação nova numa VM.
+
 ## 0.22.0 (2026-10-23)
 
 O Início que não tranquiliza à toa e põe o que pede você no alto (painel 0.14.0). Saiu de uma crítica da tela, em que o dono escolheu as quatro frentes, a letra grega como adorno e os números contando da última leitura.
