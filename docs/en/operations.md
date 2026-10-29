@@ -46,7 +46,7 @@ sudo systemctl restart atena-docker-firewall
     -d '{"key_alias":"open-webui","models":["local","haiku"],"max_budget":10,"budget_duration":"1mo"}'
   ```
 - **Per-model caps:** `max_budget` in `config.yaml`. A model's `id` can't equal its `model_name` (see the [lessons](lessons.md)).
-- **Monthly reset:** key caps (`1mo`) reset on their own on the 1st at 00:00 UTC. Per-model caps are reset at the same time by `atena-litellm-virada-mes.timer`.
+- **Monthly reset:** key caps (`1mo`) reset on their own on the 1st at 00:00 UTC. Per-model caps are reset at the same time by `atena-litellm-virada-mes.timer`. If the server was off, the reset runs at boot, waits for Redis and LiteLLM and retries every 5 min (up to 5 times); the final failure notifies your phone.
 - **After editing `config.yaml`:** `docker compose up -d --force-recreate litellm`.
 
 ## Phone notifications (ntfy)
@@ -61,6 +61,14 @@ To get notifications away from home, publish ntfy through Tailscale (as in [Add 
 1. In `/etc/atena/atena.conf`, `ATENA_NTFY_URL=https://<server>.<your-tailnet>.ts.net:2586`. The executor reads the file on every request.
 2. In `/opt/atena/stacks/core/ntfy/server.yml`, the same address in `base-url`, then `docker compose up -d --force-recreate` in the ntfy folder.
 3. In the app, switch the server to the new address.
+
+## Containers after a boot
+
+After an unclean shutdown, Docker can bring a container back without one of its networks, with no error at all. `atena-reconciliar` checks each container's networks and ports against its stack's compose: 3 min after boot, it recreates once whatever came back wrong and notifies you; after that, every 5 min, it only notifies, once per problem. It never starts what you stopped and never creates what is missing.
+
+- See the differences without touching anything: `sudo atena-reconciliar --so-ver`.
+- Its notices and the watchdog's (a container stopped with an error, or unhealthy) arrive on the `alertas` topic.
+- Docker only starts with `/srv` mounted: if the data disk doesn't mount, the services stay stopped instead of starting empty on the system disk.
 
 ## Executor: clients and tokens
 

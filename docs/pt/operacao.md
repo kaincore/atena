@@ -46,7 +46,7 @@ sudo systemctl restart atena-docker-firewall
     -d '{"key_alias":"open-webui","models":["local","haiku"],"max_budget":10,"budget_duration":"1mo"}'
   ```
 - **Tetos por modelo:** `max_budget` em `config.yaml`. O `id` de cada modelo não pode ser igual ao `model_name` (veja as [lições](licoes.md)).
-- **Virada do mês:** os tetos das chaves (`1mo`) renovam sozinhos no dia 1º às 00:00 UTC. Os tetos por modelo são zerados no mesmo horário pelo `atena-litellm-virada-mes.timer`.
+- **Virada do mês:** os tetos das chaves (`1mo`) renovam sozinhos no dia 1º às 00:00 UTC. Os tetos por modelo são zerados no mesmo horário pelo `atena-litellm-virada-mes.timer`. Se o servidor estava desligado, a virada roda no boot, espera o Redis e o LiteLLM e tenta de novo de 5 em 5 min (até 5 vezes); a falha final avisa no celular.
 - **Depois de editar o `config.yaml`:** `docker compose up -d --force-recreate litellm`.
 
 ## Avisos no celular (ntfy)
@@ -61,6 +61,14 @@ Para receber fora de casa, publique o ntfy pelo Tailscale (como em [Adicionar um
 1. Em `/etc/atena/atena.conf`, `ATENA_NTFY_URL=https://<servidor>.<sua-tailnet>.ts.net:2586`. O executor lê o arquivo a cada pedido.
 2. Em `/opt/atena/stacks/core/ntfy/server.yml`, o mesmo endereço em `base-url`, e `docker compose up -d --force-recreate` na pasta do ntfy.
 3. No app, troque o servidor pelo endereço novo.
+
+## Containers depois de um boot
+
+Depois de um desligamento sujo, o Docker pode religar um container sem uma das redes, sem erro nenhum. O `atena-reconciliar` confere as redes e as portas de cada container contra o compose da stack: 3 min depois do boot, recria uma vez o que voltou errado e avisa; depois, de 5 em 5 min, só avisa, uma vez por problema. Ele nunca liga o que você parou e nunca cria o que sumiu.
+
+- Ver as diferenças sem mexer: `sudo atena-reconciliar --so-ver`.
+- O que ele avisa e o que o vigia avisa (container parado com erro ou doente) chegam no tópico `alertas`.
+- O Docker só sobe com o `/srv` montado: se o disco de dados não montar, os serviços ficam parados em vez de subir vazios no disco do sistema.
 
 ## Executor: clientes e tokens
 
