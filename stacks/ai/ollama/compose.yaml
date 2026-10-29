@@ -5,6 +5,12 @@ services:
     container_name: ollama
     cgroup_parent: atena-ai.slice
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
     gpus: all
     environment:
       OLLAMA_MODELS: /models

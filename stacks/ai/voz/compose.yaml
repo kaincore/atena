@@ -8,6 +8,12 @@ services:
     container_name: voz
     cgroup_parent: atena-ai.slice
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=5)"]
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      start_period: 60s
     gpus: all
     environment:
       WHISPER__TTL: "60"              # no Speaches 0.8.3 a voz usa o TTL do Whisper: sai da GPU 60 s depois de falar

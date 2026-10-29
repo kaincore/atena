@@ -6,6 +6,12 @@ services:
     container_name: litellm
     cgroup_parent: atena-ai.slice
     restart: unless-stopped
+    healthcheck:  # o processo de pé; as redes, quem confere é o atena-reconciliar
+      test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:4000/health/liveliness', timeout=5)"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 90s
     command: ["--config", "/app/config.yaml", "--port", "4000"]
     env_file: .env
     environment:
