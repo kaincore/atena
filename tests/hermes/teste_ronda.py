@@ -15,6 +15,22 @@ open(TOKEN, "w").write("token-falso\n")
 fonte = open(os.path.join(RAIZ, "hermes", "scripts", "ronda.py")).read()
 fonte = fonte.replace('"/run/atena-executor/executor.sock"', repr(SOCK)).replace('"/opt/data/executor.token"', repr(TOKEN))
 fonte = fonte.replace('"/opt/data/cron/ronda-estado.json"', repr(ESTADO))
+LITELLM_PRONTO = [True]
+
+
+class Litellm(http.server.BaseHTTPRequestHandler):
+    def log_message(self, *a):
+        pass
+
+    def do_GET(self):
+        self.send_response(200 if LITELLM_PRONTO[0] else 503)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+
+litellm = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Litellm)
+threading.Thread(target=litellm.serve_forever, daemon=True).start()
+fonte = fonte.replace('"http://litellm:4000/health/readiness"', repr(f"http://127.0.0.1:{litellm.server_port}/"))
 RONDA = f"{tmp}/ronda.py"
 open(RONDA, "w").write(fonte)
 
@@ -78,6 +94,14 @@ def passar_minutos(minutos):
 
 confere("servidor bem: tudo normal", ronda() == "tudo normal\n")
 confere("usa o token da Atena e marca a origem", PEDIDOS[-1][1] == "Bearer token-falso" and PEDIDOS[-1][2]["origem"] == "ronda")
+LITELLM_PRONTO[0] = False
+CENARIO["servicos"] = [{"container": "arca", "stack": "arca", "zona": "apps", "estado": "exited", "status": "Exited (1)"}]
+confere("LiteLLM fora: repete a última saída (a mudança espera, a Atena não acorda para falhar)",
+        ronda() == "tudo normal\n")
+LITELLM_PRONTO[0] = True
+confere("LiteLLM de volta: a mudança aparece", ronda() == "container arca (stack arca, zona apps): exited\n")
+CENARIO["servicos"] = []
+confere("e a volta ao normal também", ronda() == "tudo normal\n")
 CENARIO["servicos"] = [
     {"container": "arca", "stack": "arca", "zona": "apps", "estado": "exited", "status": "Exited (1) 2 minutes ago"},
     {"container": "ntfy", "stack": "ntfy", "zona": "core", "estado": "running", "status": "Up 3 hours (unhealthy)"},
@@ -138,7 +162,11 @@ confere("outro começou: nada muda", ronda() == "tudo normal\n")
 CENARIO["trabalhos"] = [t("bbbb0002", "falhou", "outro"), t("aaaa0001", "concluido")]
 confere("outro terminou: aparece a linha dele", "bbbb0002 (falhou, projeto outro)" in ronda())
 os.remove(ESTADO)
+LITELLM_PRONTO[0] = False
 CENARIO["trabalhos"] = [t("dddd0004", "concluido")]
+confere("sem estado guardado e LiteLLM fora: a ronda roda assim mesmo (não há o que repetir)", ronda() == "tudo normal\n")
+LITELLM_PRONTO[0] = True
+os.remove(ESTADO)
 confere("sem estado guardado (primeira volta): não avisa o que já tinha terminado", ronda() == "tudo normal\n")
 CENARIO["perguntas"] = [{"id": "cccc0003", "projeto": "loja", "esperando_min": 2}]
 confere("pergunta esperando o dono", "Claude Code pergunta cccc0003 (projeto loja): esperando o dono" in ronda())

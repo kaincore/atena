@@ -8,11 +8,14 @@ import http.client
 import json
 import os
 import socket
+import sys
 import time
+import urllib.request
 
 SOCKET = "/run/atena-executor/executor.sock"
 ESTADO = "/opt/data/cron/ronda-estado.json"   # o que a ronda lembra de uma volta para a outra
 CARENCIA = 15 * 60   # a unidade com falha que roda de novo (por um timer) segue na lista por 15 min
+LITELLM = "http://litellm:4000/health/readiness"   # a IA da Atena; responde sem chamar nenhum modelo
 
 
 class Conexao(http.client.HTTPConnection):
@@ -51,6 +54,14 @@ def gravar_estado(estado):
     except OSError as e:
         return type(e).__name__
     return None
+
+
+def litellm_pronto():
+    try:
+        with urllib.request.urlopen(LITELLM, timeout=5) as r:
+            return r.status == 200
+    except (OSError, ValueError):
+        return False
 
 
 def unidades_com_falha(estado):
@@ -121,6 +132,11 @@ def perguntas_claude():
 
 
 estado = ler_estado() or {}
+if "ultima_saida" in estado and not litellm_pronto():
+    # Sem o LiteLLM (no boot, antes de ele subir, ou fora do ar), a Atena acordaria só para falhar, e o
+    # Hermes daria a mudança como vista. Repete a última saída: a mudança espera a próxima volta.
+    print(estado["ultima_saida"], end="")
+    sys.exit(0)
 try:
     lista = problemas(estado)
 except Exception as e:
@@ -133,9 +149,11 @@ try:
     trabalhos += perguntas_claude()
 except Exception:
     pass
+saida = ("\n".join(sorted(lista)) if lista else "tudo normal") + "\n"
+if trabalhos:
+    saida += "\n".join(trabalhos) + "\n"
+estado["ultima_saida"] = saida
 erro = gravar_estado(estado)
 if erro:
-    lista.append(f"a ronda não conseguiu guardar o que já avisou em {ESTADO} ({erro})")
-print("\n".join(sorted(lista)) if lista else "tudo normal")
-if trabalhos:
-    print("\n".join(trabalhos))
+    saida = saida.replace("\n", f"\na ronda não conseguiu guardar o que já avisou em {ESTADO} ({erro})\n", 1)
+print(saida, end="")
