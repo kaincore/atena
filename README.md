@@ -140,7 +140,7 @@ Depois:
 | Whisper (Speaches 0.8.3) | ai | só no servidor | API compatível com a OpenAI, int8 na GPU |
 | Voz (Speaches 0.8.3 + Kokoro) | ai | só no servidor | Respostas em voz da Atena (`ATENA_VOZ=sim`), fp32 na GPU |
 | LiteLLM 1.101.6 | ai | 4000 | Exige chave. Tetos de gasto por modelo e por chave |
-| Open WebUI 0.11.4 | apps | 3000 | Fala só com o LiteLLM |
+| Open WebUI 0.12.5 | apps | 3000 | Fala só com o LiteLLM |
 | Arca | apps | 3002 | Envio de arquivos pelo navegador, sem senha |
 | Hermes Agent 0.22.2 | agents | nenhuma | A Atena (com `--hermes`). Conversa pelo Telegram |
 | Painel 0.14.1 | core | 3100, pelo Tailscale (na rede de casa, opcional) | O painel (com `--painel`). Sem rede, sem root, sem pacotes do npm, com senha |

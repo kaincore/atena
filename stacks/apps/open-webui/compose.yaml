@@ -3,7 +3,7 @@
 # Segredos em .env (600). A primeira conta criada vira administradora.
 services:
   open-webui:
-    image: ghcr.io/open-webui/open-webui:v0.11.4   # >= 0.11.4: correções de segurança de 27/09/2026
+    image: ghcr.io/open-webui/open-webui:v0.12.5   # >= 0.12.5: correções de segurança de outubro/2026
     container_name: open-webui
     cgroup_parent: atena-apps.slice
     restart: unless-stopped
