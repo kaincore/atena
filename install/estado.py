@@ -1,6 +1,6 @@
 """O estado desejado do servidor: cada arquivo que o repositório põe nele, com o conteúdo já preenchido
 com os valores do atena.conf, o modo e o dono, e as pastas onde o que não está aqui sobra. Também
-compara esse estado com um servidor, sem mudar nada.
+compara esse estado com um servidor, sem mudar nada (./aplicar --conferir).
 
 As regras são as das etapas do instalador (install/*.sh): os caminhos, os modos, o que é preenchido e o
 que depende de uma opção (--hermes, --lab, --painel, --ssh). O tests/install/teste_estado.py confere que

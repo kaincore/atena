@@ -1,4 +1,4 @@
-"""O estado desejado (install/estado.py) e o conferir: um servidor de mentira numa pasta
+"""O estado desejado (install/estado.py) e o ./aplicar --conferir: um servidor de mentira numa pasta
 temporária, montado a partir do próprio estado, tem de sair igual; cada estrago nele aparece no lugar certo.
 E o estado anda junto com as etapas do instalador: preenche, tira a GPU, monta o lab.json e usa os padrões
 como elas, e todo arquivo do repositório que vai para o servidor está descrito nele."""
@@ -263,6 +263,34 @@ if shutil.which("git"):
     open(f"{repo}/stacks/core/x/rascunho.png", "w").write("")
     confere("num clone: só o que o git conhece", estado.arquivos(repo, "stacks") == ["stacks/core/x/compose.yaml"],
             estado.arquivos(repo, "stacks"))
+
+# --- o ./aplicar --conferir: o mesmo servidor de mentira, pela linha de comando
+def aplicar(*args):
+    r = subprocess.run([sys.executable, os.path.join(RAIZ, "aplicar"), *args], capture_output=True, text=True, timeout=120)
+    return r.returncode, r.stdout, r.stderr
+
+
+montar(alvo, ATENA_PAINEL_CASA="sim", ATENA_SENSORES_MODULO="nct6683", ATENA_CLAUDE_SKILLS="sim", ATENA_TAILSCALE="sim")
+rc, saida, erro = aplicar("--conferir", "--alvo", alvo, "--sem-dono")
+confere("aplicar: servidor igual, sai com 0 e diz", rc == 0 and "o servidor está igual ao repositório" in saida, saida + erro)
+rc, saida, erro = aplicar("--alvo", alvo)
+confere("aplicar sem --conferir: sai com 2 e diz que só há o --conferir", rc == 2 and "--conferir" in erro, erro)
+estragos()
+rc, saida, erro = aplicar("--conferir", "--alvo", alvo, "--sem-dono")
+confere("com diferenças, sai com 1 e conta no resumo", rc == 1 and "Resumo: 11 diferenças (4 difere, 2 falta, 5 sobra)" in saida
+        and "cópias antigas (.antes-*): 1" in saida, saida)
+rc, saida, _ = aplicar("--conferir", "--alvo", alvo, "--sem-dono", "--diff", "--parte", "executor")
+confere("--diff mostra a linha que o repositório não tem, do servidor para o repositório",
+        "-IMAGEM_LIVRE = True" in saida and "+++ repositório:host/executor/atena_executor/stacks.py" in saida, saida)
+confere("--parte executor: só o executor", "atena-telegram" not in saida and "arca.py" in saida, saida)
+rc, saida, _ = aplicar("--conferir", "--alvo", alvo, "--sem-dono", "--json")
+j = json.loads(saida)
+confere("--json: a contagem e só o que não está igual", j["contagem"]["falta"] == 2
+        and all(x["estado"] != "igual" for x in j["resultados"]), j["contagem"])
+rc, saida, erro = aplicar("--conferir", "--alvo", alvo, "--parte", "arca")
+confere("parte desconhecida: sai com 2 e lista as partes", rc == 2 and "executor" in erro, erro)
+rc, saida, erro = aplicar("--conferir", "--alvo", f"{tmp}/vazio")
+confere("sem o atena.conf: sai com 2 e diz onde procurou", rc == 2 and "vazio/etc/atena/atena.conf" in erro, erro)
 
 shutil.rmtree(tmp)
 print(f"\n{len(FALHAS)} falhas" + (": " + ", ".join(FALHAS) if FALHAS else ""))
