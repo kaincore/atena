@@ -76,11 +76,12 @@ Depois de um desligamento sujo, o Docker pode religar um container sem uma das r
 sudo atena-executor tokens                                    # quem pode pedir o quê
 sudo atena-executor token-novo <cliente> <ações> <zonas> [aprovar]
 sudo atena-executor token-remover <cliente>
+sudo atena-executor token-acertar                            # o painel e a Atena ganham as ações novas do catálogo
 journalctl -u atena-executor -f                               # cada pedido, com o resultado
 ```
 
 - Listas separadas por vírgula. `aprovar` diz quais ações pedem o celular, além das destrutivas, que sempre pedem. `nenhuma` é só para o painel: lá, quem confirma na tela é você, e nem a destrutiva pede o celular. Sem esse campo, toda ação que pode pedir aprovação pede.
-- O instalador monta os tokens do painel e da Atena pelo catálogo do executor (`atena-executor acoes painel`, `atena` ou `atena-lab`). Cada ação diz lá o risco dela, e o `GET /acoes` mostra o catálogo a quem tem o token.
+- O instalador monta os tokens do painel e da Atena pelo catálogo do executor (`atena-executor acoes painel`, `atena` ou `atena-lab`). Cada ação diz lá o risco dela, e o `GET /acoes` mostra o catálogo a quem tem o token. Uma ação nova chega ao token no `./aplicar` seguinte (`token-acertar`), sem trocar o token nem as aprovações.
 - O token aparece uma única vez. Criar de novo para o mesmo cliente revoga o anterior.
 - Exemplo: a Atena passa a pedir o celular antes de reiniciar algo (o token dela fica em `/srv/agents/hermes/executor.token`):
   ```bash
@@ -208,7 +209,8 @@ Ele reinicia só o que mudou de verdade, e uma mudança só de comentário não 
 - o systemd relê as unidades;
 - o firewall e o executor reiniciam;
 - o SSH confere a configuração nova antes de relê-la;
-- cada stack que mudou sobe de novo e espera ficar saudável. Uma stack parada continua parada.
+- cada stack que mudou sobe de novo e espera ficar saudável. Uma stack parada continua parada;
+- por último, se o executor mudou, os tokens do painel e da Atena ganham as ações novas do catálogo.
 
 `--parte executor` aplica só uma parte. Ele não começa com o Claude Code trabalhando quando o executor precisaria reiniciar. Ficam de fora, só avisados:
 - o `/etc/docker/daemon.json`, porque aplicar reiniciaria todos os containers;

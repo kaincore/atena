@@ -47,6 +47,7 @@ São três camadas para nenhuma porta escapar por engano:
 - **Conteúdo é dado, não ordem.** A `SOUL.md` manda tratar páginas, documentos e mensagens de terceiros como dados. Comandos no container dela passam pela aprovação "smart", e o destrutivo vai para você.
 - **As regras dela são só leitura.** A `SOUL.md` e as habilidades da Atena (`skills/atena`) entram no container só para leitura. Um texto que ela leia não consegue reescrevê-las, e o "aprendizado" do Hermes também não. Quem as muda é o instalador ou o `./aplicar`, a partir do repositório. Mudar o dono dos arquivos não bastava, porque a pasta é dela.
 - **Chave do LiteLLM com teto mensal.** Um erro dela não esvazia o crédito da API.
+- **A API dela só abre para o executor.** O painel conversa com ela e vê a agenda dela pela API do Hermes, que só ouve na rede `svc-atena`, onde não há outro container. Do servidor, quem chega nela precisa da chave (`API_SERVER_KEY`, no `.env` dela), que só o executor lê: o painel pede ao executor, e a chave nunca chega a ele. No painel, as conversas do Telegram e da agenda ficam só para ler.
 
 ### Lab (Claude Code)
 - **Sem sudo e sem Docker.** O `atena-claude` só está nos grupos `atena-fila` e `atena-lab`. O instalador para se ele estiver no grupo `docker`.
@@ -62,7 +63,7 @@ São três camadas para nenhuma porta escapar por engano:
 - **Senha difícil de adivinhar por força bruta:** scrypt (N=2^15, 32 MB por tentativa), 5 erros em 15 minutos bloqueiam a entrada por onde vieram (o Tailscale ou a rede de casa: quem erra no Wi-Fi não tranca o dono fora de casa), e uma conferência por vez.
 - **Cookie** HttpOnly, Secure (pelo Tailscale) e SameSite=Strict. Todo POST exige JSON e um cabeçalho próprio, o que barra formulários de outros sites (CSRF).
 - **CSP** que só aceita o próprio painel, sem frames. As telas são montadas sem `innerHTML`, então um nome de container ou uma linha de log nunca vira código.
-- **Token próprio, sem aprovação no celular:** 38 ações. A única que apaga é `app.apagar`, só no lab: o código vai para a lixeira por 30 dias, e apagar os dados exige digitar o nome do app. Edita só as stacks da zona apps, sempre com foto antes, e lê o servidor menos os segredos, como a Atena. Quem tem a senha do painel tem esse alcance: é mais um motivo para uma senha só dele.
+- **Token próprio, sem aprovação no celular:** 48 ações, 10 delas para conversar com a Atena, ler as conversas dela e as do Claude Code, e mexer na agenda dela. A única que apaga é `app.apagar`, só no lab: o código vai para a lixeira por 30 dias, e apagar os dados exige digitar o nome do app. Edita só as stacks da zona apps, sempre com foto antes, e lê o servidor menos os segredos, como a Atena. Quem tem a senha do painel tem esse alcance: é mais um motivo para uma senha só dele.
 - **Agenda:** o agendador só roda as ações da lista de agendáveis (PC, reiniciar serviço, apps do lab), e a vez que passou da tolerância não roda depois.
 - **Decidir pelo painel vale o toque no celular.** Só o token do painel tem `aprovacoes.decidir`; ele não decide pedidos dele mesmo (fora as permissões e perguntas do Claude Code nos trabalhos que ele mandou), e só enxerga pedidos de clientes das zonas dele (sem `prod`). Quem tem a senha do painel aprova o que a Atena pedir: é mais um motivo para uma senha só dele.
 

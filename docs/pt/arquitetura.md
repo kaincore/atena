@@ -26,8 +26,8 @@ As redes que o Compose cria sozinho (por exemplo, a rede interna do banco de uma
 
 O Docker já isola redes diferentes: um container da zona `agents` não alcança um da zona `prod`. As exceções são feitas de propósito:
 
-- **Redes de serviço (`svc-*`).** Contêm só um serviço e quem pode usá-lo, e não têm saída para a internet. A `svc-llm` (10.10.250.0/24) liga o LiteLLM aos seus consumidores. Assim o Open WebUI e os agentes usam o LiteLLM, mas não alcançam o Ollama nem o resto da zona `ai`. A `svc-ntfy` (10.10.251.0/24) liga o ntfy a quem publica avisos (o Hermes), sem abrir a zona `core`.
-- **Workers dos agentes.** Entram em `zone-agents`, `zone-lab` e `zone-apps`, e alcançam esses serviços pelo nome. O orquestrador dos agentes (o Hermes) fica só em `zone-agents`, `svc-llm` e `svc-ntfy`, para que nada de teste no lab consiga falar com quem executa comandos.
+- **Redes de serviço (`svc-*`).** Contêm só um serviço e quem pode usá-lo, e não têm saída para a internet. A `svc-llm` (10.10.250.0/24) liga o LiteLLM aos seus consumidores. Assim o Open WebUI e os agentes usam o LiteLLM, mas não alcançam o Ollama nem o resto da zona `ai`. A `svc-ntfy` (10.10.251.0/24) liga o ntfy a quem publica avisos (o Hermes), sem abrir a zona `core`. A `svc-atena` (10.10.252.0/24) tem só o Hermes: é por ela que o executor, do servidor, chega à API da Atena (o chat e a agenda dela no painel); nenhum container a alcança.
+- **Workers dos agentes.** Entram em `zone-agents`, `zone-lab` e `zone-apps`, e alcançam esses serviços pelo nome. O orquestrador dos agentes (o Hermes) fica só em `zone-agents`, `svc-llm`, `svc-ntfy` e `svc-atena`, para que nada de teste no lab consiga falar com quem executa comandos.
 - **Nenhum agente** entra em `zone-core` nem em `zone-prod-*`.
 
 ## Executor de ações
@@ -109,13 +109,14 @@ Opcional (`./install.sh --painel`). O servidor no navegador do PC e do celular, 
 ```text
 Celular ou PC (Tailscale) ──HTTPS :3100──> tailscale serve ──socket──> painel (zona core, sem rede)
 Celular ou PC (rede de casa, opcional) ──HTTP <IP de casa>:3100──> atena-painel-casa.socket ──socket──> painel
-painel ──socket──> executor (token próprio: 38 ações; só apaga apps do lab e só edita stacks de apps)
+painel ──socket──> executor (token próprio: 48 ações; só apaga apps do lab e só edita stacks de apps)
+executor ──svc-atena──> API da Atena (as conversas, o chat e a agenda dela; a chave fica com o executor)
 ```
 
 - **Sem rede.** O container tem `network_mode: none`: não alcança a internet, a rede de casa nem outros containers, e nada alcança ele pela rede. As visitas chegam pelo `tailscale serve`, que entrega no socket `/srv/core/painel/run/painel.sock`, e os pedidos vão ao executor pelo socket dele.
 - **Pelo Tailscale**, em HTTPS: é o que deixa instalar o app e manter o cookie seguro. Com `ATENA_PAINEL_CASA=sim`, o painel também abre na rede de casa, sem o Tailscale, em `http://<ATENA_LAN_IP>:3100`: o systemd escuta só no IP de casa e entrega cada visita a um segundo socket do painel (`painel-casa.sock`), por onde o cookie sai sem `Secure`. Lá a senha passa aberta no Wi-Fi e o app não instala; desligado (o padrão), nada responde na rede de casa.
 - **Uma conta, com senha.** O hash (scrypt) fica em `/srv/core/painel/senha`, gravado pelo `atena-painel-senha`. A sessão dura 30 dias e renova a cada uso; trocar a senha desconecta todos os aparelhos.
-- **Duas listas fechadas.** O painel só pede as ações dele, e o token dele no executor só aceita essas, nas zonas core, apps, ai, agents e lab: consultas, logs, gasto, reiniciar serviço, ligar e desligar o PC, os apps do lab e o Claude Code, as stacks de apps e a leitura de arquivos. Nada de apagar fora do lab nem editar stacks de outras zonas.
+- **Duas listas fechadas.** O painel só pede as ações dele, e o token dele no executor só aceita essas, nas zonas core, apps, ai, agents e lab: consultas, logs, gasto, reiniciar serviço, ligar e desligar o PC, os apps do lab e o Claude Code, as stacks de apps, a leitura de arquivos e a Atena (conversar, ler as conversas, a agenda dela). Nada de apagar fora do lab nem editar stacks de outras zonas.
 - **Confirmação na tela.** Reiniciar, desligar, parar, publicar e apagar pedem confirmação no próprio painel, e apagar os dados de um app exige digitar o nome dele; por isso o token não pede o celular.
 - **Central de aprovações.** O que a Atena e o Claude Code pedem e espera por você aparece no painel com o texto que foi ao celular: Aprovar, Recusar ou responder a pergunta. Vale o mesmo que o toque no celular, os dois continuam funcionando, e quem decidir primeiro decide. O painel nunca decide um pedido dele mesmo; a exceção são as permissões e as perguntas do Claude Code nos trabalhos que ele mandou, porque quem pede é o Claude Code.
 - **Atividade.** O registro do executor (cada pedido de cada cliente, cada decisão e os eventos), com filtro por cliente e só os erros.

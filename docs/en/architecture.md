@@ -26,8 +26,8 @@ Networks that Compose creates on its own (for example, a stack's internal databa
 
 Docker already isolates different networks: a container in `agents` can't reach one in `prod`. The exceptions are deliberate:
 
-- **Service networks (`svc-*`).** They hold only one service and whoever may use it, with no internet access. `svc-llm` (10.10.250.0/24) connects LiteLLM to its consumers. Open WebUI and the agents can use LiteLLM, but can't reach Ollama or anything else in `ai`. `svc-ntfy` (10.10.251.0/24) connects ntfy to whoever publishes notifications (Hermes) without opening the `core` zone.
-- **Agent workers.** They join `zone-agents`, `zone-lab` and `zone-apps`, and reach those services by name. The agent orchestrator (Hermes) stays only in `zone-agents`, `svc-llm` and `svc-ntfy`, so nothing under test in `lab` can talk to the thing that runs commands.
+- **Service networks (`svc-*`).** They hold only one service and whoever may use it, with no internet access. `svc-llm` (10.10.250.0/24) connects LiteLLM to its consumers. Open WebUI and the agents can use LiteLLM, but can't reach Ollama or anything else in `ai`. `svc-ntfy` (10.10.251.0/24) connects ntfy to whoever publishes notifications (Hermes) without opening the `core` zone. `svc-atena` (10.10.252.0/24) holds only Hermes: it's how the executor, from the server, reaches Atena's API (her chat and schedule in the panel); no container can reach it.
+- **Agent workers.** They join `zone-agents`, `zone-lab` and `zone-apps`, and reach those services by name. The agent orchestrator (Hermes) stays only in `zone-agents`, `svc-llm`, `svc-ntfy` and `svc-atena`, so nothing under test in `lab` can talk to the thing that runs commands.
 - **No agent** joins `zone-core` or `zone-prod-*`.
 
 ## Action executor
@@ -109,13 +109,14 @@ Optional (`./install.sh --painel`). The server in your PC and phone browser, ins
 ```text
 Phone or PC (Tailscale) ──HTTPS :3100──> tailscale serve ──socket──> panel (core zone, no network)
 Phone or PC (home network, optional) ──HTTP <home IP>:3100──> atena-painel-casa.socket ──socket──> panel
-panel ──socket──> executor (own token: 38 actions; only deletes lab apps and only edits app stacks)
+panel ──socket──> executor (own token: 48 actions; only deletes lab apps and only edits app stacks)
+executor ──svc-atena──> Atena's API (her conversations, chat and schedule; the executor holds the key)
 ```
 
 - **No network.** The container runs with `network_mode: none`: it can't reach the internet, the home network or other containers, and nothing reaches it over the network. Visits arrive through `tailscale serve`, which delivers to the socket `/srv/core/painel/run/painel.sock`, and requests go to the executor through its socket.
 - **Through Tailscale**, over HTTPS: that's what makes the app installable and keeps the cookie secure. With `ATENA_PAINEL_CASA=sim`, the panel also opens on the home network, without Tailscale, at `http://<ATENA_LAN_IP>:3100`: systemd listens only on the home IP and hands each visit to a second panel socket (`painel-casa.sock`), where the cookie goes out without `Secure`. There the password crosses the Wi-Fi in the clear and the app can't be installed; turned off (the default), nothing answers on the home network.
 - **One account, with a password.** The hash (scrypt) lives in `/srv/core/painel/senha`, written by `atena-painel-senha`. A session lasts 30 days and renews on every use; changing the password signs out every device.
-- **Two closed lists.** The panel only asks for its own actions, and its executor token only accepts those, in the core, apps, ai, agents and lab zones: queries, logs, spending, restart a service, turn the PC on and off, the lab apps and Claude Code, the app stacks and reading files. No deleting outside the lab and no editing stacks in other zones.
+- **Two closed lists.** The panel only asks for its own actions, and its executor token only accepts those, in the core, apps, ai, agents and lab zones: queries, logs, spending, restart a service, turn the PC on and off, the lab apps and Claude Code, the app stacks, reading files and Atena (chatting, reading her conversations, her schedule). No deleting outside the lab and no editing stacks in other zones.
 - **Confirmation on screen.** Restart, shut down, stop, publish and delete ask for confirmation in the panel itself, and deleting an app's data requires typing its name; that's why its token doesn't ask the phone.
 - **Approvals center.** What Atena and Claude Code ask for and is waiting for you shows up in the panel with the text that went to the phone: Approve, Refuse or answer the question. It counts the same as the tap on the phone, both keep working, and whoever decides first wins. The panel never decides its own requests; the exception is Claude Code's permissions and questions in jobs the panel started, because Claude Code is the one asking.
 - **Activity.** The executor's log (every request from every client, every decision and its events), filtered by client or errors only.

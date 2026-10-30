@@ -76,11 +76,12 @@ After an unclean shutdown, Docker can bring a container back without one of its 
 sudo atena-executor tokens                                    # who may request what
 sudo atena-executor token-novo <client> <actions> <zones> [approve]
 sudo atena-executor token-remover <client>
+sudo atena-executor token-acertar                            # the panel and Atena get the catalog's new actions
 journalctl -u atena-executor -f                               # every request, with its result
 ```
 
 - Lists are comma-separated. `approve` says which actions need the phone, on top of the destructive ones, which always do. `nenhuma` (none) is only for the panel: there, you confirm on screen, so not even a destructive one asks the phone. Without that field, every action that can ask for approval does.
-- The installer builds the panel's and Atena's tokens from the executor's catalog (`atena-executor acoes painel`, `atena` or `atena-lab`). Each action states its risk there, and `GET /acoes` shows the catalog to whoever holds the token.
+- The installer builds the panel's and Atena's tokens from the executor's catalog (`atena-executor acoes painel`, `atena` or `atena-lab`). Each action states its risk there, and `GET /acoes` shows the catalog to whoever holds the token. A new action reaches the token on the next `./aplicar` (`token-acertar`), without changing the token or the approvals.
 - The token is shown only once. Creating it again for the same client revokes the old one.
 - Example: Atena starts asking your phone before restarting anything (her token lives in `/srv/agents/hermes/executor.token`):
   ```bash
@@ -208,7 +209,8 @@ It restarts only what really changed, and a comment-only change restarts nothing
 - systemd reloads the units;
 - the firewall and the executor restart;
 - SSH checks the new configuration before reloading it;
-- each stack that changed comes back up and waits to be healthy. A stopped stack stays stopped.
+- each stack that changed comes back up and waits to be healthy. A stopped stack stays stopped;
+- last, if the executor changed, the panel's and Atena's tokens get the catalog's new actions.
 
 `--parte executor` applies a single part. It won't start while Claude Code is working if the executor would have to restart. Left out, with a warning:
 - `/etc/docker/daemon.json`, because applying it would restart every container;
