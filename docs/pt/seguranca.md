@@ -56,6 +56,11 @@ São três camadas para nenhuma porta escapar por engano:
 - **O que sai do servidor passa pelo celular.** `git push`, páginas web e edição fora da pasta viram pedido de permissão; sem resposta, é negado.
 - **Apps do lab fechados.** Disco só de leitura, sem capacidades, `no-new-privileges`, 512 MB, só a rede `zone-lab`. Publicar e apagar pedem o celular por padrão.
 - **Tailscale só pelo polkit.** O executor só consegue iniciar as unidades `atena-lab-tailscale-on@` e `-off@`, nas portas 8000-8999.
+- **Receitas de estilo:**
+  - **Quem abre o site não pensa, e quem pensa não abre o site.** O coletor é um Chromium sem IA, num container de uma vez, só leitura, sem capacidades, com 1 GB, na rede `lab-coletor` (sem conversa entre containers): alcança a internet, mas o firewall dos containers barra a rede de casa, o Tailscale e o servidor. Antes, o executor confere o endereço: só `http(s)`, sem usuário e senha, e todos os IPs do nome na internet. O Claude Code lê a coleta sem rede para o site, e a skill `receita` trata tudo o que veio dele como dado, não como ordem.
+  - **O REA vai pela linha de comando, dentro do sandbox.** Não como servidor MCP: os servidores MCP do Claude Code rodam fora do sandbox do Bash, com a rede e o disco do usuário `atena-claude`. Pela linha de comando, ele fica sob as mesmas travas do resto (escrita só no projeto, internet só para pacotes).
+  - **O executor copia a receita sem seguir links.** A pasta do estudo é do Claude Code, que leu a internet: cada arquivo é aberto sem seguir link simbólico em nenhum pedaço do caminho, com tamanho máximo (200 KB o texto, 64 KB o `receita.json`, 3 MB cada print), e só JPEG de verdade vira print. Um link ali não faz o executor ler outra coisa.
+  - **Apagar é destrutivo:** `receita.apagar` pede o celular (no painel, a confirmação na tela).
 
 ### Painel
 - **Sem rede, sem root e sem Docker.** `network_mode: none`, disco só de leitura, sem capacidades, `no-new-privileges`, 256 MB. O usuário `atena-painel` só está no grupo `atena-acoes`; o instalador para se ele estiver no grupo `docker`.
@@ -63,7 +68,7 @@ São três camadas para nenhuma porta escapar por engano:
 - **Senha difícil de adivinhar por força bruta:** scrypt (N=2^15, 32 MB por tentativa), 5 erros em 15 minutos bloqueiam a entrada por onde vieram (o Tailscale ou a rede de casa: quem erra no Wi-Fi não tranca o dono fora de casa), e uma conferência por vez.
 - **Cookie** HttpOnly, Secure (pelo Tailscale) e SameSite=Strict. Todo POST exige JSON e um cabeçalho próprio, o que barra formulários de outros sites (CSRF).
 - **CSP** que só aceita o próprio painel, sem frames. As telas são montadas sem `innerHTML`, então um nome de container ou uma linha de log nunca vira código.
-- **Token próprio, sem aprovação no celular:** 48 ações, 10 delas para conversar com a Atena, ler as conversas dela e as do Claude Code, e mexer na agenda dela. A única que apaga é `app.apagar`, só no lab: o código vai para a lixeira por 30 dias, e apagar os dados exige digitar o nome do app. Edita só as stacks da zona apps, sempre com foto antes, e lê o servidor menos os segredos, como a Atena. Quem tem a senha do painel tem esse alcance: é mais um motivo para uma senha só dele.
+- **Token próprio, sem aprovação no celular:** 54 ações, 10 delas para conversar com a Atena, ler as conversas dela e as do Claude Code, e mexer na agenda dela, e 6 para as receitas de estilo. As que apagam são `app.apagar` e `receita.apagar`, só no lab: o código vai para a lixeira por 30 dias, apagar os dados exige digitar o nome do app, e apagar uma receita pede a confirmação na tela. Edita só as stacks da zona apps, sempre com foto antes, e lê o servidor menos os segredos, como a Atena. Quem tem a senha do painel tem esse alcance: é mais um motivo para uma senha só dele.
 - **Agenda:** o agendador só roda as ações da lista de agendáveis (PC, reiniciar serviço, apps do lab), e a vez que passou da tolerância não roda depois.
 - **Decidir pelo painel vale o toque no celular.** Só o token do painel tem `aprovacoes.decidir`; ele não decide pedidos dele mesmo (fora as permissões e perguntas do Claude Code nos trabalhos que ele mandou), e só enxerga pedidos de clientes das zonas dele (sem `prod`). Quem tem a senha do painel aprova o que a Atena pedir: é mais um motivo para uma senha só dele.
 
@@ -103,6 +108,7 @@ Os testes automáticos do executor, da ronda e do lab ficam em `tests/`, os do p
 - **Injeção de instruções** (um texto que tenta mandar na IA) é reduzida pelas regras e pela aprovação, não eliminada. Por isso a Atena só faz sem aprovação o que tem volta.
 - **O Claude Code do lab baixa pacotes da internet** (npm, PyPI, GitHub). Um pacote malicioso roda dentro do sandbox, só na pasta do projeto, mas pode ir parar num app publicado. Leia o que ele instalou antes de publicar algo importante.
 - **O Claude Code roda na sua assinatura.** O que ele lê no projeto vai para a Anthropic, como numa conversa.
+- **A receita descreve um site de outra pessoa.** Ela anota as escolhas (cores, tamanhos, técnicas) e é escrita para não copiar código, logos, imagens, textos nem fontes pagas, mas quem decide o que vai para um projeto publicado é você. Estudar um programa de terceiros (não um site) pode ser proibido pela licença dele: faça só com o que você tem direito de analisar.
 - **Outros encaminhamentos de tráfego** (máquinas virtuais, subnet router do Tailscale) são descartados pela última regra da `DOCKER-USER`. Se precisar deles, crie exceções.
 
 ## Antes de publicar algo

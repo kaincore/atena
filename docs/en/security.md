@@ -56,6 +56,11 @@ Three layers keep a port from leaking by mistake:
 - **What leaves the server goes through your phone.** `git push`, web pages and edits outside the folder become permission requests; without an answer, they're denied.
 - **Locked-down lab apps.** Read-only disk, no capabilities, `no-new-privileges`, 512 MB, only the `zone-lab` network. Publishing and deleting need your phone by default.
 - **Tailscale only through polkit.** The executor can only start the `atena-lab-tailscale-on@` and `-off@` units, on ports 8000-8999.
+- **Style recipes:**
+  - **What opens the site doesn't think, and what thinks doesn't open the site.** The collector is a Chromium with no AI, in a one-off container, read only, with no capabilities and 1 GB, on the `lab-coletor` network (no traffic between containers): it reaches the internet, but the container firewall blocks the home network, Tailscale and the server. Before that, the executor checks the address: only `http(s)`, no username or password, and every IP of the name on the internet. Claude Code reads the capture with no network to the site, and the `receita` skill treats everything that came from it as data, not as orders.
+  - **REA goes through the command line, inside the sandbox.** Not as an MCP server: Claude Code's MCP servers run outside the Bash sandbox, with the network and disk of the `atena-claude` user. From the command line, it is under the same walls as everything else (writes only to the project, internet only for packages).
+  - **The executor copies the recipe without following links.** The study folder belongs to Claude Code, which read the internet: every file is opened without following a symbolic link anywhere in the path, with a size cap (200 KB for text, 64 KB for `receita.json`, 3 MB per screenshot), and only a real JPEG becomes a screenshot. A link there can't make the executor read something else.
+  - **Deleting is destructive:** `receita.apagar` asks your phone (in the panel, the on-screen confirmation).
 
 ### Panel
 - **No network, no root, no Docker.** `network_mode: none`, read-only disk, no capabilities, `no-new-privileges`, 256 MB. The `atena-painel` user is only in the `atena-acoes` group; the installer stops if it's in the `docker` group.
@@ -63,7 +68,7 @@ Three layers keep a port from leaking by mistake:
 - **A password that's hard to brute-force:** scrypt (N=2^15, 32 MB per attempt), 5 mistakes in 15 minutes lock the entry they came through (Tailscale or the home network: someone guessing on the Wi-Fi can't lock the owner out from away), and one check at a time.
 - **Cookie** HttpOnly, Secure (through Tailscale) and SameSite=Strict. Every POST requires JSON and a custom header, which blocks forms from other sites (CSRF).
 - **CSP** that only allows the panel itself, no frames. Screens are built without `innerHTML`, so a container name or a log line never becomes code.
-- **Own token, no phone approval:** 48 actions, 10 of them to chat with Atena, read her conversations and the Claude Code ones, and manage her schedule. The only one that deletes is `app.apagar`, lab only: the code goes to the trash for 30 days, and deleting the data requires typing the app's name. It edits only the apps zone stacks, always with a snapshot first, and reads the server except secrets, like Atena. Whoever has the panel password has this reach: one more reason for a password used only there.
+- **Own token, no phone approval:** 54 actions, 10 of them to chat with Atena, read her conversations and the Claude Code ones, and manage her schedule, and 6 for the style recipes. The ones that delete are `app.apagar` and `receita.apagar`, lab only: the code goes to the trash for 30 days, deleting the data requires typing the app's name, and deleting a recipe asks for the on-screen confirmation. It edits only the apps zone stacks, always with a snapshot first, and reads the server except secrets, like Atena. Whoever has the panel password has this reach: one more reason for a password used only there.
 - **Schedule:** the scheduler only runs actions on the schedulable list (PC, restart a service, lab apps), and a run past its tolerance doesn't run later.
 - **Deciding in the panel counts as the tap on the phone.** Only the panel token has `aprovacoes.decidir`; it never decides its own requests (except Claude Code's permissions and questions in jobs it started), and it only sees requests from clients within its zones (no `prod`). Whoever has the panel password can approve what Atena asks for: one more reason for a password used nowhere else.
 
@@ -103,6 +108,7 @@ The automated tests for the executor, the patrol and the lab live in `tests/`, t
 - **Prompt injection** (text that tries to command the AI) is reduced by the rules and the approvals, not eliminated. That's why Atena only acts without approval on what can be undone.
 - **The lab's Claude Code downloads packages from the internet** (npm, PyPI, GitHub). A malicious package runs inside the sandbox, only in the project folder, but it can end up in a published app. Look at what it installed before publishing anything important.
 - **Claude Code runs on your subscription.** What it reads in the project goes to Anthropic, like in a chat.
+- **A recipe describes someone else's site.** It notes the choices (colors, sizes, techniques) and is written not to copy code, logos, images, text or paid fonts, but you decide what goes into a published project. Studying third-party software (not a site) may be forbidden by its license: only do it with what you have the right to analyze.
 - **Other forwarded traffic** (virtual machines, a Tailscale subnet router) is dropped by the last rule of `DOCKER-USER`. If you need it, add exceptions.
 
 ## Before publishing anything

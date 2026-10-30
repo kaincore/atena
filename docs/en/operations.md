@@ -140,6 +140,15 @@ sudo atena-claude-conta estado            # which accounts are ready
 - Changing the Claude Code version: `ATENA_CLAUDE_VERSAO` in `atena.conf` and run the installer again (it downloads and checks the official checksum). Read the release notes first.
 - Logs: `journalctl -u atena-claude` (the runner) and each job's full conversation in `/var/lib/atena-claude/registros`.
 
+**Style recipes** (with `ATENA_CLAUDE_SKILLS=sim`). Tell Atena "I liked the style of https://example.com" (or use the panel's Recipes screen). The collector opens the site in up to 2 minutes, and Claude Code writes the recipe in up to 45; your phone tells you when it's ready. To use it: "make the shopping-list project in the style of the example-com recipe", or the Style field in a new Lab job. You can also ask "which recipes do I have?" or "is there a dark one?".
+
+- The finished recipe lives in `/srv/lab/receitas/<name>` (`RECEITA.md`, `DESIGN.md`, `receita.json` and the screenshots), and the study, with the site capture and git, in `/srv/lab/projetos/receita-<name>`. The index lives in `/var/lib/atena-executor/receitas.db` and is rebuilt from the folders when the executor starts: losing it doesn't lose a recipe.
+- The account that writes recipes when the request doesn't say: `ATENA_RECEITAS_CONTA` in `atena.conf` (empty: the first account in `ATENA_CLAUDE_CONTAS` with a login).
+- Redo: ask again with `refazer` (or Redo in the panel). The current recipe keeps working until the new one is ready, and a failed attempt doesn't delete it. Deleting (`receita.apagar`) asks your phone and can't be undone; the study stays in the lab, and `app.apagar` removes it.
+- A study that stopped (usage limit, deadline, power cut): continue the recipe's Claude Code job (`claude.tarefa` with `continuar`, or Continue in the Lab) with "finish the recipe"; when it finishes well, the recipe is saved.
+- The collector is the `atena/coletor` image, built by the installer from `host/lab/coletor`. Changed the collector: bump the tag in `COLETOR` in `host/executor/atena_executor/receitas.py` and in `install/88-lab.sh` (the test checks they match) and run the installer again.
+- REA (`rea-agents`, pinned in the tools' `package-lock.json`) and the lab's Node (pinned in `88-lab.sh`, with its checksum) change the same way: the new version in the repository and the installer again.
+
 ## Panel
 
 **Install.** It needs Tailscale logged in on the server and HTTPS enabled on the tailnet (in the Tailscale admin: DNS → HTTPS Certificates). Run `sudo ./install.sh --painel`, then:

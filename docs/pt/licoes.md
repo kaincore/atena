@@ -132,6 +132,12 @@ O aviso de "limite atingido" da conta anterior continuava no registro; se a roda
 
 **Para continuar uma conversa em outra conta, copie a sessão.** O `--resume` procura a conversa na pasta da conta (`projects/*/<sessão>.jsonl`); o runner copia o arquivo, e a pasta de subagentes, antes de continuar.
 
+**Servidor MCP do Claude Code roda fora do sandbox.** O sandbox vale para o Bash; um servidor MCP é um processo do próprio Claude Code, com a rede e o disco do usuário. Por isso o REA das receitas entra pela linha de comando (`rea ...` no Bash), sob as mesmas travas do resto, e não como servidor MCP.
+
+**O REA na pasta inteira de scripts de um site desiste.** O `analyze-javascript-application` com os 393 scripts de um site passou do limite de 5 min por fonte e parou sem resultado. Com até 5 scripts de cada vez leva segundos, e o registro da rede (`inspect-web-network-capture` no HAR) leva 3 s. A skill `receita` manda escolher os scripts antes.
+
+**O REA pede um Node mais novo que o do Ubuntu.** O `rea-agents` 6.8.0 quer 22.23.4+ ou 24.22.1+, e o Ubuntu 26.04 tem o 22.22.1. O lab ganhou um Node próprio (fixo, do nodejs.org, conferido pelo checksum) na frente do PATH do trabalhador, sem mexer no do sistema.
+
 ## Painel
 
 **O `tailscale serve` entrega num socket unix** (`unix:/caminho/do.sock`). Assim o container do painel fica sem rede nenhuma (`network_mode: none`), e ainda assim tem HTTPS fora de casa. O ufw continua precisando liberar a porta na `tailscale0`.

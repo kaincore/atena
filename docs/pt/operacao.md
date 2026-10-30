@@ -140,6 +140,15 @@ sudo atena-claude-conta estado            # quais contas estão prontas
 - Trocar a versão do Claude Code: `ATENA_CLAUDE_VERSAO` no `atena.conf` e o instalador de novo (ele baixa e confere o checksum oficial). Leia as notas da versão antes.
 - Registros: `journalctl -u atena-claude` (o runner) e a conversa completa de cada trabalho em `/var/lib/atena-claude/registros`.
 
+**Receitas de estilo** (com `ATENA_CLAUDE_SKILLS=sim`). Diga à Atena "gostei do estilo de https://exemplo.com" (ou use a tela Receitas do painel). O coletor abre o site em até 2 minutos, e o Claude Code escreve a receita em até 45; o celular avisa quando ela fica pronta. Para usar: "faz o projeto lista-compras no estilo da receita exemplo-com", ou o campo Estilo no trabalho novo do Lab. Também dá para perguntar "que receitas eu tenho?" ou "tem alguma escura?".
+
+- A receita pronta fica em `/srv/lab/receitas/<nome>` (`RECEITA.md`, `DESIGN.md`, `receita.json` e os prints), e o estudo, com a coleta do site e o git, em `/srv/lab/projetos/receita-<nome>`. O índice fica em `/var/lib/atena-executor/receitas.db` e se refaz das pastas quando o executor sobe: perdê-lo não perde receita.
+- A conta que escreve as receitas, quando o pedido não diz: `ATENA_RECEITAS_CONTA` no `atena.conf` (vazia, a primeira de `ATENA_CLAUDE_CONTAS` com login).
+- Refazer: peça de novo com `refazer` (ou Refazer no painel). A receita atual continua valendo até a nova ficar pronta, e uma tentativa que falha não a apaga. Apagar (`receita.apagar`) pede o celular e não tem volta; o estudo no lab fica, e `app.apagar` tira.
+- Estudo que parou (limite de uso, prazo, queda de energia): continue o trabalho do Claude Code da receita (`claude.tarefa` com `continuar`, ou Continuar no Lab) com "termine a receita"; ao terminar bem, ela é guardada.
+- O coletor é a imagem `atena/coletor`, construída pelo instalador a partir de `host/lab/coletor`. Mudou o coletor: suba a tag em `COLETOR` no `host/executor/atena_executor/receitas.py` e no `install/88-lab.sh` (o teste confere que são iguais) e rode o instalador de novo.
+- O REA (`rea-agents`, fixo no `package-lock.json` das ferramentas) e o Node do lab (fixo no `88-lab.sh`, com o checksum) mudam do mesmo jeito: a versão nova no repositório e o instalador de novo.
+
 ## Painel
 
 **Instalar.** Precisa do Tailscale logado no servidor e do HTTPS ligado no tailnet (no painel do Tailscale: DNS → HTTPS Certificates). Rode `sudo ./install.sh --painel` e depois:

@@ -48,8 +48,8 @@ atena@server:~$ █
 - **LiteLLM** as a single gateway to Claude (Haiku, Sonnet, Opus) and to the local models, with spending caps per model and per key, reset on the 1st of every month.
 - **Dashboards:** Dockge (manage stacks), Beszel (monitoring, GPU included) and Open WebUI (chat in the browser).
 - **Atena** (optional): a personal assistant on Telegram, built on [Hermes Agent](https://github.com/NousResearch/hermes-agent). She watches the server (temperature included), answers questions about it, keeps your notes, edits the app stacks with snapshots and undo, and acts only through a closed list of actions, asking for your OK before anything destructive. She speaks Brazilian Portuguese.
-- **The lab** (optional): Atena sends programming jobs to Claude Code, which works on its own in a sandbox, asks through your phone when it needs to, and leaves the app ready for her to publish on the home network.
-- **The panel** (optional): the server in your browser and on your phone, installable as an app. It shows status, services, sensors, processes, the network, the systemd journal, AI spending and the lab apps; it restarts services and turns the home PC on or off; it sends jobs to Claude Code and publishes, deletes and restores lab apps; it schedules tasks (turn the PC on at 7 pm, restart a service overnight) and shows Atena's schedule next to them, where you can also set reminders for her; it chats with Atena and shows her conversations (Telegram, panel, schedule) and the full conversation of every Claude Code job; edits the app stacks and shows the files; it approves or refuses what Atena and Claude Code ask for and shows everything the executor did. Through Tailscale (and, if you want, on the home network), with a password, in a container with no network at all.
+- **The lab** (optional): Atena sends programming jobs to Claude Code, which works on its own in a sandbox, asks through your phone when it needs to, and leaves the app ready for her to publish on the home network. With the skills on, also style recipes: you say you liked the look of a site, a collector with no AI opens the page over the internet only, Claude Code writes the recipe (colors, fonts, spacing, components, motion) with REA and Impeccable, and the lab projects follow the recipe without copying the site.
+- **The panel** (optional): the server in your browser and on your phone, installable as an app. It shows status, services, sensors, processes, the network, the systemd journal, AI spending and the lab apps; it restarts services and turns the home PC on or off; it sends jobs to Claude Code and publishes, deletes and restores lab apps; it schedules tasks (turn the PC on at 7 pm, restart a service overnight) and shows Atena's schedule next to them, where you can also set reminders for her; it chats with Atena and shows her conversations (Telegram, panel, schedule) and the full conversation of every Claude Code job; it studies the style of a site and shows the recipes, with the palette, the fonts and the screenshots; edits the app stacks and shows the files; it approves or refuses what Atena and Claude Code ask for and shows everything the executor did. Through Tailscale (and, if you want, on the home network), with a password, in a container with no network at all.
 - **An action executor** with approval on your phone: the only path from agents to the server, no shell, one token per client.
 - **Phone notifications** (ntfy): failed services, stopped containers and approval requests with buttons.
 - **An installer** that sets everything up on a fresh machine and can be re-run without breaking what's there.
@@ -142,7 +142,7 @@ Then:
 | LiteLLM 1.101.6 | ai | 4000 | Requires a key. Spending caps per model and per key |
 | Open WebUI 0.12.5 | apps | 3000 | Talks only to LiteLLM |
 | Hermes Agent 0.22.2 | agents | none | Atena (with `--hermes`). Talks over Telegram |
-| Panel 0.18.0 | core | 3100, through Tailscale (home network optional) | The panel (with `--painel`). No network, no root, no npm packages, with a password |
+| Panel 0.19.0 | core | 3100, through Tailscale (home network optional) | The panel (with `--painel`). No network, no root, no npm packages, with a password |
 | Claude Code 2.1.302 | lab | apps on 8000-8999 | The lab (with `--lab`). Runs in a sandbox, with no sudo and no Docker; uses your Claude subscription |
 
 Versions are pinned on purpose. Before upgrading, read the security advisories and release notes.
@@ -165,7 +165,7 @@ atena/
 ├── install.sh, install/   installer (one step per file) and the server's desired state
 ├── aplicar                makes the server match the repository (--conferir only compares)
 ├── host/                  system files: Docker, systemd, firewall, SSH, executor, alerts, lab
-│   ├── lab/               the lab's Claude Code bridge, sandbox and scope guard
+│   ├── lab/               the lab's Claude Code bridge, sandbox and scope guard, and the recipe collector
 │   └── windows/           script and guide for the optional home PC
 ├── stacks/<zone>/<name>/  stack compose files
 │   └── core/painel/app/   the panel: server, interface and tests

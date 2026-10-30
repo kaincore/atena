@@ -132,6 +132,12 @@ The previous account's "limit reached" notice was still in the log; if the new r
 
 **To continue a conversation on another account, copy the session.** `--resume` looks for the conversation in the account's folder (`projects/*/<session>.jsonl`); the runner copies the file, and the subagents folder, before continuing.
 
+**Claude Code's MCP servers run outside the sandbox.** The sandbox covers Bash; an MCP server is a process of Claude Code itself, with the user's network and disk. That's why the recipes' REA comes in through the command line (`rea ...` in Bash), under the same walls as everything else, and not as an MCP server.
+
+**REA gives up on a site's whole scripts folder.** `analyze-javascript-application` on a site's 393 scripts hit the 5-minute per-source limit and stopped with no result. With up to 5 scripts at a time it takes seconds, and the network log (`inspect-web-network-capture` on the HAR) takes 3 s. The `receita` skill says to pick the scripts first.
+
+**REA needs a newer Node than Ubuntu's.** `rea-agents` 6.8.0 wants 22.23.4+ or 24.22.1+, and Ubuntu 26.04 ships 22.22.1. The lab got its own Node (pinned, from nodejs.org, checked against the checksum) at the front of the worker's PATH, without touching the system one.
+
 ## Panel
 
 **`tailscale serve` can deliver to a Unix socket** (`unix:/path/to.sock`). That leaves the panel container with no network at all (`network_mode: none`) and still with HTTPS from away. ufw still has to allow the port on `tailscale0`.
