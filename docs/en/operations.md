@@ -30,7 +30,7 @@ Use the next free range (10.10.102.0/24, 10.10.103.0/24...). Interface names hav
 
 ## Add a container firewall exception
 
-Edit the "exceções" (exceptions) section of `/usr/local/sbin/atena-docker-firewall` (for example, so a container can monitor a printer on the home network) and apply it:
+Edit the "exceções" (exceptions) section of `host/sbin/atena-docker-firewall` in the repository (for example, so a container can monitor a printer on the home network), copy it to `/usr/local/sbin/` and apply it. Edited only on the server, it shows up as different in `./aplicar --conferir`. The home PC doesn't need this: it comes in through `atena.conf`.
 
 ```bash
 sudo systemctl restart atena-docker-firewall
@@ -169,6 +169,8 @@ The installer prints the address: `https://<server>.<tailnet>.ts.net:3100`. On t
 ## Home PC
 
 Optional: Atena wakes the PC over the network, uses its model for longer texts and shuts it down when you ask. The step-by-step guide (in Portuguese) is in [`host/windows/LEIAME.md`](../../host/windows/LEIAME.md).
+
+With `ATENA_PC_IP` in `atena.conf`, LiteLLM gets the `pc` model, Atena sees it in her list, and the container firewall lets LiteLLM reach only LM Studio's port. With the PC off, the call fails. With `ATENA_PC_RESERVA` (e.g. `sonnet`), it goes to that model instead, and then the text leaves the house.
 
 ## Upgrade versions
 

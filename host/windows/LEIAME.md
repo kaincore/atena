@@ -27,8 +27,13 @@ Tudo é opcional. Sem `ATENA_PC_IP` no `atena.conf`, as ações `pc.*` respondem
    (padrão 1234).
 3. No Firewall do Windows, libere essa porta só para o IP do servidor.
 
-Os containers não alcançam a rede de casa (veja `docs/pt/seguranca.md`). Quem fala com o PC é o
-executor, que roda no próprio servidor.
+Os containers não alcançam a rede de casa (veja `docs/pt/seguranca.md`), com uma exceção: com
+`ATENA_PC_IP`, o LiteLLM chega ao PC, só na porta de `ATENA_PC_PORTA`, e ganha o modelo `pc`. A
+Atena (e o Open WebUI, se a chave dele tiver o `pc`) conversa com o PC por ele. O `local.processar`
+fala com o PC direto, pelo executor, que roda no próprio servidor. Com o PC desligado, uma chamada ao
+`pc` falha, ou vai para o modelo de `ATENA_PC_RESERVA`. Num servidor já instalado, o
+`sudo ./aplicar --conferir --diff --parte stacks` mostra o bloco do `pc` que falta no `config.yaml` do
+LiteLLM.
 
 ## 3. Desligar, reiniciar e cancelar (SSH restrito)
 

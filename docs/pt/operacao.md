@@ -30,7 +30,7 @@ Use a próxima faixa livre (10.10.102.0/24, 10.10.103.0/24...). O nome da interf
 
 ## Liberar uma exceção no firewall dos containers
 
-Edite a seção "exceções" de `/usr/local/sbin/atena-docker-firewall` (por exemplo, para um container monitorar uma impressora da rede de casa) e aplique:
+Edite a seção "exceções" de `host/sbin/atena-docker-firewall` no repositório (por exemplo, para um container monitorar uma impressora da rede de casa), copie para `/usr/local/sbin/` e aplique. Editado só no servidor, ele aparece como diferente no `./aplicar --conferir`. O PC da rede de casa não precisa disso: ele entra pelo `atena.conf`.
 
 ```bash
 sudo systemctl restart atena-docker-firewall
@@ -169,6 +169,8 @@ O instalador mostra o endereço: `https://<servidor>.<tailnet>.ts.net:3100`. No 
 ## PC da rede de casa
 
 Opcional: a Atena liga o PC pela rede, usa o modelo dele para textos maiores e desliga quando você pede. O passo a passo está em [`host/windows/LEIAME.md`](../../host/windows/LEIAME.md).
+
+Com `ATENA_PC_IP` no `atena.conf`, o LiteLLM ganha o modelo `pc`, a Atena o vê na lista dela, e o firewall dos containers deixa o LiteLLM chegar só à porta do LM Studio. Com o PC desligado, a chamada falha. Com `ATENA_PC_RESERVA` (ex.: `sonnet`), ela vai para esse modelo, e aí o texto sai de casa.
 
 ## Atualizar versões
 

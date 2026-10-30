@@ -3,7 +3,7 @@
 ## Principles
 
 - **The home network is trusted; nothing else is.** Any home device reaches the services. From away, only through Tailscale. From the internet, nothing.
-- **Containers can't reach the home network.** If a container is compromised, it can't get to the router, your computers or your Tailscale devices.
+- **Containers can't reach the home network.** If a container is compromised, it can't get to the router, your computers or your Tailscale devices. The one optional exception is the home PC (`ATENA_PC_IP`): LiteLLM reaches it, and only on LM Studio's port.
 - **Isolated zones.** A problem in one zone doesn't reach the others.
 - **Secrets stay out of the code.** They live in `.env` files with mode 600, generated on the server and never committed.
 - **Agents act only through a closed list.** Atena has no Docker and no sudo: everything she does on the server goes through the executor, which only knows fixed actions.
