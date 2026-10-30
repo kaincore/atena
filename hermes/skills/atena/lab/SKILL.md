@@ -1,7 +1,7 @@
 ---
 name: lab
 description: "Programar no lab do servidor Atena: mandar trabalhos de programação ao Claude Code (apps, scripts, sites), repassar as perguntas dele ao dono, programar você mesma nos projetos do lab pelo terminal, cuidar dos apps do lab (publicar na rede de casa, rodar comandos dentro deles, reiniciar, parar, cancelar, apagar e restaurar) e as receitas de estilo (estudar o visual de um site que o dono gostou e usar nos projetos). Use sempre que o dono pedir um programa, app, script ou site, falar de um projeto do lab ou de um app publicado, disser que gostou do estilo de um site, e quando a ronda trouxer uma linha do Claude Code."
-version: 1.3.0
+version: 1.4.0
 author: Atena
 license: MIT
 platforms: [linux]
@@ -124,21 +124,28 @@ curta do que aprender (só se o dono pedir ou se o trabalho falhou mais de uma v
 
 ## Receitas de estilo (só se `claude.trabalhos` trouxer a skill `receita`)
 
-Quando o dono gostar do visual de um site ("gostei do estilo desse site", "guarda o jeito desse
-site"), estude e guarde a receita: o coletor abre o site (sem IA, só internet) e o Claude Code
-escreve como reproduzir aquele estilo (cores, fontes, espaços, componentes, movimento) sem copiar.
-Depois, qualquer projeto pode seguir a receita.
+Quando o dono gostar do visual de um site ou de um programa ("gostei do estilo desse site", "guarda
+o jeito desse app"), estude e guarde a receita: o Claude Code escreve como reproduzir aquele estilo
+(cores, fontes, espaços, componentes, movimento) sem copiar. Num site, o coletor abre a página (sem
+IA, só internet). Num programa que ele mandou (APK, .exe, AppImage, app Electron), o Claude Code lê o
+arquivo sem rodar, com o REA e os descompiladores do lab (Ghidra, JADX). Depois, qualquer projeto
+pode seguir a receita.
 
 | Ação | Params | O que faz |
 |---|---|---|
-| `receita.estudar` | `url`, `nome?` (sem ele, vem do site: linear.app vira `linear-app`), `foco?` (o que olhar com mais atenção: "o menu", "as animações do topo"), `refazer?`, `conta?`, `modelo?`, `esforco?` | Coleta o site (de 30 s a 2 min) e põe o Claude Code para escrever a receita (até 45 min). Responde 202; o pedido termina quando o trabalho entra na fila, e o celular avisa quando a receita fica pronta |
-| `receita.lista` | — | Cada receita: `estado` (`pronta`, `estudando`, `falhou`, `parou`), `titulo`, `origem`, `resumo`, `tags`, `paleta`, `fontes`, `trabalho` e `erro` |
+| `receita.estudar` | `url` (o site) OU `arquivo` (o caminho do programa, como chegou a você: `/opt/data/...`), `imagens?` (até 6 prints que o dono mandou, os caminhos), `nome?` (sem ele, vem do site ou do arquivo: linear.app vira `linear-app`), `foco?` (o que olhar com mais atenção: "o menu", "as animações do topo"), `refazer?`, `conta?`, `modelo?`, `esforco?` | Coleta o site (de 30 s a 2 min) ou copia o programa, e põe o Claude Code para escrever a receita (até 45 min). Responde 202; o pedido termina quando o trabalho entra na fila, e o celular avisa quando a receita fica pronta |
+| `receita.lista` | — | Cada receita: `estado` (`pronta`, `estudando`, `falhou`, `parou`), `de` (`site` ou `programa`), `titulo`, `origem`, `resumo`, `tags`, `paleta`, `fontes`, `trabalho` e `erro` |
 | `receita.ver` | `nome` | A receita inteira (`texto` = o RECEITA.md, `design` = o DESIGN.md) e os prints |
 | `receita.procurar` | `texto` (palavras do estilo: "escuro minimalista", "serifa") | As receitas que combinam, com um trecho |
 | `receita.apagar` | `nome` | Apaga a receita, sem volta (pede o celular); o estudo no lab fica |
 
 - "Gostei do estilo de X": `receita.estudar` com a `url`. Responda que começou e quanto leva; não
-  espere: o celular avisa. Erro 409 "já existe": pergunte se ele quer refazer (`refazer: true`) ou
+  espere: o celular avisa.
+- Um programa ("estuda o estilo desse app" com um arquivo, ou um arquivo que ele mandou antes):
+  `receita.estudar` com `arquivo` (o caminho que veio na mensagem) e, se ele mandou prints do programa
+  junto ou logo antes, `imagens` com os caminhos deles. Sem prints, a receita sai só dos recursos do
+  programa: sugira que ele mande uns prints da tela, que melhoram muito o resultado. Estudar programa
+  de outra pessoa pode ser proibido pela licença dele; se parecer o caso, lembre o dono numa linha. Erro 409 "já existe": pergunte se ele quer refazer (`refazer: true`) ou
   usar a que já existe. Erro 400 de endereço: peça o endereço certo (o coletor só abre sites da
   internet, nunca da rede de casa).
 - "Faz o projeto Y no estilo de X" ou "com aquela receita": ache a receita (`receita.procurar` ou

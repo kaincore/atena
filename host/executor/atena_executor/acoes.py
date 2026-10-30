@@ -129,17 +129,19 @@ ACOES = {
     "app.lista":         Acao(acao_app_lista, "projetos do lab: app no ar, endereço, código, dados guardados, o que "
                               "está em andamento e a lixeira", None, CONSULTA, PA, LAB),
     # receitas (módulo lab): o estilo de um site, estudado pelo Claude Code, para usar nos projetos
-    "receita.estudar":   Acao(acao_receita_estudar, "estuda o estilo de um site: o coletor abre a página (só internet, "
-                              "sem IA) e o Claude Code escreve a receita (url, nome?, foco? = o que olhar com mais "
-                              "atenção, refazer?, conta?, modelo?, esforco?)", preparar_receita_estudar, MUDA, PA, LAB),
+    "receita.estudar":   Acao(acao_receita_estudar, "estuda o estilo de um site ou de um programa e o Claude Code escreve "
+                              "a receita (url = o site, que o coletor abre só pela internet e sem IA, OU arquivo = um "
+                              "programa no servidor, como o que o dono mandou: APK, .exe, AppImage, Electron; imagens? "
+                              "= até 6 prints que o dono mandou; nome?, foco? = o que olhar com mais atenção, refazer?, "
+                              "conta?, modelo?, esforco?)", preparar_receita_estudar, MUDA, PA, LAB),
     "receita.lista":     Acao(acao_receita_lista, "as receitas de estilo: prontas, em estudo e as que falharam, com "
                               "paleta, fontes e resumo", None, CONSULTA, PA, LAB),
     "receita.ver":       Acao(acao_receita_ver, "uma receita inteira: o RECEITA.md, o DESIGN.md e os prints (nome)",
                               None, CONSULTA, PA, LAB),
     "receita.procurar":  Acao(acao_receita_procurar, "procura receitas por palavras do estilo (texto; ex.: escuro "
                               "minimalista, serifa)", None, CONSULTA, PA, LAB),
-    "receita.print":     Acao(acao_receita_print, "um print do site de uma receita, em base64 (nome, print: pc.jpg, "
-                              "pc-escuro.jpg, tablet.jpg, celular.jpg, pc-inteira.jpg ou celular-inteira.jpg)",
+    "receita.print":     Acao(acao_receita_print, "um print de uma receita, em base64 (nome, print = um dos prints de "
+                              "receita.lista: pc.jpg, celular.jpg... ou tela-<n> dos que o dono mandou)",
                               None, CONSULTA, P, LAB),
     "receita.apagar":    Acao(acao_receita_apagar, "apaga uma receita do índice e da pasta, sem volta; o estudo no lab "
                               "fica (nome)", preparar_receita_apagar, DESTRUTIVO, PA, LAB),

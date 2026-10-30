@@ -1,15 +1,20 @@
-"""Receitas (módulo lab): o estilo de um site, estudado pelo Claude Code e guardado para usar nos projetos.
+"""Receitas (módulo lab): o estilo de um site ou de um programa, estudado pelo Claude Code e guardado para
+usar nos projetos.
 
-receita.estudar abre o site no coletor (a imagem atena/coletor: um Chromium sem tela, sem IA, num
+receita.estudar com url abre o site no coletor (a imagem atena/coletor: um Chromium sem tela, sem IA, num
 container de uma vez na rede lab-coletor, que alcança a internet e não a rede de casa nem o servidor) e
-grava a coleta em /srv/lab/projetos/receita-<nome>/coleta. Depois põe o Claude Code para ler a coleta
-com a skill receita (o impeccable document e o REA, sem rede) e escrever o RECEITA.md e o receita.json.
+grava a coleta em /srv/lab/projetos/receita-<nome>/coleta. Com arquivo (um programa que o dono mandou:
+APK, .exe, AppImage, app Electron...), copia o arquivo para alvo/ no mesmo projeto; com imagens, os
+prints que o dono mandou vão para telas/. Depois põe o Claude Code para ler tudo com a skill receita (o
+impeccable document, o REA e os descompiladores do lab, sem rede e sem rodar o programa) e escrever o
+RECEITA.md e o receita.json.
 Quando o trabalho termina bem, a receita vai para /srv/lab/receitas/<nome> e para o índice (SQLite com
 busca por texto) que o painel e a Atena consultam; claude.tarefa com receitas=[...] leva receitas para
 um projeto. Os arquivos são a receita de verdade: o índice se refaz a partir deles (indexar)."""
 
 import base64
 import grp
+import hashlib
 import ipaddress
 import json
 import os
@@ -23,13 +28,15 @@ import subprocess
 import threading
 import time
 import urllib.parse
+import zipfile
 
+from .arquivos import caminho_do_cliente, fora_da_zona, pastas_de_entrega
 from .base import Cancelado, Erro, ler_conf, log, rodar
 from .celular import avisar
 from .claude import contas_claude, contas_prontas, lab_instalado, preparar_claude_tarefa, skills_claude
 from .lab import CANCELAR, PROJETOS_LAB
 from .pedidos import ESTADO, TERMINADOS, TRAVA, criar_pedido, executar, mudar
-from .segredos import ocultar
+from .segredos import caminho_legivel, ocultar, recusar_banco
 
 
 RECEITAS = "/srv/lab/receitas"                         # uma pasta por receita pronta (só o executor escreve)
@@ -43,7 +50,11 @@ NOME_RECEITA = re.compile(r"[a-z0-9][a-z0-9-]{0,30}")  # receita-<nome> cabe nos
 LIMITE_TEXTO = 200 * 1024                              # RECEITA.md e DESIGN.md
 LIMITE_DADOS = 64 * 1024                               # receita.json
 LIMITE_PRINT = 3 * 1024 * 1024
+LIMITE_ALVO = 1024 ** 3                                # o programa estudado (o Ghidra com mais que isso não dá)
+MAX_IMAGENS = 6                                        # prints que o dono manda junto (telas/tela-<n>)
 PRINTS = ("pc.jpg", "pc-escuro.jpg", "tablet.jpg", "celular.jpg", "pc-inteira.jpg", "celular-inteira.jpg")
+PRINT = re.compile(r"(pc|pc-escuro|tablet|celular|pc-inteira|celular-inteira)\.jpg|tela-[1-6]\.(jpg|png)")
+JPEG, PNG = b"\xff\xd8\xff", b"\x89PNG\r\n\x1a\n"
 MAX_RECEITAS_PROJETO = 3                               # claude.tarefa com receitas=[...]
 ESTUDANDO = {}                                         # nome → pedido de receita.estudar coletando agora
 TRAVA_INDICE = threading.Lock()
@@ -94,6 +105,87 @@ def nome_do_site(url):
     """linear.app → linear-app; www.exemplo.com.br → exemplo-com-br."""
     host = re.sub(r"^www\d?\.", "", urllib.parse.urlsplit(url).hostname or "")
     return re.sub(r"[^a-z0-9]+", "-", host).strip("-")[:31].strip("-") or "site"
+
+
+def nome_do_arquivo(caminho):
+    """Linear-1.2.AppImage → linear-1-2; app-release.apk → app-release."""
+    base = os.path.basename(caminho).lower()
+    base = re.sub(r"\.(apk|aab|exe|msi|dll|appimage|asar|zip|jar|ipa|dmg|deb|wasm|bin|so|dylib)$", "", base)
+    return re.sub(r"[^a-z0-9]+", "-", base).strip("-")[:31].strip("-") or "programa"
+
+
+def arquivo_legivel(cliente, caminho, limite):
+    """Um arquivo das pastas de entrega (os documentos do dono, os projetos do lab e o espaço da Atena, onde
+    chega o que ele manda pelo Telegram), sem segredos nem bancos, até o limite. A Atena pode mandar o
+    caminho como ela vê (/opt/data/...)."""
+    real = caminho_legivel(caminho_do_cliente(caminho))
+    if fora_da_zona(cliente, real):
+        raise Erro(403, "arquivos de clientes (zona prod) estão fora do seu alcance")
+    pastas = list(dict.fromkeys([*pastas_de_entrega(), os.path.realpath(PROJETOS_LAB)]))   # refazer lê do estudo
+    if not any(real == p or real.startswith(p + "/") for p in pastas):
+        raise Erro(403, "o arquivo precisa estar numa das pastas de entrega: " + ", ".join(pastas))
+    if not os.path.isfile(real):
+        raise Erro(404, f"não achei o arquivo {caminho}")
+    recusar_banco(real)
+    tamanho = os.path.getsize(real)
+    if tamanho > limite:
+        raise Erro(413, f"{os.path.basename(real)} tem {tamanho // 1024 ** 2} MB; o limite é {limite // 1024 ** 2} MB")
+    return real
+
+
+def imagens_validas(cliente, imagens):
+    """Os prints que o dono mandou junto: até 6 JPEG ou PNG de verdade."""
+    if imagens is None:
+        return []
+    if not isinstance(imagens, list) or len(imagens) > MAX_IMAGENS:
+        raise Erro(400, f"imagens deve ser uma lista de até {MAX_IMAGENS} caminhos de prints (JPEG ou PNG)")
+    reais = []
+    for imagem in imagens:
+        real = arquivo_legivel(cliente, imagem, LIMITE_PRINT)
+        with open(real, "rb") as f:
+            cabeca = f.read(8)
+        if not cabeca.startswith((JPEG, PNG)):
+            raise Erro(400, f"{os.path.basename(real)} não é JPEG nem PNG")
+        reais.append(real)
+    return list(dict.fromkeys(reais))
+
+
+def tipo_do_arquivo(caminho):
+    """O que o programa é, pelos primeiros bytes (e pelo índice, num ZIP): diz ao Claude Code por onde começar."""
+    with open(caminho, "rb") as f:
+        cabeca = f.read(4096)
+    if cabeca.startswith(b"\x7fELF"):
+        return "AppImage (Linux)" if cabeca[8:11] == b"AI\x02" else "ELF (Linux)"
+    if cabeca.startswith(b"MZ"):
+        return "PE (Windows: .exe ou .dll)"
+    if cabeca[:4] in (b"\xfe\xed\xfa\xce", b"\xfe\xed\xfa\xcf", b"\xce\xfa\xed\xfe", b"\xcf\xfa\xed\xfe"):
+        return "Mach-O (macOS)"
+    if cabeca[:4] == b"\xca\xfe\xba\xbe":
+        return "Mach-O universal ou classe Java"
+    if cabeca.startswith(b"dex\n"):
+        return "DEX (Android)"
+    if cabeca.startswith(b"\0asm"):
+        return "WebAssembly"
+    if cabeca[:4] == b"\x04\x00\x00\x00" and b'{"files"' in cabeca[:64]:
+        return "ASAR (Electron)"
+    if cabeca.startswith(b"PK\x03\x04"):
+        try:
+            with zipfile.ZipFile(caminho) as z:
+                nomes = z.namelist()[:50000]
+        except (zipfile.BadZipFile, OSError):
+            return "ZIP"
+        if "AndroidManifest.xml" in nomes:
+            return "APK (Android)"
+        if "BundleConfig.pb" in nomes:
+            return "AAB (Android)"
+        if any(n.startswith("Payload/") and n.endswith(".app/Info.plist") for n in nomes):
+            return "IPA (iOS)"
+        if any(n.endswith(".asar") for n in nomes):
+            return "ZIP com um app Electron (.asar)"
+        if "META-INF/MANIFEST.MF" in nomes:
+            return "JAR (Java)"
+        return "ZIP"
+    return "desconhecido"
 
 
 def nome_valido(nome):
@@ -268,9 +360,18 @@ def coletor_instalado():
 
 def pedido_da_receita(params, coleta):
     """O pedido ao Claude Code; o como (os arquivos, o formato, as regras) está na skill receita."""
-    texto = (f"Estude o estilo do site {params['url']} e escreva a receita {params['nome']}.\n"
-             f"A coleta do site já está em coleta/ (título da página: {coleta.get('titulo') or '?'}; "
-             f"{coleta.get('arquivos', 0)} arquivos). Você não tem rede para o site: trabalhe só com a coleta.")
+    if params.get("arquivo"):
+        texto = (f"Estude o software {coleta.get('arquivo') or os.path.basename(params['arquivo'])} "
+                 f"({coleta.get('tipo') or '?'}, {max(1, coleta.get('kb', 0) // 1024)} MB) e escreva a receita "
+                 f"{params['nome']}.\nO arquivo está em alvo/ (o alvo.json diz o tipo e o SHA-256). Não rode o "
+                 "programa: leia e analise, com o REA e os descompiladores do lab. Você não tem rede.")
+    else:
+        texto = (f"Estude o estilo do site {params['url']} e escreva a receita {params['nome']}.\n"
+                 f"A coleta do site já está em coleta/ (título da página: {coleta.get('titulo') or '?'}; "
+                 f"{coleta.get('arquivos', 0)} arquivos). Você não tem rede para o site: trabalhe só com a coleta.")
+    if params.get("imagens"):
+        texto += (f"\nO dono mandou {len(params['imagens'])} print(s) em telas/: são a referência principal do "
+                  "visual.")
     if params.get("foco"):
         texto += f"\nO dono quer atenção especial em: {params['foco']}"
     return texto
@@ -282,8 +383,17 @@ def preparar_receita_estudar(cliente, params):
     if "receita" not in skills_claude():
         raise Erro(503, "a skill receita não está ligada neste servidor (ATENA_CLAUDE_SKILLS=sim e "
                         "sudo ./install.sh --lab)")
-    params["url"] = endereco_publico(params.get("url"))
-    params["nome"] = nome_valido(params.get("nome") or nome_do_site(params["url"]))
+    if (params.get("url") is None) == (params.get("arquivo") is None):
+        raise Erro(400, "diga url (um site) ou arquivo (um programa no servidor, como o que o dono mandou), "
+                        "um dos dois")
+    if params.get("url") is not None:
+        params["url"] = endereco_publico(params["url"])
+        base = nome_do_site(params["url"])
+    else:
+        params["arquivo"] = arquivo_legivel(cliente, params["arquivo"], LIMITE_ALVO)
+        base = nome_do_arquivo(params["arquivo"])
+    params["imagens"] = imagens_validas(cliente, params.get("imagens"))
+    params["nome"] = nome_valido(params.get("nome") or base)
     params["projeto"] = PREFIXO + params["nome"]   # app.cancelar <projeto> para a coleta no meio
     foco = params.get("foco")
     if foco is not None and (not isinstance(foco, str) or len(foco.strip()) > 500):
@@ -298,7 +408,7 @@ def preparar_receita_estudar(cliente, params):
     with TRAVA:
         if nome in ESTUDANDO:
             raise Erro(409, f"a receita {nome} já está sendo coletada (pedido {ESTUDANDO[nome]})")
-    if not coletor_instalado():
+    if params.get("url") and not coletor_instalado():
         raise Erro(503, f"o coletor ({COLETOR}) não está neste servidor; rode sudo ./install.sh --lab")
     if not params.get("conta"):   # sem escolha: a do atena.conf (ATENA_RECEITAS_CONTA) ou a primeira com login
         params["conta"] = (ler_conf().get("ATENA_RECEITAS_CONTA")
@@ -307,12 +417,18 @@ def preparar_receita_estudar(cliente, params):
     teste = {**params_do_trabalho(params, {}), "pedido": "conferência"}
     preparar_claude_tarefa(cliente, teste)
     params["conta"] = teste["conta"]
-    host = urllib.parse.urlsplit(params["url"]).hostname
-    texto = (f"O coletor abre {params['url']} (só internet, sem IA) e o Claude Code ({params['conta']}) escreve a "
-             f"receita {nome}, que fica em {RECEITAS}/{nome}.")
+    if params.get("url"):
+        origem = urllib.parse.urlsplit(params["url"]).hostname
+        texto = f"O coletor abre {params['url']} (só internet, sem IA)"
+    else:
+        origem = os.path.basename(params["arquivo"])
+        texto = f"O programa {params['arquivo']} vai para o projeto (o Claude Code lê, sem rodar)"
+    texto += f" e o Claude Code ({params['conta']}) escreve a receita {nome}, que fica em {RECEITAS}/{nome}."
+    if params["imagens"]:
+        texto += f"\nPrints junto: {len(params['imagens'])}"
     if params["foco"]:
         texto += f"\nFoco: {params['foco']}"
-    return f"Receita {nome}: estudar o estilo de {host}", texto
+    return f"Receita {nome}: estudar o estilo de {origem}", texto
 
 
 def params_do_trabalho(params, coleta):
@@ -335,13 +451,19 @@ def estudar(p):
     params = p["params"]
     nome = params["nome"]
     try:
-        mudar(p, etapa="coletando")
-        coleta = coletar(params["url"], nome)
+        if params.get("url"):
+            mudar(p, etapa="coletando")
+            coleta = coletar(params["url"], nome)
+        else:
+            mudar(p, etapa="copiando")
+            coleta = copiar_alvo(params["arquivo"], nome)
+        if params.get("imagens"):
+            copiar_telas(params["imagens"], nome)
         mudar(p, etapa="escrevendo", coleta=coleta)
         anterior = next(iter(linhas_do_indice([nome])), None)
         trabalho = pedir_ao_claude(p, coleta)   # o índice já marca a receita (receita_comecou)
         gravar_no_indice(nome, titulo=(anterior or {}).get("titulo") or coleta.get("titulo") or nome,
-                         origem=params["url"], pedido=p["id"])
+                         origem=params.get("url") or coleta["origem"], pedido=p["id"])
         mudar(p, estado="concluido", resultado={
             "receita": nome, "trabalho": trabalho["id"], "coleta": coleta,
             "dica": "o Claude Code está escrevendo a receita; o celular avisa quando ela ficar pronta"})
@@ -368,16 +490,76 @@ def grupo_lab():
         return os.getgid()
 
 
-def coletar(url, nome):
-    """Roda o coletor e devolve o resumo da coleta. O container escreve como o executor, no grupo
-    atena-lab: o Claude Code lê a coleta, mas não a muda."""
-    projeto = PREFIXO + nome
-    pasta = f"{PROJETOS_LAB}/{projeto}"
+def pasta_do_estudo(nome):
+    """/srv/lab/projetos/receita-<nome>: o executor põe ali o que o Claude Code vai ler (coleta/, alvo/,
+    telas/: só leitura para ele), e o Claude Code escreve a receita."""
+    pasta = f"{PROJETOS_LAB}/{PREFIXO}{nome}"
     os.makedirs(pasta, exist_ok=True)
     if os.path.islink(pasta) or not os.path.isdir(pasta):
         raise Erro(409, f"{pasta} não é uma pasta")
     if os.stat(pasta).st_uid == os.getuid():
         os.chmod(pasta, 0o2775)   # o Claude Code (grupo atena-lab) escreve a receita aqui
+    return pasta
+
+
+def trocar_pasta(pasta, nome, nova):
+    """Põe a pasta nova (já pronta) no lugar de <pasta>/<nome>; a velha (de um refazer) sai depois."""
+    destino = f"{pasta}/{nome}"
+    if os.path.lexists(destino):
+        velha = f"{pasta}/.{nome}-{secrets.token_hex(3)}"
+        os.rename(destino, velha)
+        shutil.rmtree(velha, ignore_errors=True)
+    os.rename(nova, destino)
+
+
+def copiar_alvo(real, nome):
+    """Copia o programa para alvo/ no projeto do estudo, com o alvo.json (o tipo e o SHA-256)."""
+    pasta = pasta_do_estudo(nome)
+    base = re.sub(r"[^\w.-]", "_", os.path.basename(real))[-100:].lstrip(".") or "programa"
+    nova = f"{pasta}/.alvo-novo-{secrets.token_hex(3)}"
+    os.mkdir(nova, 0o2755)
+    try:
+        resumo = hashlib.sha256()
+        with open(real, "rb") as origem, open(os.open(f"{nova}/{base}", os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644), "wb") as copia:
+            while bloco := origem.read(1024 * 1024):
+                resumo.update(bloco)
+                copia.write(bloco)
+        tamanho = os.path.getsize(f"{nova}/{base}")
+        alvo = {"arquivo": base, "tipo": tipo_do_arquivo(f"{nova}/{base}"), "tamanho": tamanho,
+                "sha256": resumo.hexdigest(), "de": real}
+        with open(os.open(f"{nova}/alvo.json", os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644), "w") as f:
+            json.dump(alvo, f, ensure_ascii=False, indent=2)
+        trocar_pasta(pasta, "alvo", nova)
+    except BaseException:
+        shutil.rmtree(nova, ignore_errors=True)
+        raise
+    return {"titulo": base, "arquivo": base, "tipo": alvo["tipo"], "kb": tamanho // 1024, "sha256": alvo["sha256"],
+            "origem": f"{pasta}/alvo/{base}"}
+
+
+def copiar_telas(imagens, nome):
+    """Os prints que o dono mandou vão para telas/tela-<n>.<jpg|png> no projeto do estudo."""
+    pasta = pasta_do_estudo(nome)
+    nova = f"{pasta}/.telas-novas-{secrets.token_hex(3)}"
+    os.mkdir(nova, 0o2755)
+    try:
+        for n, real in enumerate(imagens, 1):
+            with open(real, "rb") as origem:
+                dados = origem.read(LIMITE_PRINT + 1)[:LIMITE_PRINT]
+            extensao = "png" if dados.startswith(PNG) else "jpg"
+            with open(os.open(f"{nova}/tela-{n}.{extensao}", os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644), "wb") as f:
+                f.write(dados)
+        trocar_pasta(pasta, "telas", nova)
+    except BaseException:
+        shutil.rmtree(nova, ignore_errors=True)
+        raise
+
+
+def coletar(url, nome):
+    """Roda o coletor e devolve o resumo da coleta. O container escreve como o executor, no grupo
+    atena-lab: o Claude Code lê a coleta, mas não a muda."""
+    projeto = PREFIXO + nome
+    pasta = pasta_do_estudo(nome)
     destino = f"{pasta}/coleta"
     if os.path.lexists(destino):   # refazer: a coleta velha sai do caminho (a receita pronta fica até a nova)
         velha = f"{pasta}/.coleta-{time.strftime('%Y%m%d-%H%M%S')}"
@@ -489,12 +671,14 @@ def guardar_receita(nome, trabalho):
             {**dados, "nome": nome, "origem": origem, "trabalho": trabalho["id"],
              "feita": time.strftime("%Y-%m-%d %H:%M")}, ensure_ascii=False, indent=2) + "\n")
         os.mkdir(f"{nova}/prints", 0o2750)
-        for arquivo in PRINTS:
+        candidatos = [(("coleta", "prints", a), a) for a in PRINTS]
+        candidatos += [(("telas", f"tela-{n}.{e}"), f"tela-{n}.{e}") for n in range(1, MAX_IMAGENS + 1) for e in ("jpg", "png")]
+        for partes, arquivo in candidatos:
             try:
-                imagem = ler_bytes(projeto, "coleta", "prints", arquivo, limite=LIMITE_PRINT)
+                imagem = ler_bytes(projeto, *partes, limite=LIMITE_PRINT)
             except Erro:
                 continue
-            if imagem[:3] == b"\xff\xd8\xff":   # JPEG de verdade
+            if imagem.startswith(PNG if arquivo.endswith(".png") else JPEG):   # imagem de verdade
                 escrever(f"{nova}/prints/{arquivo}", imagem)
         atual = f"{RECEITAS}/{nome}"
         velha = f"{RECEITAS}/.{nome}.velha-{secrets.token_hex(3)}"
@@ -529,13 +713,19 @@ def estado_de(linha):
 
 
 def prints_de(nome):
+    """Os prints da receita: os do coletor, na ordem de PRINTS, e depois os que o dono mandou."""
     pasta = f"{RECEITAS}/{nome}/prints"
-    return [p for p in PRINTS if os.path.isfile(f"{pasta}/{p}") and not os.path.islink(f"{pasta}/{p}")]
+    try:
+        nomes = [n for n in os.listdir(pasta) if PRINT.fullmatch(n) and not os.path.islink(f"{pasta}/{n}")]
+    except OSError:
+        return []
+    return sorted(nomes, key=lambda n: (PRINTS.index(n) if n in PRINTS else len(PRINTS), n))
 
 
 def publica(linha):
     estado, erro = estado_de(linha)
     return {"nome": linha["nome"], "titulo": linha["titulo"], "origem": linha["origem"], "estado": estado,
+            "de": "site" if str(linha["origem"] or "").startswith("http") else "programa",
             "resumo": linha["resumo"], "tags": json.loads(linha["tags"] or "[]"),
             "paleta": json.loads(linha["paleta"] or "[]"), "fontes": json.loads(linha["fontes"] or "[]"),
             "trabalho": linha["trabalho"], "erro": erro, "criada": linha["criada"], "atualizada": linha["atualizada"],
@@ -597,10 +787,11 @@ def acao_receita_procurar(cliente, params):
 def acao_receita_print(cliente, params):
     nome, arquivo = params.get("nome"), params.get("print")
     receita_pronta(nome)
-    if arquivo not in PRINTS:
-        raise Erro(400, "print deve ser " + ", ".join(PRINTS))
+    if not isinstance(arquivo, str) or not PRINT.fullmatch(arquivo):
+        raise Erro(400, "print deve ser um dos prints de receita.lista (ex.: pc.jpg, celular.jpg, tela-1.png)")
     imagem = ler_bytes(f"{RECEITAS}/{nome}", "prints", arquivo, limite=LIMITE_PRINT)
-    return {"nome": nome, "print": arquivo, "tipo": "image/jpeg", "base64": base64.b64encode(imagem).decode()}
+    tipo = "image/png" if imagem.startswith(PNG) else "image/jpeg"
+    return {"nome": nome, "print": arquivo, "tipo": tipo, "base64": base64.b64encode(imagem).decode()}
 
 
 def preparar_receita_apagar(cliente, params):

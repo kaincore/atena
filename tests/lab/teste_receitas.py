@@ -285,6 +285,85 @@ con = sqlite3.connect(ex.INDICE_RECEITAS)
 confere("o índice tem a busca por texto (FTS5)", con.execute("SELECT 1 FROM sqlite_master WHERE name = 'busca'").fetchone())
 con.close()
 
+# --- um programa (o que o dono mandou pelo Telegram), com prints dele -----------------------------------
+import zipfile  # noqa: E402
+
+hermes, fora = f"{tmp}/hermes", f"{tmp}/fora"
+for d in (f"{hermes}/cache/documents", fora):
+    os.makedirs(d)
+with open(ex.CONF, "a") as f:
+    f.write(f"ATENA_PASTAS_ENTREGA={hermes}\n")
+ex.ESPACO_HERMES = ("/opt/data", hermes)
+apk = f"{hermes}/cache/documents/Notas-2.1.apk"
+with zipfile.ZipFile(apk, "w") as z:
+    z.writestr("AndroidManifest.xml", "manifesto")
+    z.writestr("res/values/colors.xml", "<resources/>")
+PNGB = b"\x89PNG\r\n\x1a\n" + b"0" * 500
+for nome, dados in (("tela1.png", PNGB), ("tela2.jpg", JPEG), ("nota.txt", b"texto")):
+    with open(f"{hermes}/cache/documents/{nome}", "wb") as f:
+        f.write(dados)
+with open(f"{fora}/app.apk", "wb") as f:
+    f.write(b"PK\x03\x04")
+with open(f"{hermes}/cache/documents/banco.bin", "wb") as f:
+    f.write(b"SQLite format 3\x00" + b"0" * 100)
+for params, status, motivo in (({}, 400, "sem url nem arquivo"), ({"url": "linear.app", "arquivo": apk}, 400, "os dois"),
+                               ({"arquivo": f"{fora}/app.apk"}, 403, "fora das pastas de entrega"),
+                               ({"arquivo": "/opt/data/cache/documents/banco.bin"}, 403, "um banco de dados"),
+                               ({"arquivo": "/opt/data/cache/documents/nao.apk"}, 404, "que não existe"),
+                               ({"arquivo": apk, "imagens": ["/opt/data/cache/documents/nota.txt"]}, 400, "imagem que não é imagem"),
+                               ({"arquivo": apk, "imagens": [f"{hermes}/cache/documents/tela1.png"] * 7}, 400, "imagens demais")):
+    confere(f"receita de programa recusa: {motivo}", erro(ex, ex.preparar_receita_estudar, cliente, params)[0] == status,
+            erro(ex, ex.preparar_receita_estudar, cliente, params))
+ex.LIMITE_ALVO = 10
+confere("programa grande demais: 413", erro(ex, ex.preparar_receita_estudar, cliente, {"arquivo": apk})[0] == 413)
+ex.LIMITE_ALVO = 1024 ** 3
+COLETOR_EXISTE["sim"] = False   # o programa não precisa do coletor
+docker.clear()
+p7 = estudar({"arquivo": "/opt/data/cache/documents/Notas-2.1.apk", "foco": "o tema escuro",
+              "imagens": ["/opt/data/cache/documents/tela1.png", f"{hermes}/cache/documents/tela2.jpg"]})
+COLETOR_EXISTE["sim"] = True
+confere("receita de programa: o nome vem do arquivo e o coletor não roda",
+        p7["estado"] == "concluido" and p7["params"]["nome"] == "notas-2-1" and not [a for a in docker if a[:2] == ["docker", "run"]],
+        p7.get("erro"))
+estudo = f"{ex.PROJETOS_LAB}/receita-notas-2-1"
+alvo = json.load(open(f"{estudo}/alvo/alvo.json"))
+confere("o programa foi para alvo/, com o tipo e o SHA-256", os.path.isfile(f"{estudo}/alvo/Notas-2.1.apk")
+        and alvo["tipo"] == "APK (Android)" and len(alvo["sha256"]) == 64 and alvo["de"] == apk, alvo)
+confere("os prints do dono foram para telas/", sorted(os.listdir(f"{estudo}/telas")) == ["tela-1.png", "tela-2.jpg"])
+t7 = trabalho_de(p7)
+pedido = json.load(open(f"{tmp}/fila/{t7['id']}.executar.json"))["pedido"]
+confere("o pedido diz o programa, o tipo, não rodar, os prints e o foco",
+        "Notas-2.1.apk" in pedido and "APK (Android)" in pedido and "Não rode" in pedido and "telas/" in pedido
+        and "o tema escuro" in pedido, pedido)
+escrever(f"{estudo}/RECEITA.md", RECEITA)
+escrever(f"{estudo}/receita.json", json.dumps({"titulo": "Notas: tema escuro", "resumo": "Material, escuro."}))
+terminar(t7)
+linha = next(x for x in ex.acao_receita_lista(cliente, {})["receitas"] if x["nome"] == "notas-2-1")
+confere("receita de programa pronta, com os prints do dono e a origem no estudo",
+        linha["estado"] == "pronta" and linha["de"] == "programa" and linha["prints"] == ["tela-1.png", "tela-2.jpg"]
+        and linha["origem"] == f"{estudo}/alvo/Notas-2.1.apk", linha)
+confere("receita.print de um PNG do dono", ex.acao_receita_print(cliente, {"nome": "notas-2-1", "print": "tela-1.png"})["tipo"] == "image/png")
+p8 = estudar({"arquivo": linha["origem"], "nome": "notas-2-1", "refazer": True})
+confere("refazer a partir da cópia no estudo (o alvo velho é a origem)", p8["estado"] == "concluido"
+        and os.path.isfile(f"{estudo}/alvo/Notas-2.1.apk") and not [n for n in os.listdir(estudo) if n.startswith(".alvo")], p8.get("erro"))
+confere("refazer sem imagens não apaga as telas de antes", os.path.isdir(f"{estudo}/telas"))
+terminar(trabalho_de(p8))
+
+# o tipo do programa, pelos primeiros bytes
+amostras = {"elf": (b"\x7fELF\x02\x01\x01" + b"\0" * 60, "ELF (Linux)"),
+            "appimage": (b"\x7fELF\x02\x01\x01\0AI\x02" + b"\0" * 60, "AppImage (Linux)"),
+            "exe": (b"MZ" + b"\0" * 60, "PE (Windows: .exe ou .dll)"),
+            "asar": (b'\x04\x00\x00\x00\x10\x00\x00\x00{"files":{}}', "ASAR (Electron)"),
+            "nada": (b"oi", "desconhecido")}
+for nome, (dados, esperado) in amostras.items():
+    with open(f"{tmp}/{nome}", "wb") as f:
+        f.write(dados)
+    confere(f"tipo do programa: {esperado}", ex.tipo_do_arquivo(f"{tmp}/{nome}") == esperado, ex.tipo_do_arquivo(f"{tmp}/{nome}"))
+with zipfile.ZipFile(f"{tmp}/app.zip", "w") as z:
+    z.writestr("App/resources/app.asar", "x")
+confere("tipo do programa: ZIP com Electron", ex.tipo_do_arquivo(f"{tmp}/app.zip") == "ZIP com um app Electron (.asar)")
+confere("nome do arquivo: sem a extensão", ex.nome_do_arquivo("/x/Linear-1.2.AppImage") == "linear-1-2")
+
 # --- a imagem do coletor: a mesma no executor, no instalador e no Dockerfile do repositório ---------------
 with open(os.path.join(RAIZ, "install", "88-lab.sh")) as f:
     confere("o instalador constrói a mesma imagem que o executor roda", f"COLETOR={ex.COLETOR} " in f.read())
