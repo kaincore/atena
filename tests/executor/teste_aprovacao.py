@@ -1,4 +1,8 @@
-"""Aprovação no celular: pedido, botões, aprovar, recusar, expirar e os limites."""
+"""Aprovação no celular: pedido, botões, aprovar, recusar, expirar, os limites e o estado em disco
+(inclusive um pedidos.json ilegível)."""
+import glob
+import os
+import re
 import threading
 import time
 
@@ -146,6 +150,45 @@ confere("stack que não existe: 404 antes de incomodar o celular", status == 404
 ex.ESTADO["pedidos"].clear()
 ex.carregar_estado()
 confere("os pedidos sobrevivem a um reinício do executor", len(ex.ESTADO["pedidos"]) > 5)
+
+# --- pedidos.json ilegível: guarda o arquivo ao lado, registra e avisa o dono (quando o ntfy deixar) ---
+LOGS = []
+ex.log = lambda **campos: LOGS.append(campos)
+ex.REPETIR_AVISO = 0.05
+for nome, conteudo in [("JSON cortado (queda de energia)", '{"pedidos": {"ab12cd34": {"id": "ab'),
+                       ("JSON de outro formato", '{"pedidos": [1, 2]}')]:
+    for velho in glob.glob(ex.PEDIDOS + ".*"):
+        os.remove(velho)
+    with open(ex.PEDIDOS, "w") as f:
+        f.write(conteudo)
+    NTFY["no_ar"] = False   # ao subir, o ntfy (um container) pode ainda não estar no ar
+    ENVIADOS.clear()
+    LOGS.clear()
+    ex.ESTADO["pedidos"].clear()
+    ex.carregar_estado()
+    copias = glob.glob(ex.PEDIDOS + ".*")
+    with open(copias[0] if copias else os.devnull) as f:
+        guardado = f.read()
+    confere(f"{nome}: o arquivo ruim fica guardado ao lado, com a data no nome", len(copias) == 1
+            and re.search(r"\.ilegivel-\d{8}-\d{6}$", copias[0]) and guardado == conteudo, copias)
+    confere(f"{nome}: o executor começa vazio", ex.ESTADO["pedidos"] == {})
+    confere(f"{nome}: registrado no log, com o erro e a cópia", any(c.get("erro") and copias and c.get("copia") == copias[0]
+                                                                    for c in LOGS), LOGS)
+    time.sleep(0.3)
+    confere(f"{nome}: com o ntfy fora do ar, o aviso espera", ENVIADOS == [], ENVIADOS)
+    NTFY["no_ar"] = True
+    limite = time.time() + 5
+    while not ENVIADOS and time.time() < limite:
+        time.sleep(0.05)
+    confere(f"{nome}: o ntfy voltou, o dono é avisado com o caminho da cópia",
+            len(ENVIADOS) == 1 and copias and copias[0] in ENVIADOS[0]["texto"], ENVIADOS)
+for velho in glob.glob(ex.PEDIDOS + "*"):
+    os.remove(velho)
+ENVIADOS.clear()
+ex.carregar_estado()
+time.sleep(0.3)
+confere("sem pedidos.json (a primeira vez): começa vazio, sem cópia nem aviso",
+        ex.ESTADO["pedidos"] == {} and not glob.glob(ex.PEDIDOS + "*") and ENVIADOS == [])
 CONF.pop("ATENA_NTFY_URL")
 confere("sem ATENA_NTFY_URL, os botões usam o IP da rede de casa", ex.endereco_ntfy() == "http://192.168.0.10:2586")
 

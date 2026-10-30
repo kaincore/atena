@@ -15,7 +15,7 @@ import urllib.error
 import urllib.request
 
 from .base import Cancelado, Erro, ler, log
-from .celular import NTFY, NTFY_TOKEN, avisar, botao, legivel, ntfy
+from .celular import NTFY, NTFY_TOKEN, avisar, avisar_quando_der, botao, legivel, ntfy
 
 
 PEDIDOS = "/var/lib/atena-executor/pedidos.json"
@@ -28,11 +28,35 @@ ESTADO = {"pedidos": {}, "ultima_resposta": None}
 
 
 def carregar_estado():
+    """Os pedidos guardados em disco. Um arquivo ilegível (cortado numa queda de energia, mexido à mão)
+    não some em silêncio: o executor começa vazio, mas guarda o arquivo ao lado e avisa o dono."""
     try:
         with open(PEDIDOS) as f:
-            ESTADO.update(json.load(f))
-    except (FileNotFoundError, ValueError):
-        pass
+            dados = json.load(f)
+        pedidos = dados.get("pedidos", {}) if isinstance(dados, dict) else None
+        if not isinstance(pedidos, dict) or not all(isinstance(p, dict) for p in pedidos.values()):
+            raise ValueError('não está no formato {"pedidos": {id: pedido}}')
+    except FileNotFoundError:   # a primeira vez
+        return
+    except ValueError as e:   # JSON quebrado (texto que não é UTF-8 também cai aqui) ou de outro formato
+        guardar_ilegivel(e)
+        return
+    ESTADO.update(dados)
+
+
+def guardar_ilegivel(erro):
+    """Move o pedidos.json ilegível para o lado, com a data no nome (mover, e não copiar: um reinício logo
+    depois não repete a cópia nem o aviso), registra e avisa o dono quando o ntfy deixar."""
+    copia = f"{PEDIDOS}.ilegivel-{time.strftime('%Y%m%d-%H%M%S')}"
+    try:
+        os.replace(PEDIDOS, copia)
+        onde = f"O arquivo ficou em {copia}: dá para conferir ou recuperar à mão (com o executor parado)."
+    except OSError as e:
+        copia, onde = None, f"Nem consegui guardar o arquivo ao lado ({e}): o próximo pedido grava por cima."
+    log(evento="pedidos.json ilegível: o executor começou sem o histórico", erro=str(erro), copia=copia)
+    avisar_quando_der("Executor: histórico de pedidos ilegível",
+                      f"O {PEDIDOS} não abriu ({erro}), e o executor começou sem os pedidos da última semana "
+                      f"(trabalhos do Claude Code em andamento também). {onde}", tags=["warning"])
 
 
 def salvar_estado():

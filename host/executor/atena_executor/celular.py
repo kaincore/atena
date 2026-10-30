@@ -1,6 +1,8 @@
 """Avisos e aprovações no celular, pelo ntfy."""
 
 import json
+import threading
+import time
 import urllib.error
 import urllib.request
 
@@ -10,6 +12,8 @@ from .base import ler, ler_conf, log
 NTFY = "http://127.0.0.1:2586"
 NTFY_TOKEN = "/etc/atena/executor/ntfy-servidor.token"         # publica pedidos, lê as respostas
 NTFY_TOKEN_BOTAO = "/etc/atena/executor/ntfy-aprovador.token"  # vai dentro dos botões do celular
+REPETIR_AVISO = 30          # s entre as tentativas de um aviso que não pode se perder
+ESPERA_AVISO = 60 * 60      # por quanto tempo ele tenta
 
 
 def ntfy(topico, titulo, texto, prioridade=3, tags=(), acoes=()):
@@ -30,6 +34,24 @@ def avisar(titulo, texto, tags=(), acoes=()):
         ntfy("aprovacoes", titulo, texto, tags=tags, acoes=acoes)
     except (OSError, urllib.error.URLError) as e:
         log(evento="ntfy fora do ar", erro=str(e))
+
+
+def avisar_quando_der(titulo, texto, tags=()):
+    """Aviso que não pode se perder: numa thread à parte, tenta de novo até o ntfy receber. É para o que
+    o executor acha ao subir: ele sobe logo depois do Docker, e o ntfy (um container) pode ainda não
+    estar no ar."""
+    def tentar():
+        limite = time.monotonic() + ESPERA_AVISO
+        while True:
+            try:
+                ntfy("aprovacoes", titulo, texto, tags=tags)
+                return
+            except (OSError, urllib.error.URLError) as e:
+                if time.monotonic() > limite:
+                    log(evento="aviso perdido: o ntfy não voltou", titulo=titulo, erro=str(e))
+                    return
+            time.sleep(REPETIR_AVISO)
+    threading.Thread(target=tentar, daemon=True).start()
 
 
 def endereco_ntfy():
