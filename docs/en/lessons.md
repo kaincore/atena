@@ -138,6 +138,8 @@ The previous account's "limit reached" notice was still in the log; if the new r
 
 **REA needs a newer Node than Ubuntu's.** `rea-agents` 6.8.0 wants 22.23.4+ or 24.22.1+, and Ubuntu 26.04 ships 22.22.1. The lab got its own Node (pinned, from nodejs.org, checked against the checksum) at the front of the worker's PATH, without touching the system one.
 
+**REA doesn't install or download the decompilers, and it checks the version.** It uses what you point it to: Ghidra through `GHIDRA_INSTALL_DIR` (with `JAVA_HOME` on a JDK 21) and JADX through `REA_JADX_MCP_JAR`, the `jadx-headless-mcp` bridge. And it wants the exact Ghidra version it knows (12.1.4 for `rea-agents` 6.8.0): another version won't do. The lab's `rea` command exports these variables, and `rea doctor` tells you whether each provider is healthy.
+
 ## Panel
 
 **`tailscale serve` can deliver to a Unix socket** (`unix:/path/to.sock`). That leaves the panel container with no network at all (`network_mode: none`) and still with HTTPS from away. ufw still has to allow the port on `tailscale0`.

@@ -138,6 +138,8 @@ O aviso de "limite atingido" da conta anterior continuava no registro; se a roda
 
 **O REA pede um Node mais novo que o do Ubuntu.** O `rea-agents` 6.8.0 quer 22.23.4+ ou 24.22.1+, e o Ubuntu 26.04 tem o 22.22.1. O lab ganhou um Node próprio (fixo, do nodejs.org, conferido pelo checksum) na frente do PATH do trabalhador, sem mexer no do sistema.
 
+**O REA não instala nem baixa os descompiladores, e confere a versão.** Ele usa o que você aponta: o Ghidra por `GHIDRA_INSTALL_DIR` (com `JAVA_HOME` num JDK 21) e o JADX por `REA_JADX_MCP_JAR`, a ponte `jadx-headless-mcp`. E quer a versão exata do Ghidra que ele conhece (12.1.4 para o `rea-agents` 6.8.0): outra versão não serve. O comando `rea` do lab exporta essas variáveis, e o `rea doctor` diz se cada provedor está saudável.
+
 ## Painel
 
 **O `tailscale serve` entrega num socket unix** (`unix:/caminho/do.sock`). Assim o container do painel fica sem rede nenhuma (`network_mode: none`), e ainda assim tem HTTPS fora de casa. O ufw continua precisando liberar a porta na `tailscale0`.
