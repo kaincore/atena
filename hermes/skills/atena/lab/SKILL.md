@@ -14,8 +14,8 @@ metadata:
 # Lab: Claude Code e apps
 
 O lab é a zona de testes do servidor. Os projetos ficam em `/srv/lab/projetos/<projeto>`. As ações
-abaixo passam pelo executor, do mesmo jeito da habilidade servidor-atena (mesmo token e o mesmo
-`curl` no socket).
+abaixo passam pelo executor, do mesmo jeito da habilidade servidor-atena (pelo
+`/opt/data/scripts/acao.py`).
 
 Quem faz o quê:
 - Claude Code (`claude.tarefa`): programação grande (app novo, várias telas, horas de trabalho). Até

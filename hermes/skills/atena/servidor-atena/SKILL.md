@@ -21,18 +21,17 @@ terminal (habilidade lab).
 ## Como chamar
 
 ```bash
-T=$(cat /opt/data/executor.token)
-S=/run/atena-executor/executor.sock
-# o que você pode pedir agora (a lista muda; confira quando tiver dúvida)
-curl -s --unix-socket $S -H "Authorization: Bearer $T" http://x/acoes
-# pedir uma ação
-curl -s --unix-socket $S -H "Authorization: Bearer $T" -H 'Content-Type: application/json' \
-  -X POST http://x/acao/<acao> -d '{"params": {}, "origem": "chat"}'
-# acompanhar um pedido (com esperar, a resposta só volta quando ele terminar ou em 170 s)
-curl -s -m 175 --unix-socket $S -H "Authorization: Bearer $T" "http://x/pedido/<id>?esperar=170"
+A=/opt/data/scripts/acao.py
+python3 $A --acoes                                      # o que você pode pedir agora (a lista muda)
+python3 $A status.servicos                              # uma ação sem parâmetros
+python3 $A servico.logs '{"stack": "litellm", "linhas": 50}'   # com parâmetros, num objeto JSON
+python3 $A --pedido <id>                                # acompanha um pedido (volta quando ele termina, ou em 170 s)
 ```
 
-Nunca mostre o token na resposta nem o copie para outro lugar.
+A primeira linha da saída é o código HTTP, e depois vem a resposta em JSON. 200 é feito; 202 virou
+pedido (acompanhe com `--pedido`); 4xx e 5xx são recusa ou erro, com o motivo em `erro`. Ele lê o token
+sozinho: nunca abra, mostre nem copie o arquivo do token (/opt/data/executor.token). Onde este texto diz `GET /pedido/<id>`, use
+`--pedido <id>`; onde diz `/acoes`, `--acoes`.
 
 ## Enxergar (consultas, respondem na hora)
 

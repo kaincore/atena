@@ -41,8 +41,9 @@ copiar_hermes SOUL.md SOUL.md
 copiar_hermes skills/atena/servidor-atena/SKILL.md skills/atena/servidor-atena/SKILL.md
 copiar_hermes skills/atena/notas/SKILL.md skills/atena/notas/SKILL.md
 copiar_hermes scripts/ronda.py scripts/ronda.py
+copiar_hermes scripts/acao.py scripts/acao.py
 copiar_hermes ferramentas.txt ferramentas/requisitos.txt
-ok "personalidade, habilidades servidor-atena e notas, e ronda em $D"
+ok "personalidade, habilidades servidor-atena e notas, ronda e acao em $D"
 
 # token do executor: todas as consultas, reiniciar, o PC e as stacks de apps, sem a zona prod e
 # sem pedir o celular. Para exigir o celular em algo, refaça com o 4º campo (veja docs/pt/operacao.md).
