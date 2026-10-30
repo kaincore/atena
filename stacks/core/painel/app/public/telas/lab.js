@@ -4,7 +4,14 @@ import { $, abrirJanela, atualizar, botaoAtualizar, campo, cartao, consultar, es
 
 const NOME_PROJETO = "[a-z0-9][a-z0-9\\-]{0,39}";
 const rascunho = { projeto: "", pedido: "", conta: "", modelo: "", esforco: "", minutos: "60", somente_plano: false, publicar: false,
-  skill: "", continuar: null };
+  skill: "", receita: "", continuar: null };
+
+// a tela Receitas manda um projeto seguir uma receita: o formulário de trabalho novo já abre com ela
+export function usarReceita(nome) {
+  Object.assign(rascunho, { receita: nome, continuar: null });
+  if (location.hash === "#lab") atualizar();
+  else location.hash = "#lab";
+}
 
 // as teclas de um app; cada uma confirma, pede e recarrega a tela
 function botoesApp(p) {
@@ -99,7 +106,7 @@ function itemTrabalho(t) {
   });
 }
 
-function cartaoNovoTrabalho(trabalhos, projetos) {
+function cartaoNovoTrabalho(trabalhos, projetos, receitas) {
   const contas = trabalhos.contas_com_login ?? [];
   if (!rascunho.conta || !contas.includes(rascunho.conta)) rascunho.conta = contas[0] ?? "";
   const guardar = (evento) => {
@@ -107,6 +114,7 @@ function cartaoNovoTrabalho(trabalhos, projetos) {
     Object.assign(rascunho, {
       projeto: f.projeto.value, pedido: f.pedido.value, conta: f.conta.value, modelo: f.modelo.value, esforco: f.esforco.value,
       minutos: f.minutos.value, somente_plano: f.somente_plano.checked, publicar: f.publicar.checked, skill: f.skill?.value ?? "",
+      receita: f.receita?.value ?? rascunho.receita,
     });
   };
   const continuando = rascunho.continuar;
@@ -118,7 +126,7 @@ function cartaoNovoTrabalho(trabalhos, projetos) {
       h("p", { class: "fraco" }, `Continuando o trabalho ${continuando} em ${rascunho.projeto}: a conversa vem junto.`),
       h("button", { type: "button", class: "discreto", onclick: () => {
         Object.assign(rascunho, { continuar: null, projeto: "" });
-        c.replaceWith(cartaoNovoTrabalho(trabalhos, projetos));
+        c.replaceWith(cartaoNovoTrabalho(trabalhos, projetos, receitas));
       } }, "Começar um novo")),
     h("form", { class: "resposta", oninput: guardar, onchange: guardar, onsubmit: async (evento) => {
       evento.preventDefault();
@@ -126,10 +134,11 @@ function cartaoNovoTrabalho(trabalhos, projetos) {
       const params = { projeto: rascunho.projeto.trim(), pedido: rascunho.pedido.trim(), conta: rascunho.conta, minutos: Number(rascunho.minutos),
         ...(rascunho.modelo ? { modelo: rascunho.modelo } : {}), ...(rascunho.esforco ? { esforco: rascunho.esforco } : {}),
         ...(rascunho.somente_plano ? { somente_plano: true } : {}), ...(rascunho.publicar ? { publicar: true } : {}),
-        ...(rascunho.skill ? { skill: rascunho.skill } : {}), ...(continuando ? { continuar: continuando } : {}) };
+        ...(rascunho.skill ? { skill: rascunho.skill } : {}), ...(rascunho.receita ? { receitas: [rascunho.receita] } : {}),
+        ...(continuando ? { continuar: continuando } : {}) };
       const r = await mudar("claude.tarefa", params, null, false);
       if (r && r.ok !== false) {
-        Object.assign(rascunho, { projeto: "", pedido: "", somente_plano: false, publicar: false, skill: "", continuar: null });
+        Object.assign(rascunho, { projeto: "", pedido: "", somente_plano: false, publicar: false, skill: "", receita: "", continuar: null });
         atualizar();
       }
     } },
@@ -144,7 +153,9 @@ function cartaoNovoTrabalho(trabalhos, projetos) {
         campo("Esforço", opcoes("esforco", [["", "padrão"], ...["low", "medium", "high", "xhigh", "max"].map((e) => [e, e])])),
         campo("Tempo", opcoes("minutos", [["15", "15 min"], ["30", "30 min"], ["60", "1 h"], ["120", "2 h"], ["240", "4 h"], ["600", "10 h"]])),
         // só o executor do servidor de origem tem skills do Claude Code; nos outros, o campo não aparece
-        trabalhos.skills && campo("Skill", opcoes("skill", [["", "nenhuma"], ...trabalhos.skills.map((s) => [s, s])]))),
+        trabalhos.skills && campo("Skill", opcoes("skill", [["", "nenhuma"], ...trabalhos.skills.map((s) => [s, s])])),
+        // o estilo de uma receita pronta (tela Receitas): o Claude Code recebe a receita dentro do projeto
+        receitas.length > 0 && campo("Estilo", opcoes("receita", [["", "nenhum"], ...receitas.map((r) => [r.nome, r.titulo || r.nome])]))),
       h("div", { class: "filtros" },
         marcar("somente_plano", "só planejar (não muda nada)"),
         marcar("publicar", "publicar quando terminar bem")),
@@ -163,6 +174,9 @@ async function cartaoTrabalhos(trabalhos) {
 export async function telaLab() {
   const [r, trabalhos] = await Promise.all([consultar("app.lista"), consultar("claude.trabalhos")]);
   if (r.ok === false) return [cartao("Lab", falha(r))];
+  const comReceitas = trabalhos.ok !== false && (trabalhos.resultado.skills ?? []).includes("receita");
+  const lista = comReceitas ? await consultar("receita.lista") : null;
+  const receitas = lista && lista.ok !== false ? lista.resultado.receitas.filter((x) => x.estado === "pronta") : [];
   const { projetos, lixeira } = r.resultado;
   const apps = cartao("Apps do lab", itens(projetos.map((p) => item({
     led: p.em_andamento ? "info" : /^Up/.test(p.app) ? (/unhealthy/.test(p.app) ? "ruim" : "ok") : "apagado",
@@ -176,7 +190,7 @@ export async function telaLab() {
     ],
   })), "Nenhum projeto no lab ainda. Mande um trabalho ao Claude Code para começar."));
   return [
-    trabalhos.ok === false ? null : cartaoNovoTrabalho(trabalhos.resultado, projetos),
+    trabalhos.ok === false ? null : cartaoNovoTrabalho(trabalhos.resultado, projetos, receitas),
     await cartaoTrabalhos(trabalhos),
     apps,
     lixeira.length ? cartao("Lixeira", itens(lixeira.map((l) => item({

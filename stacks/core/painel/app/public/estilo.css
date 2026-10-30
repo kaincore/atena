@@ -968,6 +968,30 @@ dialog::backdrop { background: rgb(10 14 26 / .42); backdrop-filter: blur(3px); 
   border: 1px solid var(--veio); white-space: pre-wrap; overflow-wrap: anywhere; margin: .5rem 0;
 }
 .pergunta { font-size: 1.05rem; margin: .5rem 0; white-space: pre-wrap; }
+
+/* --- receitas: a paleta do site em amostras, os prints e o texto da receita --- */
+
+.resumo-receita { margin: .1rem 0 .55rem; max-width: 68ch; color: var(--tinta-2); }
+.paleta-receita { list-style: none; margin: .3rem 0 .6rem; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem .9rem; }
+.paleta-receita li { display: grid; grid-template-columns: auto minmax(0, max-content); grid-template-rows: auto auto;
+  column-gap: .5rem; align-items: center; min-width: 0; }
+/* o contorno segue a cor do texto: a amostra quase preta aparece no tema escuro, e a quase branca no claro */
+.amostra { grid-row: span 2; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--amostra, var(--pedra));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 24%, transparent); }
+.amostra-nome { font-size: .76rem; color: var(--tinta); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 9rem; }
+.amostra-valor { font: .7rem var(--mono); color: var(--tinta-2); }
+.tags-receita { display: flex; flex-wrap: wrap; gap: .2rem 0; margin: .35rem 0 0; }
+.tags-receita .selo { margin-left: 0; }
+.abas-print { display: flex; flex-wrap: wrap; gap: .4rem; margin: .8rem 0 .5rem; }
+.abas-print button[aria-pressed="true"] { background: var(--azul-claro); border-color: var(--azul); color: var(--azul-forte); }
+.print-receita { margin: 0 0 .9rem; display: grid; gap: .4rem; }
+.print-receita img { display: block; width: 100%; height: auto; max-height: 70dvh; object-fit: contain; object-position: top;
+  border-radius: var(--raio); border: 1px solid var(--veio); background: var(--placa-2); }
+.print-receita figcaption { font-size: .76rem; color: var(--tinta-2); }
+.texto-receita {
+  font: .86rem/1.6 var(--letra); background: var(--placa-2); padding: .8rem .9rem; border-radius: var(--raio);
+  border: 1px solid var(--veio); white-space: pre-wrap; overflow-wrap: anywhere; margin: .5rem 0; max-height: 60dvh; overflow: auto;
+}
 textarea.codigo { width: 100%; min-height: 40dvh; font: .8rem/1.5 var(--mono); white-space: pre; overflow: auto; }
 .processo .comando { font: .78rem var(--mono); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .processo .comando.aberto { white-space: pre-wrap; overflow-wrap: anywhere; }

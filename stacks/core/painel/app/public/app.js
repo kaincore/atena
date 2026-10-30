@@ -12,6 +12,7 @@ import { telaHistorico } from "./telas/historico.js";
 import { telaInicio } from "./telas/inicio.js";
 import { telaLab } from "./telas/lab.js";
 import { marcarPcLigado, telaPC } from "./telas/pc.js";
+import { telaReceitas } from "./telas/receitas.js";
 import { janelaEditor, telaServicos, verLogs } from "./telas/servicos.js";
 import { telaSistema } from "./telas/sistema.js";
 import { marcarZonas, resumirZonas, stacksVistas } from "./zonas.js";
@@ -23,7 +24,7 @@ ligarCasca({ atualizar, telaAtual, mostrarEntrada });
 
 const TELAS = {
   inicio: telaInicio, aprovacoes: telaAprovacoes, servicos: telaServicos, sistema: telaSistema, pc: telaPC, lab: telaLab,
-  agenda: telaAgenda, atena: telaAtena, arquivos: telaArquivos, atividade: telaAtividade, historico: telaHistorico, ajustes: telaAjustes,
+  receitas: telaReceitas, agenda: telaAgenda, atena: telaAtena, arquivos: telaArquivos, atividade: telaAtividade, historico: telaHistorico, ajustes: telaAjustes,
 };
 // de quantos em quantos tiques (10 s) cada tela se atualiza sozinha
 const ATUALIZAM_SOZINHAS = { aprovacoes: 1, inicio: 3, servicos: 3, pc: 3 };
@@ -40,6 +41,7 @@ const NAV = [
   { tela: "arquivos", nome: "Arquivos", grupo: "servidor" },
   { tela: "pc", nome: "PC", grupo: "máquina", barra: true },
   { tela: "lab", nome: "Lab", grupo: "máquina" },
+  { tela: "receitas", nome: "Receitas", grupo: "máquina" },
   { tela: "atividade", nome: "Atividade", grupo: "registro" },
   { tela: "historico", nome: "Histórico", grupo: "registro" },
   { tela: "ajustes", nome: "Ajustes", grupo: "conta" },
@@ -111,6 +113,7 @@ const abrirPaleta = iniciarPaleta($("#paleta"), () => [
   { titulo: "Reiniciar o PC", grupo: "pc", picto: "pc", acao: () => mudar("pc.reiniciar", {}, "Reiniciar o PC gamer? Ele reinicia em 60 s.") },
   { titulo: "Novo agendamento", grupo: "agenda", picto: "agenda", acao: () => { location.hash = "#agenda"; } },
   { titulo: "Novo trabalho do Claude Code", grupo: "lab", picto: "lab", acao: () => { location.hash = "#lab"; } },
+  { titulo: "Estudar o estilo de um site", grupo: "lab", picto: "receitas", acao: () => { location.hash = "#receitas"; } },
   ...stacksVistas.flatMap((zs) => {
     const [zona, stack] = zs.split("/");
     return [

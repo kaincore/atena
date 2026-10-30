@@ -52,6 +52,14 @@ const DESENHOS = {
     ["path", { d: "M7.1 14.6h9.8", class: "fino" }],
     ["circle", { cx: 11, cy: 12.1, r: 0.75, class: "cheio" }], ["circle", { cx: 13.3, cy: 10.6, r: 0.55, class: "cheio" }],
   ],
+  // a cílica (o copo raso de duas alças): a faixa pintada dentro do bojo é a tinta
+  receitas: [
+    ["path", { d: "M5.5 11.3h13c-.9 2.1-3.4 3.5-6.5 3.5s-5.6-1.4-6.5-3.5z", class: "tinta" }],
+    ["path", { d: "M3.6 9.4h16.8c-.6 3.7-3.9 6.2-8.4 6.2s-7.8-2.5-8.4-6.2z" }],
+    ["path", { d: "M3.6 9.4C1.8 9.2 1.3 11.3 2.9 12.1M20.4 9.4c1.8-.2 2.3 1.9.7 2.7" }],
+    ["path", { d: "M12 15.6v3.2M8.4 19.6h7.2" }],
+    ["path", { d: "M5.5 11.3h13", class: "fino" }],
+  ],
   // o elmo coríntio de Atena, de frente: a crista é a tinta; as fendas dos olhos e o vão da boca
   atena: [
     ["path", { d: "M8.4 5.3c1-1.9 6.2-1.9 7.2 0L12 6.1z", class: "tinta" }],

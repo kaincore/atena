@@ -20,6 +20,8 @@ export const NOMES = {
   "app.comando": "Comando no app",
   "claude.tarefa": "Trabalho do Claude Code",
   "claude.cancelar": "Cancelar trabalho do Claude Code",
+  "receita.estudar": "Estudar o estilo do site",
+  "receita.apagar": "Apagar receita",
   "stack.editar": "Gravar arquivo da stack",
   "stack.aplicar": "Aplicar stack",
   "stack.desfazer": "Desfazer edição da stack",
