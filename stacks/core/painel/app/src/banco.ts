@@ -160,6 +160,29 @@ export class Banco {
       .run(estado, resumo.slice(0, 1000), pedido);
   }
 
+  // Ao subir: o que ficou "executando" e ainda sem resumo era do painel que parou. Sem pedido, esperava a
+  // resposta do executor, que se perdeu; do agendador com pedido, perdeu quem o acompanhava (e o aviso no
+  // celular). Os dois viram "interrompida". Ficam como estão o pedido de uma ação da tela (quem o acompanha
+  // é a tela) e o que o agendador já tinha desistido de esperar (tem resumo): o Histórico pergunta ao
+  // executor como eles terminaram, e faz o mesmo com o interrompido que tem pedido.
+  marcarInterrompidas(): number {
+    const abertas = this.db
+      .prepare(`SELECT id, quando, pedido, agendamento FROM historico
+        WHERE estado = 'executando' AND resumo = '' AND (pedido IS NULL OR agendamento IS NOT NULL)`)
+      .all() as { id: number; quando: number; pedido: string | null; agendamento: number | null }[];
+    const marcar = this.db.prepare("UPDATE historico SET estado = 'interrompida', resumo = ? WHERE id = ?");
+    const ultima = this.db.prepare("SELECT max(id) AS id FROM historico WHERE agendamento = ?");
+    for (const r of abertas) {
+      marcar.run(r.pedido
+        ? `o painel reiniciou enquanto acompanhava o pedido ${r.pedido}; o Histórico pergunta ao executor como ele terminou`
+        : "o painel reiniciou antes de o executor responder; confira se a ação aconteceu", r.id);
+      // a última vez do agendamento passa a ser esta, se depois dela não rodou de novo
+      if (r.agendamento !== null && (ultima.get(r.agendamento) as { id: number }).id === r.id)
+        this.marcarAgendamento(r.agendamento, { ultima: r.quando, ultimo_estado: "interrompida" });
+    }
+    return abertas.length;
+  }
+
   historico(limite = 100, agendamento: number | null = null): Registro[] {
     const colunas = "SELECT id, quando, acao, params, estado, resumo, pedido, agendamento FROM historico";
     if (agendamento !== null)

@@ -19,6 +19,9 @@ const porta = process.env.PAINEL_PORTA; // só para desenvolvimento: escuta em 1
 
 const banco = new Banco(join(dados, "painel.db"));
 banco.limpar();
+// antes do agendador: o que ficou "executando" é do painel que parou, e não terá mais resposta
+const interrompidas = banco.marcarInterrompidas();
+if (interrompidas) console.log(`painel: ${interrompidas} ${interrompidas === 1 ? "execução interrompida" : "execuções interrompidas"} pelo reinício`);
 setInterval(() => banco.limpar(), 3600_000).unref();
 
 const config = {

@@ -135,3 +135,36 @@ test("banco da versão 0.14: as tentativas ganham a entrada, e as de antes conti
   deNovo.db.close();
   rmSync(pasta, { recursive: true, force: true });
 });
+
+test("o reinício do painel: as execuções que ficaram rodando viram interrompidas, com o motivo", () => {
+  const b = novo();
+  const agendamento = (nome: string) => b.salvarAgendamento({ nome, acao: "pc.ligar", params: {},
+    quando: { tipo: "semana", dias: [3], hora: "19:00" }, aviso: "falha", tolerancia: 15, ativo: true, proxima: 1 });
+  const x = agendamento("X");
+  const y = agendamento("Y");
+  const presaAntiga = b.registrar("pc.ligar", {}, "executando", "", null, x); // de um reinício antigo; depois rodou de novo
+  b.registrar("pc.ligar", {}, "concluido", "ok", null, x);
+  b.marcarAgendamento(x, { ultima: 1000, ultimo_estado: "concluido" });
+  b.marcarAgendamento(y, { ultima: 1000, ultimo_estado: "concluido" });
+  const seguindo = b.registrar("app.publicar", { projeto: "loja" }, "executando", "", "abcd1234", y);
+  const esperando = b.registrar("pc.desligar", {}, "executando", "");      // ação do painel esperando o executor
+  const doCelular = b.registrar("app.publicar", {}, "executando", "", "beef0001"); // 202: a tela acompanha o pedido
+  const desistiu = b.registrar("app.publicar", {}, "executando", "o painel parou de esperar; confira no executor", "beef0002", x);
+  const feita = b.registrar("pc.ligar", {}, "concluido", "ok");
+
+  assert.equal(b.marcarInterrompidas(), 3);
+  const por = new Map(b.historico().map((r) => [r.id, r]));
+  for (const id of [presaAntiga, seguindo, esperando]) {
+    assert.equal(por.get(id)!.estado, "interrompida", String(id));
+    assert.match(por.get(id)!.resumo, /o painel reiniciou/);
+  }
+  assert.match(por.get(seguindo)!.resumo, /abcd1234/, "o pedido continua no executor");
+  assert.equal(por.get(seguindo)!.pedido, "abcd1234");
+  assert.equal(por.get(doCelular)!.estado, "executando", "o pedido de uma ação do painel não depende do painel estar de pé");
+  assert.equal(por.get(desistiu)!.estado, "executando", "o agendador já não esperava por ele antes do reinício");
+  assert.equal(por.get(feita)!.estado, "concluido");
+  assert.equal(b.agendamento(x)!.ultimo_estado, "concluido", "a presa antiga não é a última execução de X");
+  assert.equal(b.agendamento(y)!.ultimo_estado, "interrompida");
+  assert.equal(b.agendamento(y)!.ultima, por.get(seguindo)!.quando);
+  assert.equal(b.marcarInterrompidas(), 0);
+});

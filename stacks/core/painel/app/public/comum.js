@@ -224,7 +224,9 @@ export function itens(lista, vazio, classe, fim) {
 }
 
 // o ponto de cada estado de pedido: malaquita terminou bem, azul em andamento, cinábrio o resto
-export const ledEstado = (estado) => (estado === "concluido" ? "ok" : TERMINADOS.has(estado) || estado === "perdida" ? "ruim" : "info");
+// (a interrompida fica fora dos TERMINADOS: com pedido, o Histórico ainda pergunta ao executor como acabou)
+export const ledEstado = (estado) =>
+  (estado === "concluido" ? "ok" : TERMINADOS.has(estado) || estado === "perdida" || estado === "interrompida" ? "ruim" : "info");
 
 // um campo de formulário: o rótulo em cima, o controle embaixo (largo: a linha toda)
 export function campo(rotulo, controle, largo = false) {
@@ -237,6 +239,7 @@ export const containerOk = (c) => c.estado === "running" && !/unhealthy/.test(c.
 const ESTADOS = {
   concluido: "concluído", falhou: "falhou", recusado: "recusado", expirado: "expirado", cancelado: "cancelado",
   executando: "rodando", aguardando: "esperando", perguntando: "perguntando", perdida: "perdida", planejando: "planejando",
+  interrompida: "interrompida",
 };
 export const estadoTexto = (e) => ESTADOS[e] ?? e;
 
