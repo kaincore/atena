@@ -43,7 +43,8 @@ def montar():
         p = estado.no_alvo(ALVO, i.destino)
         os.makedirs(os.path.dirname(p), exist_ok=True)
         open(p, "wb").write(i.conteudo if i.conteudo is not None else b"o que a Atena lembra\n")
-        os.chmod(p, i.modo if i.modo is not None else 0o600)
+        # sem modo no estado: a memória da Atena com 600, e o resto (as stacks) como o administrador deixou
+        os.chmod(p, i.modo if i.modo is not None else 0o600 if i.conteudo is None else 0o664)
 
 
 def foto():
@@ -86,6 +87,7 @@ def estragos():
     os.chmod(f"{ALVO}/usr/local/sbin/atena-reconciliar", 0o700)
     escrever("/opt/atena/stacks/core/painel/app/public/velho.js", "// sobrou\n")
     escrever("/opt/atena/stacks/ai/litellm/config.yaml", "\n# a mais, à mão\nfoo: 1\n", "a")
+    os.remove(f"{ALVO}/opt/atena/stacks/core/painel/app/public/zonas.js")
     escrever("/opt/atena/stacks/ai/ollama/compose.yaml", "# só um comentário\n", "a")
     escrever("/etc/ssh/sshd_config.d/00-atena-hardening.conf", "# comentário do SSH\n", "a")
     os.remove(f"{ALVO}/srv/agents/hermes/memories/USER.md")
@@ -130,6 +132,12 @@ resta = sorted(c for c, x in r.items() if x.estado in ("difere", "falta", "sobra
 confere("depois: só o que fica como está (o daemon.json e a stack que não existe)",
         "/etc/docker/daemon.json" in resta and all(c == "/etc/docker/daemon.json" or "/apps/open-webui/" in c for c in resta),
         resta)
+confere("o arquivo de stack trocado fica com o modo que tinha (664), e não só para o root",
+        os.stat(f"{ALVO}/opt/atena/stacks/ai/litellm/config.yaml").st_mode & 0o777 == 0o664)
+zonas = os.path.join(RAIZ, "stacks", "core", "painel", "app", "public", "zonas.js")
+confere("o arquivo de stack que faltava volta com o modo do repositório (o container o lê)",
+        os.stat(f"{ALVO}/opt/atena/stacks/core/painel/app/public/zonas.js").st_mode & 0o777 == os.stat(zonas).st_mode & 0o777
+        and os.stat(zonas).st_mode & 0o004)
 confere("a stack que não existe não foi criada", not os.path.exists(f"{ALVO}/opt/atena/stacks/apps/open-webui"))
 semente = open(os.path.join(RAIZ, "hermes", "memoria", "USER.md"), "rb").read()
 confere("a memória que faltava ganhou a semente, com modo 600",

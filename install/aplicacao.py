@@ -165,6 +165,24 @@ def _dono(i, ensaio):
     return pwd.getpwnam(i.dono).pw_uid, grp.getgrnam(i.grupo).gr_gid
 
 
+def _modo_e_dono(raiz, i, destino, ids, ensaio):
+    """O modo e o dono do arquivo gravado. O que o estado pede, quando pede (os do sistema, os da Atena).
+    Sem isso (as stacks, o painel), o arquivo trocado fica com o modo e o dono que tinha; um novo, com o
+    modo do arquivo no repositório e o dono da pasta (o administrador, nas stacks). A semente da memória
+    da Atena, com 600."""
+    if i.modo is not None:
+        return i.modo, ids
+    if os.path.lexists(destino):
+        st = os.stat(destino)
+        return st.st_mode & 0o7777, ids or (None if ensaio else (st.st_uid, st.st_gid))
+    if i.conteudo is None:
+        return 0o600, ids
+    origem = os.path.join(raiz, i.origem)
+    modo = os.stat(origem).st_mode & 0o777 if os.path.isfile(origem) else 0o644
+    pasta = os.stat(os.path.dirname(destino))
+    return modo, ids or (None if ensaio else (pasta.st_uid, pasta.st_gid))
+
+
 def _criar_pasta(pasta, ids, criados):
     if os.path.isdir(pasta):
         return
@@ -213,10 +231,11 @@ def aplicar(raiz, p, alvo="/", sistema=None, aviso=print):
             destino = estado.no_alvo(alvo, i.destino)
             ids = _dono(i, sistema.ensaio)
             _criar_pasta(os.path.dirname(destino), ids if ids and i.dono != "root" else None, criados)
+            modo, ids = _modo_e_dono(raiz, i, destino, ids, sistema.ensaio)
             novo = destino + ".aplicar-novo"
             with open(novo, "wb") as f:
                 f.write(i.conteudo if i.conteudo is not None else i.semente)
-            os.chmod(novo, i.modo if i.modo is not None else 0o600)   # sem modo, só a semente da memória
+            os.chmod(novo, modo)
             if ids:
                 os.chown(novo, *ids)
             if not os.path.lexists(destino):
