@@ -142,7 +142,7 @@ Then:
 | LiteLLM 1.101.6 | ai | 4000 | Requires a key. Spending caps per model and per key |
 | Open WebUI 0.12.5 | apps | 3000 | Talks only to LiteLLM |
 | Hermes Agent 0.22.2 | agents | none | Atena (with `--hermes`). Talks over Telegram |
-| Panel 0.15.0 | core | 3100, through Tailscale (home network optional) | The panel (with `--painel`). No network, no root, no npm packages, with a password |
+| Panel 0.16.0 | core | 3100, through Tailscale (home network optional) | The panel (with `--painel`). No network, no root, no npm packages, with a password |
 | Claude Code 2.1.302 | lab | apps on 8000-8999 | The lab (with `--lab`). Runs in a sandbox, with no sudo and no Docker; uses your Claude subscription |
 
 Versions are pinned on purpose. Before upgrading, read the security advisories and release notes.

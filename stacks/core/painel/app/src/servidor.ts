@@ -23,46 +23,12 @@ export type Config = {
 // decide isso (o repassador da rede de casa entrega o que vier, e o pedido diria o que quisesse)
 type Via = "tailscale" | "casa";
 
-// muda = entra no histórico (a interface pede confirmação antes das que mudam algo)
-export const ACOES: Record<string, { muda: boolean }> = {
-  "status.servicos": { muda: false },
-  "status.recursos": { muda: false },
-  "status.containers": { muda: false },
-  "status.sistema": { muda: false },
-  "sistema.sensores": { muda: false },
-  "sistema.processos": { muda: false },
-  "sistema.rede": { muda: false },
-  "gasto.api": { muda: false },
-  "servico.logs": { muda: false },
-  "servico.journal": { muda: false },
-  "stack.fotos": { muda: false },
-  "arquivo.ler": { muda: false },
-  "arquivo.procurar": { muda: false },
-  "arquivo.buscar": { muda: false },
-  "pc.estado": { muda: false },
-  "app.lista": { muda: false },
-  "claude.trabalhos": { muda: false },
-  "aprovacoes.lista": { muda: false },
-  "atividade.lista": { muda: false },
-  "aprovacoes.decidir": { muda: true },
-  "servico.reiniciar": { muda: true },
-  "pc.ligar": { muda: true },
-  "pc.desligar": { muda: true },
-  "pc.reiniciar": { muda: true },
-  "pc.cancelar": { muda: true },
-  "app.reiniciar": { muda: true },
-  "app.parar": { muda: true },
-  "app.publicar": { muda: true },
-  "app.cancelar": { muda: true },
-  "app.apagar": { muda: true },
-  "app.restaurar": { muda: true },
-  "app.comando": { muda: true },
-  "claude.tarefa": { muda: true },
-  "claude.cancelar": { muda: true },
-  "stack.editar": { muda: true },
-  "stack.aplicar": { muda: true },
-  "stack.desfazer": { muda: true },
-};
+// O catálogo das ações vem do executor (GET /acoes): o que o token do painel pode pedir e o risco de cada
+// uma. A que não é consulta entra no histórico (a interface pede confirmação antes das que mudam algo).
+export type Catalogo = Record<string, { ajuda: string; risco: string; pedido: boolean; aprovacao: boolean }>;
+const CATALOGO_VALE = 60_000;
+// as que só o agendador usa, nunca a tela: o aviso no celular
+const SO_AGENDADOR = new Set(["aviso.celular"]);
 
 const COOKIE = "atena_sessao";
 const LIMITE_CORPO = 512 * 1024; // o editor de stacks manda o trecho antes e depois da troca
@@ -244,6 +210,21 @@ export function criarServidor(config: Config, banco: Banco, agendador?: Agendado
     }
   }
 
+  // o catálogo, guardado por um minuto; sem o executor, vale o último que chegou (ou nenhum)
+  let catalogo: { acoes: Catalogo; quando: number } | null = null;
+  async function acoesDoPainel(): Promise<Catalogo | null> {
+    if (catalogo && Date.now() - catalogo.quando < CATALOGO_VALE) return catalogo.acoes;
+    try {
+      const r = await executor("GET", "/acoes");
+      const acoes = r.corpo.acoes;
+      if (r.status === 200 && acoes && typeof acoes === "object" && !Array.isArray(acoes))
+        catalogo = { acoes: acoes as Catalogo, quando: Date.now() };
+    } catch {
+      // sem o executor agora: o pedido da ação vai dizer o que houve
+    }
+    return catalogo?.acoes ?? null;
+  }
+
   async function api(req: IncomingMessage, res: ServerResponse, url: URL, via: Via) {
     const rota = url.pathname;
     const https = via === "tailscale";
@@ -287,7 +268,7 @@ export function criarServidor(config: Config, banco: Banco, agendador?: Agendado
 
     if (rota === "/api/eu" && req.method === "GET") {
       // renova o cookie: enquanto o app for aberto, a sessão não vence
-      return responder(res, 200, { ok: true, sessao: sessao.id.slice(0, 12), acoes: ACOES },
+      return responder(res, 200, { ok: true, sessao: sessao.id.slice(0, 12), acoes: catalogo?.acoes ?? {} },
         { "Set-Cookie": cookieSessao(token, DURACAO_SESSAO / 1000, https) });
     }
     if (rota === "/api/sair" && req.method === "POST") {
@@ -392,12 +373,15 @@ export function criarServidor(config: Config, banco: Banco, agendador?: Agendado
     const acao = rota.match(/^\/api\/acao\/([a-z.]+)$/);
     if (acao && req.method === "POST") {
       const nome = acao[1];
-      if (!ACOES[nome]) throw new ErroHttp(403, `o painel não faz ${nome}`);
+      const acoes = await acoesDoPainel();
+      if (SO_AGENDADOR.has(nome) || (acoes && !acoes[nome])) throw new ErroHttp(403, `o painel não faz ${nome}`);
       const { params = {} } = await lerCorpo(req);
       if (typeof params !== "object" || params === null || Array.isArray(params))
         throw new ErroHttp(400, "params deve ser um objeto");
-      // o que muda algo entra no histórico antes de ir ao executor: um prazo esgotado ou um erro ficam lá
-      const registro = ACOES[nome].muda ? banco.registrar(nome, params, "executando", "") : null;
+      // o que muda algo entra no histórico antes de ir ao executor: um prazo esgotado ou um erro ficam lá.
+      // Sem o catálogo (o executor fora do ar), na dúvida, entra também
+      const muda = acoes ? acoes[nome].risco !== "consulta" : true;
+      const registro = muda ? banco.registrar(nome, params, "executando", "") : null;
       let r;
       try {
         r = await executor("POST", `/acao/${nome}`, { params, origem: "painel" });

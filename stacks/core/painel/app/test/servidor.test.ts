@@ -22,6 +22,19 @@ const config = {
 const TOKEN = "atx-token-de-teste";
 let README = "# Servidor\n\n## Pendências conhecidas\n\n- **Backup:** não existe.\n- **Diun:** não instalado,\n  falta a regra 4.\n\n## Outra seção\n\n- não é pendência\n";
 const recebidos: { metodo: string; caminho: string; token: string; corpo: any }[] = [];
+// o catálogo que o executor de mentira dá ao painel (o de verdade sai do acoes.py), e quantas vezes ele foi pedido
+const CONSULTAS = ["status.servicos", "status.recursos", "status.containers", "status.sistema", "sistema.sensores",
+  "sistema.processos", "sistema.rede", "gasto.api", "servico.logs", "servico.journal", "stack.fotos", "arquivo.ler",
+  "arquivo.procurar", "arquivo.buscar", "pc.estado", "app.lista", "claude.trabalhos", "aprovacoes.lista", "atividade.lista"];
+const MUDAM = ["aprovacoes.decidir", "servico.reiniciar", "pc.ligar", "pc.desligar", "pc.reiniciar", "pc.cancelar",
+  "app.reiniciar", "app.parar", "app.publicar", "app.cancelar", "app.restaurar", "app.comando", "claude.tarefa",
+  "claude.cancelar", "stack.editar", "stack.aplicar", "stack.desfazer", "aviso.celular", "app.novidade"];
+const CATALOGO: Record<string, { ajuda: string; risco: string; pedido: boolean; aprovacao: boolean }> = Object.fromEntries([
+  ...CONSULTAS.map((n) => [n, { ajuda: n, risco: "consulta", pedido: false, aprovacao: false }]),
+  ...MUDAM.map((n) => [n, { ajuda: n, risco: "muda", pedido: false, aprovacao: false }]),
+  ["app.apagar", { ajuda: "app.apagar", risco: "destrutivo", pedido: true, aprovacao: false }],
+]);
+let catalogosPedidos = 0;
 let executor: Server;
 let painel: ReturnType<typeof criarServidor>;
 let banco: Banco;
@@ -36,6 +49,11 @@ before(async () => {
     req.on("data", (p) => partes.push(p));
     req.on("end", () => {
       const corpo = partes.length ? JSON.parse(Buffer.concat(partes).toString()) : null;
+      if (req.url === "/acoes" && req.headers.authorization === `Bearer ${TOKEN}`) {
+        catalogosPedidos++;
+        res.writeHead(200, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ ok: true, cliente: "painel", acoes: CATALOGO }));
+      }
       recebidos.push({ metodo: req.method!, caminho: req.url!, token: String(req.headers.authorization), corpo });
       const responder = (status: number, dados: unknown) => {
         res.writeHead(status, { "Content-Type": "application/json" });
@@ -234,6 +252,19 @@ test("consulta vai ao executor com o token do painel e não entra no histórico"
   assert.equal(recebidos[0].token, `Bearer ${TOKEN}`);
   assert.deepEqual(recebidos[0].corpo, { params: { stack: "arca", linhas: 10 }, origem: "painel" });
   assert.equal(banco.historico().filter((x) => x.acao === "servico.logs").length, 0);
+});
+
+test("o catálogo vem do executor: o risco de lá decide o histórico, e ele é pedido uma vez por minuto", async () => {
+  const cookie = await entrar();
+  const antes = catalogosPedidos;
+  recebidos.length = 0;
+  const r = await pedir("POST", "/api/acao/app.novidade", { params: { x: 1 } }, cookie);
+  assert.equal(r.status, 200, "uma ação que o painel nunca viu, mas está no catálogo, chega ao executor");
+  assert.equal(recebidos[0].caminho, "/acao/app.novidade");
+  assert.equal(banco.historico()[0].acao, "app.novidade", "ela muda algo (o catálogo diz): entra no histórico");
+  await pedir("POST", "/api/acao/status.recursos", { params: {} }, cookie);
+  assert.notEqual(banco.historico()[0].acao, "status.recursos", "consulta não entra");
+  assert.ok(catalogosPedidos - antes <= 1, "o catálogo é guardado: não é pedido a cada ação");
 });
 
 test("ação fora da lista do painel nem chega ao executor", async () => {
