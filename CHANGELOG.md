@@ -1,5 +1,20 @@
 # Mudanças
 
+## 0.26.0 (2026-10-30)
+
+O começo da Onda 6, o estado desejado: dá para saber, sem mudar nada, o quanto o servidor se afastou do repositório.
+
+- **`sudo ./aplicar --conferir`:** compara o servidor com o que o instalador poria nele, por parte (host, executor, stacks, painel, Atena e lab). Ele lista o que difere (inclusive o modo e o dono), o que falta e o que sobra, e diz quando a diferença está só nos comentários. Sobra é um drop-in feito à mão, um módulo velho do executor ou um script `atena-*` antigo. Ele também conta as cópias `.antes-*` que as trocas deixaram. O `--diff` mostra o que mudaria. Nada muda no servidor; a aplicação por partes vem na próxima parte da onda.
+- **O estado desejado num lugar só:** o `install/estado.py` descreve cada arquivo que o repositório põe no servidor, com o conteúdo preenchido pelo `/etc/atena/atena.conf`. O teste confere que ele anda junto com as etapas do instalador, e um arquivo novo que fique de fora quebra o teste.
+- Testado:
+  - `teste_estado.py`, 44 verificações. Rodando os trechos do próprio instalador, o estado preenche os modelos, tira a GPU e monta o lab.json como ele. Num servidor de mentira, cada estrago aparece no lugar certo, e a linha de comando sai com o código certo;
+  - cada commit rodado sozinho;
+  - o CI reproduzido com `tools/ci-local.sh`.
+
+  No servidor de origem, sem sudo: 28 diferenças, cada uma conferida à mão contra o `--diff`, e 15 arquivos que só o root lê. Os arquivos da Atena foram conferidos pelo container: são iguais ao repositório, menos as ferramentas Python dela, que faltam.
+
+  Sem testar ainda: o `--conferir` com sudo no servidor de origem.
+
 ## 0.25.0 (2026-10-30)
 
 A Atena afinada: mais barata por conversa, falhando rápido e dizendo que falhou, com a memória de acordo com o SOUL e o bom-dia de volta.
