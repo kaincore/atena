@@ -18,6 +18,7 @@ from .local import acao_local_processar
 from .receitas import (acao_receita_apagar, acao_receita_estudar, acao_receita_lista, acao_receita_print,
                        acao_receita_procurar, acao_receita_ver, preparar_receita_apagar, preparar_receita_estudar)
 from .pc import acao_pc_cancelar, acao_pc_desligar, acao_pc_estado, acao_pc_ligar, acao_pc_reiniciar
+from .rede import acao_rede_aparelhos, acao_rede_nomear
 from .sistema import (acao_gasto_api, acao_servico_journal, acao_servico_logs, acao_servico_reiniciar,
                       acao_sistema_processos, acao_sistema_rede, acao_sistema_sensores,
                       acao_status_containers, acao_status_recursos, acao_status_servicos, acao_status_sistema,
@@ -97,6 +98,12 @@ ACOES = {
     "pc.desligar":       Acao(acao_pc_desligar, "desliga o PC em 60 s (pc.cancelar desiste)", None, MUDA, PA),
     "pc.reiniciar":      Acao(acao_pc_reiniciar, "reinicia o PC em 60 s (pc.cancelar desiste)", None, MUDA, PA),
     "pc.cancelar":       Acao(acao_pc_cancelar, "cancela um desligamento ou reinício do PC ainda na contagem", None, MUDA, PA),
+    # a rede de casa, só para ver: quem está conectado e o nome que o dono deu a cada aparelho
+    "rede.aparelhos":    Acao(acao_rede_aparelhos, "aparelhos na rede de casa: IP, MAC, fabricante, o nome que o aparelho "
+                              "diz e o do dono, conectado agora ou visto quando (agora? = varre antes de responder, ~7 s)",
+                              None, CONSULTA, PA),
+    "rede.nomear":       Acao(acao_rede_nomear, "dá um nome a um aparelho da rede de casa pelo MAC (mac, nome; nome "
+                              "vazio tira)", None, MUDA, PA),
     # Claude Code e apps do lab (módulo lab, ./install.sh --lab): o Claude Code roda como atena-claude,
     # sem sudo e sem Docker, com sandbox; no lab, desfazer é git.
     "claude.tarefa":     Acao(acao_claude_tarefa,

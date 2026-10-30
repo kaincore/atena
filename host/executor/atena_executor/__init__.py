@@ -16,6 +16,7 @@ baixo para cima (um módulo só importa dos que vêm antes dele):
   sistema     estado, recursos, sensores, serviços, processos, rede e gasto
   arquivos    ler, procurar e entregar arquivos
   pc          o PC da rede de casa
+  rede        a rede de casa: quem está conectado (só ver) e o nome de cada aparelho
   local       texto privado num modelo que roda em casa
   stacks      as stacks de apps que a Atena edita
   lab         os apps do lab
