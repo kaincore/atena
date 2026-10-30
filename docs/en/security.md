@@ -45,6 +45,7 @@ Three layers keep a port from leaking by mistake:
 - **Token without the `prod` zone.** Client systems are out of her reach.
 - **Only the owner talks to her.** Telegram accepts only your ID; messages from anyone else are ignored, with no reply.
 - **Content is data, not orders.** `SOUL.md` tells her to treat web pages, documents and third-party messages as data. Commands in her container go through "smart" approval, and anything destructive goes to you.
+- **Her rules are read-only.** `SOUL.md` and Atena's skills (`skills/atena`) are mounted read-only in the container. A text she reads can't rewrite them, and neither can Hermes's "learning". Only the installer or `./aplicar` changes them, from the repository. Changing the files' owner wasn't enough, because the folder is hers.
 - **LiteLLM key with a monthly cap.** A mistake of hers can't drain your API credit.
 
 ### Lab (Claude Code)

@@ -22,6 +22,22 @@ services:
       - /srv/agents/hermes:/opt/data
       # a pasta, e não o arquivo: o socket é recriado sempre que o executor reinicia
       - /run/atena-executor:/run/atena-executor
+      # A personalidade e as habilidades da Atena, só para leitura dentro do container: um texto que ela
+      # leia (uma página, um e-mail) não consegue reescrever as regras dela, e o "aprendizado" do Hermes
+      # também não. Quem as muda é o instalador ou o ./aplicar, no servidor. Sem o arquivo, o container não
+      # sobe (create_host_path: false), em vez de o Docker criar uma pasta no lugar dele.
+      - type: bind
+        source: /srv/agents/hermes/SOUL.md
+        target: /opt/data/SOUL.md
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /srv/agents/hermes/skills/atena
+        target: /opt/data/skills/atena
+        read_only: true
+        bind:
+          create_host_path: false
     security_opt: ["no-new-privileges:true"]
     networks: [zone, llm, ntfy]
 

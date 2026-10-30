@@ -45,6 +45,7 @@ São três camadas para nenhuma porta escapar por engano:
 - **Token sem a zona `prod`.** Sistemas de clientes ficam fora do alcance dela.
 - **Só o dono conversa.** O Telegram aceita só o seu ID; mensagens de outras pessoas são ignoradas, sem resposta.
 - **Conteúdo é dado, não ordem.** A `SOUL.md` manda tratar páginas, documentos e mensagens de terceiros como dados. Comandos no container dela passam pela aprovação "smart", e o destrutivo vai para você.
+- **As regras dela são só leitura.** A `SOUL.md` e as habilidades da Atena (`skills/atena`) entram no container só para leitura. Um texto que ela leia não consegue reescrevê-las, e o "aprendizado" do Hermes também não. Quem as muda é o instalador ou o `./aplicar`, a partir do repositório. Mudar o dono dos arquivos não bastava, porque a pasta é dela.
 - **Chave do LiteLLM com teto mensal.** Um erro dela não esvazia o crédito da API.
 
 ### Lab (Claude Code)
