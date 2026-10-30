@@ -47,7 +47,7 @@ export class Banco {
       CREATE TABLE IF NOT EXISTS sessoes (
         id TEXT PRIMARY KEY, criada INTEGER NOT NULL, vista INTEGER NOT NULL,
         senha TEXT NOT NULL, aparelho TEXT NOT NULL DEFAULT '');
-      CREATE TABLE IF NOT EXISTS tentativas (quando INTEGER NOT NULL);
+      CREATE TABLE IF NOT EXISTS tentativas (quando INTEGER NOT NULL, entrada TEXT NOT NULL DEFAULT 'tailscale');
       CREATE TABLE IF NOT EXISTS historico (
         id INTEGER PRIMARY KEY, quando INTEGER NOT NULL, acao TEXT NOT NULL, params TEXT NOT NULL,
         estado TEXT NOT NULL, resumo TEXT NOT NULL DEFAULT '', pedido TEXT);
@@ -60,8 +60,15 @@ export class Banco {
         criada INTEGER NOT NULL, UNIQUE (origem, texto));
     `);
     // banco da versão 0.4 e anteriores: o histórico ainda não ligava a execução ao agendamento
-    const colunas = this.db.prepare("PRAGMA table_info(historico)").all() as { name: string }[];
-    if (!colunas.some((c) => c.name === "agendamento")) this.db.exec("ALTER TABLE historico ADD COLUMN agendamento INTEGER");
+    const colunas = (tabela: string) => (this.db.prepare(`PRAGMA table_info(${tabela})`).all() as { name: string }[]).map((c) => c.name);
+    if (!colunas("historico").includes("agendamento")) this.db.exec("ALTER TABLE historico ADD COLUMN agendamento INTEGER");
+    // banco da versão 0.14 e anteriores: as tentativas erradas não diziam a entrada e travavam as duas;
+    // as que ainda estão na janela (15 min no máximo) continuam valendo nas duas
+    if (!colunas("tentativas").includes("entrada"))
+      this.db.exec(`BEGIN;
+        ALTER TABLE tentativas ADD COLUMN entrada TEXT NOT NULL DEFAULT 'tailscale';
+        INSERT INTO tentativas (quando, entrada) SELECT quando, 'casa' FROM tentativas;
+        COMMIT;`);
   }
 
   limpar(agora = Date.now()) {
@@ -105,26 +112,27 @@ export class Banco {
     this.encerrar(hashToken(token));
   }
 
-  // --- tentativas erradas: 5 em 15 minutos bloqueiam a entrada (uma conta só, então a trava é geral)
+  // --- tentativas erradas: 5 em 15 minutos bloqueiam a entrada por onde vieram (tailscale ou casa).
+  // Uma conta só, mas a trava é de cada entrada: quem erra a senha no Wi-Fi não tranca o dono fora de casa
 
-  bloqueadoAte(agora = Date.now()): number | null {
+  bloqueadoAte(entrada: string, agora = Date.now()): number | null {
     const linhas = this.db
-      .prepare("SELECT quando FROM tentativas WHERE quando >= ? ORDER BY quando")
-      .all(agora - JANELA_TENTATIVAS) as { quando: number }[];
+      .prepare("SELECT quando FROM tentativas WHERE entrada = ? AND quando >= ? ORDER BY quando")
+      .all(entrada, agora - JANELA_TENTATIVAS) as { quando: number }[];
     if (linhas.length < LIMITE_TENTATIVAS) return null;
     return linhas[linhas.length - LIMITE_TENTATIVAS].quando + JANELA_TENTATIVAS;
   }
 
-  errou(agora = Date.now()): number {
-    this.db.prepare("INSERT INTO tentativas (quando) VALUES (?)").run(agora);
+  errou(entrada: string, agora = Date.now()): number {
+    this.db.prepare("INSERT INTO tentativas (quando, entrada) VALUES (?, ?)").run(agora, entrada);
     const { n } = this.db
-      .prepare("SELECT count(*) AS n FROM tentativas WHERE quando >= ?")
-      .get(agora - JANELA_TENTATIVAS) as { n: number };
+      .prepare("SELECT count(*) AS n FROM tentativas WHERE entrada = ? AND quando >= ?")
+      .get(entrada, agora - JANELA_TENTATIVAS) as { n: number };
     return Math.max(0, LIMITE_TENTATIVAS - n);
   }
 
-  acertou() {
-    this.db.exec("DELETE FROM tentativas");
+  acertou(entrada: string) {
+    this.db.prepare("DELETE FROM tentativas WHERE entrada = ?").run(entrada);
   }
 
   // --- histórico das ações que mudam algo (as consultas não entram)

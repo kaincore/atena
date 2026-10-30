@@ -171,7 +171,7 @@ test("login certo dá sessão; sair encerra", async () => {
   assert.equal((await pedir("GET", "/api/eu", undefined, cookie)).status, 401);
 });
 
-test("pela rede de casa, em HTTP, o cookie sai sem Secure; a senha errada conta nas duas entradas", async () => {
+test("pela rede de casa, em HTTP, o cookie sai sem Secure; a senha errada conta só na entrada em que foi digitada", async () => {
   await new Promise<void>((r) => painel.casa.listen(0, "127.0.0.1", r));
   const casa = `http://127.0.0.1:${(painel.casa.address() as AddressInfo).port}`;
   const entrarEmCasa = (senha: string) => fetch(casa + "/api/entrar", {
@@ -193,10 +193,34 @@ test("pela rede de casa, em HTTP, o cookie sai sem Secure; a senha errada conta 
     assert.match(tailnet.cabecalhos.get("set-cookie")!, /Secure/);
 
     assert.match(((await (await entrarEmCasa("errada")).json()) as { erro: string }).erro, /restam 4/);
-    assert.match((await pedir("POST", "/api/entrar", { senha: "errada" })).corpo.erro, /restam 3/);
+    assert.match((await pedir("POST", "/api/entrar", { senha: "errada" })).corpo.erro, /restam 4/);
     assert.equal((await entrarEmCasa("a senha certa")).status, 200); // a certa zera a conta
+    assert.equal((await pedir("POST", "/api/entrar", { senha: "a senha certa" })).status, 200);
   } finally {
     painel.casa.close();
+  }
+});
+
+test("cinco senhas erradas pela rede de casa travam só a rede de casa, e o dono entra pelo Tailscale", async () => {
+  await new Promise<void>((r) => painel.casa.listen(0, "127.0.0.1", r));
+  const casa = `http://127.0.0.1:${(painel.casa.address() as AddressInfo).port}`;
+  const entrarEmCasa = async (senha: string) => {
+    const r = await fetch(casa + "/api/entrar", {
+      method: "POST", headers: { "Content-Type": "application/json", "X-Atena": "1" }, body: JSON.stringify({ senha }),
+    });
+    return { status: r.status, erro: ((await r.json()) as { erro?: string }).erro };
+  };
+  try {
+    for (let i = 0; i < 5; i++) assert.equal((await entrarEmCasa("errada")).status, 401);
+    const travada = await entrarEmCasa("a senha certa");
+    assert.equal(travada.status, 429);
+    assert.match(travada.erro!, /rede de casa.*15 min/);
+    assert.match((await pedir("POST", "/api/entrar", { senha: "errada" })).corpo.erro, /restam 4/, "o Tailscale conta as dele");
+    await entrar();
+    assert.equal((await entrarEmCasa("a senha certa")).status, 429, "entrar pelo Tailscale não destrava a rede de casa");
+  } finally {
+    painel.casa.close();
+    banco.acertou("casa");
   }
 });
 
@@ -390,7 +414,7 @@ test("sem token ou sem executor, o erro diz o que fazer", async () => {
 });
 
 test("senha errada 5 vezes bloqueia, até a certa", async () => {
-  banco.acertou();
+  banco.acertou("tailscale");
   for (let i = 0; i < 5; i++) {
     const r = await pedir("POST", "/api/entrar", { senha: "errada" });
     assert.equal(r.status, 401);
@@ -398,7 +422,7 @@ test("senha errada 5 vezes bloqueia, até a certa", async () => {
   const bloqueado = await pedir("POST", "/api/entrar", { senha: "a senha certa" });
   assert.equal(bloqueado.status, 429);
   assert.match(bloqueado.corpo.erro, /15 min/);
-  banco.acertou();
+  banco.acertou("tailscale");
 });
 
 test("sem senha definida, o login explica como definir", async () => {

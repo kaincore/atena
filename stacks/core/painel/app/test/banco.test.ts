@@ -47,19 +47,30 @@ test("encerrar e listar sessões", () => {
 test("5 erros em 15 minutos bloqueiam; depois libera", () => {
   const b = novo();
   const t0 = 2_000_000_000_000;
-  for (let i = 0; i < 4; i++) assert.equal(b.errou(t0 + i), 4 - i);
-  assert.equal(b.bloqueadoAte(t0 + 10), null);
-  assert.equal(b.errou(t0 + 4), 0);
-  assert.equal(b.bloqueadoAte(t0 + 10), t0 + JANELA_TENTATIVAS);
-  assert.equal(b.bloqueadoAte(t0 + JANELA_TENTATIVAS + 5), null);
+  for (let i = 0; i < 4; i++) assert.equal(b.errou("tailscale", t0 + i), 4 - i);
+  assert.equal(b.bloqueadoAte("tailscale", t0 + 10), null);
+  assert.equal(b.errou("tailscale", t0 + 4), 0);
+  assert.equal(b.bloqueadoAte("tailscale", t0 + 10), t0 + JANELA_TENTATIVAS);
+  assert.equal(b.bloqueadoAte("tailscale", t0 + JANELA_TENTATIVAS + 5), null);
 });
 
 test("acertar zera as tentativas", () => {
   const b = novo();
-  b.errou();
-  b.errou();
-  b.acertou();
-  assert.equal(b.errou(), 4);
+  b.errou("tailscale");
+  b.errou("tailscale");
+  b.acertou("tailscale");
+  assert.equal(b.errou("tailscale"), 4);
+});
+
+test("cada entrada conta as próprias tentativas: errar no Wi-Fi não trava o Tailscale", () => {
+  const b = novo();
+  const t0 = 2_000_000_000_000;
+  for (let i = 0; i < 5; i++) b.errou("casa", t0 + i);
+  assert.equal(b.bloqueadoAte("casa", t0 + 10), t0 + JANELA_TENTATIVAS);
+  assert.equal(b.bloqueadoAte("tailscale", t0 + 10), null);
+  assert.equal(b.errou("tailscale", t0 + 10), 4);
+  b.acertou("tailscale");
+  assert.equal(b.bloqueadoAte("casa", t0 + 20), t0 + JANELA_TENTATIVAS, "acertar numa entrada não destrava a outra");
 });
 
 test("histórico registra e atualiza o pedido", () => {
@@ -79,7 +90,7 @@ test("limpar apaga o que venceu", () => {
   const b = novo();
   const velho = Date.now() - 100 * 24 * 3600 * 1000;
   b.criarSessao("s", "", velho);
-  b.errou(velho);
+  b.errou("casa", velho);
   b.db.prepare("INSERT INTO historico (quando, acao, params, estado) VALUES (?, 'x', '{}', 'concluido')").run(velho);
   b.limpar();
   for (const tabela of ["sessoes", "tentativas", "historico"])
@@ -100,5 +111,27 @@ test("banco da versão 0.4: o histórico ganha a coluna do agendamento e continu
   b.atualizarRegistro(id, { estado: "concluido", pedido: "abcd1234" });
   assert.deepEqual(b.historico(5, 7).map((r) => [r.estado, r.pedido]), [["concluido", "abcd1234"]]);
   b.db.close();
+  rmSync(pasta, { recursive: true, force: true });
+});
+
+test("banco da versão 0.14: as tentativas ganham a entrada, e as de antes continuam valendo nas duas", () => {
+  const pasta = mkdtempSync(join(tmpdir(), "painel-banco-"));
+  const arquivo = join(pasta, "painel.db");
+  const agora = Date.now();
+  const velho = new DatabaseSync(arquivo);
+  velho.exec("CREATE TABLE tentativas (quando INTEGER NOT NULL)");
+  const inserir = velho.prepare("INSERT INTO tentativas (quando) VALUES (?)");
+  for (let i = 0; i < 3; i++) inserir.run(agora - 1000 + i);
+  velho.close();
+  const b = new Banco(arquivo);
+  assert.equal(b.errou("casa", agora), 1, "as 3 de antes contam na rede de casa");
+  assert.equal(b.errou("tailscale", agora), 1, "e no Tailscale");
+  b.acertou("tailscale");
+  assert.equal(b.errou("tailscale", agora), 4);
+  assert.equal(b.errou("casa", agora), 0);
+  b.db.close();
+  const deNovo = new Banco(arquivo);
+  assert.equal(deNovo.errou("tailscale", agora), 3, "abrir de novo não copia as tentativas outra vez");
+  deNovo.db.close();
   rmSync(pasta, { recursive: true, force: true });
 });
