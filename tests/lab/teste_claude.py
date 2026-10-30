@@ -226,6 +226,62 @@ confere("continuar segue na conta em que terminou", fila["sessao_conta"] == "pes
 confere("continuar trabalho de outro cliente: 404", erro(ex, ex.preparar_claude_tarefa, {**cliente, "cliente": "painel"},
                                                          {"pedido": "faz algo", "continuar": r3["id"]})[0] == 404)
 
+# --- prazo: o runner parou no meio (queda de energia) e o resultado nunca vem ---
+rodar_original = ex.rodar
+ex.rodar = lambda argv, tempo=30, cancelavel=None: (0, "")   # o ss do app.publicar
+for d in ("prazo", "prazo-fila", "prazo-cancelar"):
+    os.makedirs(f"{ex.PROJETOS_LAB}/{d}")
+    with open(f"{ex.PROJETOS_LAB}/{d}/Dockerfile", "w") as f:
+        f.write("FROM python:3.14-slim\n")
+v, _ = comecar({**base, "projeto": "prazo", "minutos": 30})
+uma_volta(ex)
+confere("prazo: na fila do runner, o tempo do trabalho ainda não conta", v["estado"] == "executando" and not v.get("comecou"), v)
+os.remove(f"{tmp}/fila/{v['id']}.executar.json")   # o runner pegou
+uma_volta(ex)
+confere("prazo: o executor anota quando o runner pega o trabalho", v["estado"] == "executando" and v.get("comecou"), v)
+v["comecou"] = time.time() - 30 * 60 - ex.FOLGA_CLAUDE + 60
+uma_volta(ex)
+confere("prazo: dentro dos minutos do trabalho mais a folga, continua esperando", v["estado"] == "executando")
+pendente = permissao(v, 1, detalhe="ls /opt")
+confere("prazo: projeto travado enquanto o trabalho roda (app.publicar 409)",
+        erro(ex, ex.preparar_app_publicar, cliente, {"projeto": "prazo"})[0] == 409)
+avisos.clear()
+v["comecou"] = time.time() - 30 * 60 - ex.FOLGA_CLAUDE - 1   # e o runner morreu no meio
+uma_volta(ex)
+confere("prazo vencido sem resultado: falhou, com o erro e o próximo passo", v["estado"] == "falhou"
+        and "journalctl -u atena-claude" in (v.get("erro") or "") and not v.get("segredo"), v.get("erro"))
+confere("prazo vencido: o celular fica sabendo", any(v["id"] in a["titulo"] for a in avisos), avisos)
+confere("prazo vencido: permissão pendente encerra", pendente["estado"] == "expirado"
+        and ler_json(f"{tmp}/fila/{v['id']}-1.resposta")["permitir"] is False)
+confere("prazo vencido: sinal de cancelar, se o runner ainda estiver nele", os.path.exists(f"{tmp}/fila/{v['id']}.cancelar"))
+confere("prazo vencido: o projeto fica livre (app.publicar e claude.tarefa)",
+        erro(ex, ex.preparar_app_publicar, cliente, {"projeto": "prazo"})[0] is None
+        and erro(ex, ex.preparar_claude_tarefa, cliente, {**base, "projeto": "prazo"})[0] is None)
+escrever_json(f"{tmp}/resultados/{v['id']}.executar.json", {"id": v["id"], "fase": "executar", "ok": True, "texto": "atrasado"})
+uma_volta(ex)
+confere("prazo vencido: resultado que chega depois não muda o pedido", v["estado"] == "falhou" and v.get("resumo") != "atrasado")
+w, _ = comecar({**base, "projeto": "prazo-fila"})
+w["enfileirado"] = time.time() - ex.MAX_MINUTOS_CLAUDE * 60 - ex.FOLGA_CLAUDE + 60
+uma_volta(ex)
+confere("prazo na fila: espera até o trabalho mais longo da frente terminar", w["estado"] == "executando")
+w["enfileirado"] = time.time() - ex.MAX_MINUTOS_CLAUDE * 60 - ex.FOLGA_CLAUDE - 1
+uma_volta(ex)
+confere("prazo na fila vencido: falhou e sai da fila (o runner não pega mais)", w["estado"] == "falhou"
+        and "fila" in (w.get("erro") or "") and not os.path.exists(f"{tmp}/fila/{w['id']}.executar.json"), w.get("erro"))
+y, _ = comecar({**base, "projeto": "prazo-cancelar"})
+os.remove(f"{tmp}/fila/{y['id']}.executar.json")   # o runner pegou
+ex.acao_claude_cancelar(cliente, {"pedido": y["id"]})
+uma_volta(ex)
+confere("cancelar: espera o runner confirmar", y["estado"] == "executando" and y.get("cancelando"))
+y["cancelando_desde"] = time.time() - ex.ESPERA_CANCELAR - 1
+avisos.clear()
+uma_volta(ex)
+confere("cancelar sem resposta do runner: cancelado, com o motivo", y["estado"] == "cancelado"
+        and "runner" in (y.get("erro") or "") and any(y["id"] in a["titulo"] for a in avisos), y.get("erro"))
+confere("cancelar sem resposta do runner: o projeto fica livre",
+        erro(ex, ex.preparar_claude_tarefa, cliente, {**base, "projeto": "prazo-cancelar"})[0] is None)
+ex.rodar = rodar_original
+
 # --- limites da fila ---
 for nome in os.listdir(f"{tmp}/fila"):
     os.remove(f"{tmp}/fila/{nome}")

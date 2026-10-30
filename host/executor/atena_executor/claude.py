@@ -6,7 +6,9 @@ decisão em fila/<trabalho>-<n>.resposta. Perguntas do Claude Code chegam como
 fila/<trabalho>-q<n>.pergunta: o celular é avisado na hora (com botões, se houver opções) e a
 resposta volta por claude.responder (do dono, ou da Atena se ele não responder em 10 min).
 Com ATENA_CLAUDE_SKILLS=sim, claude.tarefa aceita uma skill do catálogo do lab (skills.json), que o
-runner chama no começo do pedido."""
+runner chama no começo do pedido.
+O resultado tem prazo (prazo_claude): se o runner morrer no meio (queda de energia), o trabalho não
+fica "executando" para sempre, travando o projeto."""
 
 import glob
 import json
@@ -28,6 +30,11 @@ from .tokens import carregar_tokens
 CLAUDE = "/var/lib/atena-claude"              # fila, resultados e contas do Claude Code do lab
 SKILLS_CLAUDE = "/usr/local/lib/atena-claude/skills.json"   # catálogo das skills (o runner lê o mesmo)
 MAX_FILA_CLAUDE = 5         # trabalhos do Claude Code esperando ou rodando (3 rodam juntos)
+MAX_MINUTOS_CLAUDE = 600    # um trabalho pede de 5 a 600 min; o runner corta no mesmo limite
+# O runner passa um pouco dos minutos do trabalho: até 1 min a mais por troca de conta, 15 s para fechar o
+# Claude Code e o git antes e depois (até 30 s cada). Passou disso sem resultado, ele parou no meio.
+FOLGA_CLAUDE = 15 * 60
+ESPERA_CANCELAR = 5 * 60    # o runner vê o sinal de cancelar em 2 s e fecha o Claude Code em até 15 s
 MODELOS_CLAUDE = {"fable", "opus", "sonnet", "haiku"}
 ESFORCOS_CLAUDE = ("low", "medium", "high", "xhigh", "max")
 ESPERA_PERGUNTA = 30 * 60   # a ponte espera a resposta de uma pergunta do Claude Code por até 30 min
@@ -84,7 +91,7 @@ def enfileirar(p, fase, **extra):
     with open(os.open(temporario, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o640), "w") as f:
         json.dump(dados, f, ensure_ascii=False)
     os.replace(temporario, final)
-    mudar(p, fase=fase, estado={"plano": "planejando", "executar": "executando"}[fase])
+    mudar(p, fase=fase, estado={"plano": "planejando", "executar": "executando"}[fase], enfileirado=time.time())
 
 
 def cancelar_claude(p):
@@ -92,8 +99,8 @@ def cancelar_claude(p):
         pass   # o runner vê este arquivo e interrompe o Claude Code
     try:   # se ainda não tinha começado, basta tirar da fila
         os.unlink(f"{CLAUDE}/fila/{p['id']}.{p['fase']}.json")
-    except FileNotFoundError:
-        mudar(p, cancelando=True)   # já está rodando: o runner interrompe e manda o resultado
+    except FileNotFoundError:   # já está rodando: o runner interrompe e manda o resultado
+        mudar(p, cancelando=True, cancelando_desde=time.time())
         return
     os.unlink(f"{CLAUDE}/fila/{p['id']}.cancelar")
     mudar(p, estado="cancelado", segredo=None)
@@ -256,19 +263,88 @@ def acompanhar():
                     r = resultado_claude(p["id"], p["fase"])
                     if r:
                         concluir_claude(p, r)
+                    else:
+                        vigiar_prazo(p)
             except Exception as e:
                 log(evento="acompanhar: erro", pedido=p.get("id"), erro=repr(e))
 
 
-def concluir_claude(p, r):
-    texto = (r.get("texto") or "").strip() or "(sem resumo)"
-    with TRAVA:   # permissões e perguntas ainda esperando o dono perdem o sentido
+def prazo_claude(p):
+    """Até quando o executor espera o resultado de um trabalho. Na fila do runner: o trabalho mais longo
+    que pode estar na frente (com até 5 na fila e 3 rodando, os que abrem a vaga já rodavam quando ele
+    entrou). Depois que o runner pega: os minutos do próprio trabalho. Os dois com a folga; com cancelar
+    pedido, bem menos."""
+    if p.get("comecou"):
+        prazo = p["comecou"] + (p["params"].get("minutos") or 60) * 60 + FOLGA_CLAUDE
+    else:
+        prazo = (p.get("enfileirado") or p["criado"]) + MAX_MINUTOS_CLAUDE * 60 + FOLGA_CLAUDE
+    if p.get("cancelando_desde"):
+        prazo = min(prazo, p["cancelando_desde"] + ESPERA_CANCELAR)
+    return prazo
+
+
+def vigiar_prazo(p):
+    """Um trabalho ainda sem resultado: anota quando o runner o tira da fila e fecha o que passou do prazo."""
+    if not p.get("comecou") and not os.path.exists(f"{CLAUDE}/fila/{p['id']}.{p['fase']}.json"):
+        mudar(p, comecou=time.time())   # o runner pegou: daqui conta o tempo do próprio trabalho
+    if time.time() > prazo_claude(p):
+        vencer_claude(p)
+
+
+def vencer_claude(p):
+    """Passou do prazo sem resultado: o runner parou no meio (queda de energia, reinício) ou nem pegou o
+    trabalho. Fecha o pedido, o que libera o projeto, e garante que o trabalho não roda mais: tira da
+    fila ou deixa o sinal de cancelar, para o caso de o runner ainda estar nele."""
+    r = resultado_claude(p["id"], p["fase"])
+    if r:   # chegou agora
+        concluir_claude(p, r)
+        return
+    try:
+        os.unlink(f"{CLAUDE}/fila/{p['id']}.{p['fase']}.json")
+        na_fila = True
+    except FileNotFoundError:
+        na_fila = False
+        with open(os.open(f"{CLAUDE}/fila/{p['id']}.cancelar", os.O_WRONLY | os.O_CREAT, 0o640), "w"):
+            pass
+    encerrar_pendentes(p, "o trabalho passou do prazo")
+    pasta = f"/srv/lab/projetos/{p['params'].get('projeto')}"
+    if p.get("cancelando_desde"):
+        erro = (f"o runner não confirmou o cancelamento em {ESPERA_CANCELAR // 60} min: ele parou no meio "
+                f"(queda de energia, reinício?). O que o Claude Code já tinha feito ficou em {pasta}; "
+                "veja journalctl -u atena-claude")
+        mudar(p, estado="cancelado", segredo=None, erro=erro, resumo=erro)
+        avisar(f"Cancelado: trabalho {p['id']}", erro, tags=["no_entry"])
+    elif na_fila:
+        erro = (f"ficou na fila mais de {(MAX_MINUTOS_CLAUDE * 60 + FOLGA_CLAUDE) // 3600} h sem o runner pegar; "
+                "confira com systemctl status atena-claude.path atena-claude e journalctl -u atena-claude, "
+                "e peça de novo")
+        mudar(p, estado="falhou", segredo=None, erro=erro, resumo=erro)
+        avisar(f"Claude Code não começou (trabalho {p['id']})", erro, tags=["x"])
+    else:
+        minutos = (p["params"].get("minutos") or 60) + FOLGA_CLAUDE // 60
+        erro = (f"o runner pegou o trabalho e não deu resultado em {minutos} min (o tempo pedido mais a folga): "
+                f"ele parou no meio (queda de energia, reinício?). O que o Claude Code já tinha feito ficou em "
+                f"{pasta}; veja journalctl -u atena-claude e peça de novo, se precisar")
+        mudar(p, estado="falhou", segredo=None, erro=erro, resumo=erro)
+        avisar(f"Claude Code parou sem resultado (trabalho {p['id']})", erro, tags=["x"])
+    log(evento="trabalho do Claude Code passou do prazo", pedido=p["id"], projeto=p["params"].get("projeto"),
+        na_fila=na_fila)
+
+
+def encerrar_pendentes(p, motivo):
+    """Permissões e perguntas do trabalho ainda esperando o dono perdem o sentido."""
+    with TRAVA:
         pendentes = [q for q in ESTADO["pedidos"].values()
                      if q["acao"] in ("claude.permissao", "claude.pergunta")
                      and q["estado"] in ("aguardando", "perguntando") and q["params"]["trabalho"] == p["id"]]
     for q in pendentes:
         mudar(q, estado="expirado", segredo=None, nonce=None)
-        negar_permissao(q, "o trabalho terminou")
+        negar_permissao(q, motivo)
+
+
+def concluir_claude(p, r):
+    texto = (r.get("texto") or "").strip() or "(sem resumo)"
+    encerrar_pendentes(p, "o trabalho terminou")
     if r.get("trocas"):   # bateu o limite de uso e passou para outra conta (ATENA_CLAUDE_TROCA=sim)
         mudar(p, conta_final=r.get("conta"), trocas=r["trocas"])
     if r.get("cancelado"):
@@ -334,8 +410,8 @@ def preparar_claude_tarefa(cliente, params):
     if params["publicar"] and "app.publicar" not in cliente.get("acoes", []):
         raise Erro(403, f"o cliente {cliente['cliente']} não pode pedir app.publicar")
     minutos = params.setdefault("minutos", 60)   # trabalhos longos (a noite toda): até 600
-    if not isinstance(minutos, int) or not 5 <= minutos <= 600:
-        raise Erro(400, "minutos deve ser um número de 5 a 600")
+    if not isinstance(minutos, int) or not 5 <= minutos <= MAX_MINUTOS_CLAUDE:
+        raise Erro(400, f"minutos deve ser um número de 5 a {MAX_MINUTOS_CLAUDE}")
     if continuar is not None:   # continua a conversa de um trabalho anterior
         with TRAVA:
             anterior = ESTADO["pedidos"].get(continuar) if isinstance(continuar, str) else None
