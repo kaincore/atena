@@ -190,6 +190,18 @@ The NVIDIA driver updates with the system, always within the same series. **Don'
 
 Then send `/new` on Telegram.
 
+## Compare the server with the repository
+
+`sudo ./aplicar --conferir`, in the repository folder, compares the server with what the installer would put on it, without changing anything. The values come from `/etc/atena/atena.conf`, and the options (`--hermes`, `--lab`, `--painel`, `--ssh`) are worked out from what is already installed. For each part (`host`, `executor`, `stacks`, `painel`, `hermes` and `lab`), it lists:
+- **difere (differs):** the server's file isn't the repository's, or its mode and owner aren't. "Só nos comentários" means only the comments differ;
+- **falta (missing):** the repository puts the file there and the server doesn't have it;
+- **sobra (left over):** the file is in a template folder and doesn't come from the repository, like a hand-made drop-in. The template folders are `/usr/local/sbin/atena-*`, the `atena*` units and their drop-ins, the executor and the panel's code;
+- **old copies:** the `.antes-*` files that hand changes left behind (`--copias` lists them).
+
+`--diff` shows what would change in each file, from the server to the repository, and `--parte executor,hermes` limits the check to those parts. Without `sudo`, what only root can read shows up as `?`. It exits with 0 when everything matches.
+
+What belongs to the server is left out: the `.env` files, the data in `/srv`, the stacks that don't come from the repository and Atena's memory, which only has to exist. Before a hand change, run `--conferir`. Afterwards, it shows whether the change also has to go into the repository.
+
 ## Run the installer again
 
 `sudo ./install.sh` can run as many times as you like:

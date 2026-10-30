@@ -190,6 +190,18 @@ O driver da NVIDIA atualiza junto com o sistema, sempre dentro da mesma série. 
 
 Depois, `/new` no Telegram.
 
+## Conferir o servidor contra o repositório
+
+`sudo ./aplicar --conferir`, na pasta do repositório, compara o servidor com o que o instalador poria nele, sem mudar nada. Os valores vêm do `/etc/atena/atena.conf`, e as opções (`--hermes`, `--lab`, `--painel`, `--ssh`) são descobertas pelo que já está instalado. Para cada parte (`host`, `executor`, `stacks`, `painel`, `hermes` e `lab`), ele lista:
+- **difere:** o arquivo do servidor não é o do repositório, ou o modo e o dono não são. "Só nos comentários" quer dizer que o resto é igual;
+- **falta:** o repositório põe o arquivo e o servidor não tem;
+- **sobra:** o arquivo está numa pasta do modelo e não vem do repositório, como um drop-in feito à mão. As pastas do modelo são `/usr/local/sbin/atena-*`, as unidades `atena*` e os drop-ins delas, o executor e o código do painel;
+- **cópias antigas:** os `.antes-*` que as trocas deixaram (`--copias` lista).
+
+`--diff` mostra o que mudaria em cada arquivo, do servidor para o repositório, e `--parte executor,hermes` limita a conferência a essas partes. Sem `sudo`, o que só o root lê aparece com `?`. Ele sai com 0 quando está tudo igual.
+
+Fica de fora o que é do servidor: os `.env`, os dados em `/srv`, as stacks que não vêm do repositório e a memória da Atena, que só precisa existir. Antes de uma troca à mão, rode o `--conferir`. Depois dela, ele mostra se a troca também precisa entrar no repositório.
+
 ## Rodar o instalador de novo
 
 `sudo ./install.sh` pode rodar quantas vezes quiser:

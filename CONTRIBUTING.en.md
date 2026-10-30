@@ -58,6 +58,7 @@ The jobs are in `.github/workflows/verificar.yml`; the Python tests live in `tes
 - Bash with `set -euo pipefail`, clean under shellcheck.
 - **Every step runs again without breaking anything:** check before creating, and install files with `instalar_arquivo` (it keeps a copy of what was there). Messages through `ok`, `aviso` and `erro`.
 - What only you can do (a login, pasting a password) comes at the end, as the next step.
+- **A new file that goes to the server** also goes into `install/estado.py`, the desired state that `./aplicar --conferir` compares with the server. `tests/install/teste_estado.py` fails if it's left out.
 
 ## Releases
 
@@ -67,4 +68,4 @@ The jobs are in `.github/workflows/verificar.yml`; the Python tests live in `tes
 
 ## On a real server
 
-Change the repository first, with a test; then install (`sudo ./install.sh` with the same options as before updates what changed). A change made by hand on a server comes with a backup and a way to undo it, and the same change goes back to the repository, so the server stays identical to the template.
+Change the repository first, with a test; then install (`sudo ./install.sh` with the same options as before updates what changed). A change made by hand on a server comes with a backup and a way to undo it, and the same change goes back to the repository, so the server stays identical to the template. `sudo ./aplicar --conferir` shows how the server differs from the repository.

@@ -58,6 +58,7 @@ Os jobs estão em `.github/workflows/verificar.yml`; os testes de Python ficam e
 - Bash com `set -euo pipefail`, limpo no shellcheck.
 - **Cada etapa roda de novo sem estragar nada:** confira antes de criar, e instale arquivos com `instalar_arquivo` (ele guarda uma cópia do que já existia). Mensagens com `ok`, `aviso` e `erro`.
 - O que só você pode fazer (login, colar uma senha) sai no fim, como próximo passo.
+- **Arquivo novo que vai para o servidor** entra também no `install/estado.py`, o estado desejado que o `./aplicar --conferir` compara com o servidor. O `tests/install/teste_estado.py` falha se ele ficar de fora.
 
 ## Versões
 
@@ -67,4 +68,4 @@ Os jobs estão em `.github/workflows/verificar.yml`; os testes de Python ficam e
 
 ## Num servidor de verdade
 
-Mude primeiro o repositório, com teste; depois instale (`sudo ./install.sh` com as mesmas opções de antes atualiza o que mudou). Uma troca feita à mão num servidor leva backup e um jeito de desfazer, e a mesma mudança volta para o repositório, para o servidor continuar igual ao modelo.
+Mude primeiro o repositório, com teste; depois instale (`sudo ./install.sh` com as mesmas opções de antes atualiza o que mudou). Uma troca feita à mão num servidor leva backup e um jeito de desfazer, e a mesma mudança volta para o repositório, para o servidor continuar igual ao modelo. O `sudo ./aplicar --conferir` mostra o que o servidor tem de diferente do repositório.

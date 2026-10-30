@@ -158,14 +158,15 @@ As versões são fixas de propósito. Antes de atualizar, leia os avisos de segu
 
 ```text
 atena/
-├── install.sh, install/   instalador (uma etapa por arquivo)
+├── install.sh, install/   instalador (uma etapa por arquivo) e o estado desejado do servidor
+├── aplicar                confere o servidor contra o repositório (--conferir)
 ├── host/                  arquivos do sistema: Docker, systemd, firewall, SSH, executor, avisos, lab
 │   ├── lab/               ponte, sandbox e guarda de escopo do Claude Code do lab
 │   └── windows/           script e passo a passo do PC da rede de casa (opcional)
 ├── stacks/<zona>/<nome>/  composes das stacks
 │   └── core/painel/app/   o painel: servidor, interface e testes
 ├── hermes/                a Atena: personalidade, habilidades, ronda e configuração
-├── tests/                 testes do executor, da ronda e do lab
+├── tests/                 testes do executor, da Atena, do lab e do instalador
 ├── tools/                 CI local, verificador de vazamentos e trava de commit
 └── docs/                  documentação em português e inglês
 ```

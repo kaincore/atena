@@ -162,14 +162,15 @@ Commands, file names and on-screen messages are in Portuguese, the project's ori
 
 ```text
 atena/
-├── install.sh, install/   installer (one step per file)
+├── install.sh, install/   installer (one step per file) and the server's desired state
+├── aplicar                checks the server against the repository (--conferir)
 ├── host/                  system files: Docker, systemd, firewall, SSH, executor, alerts, lab
 │   ├── lab/               the lab's Claude Code bridge, sandbox and scope guard
 │   └── windows/           script and guide for the optional home PC
 ├── stacks/<zone>/<name>/  stack compose files
 │   └── core/painel/app/   the panel: server, interface and tests
 ├── hermes/                Atena: personality, skills, patrol and configuration
-├── tests/                 tests for the executor, the patrol and the lab
+├── tests/                 tests for the executor, Atena, the lab and the installer
 ├── tools/                 local CI, leak checker and commit guard
 └── docs/                  documentation in Portuguese and English
 ```
