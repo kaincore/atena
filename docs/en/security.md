@@ -58,7 +58,7 @@ Three layers keep a port from leaking by mistake:
 ### Panel
 - **No network, no root, no Docker.** `network_mode: none`, read-only disk, no capabilities, `no-new-privileges`, 256 MB. The `atena-painel` user is only in the `atena-acoes` group; the installer stops if it's in the `docker` group.
 - **Entry through Tailscale**, through a socket only root and the panel can open (`/srv/core/painel` is 700). The home-network one (`ATENA_PAINEL_CASA=sim`) is a second socket next to it, opened by the systemd forwarder, which runs as `atena-painel` with no network of its own and no capabilities.
-- **A password that's hard to brute-force:** scrypt (N=2^15, 32 MB per attempt), 5 mistakes in 15 minutes lock the login, and one check at a time.
+- **A password that's hard to brute-force:** scrypt (N=2^15, 32 MB per attempt), 5 mistakes in 15 minutes lock the entry they came through (Tailscale or the home network: someone guessing on the Wi-Fi can't lock the owner out from away), and one check at a time.
 - **Cookie** HttpOnly, Secure (through Tailscale) and SameSite=Strict. Every POST requires JSON and a custom header, which blocks forms from other sites (CSRF).
 - **CSP** that only allows the panel itself, no frames. Screens are built without `innerHTML`, so a container name or a log line never becomes code.
 - **Own token, no phone approval:** 38 actions. The only one that deletes is `app.apagar`, lab only: the code goes to the trash for 30 days, and deleting the data requires typing the app's name. It edits only the apps zone stacks, always with a snapshot first, and reads the server except secrets, like Atena. Whoever has the panel password has this reach: one more reason for a password used only there.

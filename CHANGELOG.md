@@ -1,5 +1,34 @@
 # Mudanças
 
+## 0.24.0 (2026-10-30)
+
+As travas: o que a Atena e as stacks podem tocar fica do tamanho certo, e o que trava sem ninguém ver passa a fechar sozinho (painel 0.15.0). Antes de ela ganhar casa, e-mail ou voz, nenhum texto lido por ela deveria conseguir trocar a imagem de outro serviço, copiar um banco ou aprovar o próprio pedido.
+
+- **Imagem só com o nome da própria stack:** uma stack da zona apps podia construir uma imagem com o nome da do LiteLLM, do Hermes ou do painel, e a cópia subiria na próxima recriação deles (até pelo `atena-reconciliar`, no boot). Agora, com `build`, a imagem se chama `atena-apps/<stack>` ou `atena-apps/<stack>-<algo>`; sem `build`, uma imagem que só existe construída no servidor (`atena/`, `atena-lab/`, `atena-apps/` de outra stack) não passa; `build.tags`, `cache_from` e `cache_to` também não.
+- **Banco de dados não sai:** o `arquivo.entregar` copiava qualquer arquivo fora da lista do que nunca se lê, inclusive o `user.db` do ntfy (os tokens em claro) e o cache dele (os botões de aprovação, o que deixava a Atena aprovar o próprio pedido), o Postgres do LiteLLM e os SQLite do painel e da Open WebUI. Agora o conteúdo de SQLite, Postgres e Redis não sai nem lido nem copiado, e a busca não entra neles.
+- **Binário só das pastas de entrega:** texto continua saindo de qualquer lugar, com os segredos ocultos; foto, PDF e planilha, que saem inteiros, só de `/opt/atena/docs`, dos projetos do lab, do espaço da Atena e das pastas em `ATENA_PASTAS_ENTREGA` (novo no `atena.conf`).
+- **O Arca sai:** a stack, as ações `arca.*` e as linhas da Atena. Num servidor que já o tem, nada é apagado; um token antigo que ainda liste `arca.*` não quebra nada.
+- **O Claude Code não trava mais o projeto:** um trabalho tem prazo (os minutos dele mais 15 min; na fila, 10 h 15), e o runner, ao voltar de uma queda de energia, fecha como interrompido o que ficou pela metade (com a conversa, para continuar, e os commits). O `atena-claude.path` também vigia esses trabalhos, para o runner subir sozinho. Um cancelar sem resposta do runner fecha em 5 min.
+- **Uma publicação por projeto:** dois `app.publicar` aprovados juntos rodavam dois `docker compose up --build` na mesma pasta; o segundo agora recebe 409.
+- **Healthcheck nos apps do lab:** o compose gerado confere se o app atende na porta (python3, node ou wget), a menos que o Dockerfile tenha `HEALTHCHECK` próprio. Os apps no ar ganham na próxima publicação.
+- **Um `pedidos.json` ilegível** (cortado numa queda) não some mais em silêncio: vai para o lado, com a data no nome, e o dono é avisado pelo ntfy, que o executor tenta de novo por até 1 h.
+- **Painel 0.15.0:**
+  - a trava da senha errada vale por entrada: errar no Wi-Fi não tranca o dono fora de casa. A entrada vem do socket, nunca de um cabeçalho, e o banco migra sozinho.
+  - Editar um agendamento pausado não o religa.
+  - A execução que o reinício do painel interrompeu vira "interrompida" (antes, ficava "executando" para sempre).
+  - A ação entra no histórico antes de ir ao executor: um prazo esgotado (agora 504, "confira antes de pedir de novo") ou um erro não a apagam mais.
+- Testado: cada um dos 13 commits rodado sozinho (os testes do painel e o tsc, ou os de Python e o ruff, na árvore daquele commit). Os testes novos:
+  - 7 composes ruins e 2 bons com o `docker compose config` de verdade;
+  - bancos de mentira de cada tipo e as pastas de entrega;
+  - o prazo na fila, no runner e no cancelar;
+  - um runner de verdade morto com SIGKILL no meio de um trabalho e o seguinte fechando-o;
+  - duas publicações do mesmo projeto;
+  - o healthcheck rodado com `sh -c` contra uma porta aberta e uma fechada, com python3, só node, só wget (GNU e busybox) e sem nenhum;
+  - o `pedidos.json` cortado e de outro formato;
+  - 7 testes novos do painel (56 no total), um deles subindo o `principal.ts` de verdade.
+  
+  O CI foi reproduzido com `tools/ci-local.sh`. No servidor de origem, o painel 0.15.0 está no ar e saudável, com o banco migrado (a coluna `entrada`). Sem testar ainda: o executor, o runner e o `.path` novos no servidor (dependem do script com sudo) e as provas lá dentro (a imagem trocada e a cópia de banco recusadas pela Atena de verdade).
+
 ## 0.23.0 (2026-10-29)
 
 O servidor que volta inteiro de um desligamento sujo. Depois de um corte de energia, o Docker já religou o LiteLLM sem a rede da zona (sem internet nem porta), e a Atena ficou muda por horas enquanto tudo parecia em pé.
