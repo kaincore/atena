@@ -7,6 +7,10 @@ C=${HERMES_CONTAINER:-hermes}
 [ "$(id -u)" = 0 ] || { echo "Rode com sudo." >&2; exit 1; }
 docker exec "$C" true 2>/dev/null || { echo "O container $C não está no ar." >&2; exit 1; }
 
+conf() {   # conf <chave>: o valor do /etc/atena/atena.conf (vazio se não tem)
+  sed -n "s/^$1=//p" /etc/atena/atena.conf 2>/dev/null | tr -d '"' | tail -n 1
+}
+
 cfg() {
   if ! docker exec -u hermes "$C" hermes config set "$1" "$2" >/dev/null; then
     echo "não consegui gravar $1 no Hermes" >&2
@@ -19,17 +23,22 @@ cfg() {
 # últimas mensagens). Pelo nome do modelo ("haiku", sem "claude") ele não sabe que é Claude, e sem
 # isto só o prompt de sistema entrava no cache (o ponto que o LiteLLM põe): o histórico e os
 # resultados das ferramentas eram cobrados cheios a cada volta.
+# O PC da rede de casa (ATENA_PC_IP) entra como o modelo pc, com o contexto de ATENA_PC_CONTEXTO.
+PC=
+if [ -n "$(conf ATENA_PC_IP)" ]; then
+  PC=", \"pc\": {\"context_length\": $(conf ATENA_PC_CONTEXTO | grep -E '^[0-9]+$' || echo 16384)}"
+fi
 cfg providers.atena '{"api": "http://litellm:4000/v1", "key_env": "ATENA_LITELLM_KEY", "transport": "openai_chat",
   "session_affinity_header": "x-litellm-session-id", "discover_models": false,
   "models": {"haiku": {"context_length": 100000, "supports_vision": true, "prompt_caching": true},
              "sonnet": {"context_length": 200000, "supports_vision": true, "prompt_caching": true},
              "opus": {"context_length": 200000, "supports_vision": true, "prompt_caching": true},
-             "local": {"context_length": 8192}}}'
+             "local": {"context_length": 8192}'"$PC"'}}'
 cfg model.provider atena
 cfg model.default haiku
 
 # Voz da Atena: só com ATENA_VOZ=sim no atena.conf (precisa da GPU e da stack ai/voz no ar)
-VOZ=$(sed -n 's/^ATENA_VOZ=//p' /etc/atena/atena.conf 2>/dev/null | tr -d '"' | tail -n 1)
+VOZ=$(conf ATENA_VOZ)
 
 # Ferramentas: pesquisa na web, Python e subagentes ficam; navegador, controle do computador,
 # imagens e conexões externas saem. A voz sintetizada (tts) só fica com a voz ligada.

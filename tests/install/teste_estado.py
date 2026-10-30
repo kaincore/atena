@@ -158,6 +158,33 @@ confere("um atena.conf antigo, sem as chaves novas, fica com os padrões",
         c["ATENA_TZ"] == "America/Sao_Paulo" and c["ATENA_VOZ"] == "nao"
         and c["ATENA_NTFY_URL"] == f"http://{c['ATENA_LAN_IP']}:2586", c)
 
+# o PC da rede de casa no LiteLLM: o modelo pc só com ATENA_PC_IP, e o plano B só com ATENA_PC_RESERVA
+try:
+    import yaml
+except ImportError:
+    yaml = None
+litellm = open(os.path.join(RAIZ, "stacks", "ai", "litellm", "config.yaml"), "rb").read()
+casos = {"sem PC": {}, "com PC": {"ATENA_PC_IP": "192.168.0.50"},
+         "com PC e plano B": {"ATENA_PC_IP": "192.168.0.50", "ATENA_PC_MODELO": "gemma-12b", "ATENA_PC_RESERVA": "sonnet"}}
+for nome, trocas in casos.items():
+    texto = estado.renderizar(litellm, dict(c, **trocas), "config.yaml").decode()
+    if yaml:
+        cfg = yaml.safe_load(texto)
+        nomes = [m["model_name"] for m in cfg["model_list"]]
+        reserva = cfg["litellm_settings"].get("fallbacks")
+    else:   # sem o PyYAML, pelo texto
+        nomes = [linha.split(":", 1)[1].strip() for linha in texto.split("\n") if "- model_name:" in linha]
+        reserva = "fallbacks:" in texto or None
+    if nome == "sem PC":
+        confere("LiteLLM sem PC: nem o modelo pc, nem plano B, e o YAML vale", "pc" not in nomes and not reserva
+                and "{{" not in texto and "voz" in nomes, (nomes, reserva))
+    elif nome == "com PC":
+        confere("LiteLLM com PC: o modelo pc no IP e na porta do atena.conf, sem plano B", "pc" in nomes and not reserva
+                and "api_base: http://192.168.0.50:1234/v1" in texto and "model: openai/qwen3-14b" in texto, (nomes, reserva))
+    else:
+        confere("LiteLLM com plano B: o pc cai para o modelo de ATENA_PC_RESERVA",
+                "model: openai/gemma-12b" in texto and (reserva == [{"pc": ["sonnet"]}] if yaml else reserva), reserva)
+
 # todo arquivo do repositório que vai para o servidor está no estado, com todas as opções ligadas
 escrever_conf(conf_exemplo, ATENA_PAINEL_CASA="sim", ATENA_TAILSCALE="sim", ATENA_CLAUDE_SKILLS="sim",
               ATENA_SENSORES_MODULO="nct6683", ATENA_GPU="nvidia")

@@ -75,7 +75,8 @@ ATENA_PAINEL_CASA=nao
 
 # --- PC da rede de casa (opcional) -------------------------------------------
 # Um PC com placa de vídeo e LM Studio que a Atena liga (Wake-on-LAN), usa para textos
-# maiores e desliga quando você pede. Deixe ATENA_PC_IP vazio para não usar.
+# maiores e desliga quando você pede. Deixe ATENA_PC_IP vazio para não usar. Com ele, o LiteLLM
+# ganha o modelo pc, e o firewall dos containers deixa o LiteLLM chegar só à porta do LM Studio.
 ATENA_PC_IP=
 # MAC da placa de rede do PC (Wake-on-LAN ligado na BIOS e no Windows)
 ATENA_PC_MAC=
@@ -84,6 +85,10 @@ ATENA_PC_PORTA=1234
 # Modelo carregado no LM Studio e contexto (tokens)
 ATENA_PC_MODELO=qwen3-14b
 ATENA_PC_CONTEXTO=16384
+# Quando o PC está desligado ou não responde, a chamada ao modelo pc do LiteLLM pode ir para outro
+# modelo dele: haiku, sonnet, opus ou local. Vazio: ela falha. Atenção: com um modelo da nuvem, o texto
+# que era para ficar em casa sai dela e gasta o crédito.
+ATENA_PC_RESERVA=
 # Usuário do Windows que aceita a chave restrita da Atena (só desligar, reiniciar e cancelar).
 # Veja host/windows/LEIAME.md. Vazio: a Atena só liga o PC.
 ATENA_PC_USUARIO=

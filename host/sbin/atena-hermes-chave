@@ -18,8 +18,11 @@ api() {   # api <rota> <json>: a chave mestra vai pela entrada do curl, não pel
   printf 'header = "Authorization: Bearer %s"\n' "$MASTER" \
     | curl -fsS -m 20 -K - -H 'Content-Type: application/json' -d "$2" "http://127.0.0.1:4000$1"
 }
+MODELOS='"haiku", "sonnet", "opus", "local", "whisper", "voz"'
+# o PC da rede de casa (ATENA_PC_IP no atena.conf), pelo modelo pc do LiteLLM
+if grep -Eq '^ATENA_PC_IP="?[0-9]' /etc/atena/atena.conf 2>/dev/null; then MODELOS="$MODELOS, \"pc\""; fi
 api /key/delete '{"key_aliases": ["hermes"]}' >/dev/null 2>&1 || true   # sem chave antiga: tudo bem
-RESPOSTA=$(api /key/generate "{\"key_alias\": \"hermes\", \"models\": [\"haiku\", \"sonnet\", \"opus\", \"local\", \"whisper\", \"voz\"],
+RESPOSTA=$(api /key/generate "{\"key_alias\": \"hermes\", \"models\": [$MODELOS],
   \"max_budget\": $TETO, \"budget_duration\": \"1mo\"}") || { echo "O LiteLLM recusou criar a chave."; exit 1; }
 MASTER=
 KEY=$(printf %s "$RESPOSTA" | python3 -c 'import json, sys; print(json.load(sys.stdin)["key"])')

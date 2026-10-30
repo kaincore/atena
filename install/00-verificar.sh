@@ -45,6 +45,21 @@ esac
 # chave da versão 0.17 (o painel também na rede de casa)
 : "${ATENA_PAINEL_CASA:=nao}"
 case "$ATENA_PAINEL_CASA" in sim|nao) ;; *) erro "ATENA_PAINEL_CASA deve ser sim ou nao" ;; esac
+# chaves da versão 0.27 (o PC da rede de casa no LiteLLM e no firewall dos containers)
+: "${ATENA_PC_IP:=}"
+: "${ATENA_PC_PORTA:=1234}"
+: "${ATENA_PC_MODELO:=qwen3-14b}"
+: "${ATENA_PC_RESERVA:=}"
+[ -z "$ATENA_PC_IP" ] || [[ $ATENA_PC_IP =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}$ ]] \
+  || erro "ATENA_PC_IP deve ser o IP do PC na rede de casa (ex.: 192.168.0.50) ou vazio"
+[[ $ATENA_PC_PORTA =~ ^[0-9]{1,5}$ ]] || erro "ATENA_PC_PORTA deve ser um número de porta (ex.: 1234)"
+[[ $ATENA_PC_MODELO =~ ^[A-Za-z0-9._:/-]+$ ]] \
+  || erro "ATENA_PC_MODELO deve ser o nome do modelo no LM Studio (ex.: qwen3-14b)"
+case "$ATENA_PC_RESERVA" in
+  "") ;;
+  haiku|sonnet|opus|local) [ -n "$ATENA_PC_IP" ] || erro "ATENA_PC_RESERVA só vale com ATENA_PC_IP" ;;
+  *) erro "ATENA_PC_RESERVA deve ser vazio ou um modelo do LiteLLM: haiku, sonnet, opus ou local" ;;
+esac
 
 ip link show "$ATENA_LAN_IF" >/dev/null 2>&1 \
   || erro "a interface $ATENA_LAN_IF não existe (veja as interfaces com: ip -br link)"

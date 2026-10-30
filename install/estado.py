@@ -20,12 +20,14 @@ from dataclasses import dataclass, field
 
 # os {{ATENA_*}} que os modelos podem pedir
 RENDERIZADAS = ("ATENA_LAN_IP", "ATENA_LAN_CIDR", "ATENA_LAN_IF", "ATENA_ROUTER_IP", "ATENA_ADMIN_USER",
-                "ATENA_TZ", "ATENA_NTFY_URL", "ATENA_PAINEL_CASA")
+                "ATENA_TZ", "ATENA_NTFY_URL", "ATENA_PAINEL_CASA",
+                "ATENA_PC_IP", "ATENA_PC_PORTA", "ATENA_PC_MODELO", "ATENA_PC_RESERVA")
 # as chaves que chegaram depois da primeira versão: um atena.conf mais antigo fica com o padrão
 # (os mesmos do install/00-verificar.sh)
 PADROES = {"ATENA_TZ": "America/Sao_Paulo", "ATENA_SENSORES_MODULO": "", "ATENA_VOZ": "nao",
            "ATENA_CLAUDE_CONTAS": "principal", "ATENA_CLAUDE_TROCA": "nao", "ATENA_CLAUDE_VERSAO": "2.1.302",
-           "ATENA_CLAUDE_SKILLS": "nao", "ATENA_PAINEL_CASA": "nao"}
+           "ATENA_CLAUDE_SKILLS": "nao", "ATENA_PAINEL_CASA": "nao",
+           "ATENA_PC_IP": "", "ATENA_PC_PORTA": "1234", "ATENA_PC_MODELO": "qwen3-14b", "ATENA_PC_RESERVA": ""}
 # sem GPU, o 80-stacks.sh tira o pedido de GPU dos composes e troca as imagens pelas de CPU
 SEM_GPU = ((r"^ *gpus: all", None),
            (r"speaches:0.8.3-cuda-12.6.3 .*", "speaches:0.8.3-cpu"),

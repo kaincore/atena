@@ -27,6 +27,10 @@ iptables -A $C -d "$ATENA_ROUTER_IP" -p tcp --dport 53 -j RETURN
 
 # --- exceções (ex.: zona core monitorando uma impressora da rede de casa) ---
 # iptables -A $C -s 10.10.0.0/24 -d 192.168.0.50 -j RETURN
+# o LiteLLM (zona ai) chega ao LM Studio do PC da rede de casa (ATENA_PC_IP), só na porta dele
+if [ -n "${ATENA_PC_IP:-}" ]; then
+  iptables -A $C -s 10.10.20.0/24 -d "$ATENA_PC_IP" -p tcp --dport "${ATENA_PC_PORTA:-1234}" -j RETURN
+fi
 
 # bloqueios: Tailscale e redes privadas/locais
 iptables -A $C -o tailscale0 -j DROP
