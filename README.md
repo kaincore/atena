@@ -49,7 +49,7 @@ atena@servidor:~$ █
 - **Painéis:** Dockge (gerenciar as stacks), Beszel (monitoramento, inclusive da GPU) e Open WebUI (chat no navegador).
 - **A Atena** (opcional): assistente pessoal pelo Telegram, feita com o [Hermes Agent](https://github.com/NousResearch/hermes-agent). Vigia o servidor (até a temperatura), responde sobre ele, guarda as suas notas, edita as stacks de apps com foto e desfazer e age só por uma lista fechada de ações, pedindo o seu ok para o que é destrutivo.
 - **O lab** (opcional): a Atena manda trabalhos de programação ao Claude Code, que trabalha sozinho num sandbox, pergunta pelo celular quando precisa e deixa o app pronto para ela publicar na rede de casa.
-- **O painel** (opcional): o servidor no navegador e no celular, instalável como app. Mostra o estado, os serviços, os sensores, os processos, a rede, o registro do systemd, o gasto de IA e os apps do lab; reinicia serviços e liga ou desliga o PC da rede de casa; manda trabalhos ao Claude Code e publica, apaga e restaura os apps do lab; agenda tarefas (ligar o PC às 19h, reiniciar um serviço de madrugada) e mostra a agenda da Atena junto, onde também marca lembretes para ela; edita as stacks de apps e mostra os arquivos; aprova ou recusa o que a Atena e o Claude Code pedem e mostra tudo o que o executor fez. Pelo Tailscale (e, se você quiser, na rede de casa), com senha, num container sem rede nenhuma.
+- **O painel** (opcional): o servidor no navegador e no celular, instalável como app. Mostra o estado, os serviços, os sensores, os processos, a rede, o registro do systemd, o gasto de IA e os apps do lab; reinicia serviços e liga ou desliga o PC da rede de casa; manda trabalhos ao Claude Code e publica, apaga e restaura os apps do lab; agenda tarefas (ligar o PC às 19h, reiniciar um serviço de madrugada) e mostra a agenda da Atena junto, onde também marca lembretes para ela; conversa com a Atena e mostra as conversas dela (Telegram, painel, agenda) e a conversa inteira de cada trabalho do Claude Code; edita as stacks de apps e mostra os arquivos; aprova ou recusa o que a Atena e o Claude Code pedem e mostra tudo o que o executor fez. Pelo Tailscale (e, se você quiser, na rede de casa), com senha, num container sem rede nenhuma.
 - **Executor de ações** com aprovação no celular: o único caminho dos agentes até o servidor, sem shell, com um token por cliente.
 - **Avisos no celular** (ntfy): serviço que falhou, container parado e pedidos de aprovação com botões.
 - **Instalador** que monta tudo numa máquina nova e pode rodar de novo sem estragar o que já existe.
@@ -142,7 +142,7 @@ Depois:
 | LiteLLM 1.101.6 | ai | 4000 | Exige chave. Tetos de gasto por modelo e por chave |
 | Open WebUI 0.12.5 | apps | 3000 | Fala só com o LiteLLM |
 | Hermes Agent 0.22.2 | agents | nenhuma | A Atena (com `--hermes`). Conversa pelo Telegram |
-| Painel 0.17.0 | core | 3100, pelo Tailscale (na rede de casa, opcional) | O painel (com `--painel`). Sem rede, sem root, sem pacotes do npm, com senha |
+| Painel 0.18.0 | core | 3100, pelo Tailscale (na rede de casa, opcional) | O painel (com `--painel`). Sem rede, sem root, sem pacotes do npm, com senha |
 | Claude Code 2.1.302 | lab | apps em 8000-8999 | O lab (com `--lab`). Roda em sandbox, sem sudo e sem Docker; usa a sua assinatura do Claude |
 
 As versões são fixas de propósito. Antes de atualizar, leia os avisos de segurança e as notas da versão.
