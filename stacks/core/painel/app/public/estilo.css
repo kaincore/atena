@@ -972,6 +972,7 @@ dialog::backdrop { background: rgb(10 14 26 / .42); backdrop-filter: blur(3px); 
 /* --- receitas: a paleta do site em amostras, os prints e o texto da receita --- */
 
 .resumo-receita { margin: .1rem 0 .55rem; max-width: 68ch; color: var(--tinta-2); }
+.mono { font: .8rem/1.5 var(--mono); overflow-wrap: anywhere; }
 .paleta-receita { list-style: none; margin: .3rem 0 .6rem; padding: 0; display: flex; flex-wrap: wrap; gap: .5rem .9rem; }
 .paleta-receita li { display: grid; grid-template-columns: auto minmax(0, max-content); grid-template-rows: auto auto;
   column-gap: .5rem; align-items: center; min-width: 0; }

@@ -1,18 +1,26 @@
-// Receitas: o estilo de um site que você gostou, estudado pelo Claude Code e guardado para os seus projetos.
-// O coletor abre o site (só pela internet, sem IA) e o Claude Code escreve a receita; aqui você pede, vê as
-// receitas (paleta, fontes, prints e o texto) e manda um projeto do lab seguir uma delas.
+// Receitas: o estilo de um site ou de um programa que você gostou, estudado pelo Claude Code e guardado
+// para os seus projetos. O coletor abre o site (só pela internet, sem IA), ou o programa vai para o lab (o
+// Claude Code lê sem rodar), e o Claude Code escreve a receita; aqui você pede, vê as receitas (paleta,
+// fontes, prints e o texto) e manda um projeto do lab seguir uma delas.
 import { abrirJanela, atualizar, botaoAtualizar, campo, carregando, cartao, consultar, data, falha, h, item, itens, linha,
   mudar, semAcao, vazio } from "../comum.js";
 import { usarReceita } from "./lab.js";
 
 const NOME = "[a-z0-9][a-z0-9\\-]{0,30}";
 const rascunho = { url: "", nome: "", foco: "", conta: "", modelo: "", esforco: "", refazer: false };
+// o endereço de um site, ou o caminho de um programa no servidor (o que você mandou à Atena, um projeto do lab)
+const eArquivo = (texto) => texto.trim().startsWith("/");
 let busca = "";
 const ESTADOS = { pronta: ["ok", "pronta"], estudando: ["info", "estudando"], falhou: ["ruim", "falhou"], parou: ["ruim", "parou"] };
-const PRINTS = [["pc.jpg", "PC"], ["pc-escuro.jpg", "Escuro"], ["tablet.jpg", "Tablet"], ["celular.jpg", "Celular"],
-  ["pc-inteira.jpg", "Página inteira"], ["celular-inteira.jpg", "Celular inteira"]];
+const PRINTS = { "pc.jpg": "PC", "pc-escuro.jpg": "Escuro", "tablet.jpg": "Tablet", "celular.jpg": "Celular",
+  "pc-inteira.jpg": "Página inteira", "celular-inteira.jpg": "Celular inteira" };
+const rotuloPrint = (arquivo) => PRINTS[arquivo] ?? `Print ${arquivo.match(/\d+/)?.[0] ?? ""}`.trim();
 
-const site = (url) => { try { return new URL(url).host; } catch { return url ?? ""; } };
+// o site (o host) ou o programa (o nome do arquivo)
+const site = (origem) => {
+  if (origem?.startsWith("/")) return origem.split("/").pop();
+  try { return new URL(origem).host; } catch { return origem ?? ""; }
+};
 
 // as amostras da paleta: a cor vem do servidor e entra pelo CSSOM (a CSP não deixa style no HTML); um valor
 // que o navegador não entende só fica sem cor
@@ -36,14 +44,15 @@ function janelaReceita(r) {
       src: `data:${p.resultado.tipo};base64,${p.resultado.base64}`, alt: `${r.titulo}: ${rotulo} (o site de origem)`, loading: "lazy" }),
     h("figcaption", null, `${rotulo} · ${site(r.origem)}`));
   };
-  const disponiveis = PRINTS.filter(([a]) => r.prints.includes(a));
+  const disponiveis = r.prints.map((a) => [a, rotuloPrint(a)]);
   const abas = h("div", { class: "abas-print", role: "group", "aria-label": "Prints" }, disponiveis.map(([a, rotulo]) =>
     h("button", { type: "button", class: "discreto", "data-print": a, "aria-pressed": "false", onclick: () => mostrar(a, rotulo) }, rotulo)));
   const texto = h("div", null, carregando("Carregando a receita…"));
   abrirJanela(r.titulo,
-    linha("Origem", h("a", { href: r.origem, target: "_blank", rel: "noopener noreferrer" }, r.origem)),
+    linha("Origem", r.de === "programa" ? h("span", { class: "mono" }, r.origem)
+      : h("a", { href: r.origem, target: "_blank", rel: "noopener noreferrer" }, r.origem)),
     paleta(r.paleta),
-    disponiveis.length ? [abas, figura] : h("p", { class: "fraco" }, "Esta receita não tem prints."),
+    disponiveis.length ? [abas, figura] : h("p", { class: "fraco" }, "Esta receita não tem prints (um programa sem os prints que você mandaria junto)."),
     texto);
   if (disponiveis.length) mostrar(...disponiveis[0]);
   consultar("receita.ver", { nome: r.nome }).then((v) => texto.replaceChildren(...(v.ok === false ? [falha(v)] : [
@@ -56,7 +65,8 @@ function janelaReceita(r) {
 
 function botoes(r) {
   const refazer = async () => {
-    if (await mudar("receita.estudar", { url: r.origem, nome: r.nome, refazer: true },
+    const de = r.de === "programa" ? { arquivo: r.origem } : { url: r.origem };
+    if (await mudar("receita.estudar", { ...de, nome: r.nome, refazer: true },
       `Estudar ${site(r.origem)} de novo? A receita atual vale até a nova ficar pronta.`)) atualizar();
   };
   return [
@@ -101,11 +111,11 @@ function cartaoEstudar(contas) {
       esforco: f.esforco.value, refazer: f.refazer.checked });
   };
   const opcoes = (nome, lista) => h("select", { name: nome }, lista.map(([v, t]) => h("option", { value: v, selected: v === rascunho[nome] }, t)));
-  return cartao("Estudar um site",
+  return cartao("Estudar um estilo",
     h("form", { class: "resposta", oninput: guardar, onchange: guardar, onsubmit: async (evento) => {
       evento.preventDefault();
       guardar(evento);
-      const params = { url: rascunho.url.trim(), ...(rascunho.nome.trim() ? { nome: rascunho.nome.trim() } : {}),
+      const params = { [eArquivo(rascunho.url) ? "arquivo" : "url"]: rascunho.url.trim(), ...(rascunho.nome.trim() ? { nome: rascunho.nome.trim() } : {}),
         ...(rascunho.foco.trim() ? { foco: rascunho.foco.trim() } : {}), ...(rascunho.conta ? { conta: rascunho.conta } : {}),
         ...(rascunho.modelo ? { modelo: rascunho.modelo } : {}), ...(rascunho.esforco ? { esforco: rascunho.esforco } : {}),
         ...(rascunho.refazer ? { refazer: true } : {}) };
@@ -116,8 +126,9 @@ function cartaoEstudar(contas) {
       }
     } },
       h("div", { class: "campos" },
-        campo("Endereço do site", h("input", { name: "url", required: true, value: rascunho.url, placeholder: "https://exemplo.com",
-          autocomplete: "off", inputmode: "url", spellcheck: "false" }), true),
+        campo("Site ou programa", h("input", { name: "url", required: true, value: rascunho.url,
+          placeholder: "https://exemplo.com, ou /caminho/do/programa.apk no servidor", autocomplete: "off", inputmode: "url",
+          spellcheck: "false" }), true),
         campo("Foco", h("input", { name: "foco", maxlength: "500", value: rascunho.foco, autocomplete: "off",
           placeholder: "opcional: o menu, as animações do topo…" }), true),
         campo("Nome", h("input", { name: "nome", pattern: NOME, value: rascunho.nome, autocomplete: "off",
@@ -128,8 +139,10 @@ function cartaoEstudar(contas) {
       h("div", { class: "filtros" },
         h("label", { class: "opcao" }, h("input", { type: "checkbox", name: "refazer", checked: rascunho.refazer }), " refazer, se já existir")),
       h("button", { type: "submit", class: "principal" }, "Estudar")),
-    h("p", { class: "fraco" }, "O coletor abre o site num navegador sem tela, só pela internet (nunca a rede de casa), e grava prints, "
-      + "CSS e medidas, em até 2 minutos. Depois o Claude Code escreve a receita: o que faz aquele visual e como chegar nele do zero, sem copiar."));
+    h("p", { class: "fraco" }, "Num site, o coletor abre a página num navegador sem tela, só pela internet (nunca a rede de casa), e grava "
+      + "prints, CSS e medidas, em até 2 minutos. Num programa (APK, .exe, AppImage, Electron: o que você mandou à Atena, por exemplo), "
+      + "o Claude Code lê o arquivo sem rodar, com o REA e os descompiladores. Depois ele escreve a receita: o que faz aquele visual e "
+      + "como chegar nele do zero, sem copiar. Prints de um programa você manda pela Atena."));
 }
 
 async function cartaoLista() {
