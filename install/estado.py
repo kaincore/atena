@@ -36,6 +36,7 @@ SEM_GPU = ((r"^ *gpus: all", None),
 # um bloco entre uma linha com {{SE ATENA_X}} e outra com {{FIM}} só fica quando ATENA_X tem valor
 SE = re.compile(rb"\{\{SE (ATENA_[A-Z_]+)\}\}")
 FIM = b"{{FIM}}"
+MARCA_SOZINHA = re.compile(rb"^\s*(#|//)?\s*\{\{(SE ATENA_[A-Z_]+|FIM)\}\}\s*$")
 COPIA_ANTIGA = re.compile(r"\.antes-")   # instalar_arquivo guarda .antes-atena-<data>; as trocas à mão, .antes-<o quê>
 
 PARTES = {
@@ -116,6 +117,8 @@ def renderizar(texto, conf, origem):
     (install/lib.sh) e o do ./aplicar."""
     linhas, chave = [], None
     for n, linha in enumerate(texto.split(b"\n"), 1):
+        if (SE.search(linha) or FIM in linha) and not MARCA_SOZINHA.match(linha):
+            raise ConfInvalida(f"{origem}:{n}: a linha de um {{{{SE}}}} ou {{{{FIM}}}} só pode ter a marca (o resto dela some)")
         m = SE.search(linha)
         if m:
             if chave:

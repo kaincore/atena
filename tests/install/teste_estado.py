@@ -89,7 +89,7 @@ r = subprocess.run(["bash", "-c", 'RAIZ=$1; CONF=$2; . "$RAIZ/install/lib.sh"; r
 confere("um {{ATENA_*}} sem valor faz o instalador parar, dizendo qual",
         r.returncode != 0 and "{{ATENA_NAO_EXISTE}}" in r.stderr and "não consegui preencher" in r.stderr, r.stderr)
 # os blocos {{SE ATENA_X}} ... {{FIM}}: ficam só quando a chave tem valor, e as marcas saem sempre
-modelo = (b"antes\n  # {{SE ATENA_ROUTER_IP}} o DNS do roteador\ndns: {{ATENA_ROUTER_IP}}\n# {{FIM}}\ndepois\n")
+modelo = (b"antes\n  # {{SE ATENA_ROUTER_IP}}\ndns: {{ATENA_ROUTER_IP}}\n# {{FIM}}\ndepois\n")
 com = estado.renderizar(modelo, c, "m")
 sem = estado.renderizar(modelo, dict(c, ATENA_ROUTER_IP=""), "m")
 confere("bloco com a chave: fica, sem as linhas de marca", com == b"antes\ndns: 192.168.0.1\ndepois\n", com)
@@ -97,14 +97,16 @@ confere("bloco sem a chave: sai inteiro", sem == b"antes\ndepois\n", sem)
 erros = []
 for errado, trecho in ((b"# {{SE ATENA_TZ}}\nx\n", "não tem {{FIM}}"), (b"x\n# {{FIM}}\n", "sem {{SE"),
                        (b"{{SE ATENA_TZ}}\n{{SE ATENA_TZ}}\n{{FIM}}\n", "dentro de outro"),
-                       (b"{{SE ATENA_TZX}}\n{{FIM}}\n", "não é uma chave")):
+                       (b"{{SE ATENA_TZX}}\n{{FIM}}\n", "não é uma chave"),
+                       (b"# {{SE ATENA_TZ}} um texto que sumiria\n# {{FIM}}\n", "só pode ter a marca")):
     try:
         estado.renderizar(errado, c, "m")
         erros.append((errado, "passou"))
     except estado.ConfInvalida as e:
         if trecho not in str(e):
             erros.append((errado, str(e)))
-confere("bloco sem fim, fim sem bloco, bloco dentro de bloco e chave desconhecida: recusados, dizendo o quê",
+confere("bloco sem fim, fim sem bloco, bloco dentro de bloco, chave desconhecida e texto na linha da marca: "
+        "recusados, dizendo o quê",
         not erros, erros)
 confere("um arquivo só com um bloco também é um modelo", estado.e_modelo(b"# {{SE ATENA_PC_IP}}\n# {{FIM}}\n")
         and not estado.e_modelo(b"nada aqui\n"))
@@ -181,6 +183,8 @@ for nome, trocas in casos.items():
     elif nome == "com PC":
         confere("LiteLLM com PC: o modelo pc no IP e na porta do atena.conf, sem plano B", "pc" in nomes and not reserva
                 and "api_base: http://192.168.0.50:1234/v1" in texto and "model: openai/qwen3-14b" in texto, (nomes, reserva))
+        confere("e o comentário do bloco chega inteiro (as marcas ficam sozinhas na linha)",
+                "  # O PC da rede de casa (ATENA_PC_IP" in texto and "SE ATENA" not in texto)
     else:
         confere("LiteLLM com plano B: o pc cai para o modelo de ATENA_PC_RESERVA",
                 "model: openai/gemma-12b" in texto and (reserva == [{"pc": ["sonnet"]}] if yaml else reserva), reserva)

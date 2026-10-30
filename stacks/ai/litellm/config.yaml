@@ -74,9 +74,10 @@ model_list:
       input_cost_per_token: 0
       output_cost_per_token: 0
 
-  # {{SE ATENA_PC_IP}} o PC da rede de casa (ATENA_PC_IP no atena.conf; host/windows/LEIAME.md). Só responde
-  # com o PC ligado, e o LM Studio carrega o modelo sob demanda. O firewall dos containers deixa o LiteLLM
-  # chegar só a esta porta do PC.
+  # {{SE ATENA_PC_IP}}
+  # O PC da rede de casa (ATENA_PC_IP no atena.conf; host/windows/LEIAME.md). Só responde com o PC ligado,
+  # e o LM Studio carrega o modelo sob demanda. O firewall dos containers deixa o LiteLLM chegar só a esta
+  # porta do PC.
   - model_name: pc
     litellm_params:
       model: openai/{{ATENA_PC_MODELO}}
@@ -123,8 +124,9 @@ litellm_settings:
   request_timeout: 600
   # Sem plano B para o Haiku: o local (qwen3:4b, 4 mil tokens de contexto) não comporta o prompt da Atena
   # (~30 mil), e o "plano B" só somava mais uma falha e mais tempo. Fora do ar, ela falha rápido.
-  # {{SE ATENA_PC_RESERVA}} PC desligado ou sem resposta: a chamada vai para o modelo de ATENA_PC_RESERVA.
-  # Atenção: com um modelo da nuvem, o texto que era para ficar em casa sai dela e gasta o crédito.
+  # {{SE ATENA_PC_RESERVA}}
+  # PC desligado ou sem resposta: a chamada vai para o modelo de ATENA_PC_RESERVA. Atenção: com um modelo
+  # da nuvem, o texto que era para ficar em casa sai dela e gasta o crédito.
   fallbacks:
     - pc: ["{{ATENA_PC_RESERVA}}"]
   # {{FIM}}
