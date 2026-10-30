@@ -68,10 +68,11 @@ conf_exemplo = f"{tmp}/exemplo.conf"
 escrever_conf(conf_exemplo, ATENA_PAINEL_CASA="sim")
 c = estado.ler_conf(conf_exemplo)
 modelos = [rel for rel in estado.arquivos(RAIZ, ".") if os.path.isfile(os.path.join(RAIZ, rel))
-           and b"{{ATENA_" in open(os.path.join(RAIZ, rel), "rb").read()
+           and estado.e_modelo(open(os.path.join(RAIZ, rel), "rb").read())
            and rel.split("/")[0] in ("stacks", "host") and not rel.endswith((".md", ".sh"))]
 confere("há modelos com {{ATENA_*}} para comparar", len(modelos) >= 3, modelos)
-pedidas = {v.decode() for rel in modelos for v in re.findall(rb"\{\{(ATENA_\w+)\}\}", open(os.path.join(RAIZ, rel), "rb").read())}
+pedidas = {v.decode() for rel in modelos
+           for v in re.findall(rb"\{\{(?:SE )?(ATENA_\w+)\}\}", open(os.path.join(RAIZ, rel), "rb").read())}
 confere("todo {{ATENA_*}} dos modelos é uma chave que o estado preenche", pedidas <= set(estado.RENDERIZADAS),
         pedidas - set(estado.RENDERIZADAS))
 diferentes = []
@@ -87,6 +88,32 @@ r = subprocess.run(["bash", "-c", 'RAIZ=$1; CONF=$2; . "$RAIZ/install/lib.sh"; r
                     conf_exemplo, f"{tmp}/modelo", f"{tmp}/saida"], capture_output=True, text=True)
 confere("um {{ATENA_*}} sem valor faz o instalador parar, dizendo qual",
         r.returncode != 0 and "{{ATENA_NAO_EXISTE}}" in r.stderr and "não consegui preencher" in r.stderr, r.stderr)
+# os blocos {{SE ATENA_X}} ... {{FIM}}: ficam só quando a chave tem valor, e as marcas saem sempre
+modelo = (b"antes\n  # {{SE ATENA_ROUTER_IP}} o DNS do roteador\ndns: {{ATENA_ROUTER_IP}}\n# {{FIM}}\ndepois\n")
+com = estado.renderizar(modelo, c, "m")
+sem = estado.renderizar(modelo, dict(c, ATENA_ROUTER_IP=""), "m")
+confere("bloco com a chave: fica, sem as linhas de marca", com == b"antes\ndns: 192.168.0.1\ndepois\n", com)
+confere("bloco sem a chave: sai inteiro", sem == b"antes\ndepois\n", sem)
+erros = []
+for errado, trecho in ((b"# {{SE ATENA_TZ}}\nx\n", "não tem {{FIM}}"), (b"x\n# {{FIM}}\n", "sem {{SE"),
+                       (b"{{SE ATENA_TZ}}\n{{SE ATENA_TZ}}\n{{FIM}}\n", "dentro de outro"),
+                       (b"{{SE ATENA_TZX}}\n{{FIM}}\n", "não é uma chave")):
+    try:
+        estado.renderizar(errado, c, "m")
+        erros.append((errado, "passou"))
+    except estado.ConfInvalida as e:
+        if trecho not in str(e):
+            erros.append((errado, str(e)))
+confere("bloco sem fim, fim sem bloco, bloco dentro de bloco e chave desconhecida: recusados, dizendo o quê",
+        not erros, erros)
+confere("um arquivo só com um bloco também é um modelo", estado.e_modelo(b"# {{SE ATENA_PC_IP}}\n# {{FIM}}\n")
+        and not estado.e_modelo(b"nada aqui\n"))
+open(f"{tmp}/modelo", "wb").write(modelo)
+escrever_conf(f"{tmp}/sem-roteador.conf", ATENA_ROUTER_IP="")
+r = subprocess.run(["bash", "-c", 'RAIZ=$1; CONF=$2; . "$RAIZ/install/lib.sh"; renderizar "$3" "$4"', "_", RAIZ,
+                    f"{tmp}/sem-roteador.conf", f"{tmp}/modelo", f"{tmp}/saida"], capture_output=True, text=True)
+confere("o instalador tira o bloco cuja chave está vazia no atena.conf",
+        r.returncode == 0 and open(f"{tmp}/saida", "rb").read() == b"antes\ndepois\n", r.stderr)
 r = subprocess.run([sys.executable, os.path.join(RAIZ, "install", "estado.py"), "preencher", conf_exemplo],
                    capture_output=True, text=True)
 confere("estado.py preencher sem os três caminhos: sai com 2 e diz o uso", r.returncode == 2 and "uso:" in r.stderr, r.stderr)

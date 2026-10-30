@@ -31,6 +31,9 @@ SEM_GPU = ((r"^ *gpus: all", None),
            (r"speaches:0.8.3-cuda-12.6.3 .*", "speaches:0.8.3-cpu"),
            (r"WHISPER__INFERENCE_DEVICE: cuda", "WHISPER__INFERENCE_DEVICE: cpu"),
            (r"henrygd/beszel-agent-nvidia:", "henrygd/beszel-agent:"))
+# um bloco entre uma linha com {{SE ATENA_X}} e outra com {{FIM}} só fica quando ATENA_X tem valor
+SE = re.compile(rb"\{\{SE (ATENA_[A-Z_]+)\}\}")
+FIM = b"{{FIM}}"
 COPIA_ANTIGA = re.compile(r"\.antes-")   # instalar_arquivo guarda .antes-atena-<data>; as trocas à mão, .antes-<o quê>
 
 PARTES = {
@@ -99,9 +102,36 @@ def ler_conf(caminho):
     return conf
 
 
+def e_modelo(texto):
+    """Se o arquivo tem algo para preencher ({{ATENA_*}} ou um bloco {{SE ATENA_*}})."""
+    return b"{{ATENA_" in texto or b"{{SE ATENA_" in texto
+
+
 def renderizar(texto, conf, origem):
-    """Preenche os {{ATENA_*}} de um modelo com os valores do atena.conf e recusa o que sobrar. É o
-    renderizar do instalador (install/lib.sh) e o do ./aplicar."""
+    """Preenche os {{ATENA_*}} de um modelo com os valores do atena.conf e recusa o que sobrar. Um bloco
+    entre uma linha com {{SE ATENA_X}} e outra com {{FIM}} só fica quando ATENA_X tem valor, e as duas
+    linhas de marca saem sempre (elas podem ser comentários do arquivo). É o renderizar do instalador
+    (install/lib.sh) e o do ./aplicar."""
+    linhas, chave = [], None
+    for n, linha in enumerate(texto.split(b"\n"), 1):
+        m = SE.search(linha)
+        if m:
+            if chave:
+                raise ConfInvalida(f"{origem}:{n}: um {{{{SE}}}} dentro de outro")
+            chave = m.group(1).decode()
+            if chave not in RENDERIZADAS:
+                raise ConfInvalida(f"{origem}:{n}: {chave} não é uma chave que os modelos podem pedir")
+            continue
+        if FIM in linha:
+            if not chave:
+                raise ConfInvalida(f"{origem}:{n}: um {{{{FIM}}}} sem {{{{SE ATENA_...}}}}")
+            chave = None
+            continue
+        if not chave or conf.get(chave, ""):
+            linhas.append(linha)
+    if chave:
+        raise ConfInvalida(f"{origem}: o {{{{SE {chave}}}}} não tem {{{{FIM}}}}")
+    texto = b"\n".join(linhas)
     for v in RENDERIZADAS:
         texto = texto.replace(("{{" + v + "}}").encode(), conf.get(v, "").encode())
     sobrou = re.search(rb"\{\{ATENA_[A-Z_]*\}\}", texto)
@@ -236,7 +266,7 @@ def desejado(raiz, conf, tem):
                 continue
             parte = "painel" if resto.startswith("app/") else "stacks"
         texto = ler(rel)
-        if b"{{ATENA_" in texto:
+        if e_modelo(texto):
             texto = renderizar(texto, conf, rel)
         if resto == "compose.yaml" and conf.get("ATENA_GPU") == "none" and (zona, nome) != ("core", "painel"):
             texto = sem_gpu(texto)

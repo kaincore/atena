@@ -18,8 +18,9 @@ for compose in "$RAIZ"/stacks/*/*/compose.yaml; do
   fi
   install -d "$destino"
   cp -a "$origem/." "$destino/"
-  # preenche os {{ATENA_*}} do compose e de qualquer outro arquivo da stack (ex.: server.yml do ntfy)
-  { grep -rlF '{{ATENA_' "$origem" || true; } | while read -r f; do
+  # preenche os {{ATENA_*}} e os blocos {{SE ATENA_*}} do compose e de qualquer outro arquivo da stack
+  # (ex.: server.yml do ntfy, config.yaml do LiteLLM)
+  { grep -rlF -e '{{ATENA_' -e '{{SE ATENA_' "$origem" || true; } | while read -r f; do
     renderizar "$f" "$destino/${f#"$origem"/}"
   done
   if [ "$ATENA_GPU" = none ]; then
