@@ -106,7 +106,7 @@ journalctl -u atena-executor -f                               # cada pedido, com
 - Terminal: `docker exec -it -u hermes hermes hermes`.
 - Personalidade e habilidades: `/srv/agents/hermes/SOUL.md` e `/srv/agents/hermes/skills/atena/`. O instalador guarda uma cópia antes de sobrescrever um arquivo que você mudou.
 - Configuração: `docker exec -u hermes hermes hermes config set <chave> <valor>`. Para voltar ao padrão do modelo: `sudo sh hermes/configurar.sh` e `docker restart hermes`.
-- Tarefas agendadas: `docker exec -u hermes hermes hermes cron list`. Se a ronda sumir, rode o instalador de novo (com as mesmas opções): ele cria a ronda e, nas atualizações, deixa o texto e as habilidades dela iguais aos do modelo (com o lab, `servidor-atena` e `lab`). À mão:
+- Tarefas agendadas: na tela Agenda do painel, junto com as do painel, ou `docker exec -u hermes hermes hermes cron list`. Se a ronda sumir, rode o instalador de novo (com as mesmas opções): ele cria a ronda e, nas atualizações, deixa o texto e as habilidades dela iguais aos do modelo (com o lab, `servidor-atena` e `lab`). À mão:
   ```bash
   docker exec -u hermes hermes hermes cron create "every 3m" "Ronda do servidor. Siga a seção Ronda das habilidades servidor-atena e lab." \
     --name ronda --monitor-script ronda.py --skill servidor-atena --skill lab --deliver telegram --failure-deliver ntfy
