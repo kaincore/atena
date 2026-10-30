@@ -1,5 +1,32 @@
 # Mudanças
 
+## 0.25.0 (2026-10-30)
+
+A Atena afinada: mais barata por conversa, falhando rápido e dizendo que falhou, com a memória de acordo com o SOUL e o bom-dia de volta.
+
+- **O cache cobre a conversa inteira:** o Hermes marca o cache da Anthropic ao longo da conversa, mas só quando sabe que o modelo é Claude, e pelo nome ("haiku") ele não sabia. Com `prompt_caching` nos modelos do LiteLLM, o histórico e os resultados das ferramentas também vêm do cache. Numa conversa de teste, a segunda volta leu 99,9% da entrada do cache e custou 12 vezes menos que a primeira.
+- **Falha rápida, sem o plano B que não funcionava:** o Haiku espera 90 s (o Sonnet e o Opus, 180 s), com uma repetição, no lugar de 600 s com duas. O plano B haiku→local saiu: o modelo local não comporta o prompt da Atena. Uma falha chega em até ~3 min, e não em 5 a 9.
+- **As falhas da ronda chegam pelo ntfy**, e não pelo Telegram da Atena que não está respondendo.
+- **O `acao.py`:** a Atena chama o executor por ele, e não mais por `curl -s`. A primeira linha da saída é o código HTTP, e o token nunca passa pelo terminal dela.
+- **O bom-dia volta, sem IA:** às 8h, o `bom_dia.py` lê o servidor e manda no Telegram, direto, os containers, as temperaturas, o gasto do mês e o Claude Code da noite. Ele chega mesmo com a IA fora.
+- **Uma semente para a memória, com teste:** `hermes/memoria` entra quando a Atena ainda não tem memória. O `teste_memoria.py` confere os limites, o formato e o que não pode voltar: a personalidade antiga, o "deliver origin", o painel "não iniciado", o Arca e o curl. Ele também roda na memória viva.
+- Testado:
+  - `teste_scripts.py`: o `acao.py` e o bom-dia contra um executor e um LiteLLM de mentira, com o executor e a IA fora;
+  - `teste_memoria.py`;
+  - cada commit rodado sozinho;
+  - o CI reproduzido com `tools/ci-local.sh`.
+
+  No servidor de origem:
+  - o LiteLLM e a Atena reiniciados com a configuração nova e saudáveis;
+  - a conversa de teste do cache;
+  - o bom-dia gerado com os dados reais e o job criado;
+  - a ronda com `failure_deliver: ntfy`;
+  - a memória reescrita, com o teste passando nela.
+
+  Sem testar ainda: a meta de custo, menos de US$ 0,006 por conversa ao longo de uma semana.
+
+  Ficou para a Onda 6: o SOUL e as habilidades só para leitura. Mudar o dono dos arquivos não protege, porque a pasta é da Atena e ela apaga e recria. Isso foi testado e desfeito. Só um volume montado como somente leitura protege, e ele muda a ordem do instalador.
+
 ## 0.24.0 (2026-10-30)
 
 As travas: o que a Atena e as stacks podem tocar fica do tamanho certo, e o que trava sem ninguém ver passa a fechar sozinho (painel 0.15.0). Antes de ela ganhar casa, e-mail ou voz, nenhum texto lido por ela deveria conseguir trocar a imagem de outro serviço, copiar um banco ou aprovar o próprio pedido.
