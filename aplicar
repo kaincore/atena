@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
-"""Compara o servidor com este repositório: o que o instalador poria nele e o que está lá de verdade.
+"""Deixa o servidor igual a este repositório, por partes, ou só compara os dois.
 
 Uso:
+  sudo ./aplicar                        mostra o plano, pede confirmação e aplica (backup antes)
+  sudo ./aplicar --parte executor --sim só o executor, sem perguntar
+  sudo ./aplicar --desfazer [quando]    volta ao último backup (ou ao de quando; --backups lista)
   sudo ./aplicar --conferir             o que difere, o que falta e o que sobra, por parte (nada muda)
   sudo ./aplicar --conferir --diff      e, em cada arquivo diferente, o que mudaria (servidor -> repositório)
   sudo ./aplicar --conferir --parte executor,hermes
   sudo ./aplicar --conferir --copias    lista também as cópias antigas (.antes-*) que as trocas deixaram
 
 Partes: host, executor, stacks, painel, hermes, lab. Os valores do servidor vêm do /etc/atena/atena.conf.
-Sem sudo, o que só o root lê fica marcado com "?". Sai com 0 quando o servidor está igual ao repositório,
-1 quando algo difere, 3 quando não deu para ler tudo (e o resto está igual) e 2 num erro.
+Aplicar grava o que difere ou falta, guarda no backup o que sobra (em /var/backups/atena-aplicar) e
+reinicia só o que mudou de verdade; se algo falha, desfaz sozinho. Fica de fora, só avisado, o
+/etc/docker/daemon.json (aplicar reiniciaria todos os containers) e a stack que ainda não existe.
+O --conferir: sem sudo, o que só o root lê fica marcado com "?"; sai com 0 quando o servidor está igual
+ao repositório, 1 quando algo difere, 3 quando não deu para ler tudo (e o resto está igual) e 2 num erro.
+Aplicar sai com 0 quando deu certo (ou não havia nada), 1 quando falhou e desfez, e 2 quando nem começou.
 """
 import argparse
 import json
@@ -20,6 +27,7 @@ import sys
 
 RAIZ = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(RAIZ, "install"))
+import aplicacao  # noqa: E402
 import estado  # noqa: E402
 
 ROTULOS = {"difere": "difere", "falta": "falta", "sobra": "sobra", "ilegivel": "?", "copia": "cópia"}
@@ -60,16 +68,17 @@ def principal(argv):
     p.add_argument("--alvo", default="/", help="a raiz do servidor (padrão: /; ex.: uma cópia montada)")
     p.add_argument("--conf", help="o atena.conf (padrão: <alvo>/etc/atena/atena.conf)")
     p.add_argument("--sem-dono", action="store_true", help="não confere dono e grupo (numa cópia do servidor)")
+    p.add_argument("--sim", action="store_true", help="aplica sem perguntar")
+    p.add_argument("--desfazer", nargs="?", const="", metavar="QUANDO", help="volta ao último backup (ou ao de quando)")
+    p.add_argument("--backups", action="store_true", help="lista os backups do aplicar")
     a = p.parse_args(argv)
-    if not a.conferir:
-        print("por enquanto, só o --conferir (compara sem mudar nada); a aplicação por partes vem depois",
-              file=sys.stderr)
-        return 2
     partes = [x for x in a.parte.split(",") if x]
     desconhecidas = [x for x in partes if x not in estado.PARTES]
     if desconhecidas:
         print(f"parte desconhecida: {', '.join(desconhecidas)} (partes: {', '.join(estado.PARTES)})", file=sys.stderr)
         return 2
+    if not a.conferir:
+        return aplicar(a, partes)
     try:
         resultados, conf, tem = estado.conferir(RAIZ, a.alvo, a.conf, partes, donos=not a.sem_dono)
     except estado.ConfInvalida as e:
@@ -132,6 +141,70 @@ def principal(argv):
     if contagem["difere"] + contagem["falta"] + contagem["sobra"]:
         return 1
     return 3 if contagem["ilegivel"] else 0
+
+
+def aplicar(a, partes):
+    """O aplicar de verdade (ou o --desfazer e o --backups)."""
+    if a.backups:
+        lista = aplicacao.backups(a.alvo)
+        for quando, m in lista:
+            situacao = f"desfeito em {m['desfeito']}" if m.get("desfeito") else "valendo"
+            print(f"  {quando}  {len(m['gravados'])} gravados, {len(m['guardados'])} guardados  ({situacao})")
+        print(f"{len(lista)} backups em {estado.no_alvo(a.alvo, aplicacao.BACKUPS)}")
+        return 0
+    if a.alvo in ("", "/") and os.geteuid() != 0:
+        print("rode com sudo: sudo ./aplicar (o --conferir roda sem)", file=sys.stderr)
+        return 2
+    try:
+        with aplicacao.Trava(a.alvo):
+            if a.desfazer is not None:
+                quando = aplicacao.desfazer(a.alvo, a.desfazer or None)
+                print(f"Desfeito: os arquivos voltaram ao backup {quando}, e o que tinha mudado reiniciou de novo.")
+                return 0
+            plano, _, _ = aplicacao.planejar(RAIZ, a.alvo, a.conf, partes, donos=not a.sem_dono)
+            print(f"Aplicando o repositório ({versao_do_repositorio()}) no servidor ({a.alvo})")
+            secoes = (("grava", [(r.parte, r.caminho, "falta" if r.estado == "falta" else "; ".join(r.detalhes) or "difere")
+                                 for _, r in plano.escrever]),
+                      ("guarda no backup", [(r.parte, r.caminho, "sobra" if r.estado == "sobra" else "cópia antiga")
+                                            for r in plano.guardar]),
+                      ("fica como está", [(r.parte, r.caminho, motivo) for r, motivo in plano.manuais]))
+            for titulo, linhas in secoes:
+                if linhas:
+                    print(f"\n{titulo} ({len(linhas)})")
+                    for parte, caminho, extra in linhas:
+                        print(f"  {parte:<8} {caminho}   {extra}")
+            if not plano.escrever and not plano.guardar:
+                print("\nNada a aplicar: o servidor está igual ao repositório" + (" (menos o que fica como está)."
+                                                                                if plano.manuais else "."))
+                return 0
+            print("\ndepois")
+            for descricao, _, _ in plano.passos or [("nada a reiniciar", None, None)]:
+                print(f"  {descricao}")
+            if not a.sim:
+                if not sys.stdin.isatty():
+                    print("\nnada mudou: confirme com --sim", file=sys.stderr)
+                    return 2
+                if input("\nAplicar? [s/N] ").strip().lower() not in ("s", "sim"):
+                    print("Nada mudou.")
+                    return 2
+            print()
+            sistema = aplicacao.Sistema(a.alvo)
+            pasta = aplicacao.aplicar(RAIZ, plano, a.alvo, sistema)
+            for comando in sistema.anotados:
+                print(f"  ensaio: {comando}")
+            resultados, _, _ = estado.conferir(RAIZ, a.alvo, a.conf, partes, donos=not a.sem_dono)
+            resta = [r for r in resultados if r.estado in ("difere", "falta", "sobra")]
+            print(f"\nPronto: {len(plano.escrever)} gravados e {len(plano.guardar)} guardados. Backup em {pasta}"
+                  " (para voltar: sudo ./aplicar --desfazer).")
+            if resta:
+                print(f"Ainda difere: {len(resta)} (veja com ./aplicar --conferir).")
+            return 0
+    except aplicacao.Recusa as e:
+        print(f"erro: {e}", file=sys.stderr)
+        return 1 if e.desfez else 2
+    except estado.ConfInvalida as e:
+        print(f"erro: {e}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":

@@ -60,6 +60,7 @@ class Item:
     dono: str | None = None
     grupo: str | None = None
     chaves_json: bool = False       # só as chaves do repositório precisam estar iguais (o daemon.json)
+    semente: bytes | None = None    # sem conteúdo: o que o aplicar põe quando o arquivo falta (e só aí)
 
 
 @dataclass
@@ -289,7 +290,8 @@ def desejado(raiz, conf, tem):
                          ("scripts/bom_dia.py", "scripts/bom_dia.py"), ("ferramentas.txt", "ferramentas/requisitos.txt")):
             item("hermes", f"hermes/{rel}", f"{D}/{dst}", 0o644, "hermes", "atena-acoes")
         for m in ("USER.md", "MEMORY.md"):
-            itens.append(Item("hermes", f"{D}/memories/{m}", None, f"hermes/memoria/{m} (só a semente)"))
+            itens.append(Item("hermes", f"{D}/memories/{m}", None, f"hermes/memoria/{m} (só a semente)",
+                              None, "hermes", "atena-acoes", semente=ler(f"hermes/memoria/{m}")))
 
     # --- lab (88)
     if tem["lab"]:

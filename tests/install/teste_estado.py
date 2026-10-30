@@ -330,15 +330,16 @@ if shutil.which("git"):
 
 # --- o ./aplicar --conferir: o mesmo servidor de mentira, pela linha de comando
 def aplicar(*args):
-    r = subprocess.run([sys.executable, os.path.join(RAIZ, "aplicar"), *args], capture_output=True, text=True, timeout=120)
+    r = subprocess.run([sys.executable, os.path.join(RAIZ, "aplicar"), *args], capture_output=True, text=True, timeout=120,
+                       stdin=subprocess.DEVNULL)
     return r.returncode, r.stdout, r.stderr
 
 
 montar(alvo, ATENA_PAINEL_CASA="sim", ATENA_SENSORES_MODULO="nct6683", ATENA_CLAUDE_SKILLS="sim", ATENA_TAILSCALE="sim")
 rc, saida, erro = aplicar("--conferir", "--alvo", alvo, "--sem-dono")
 confere("aplicar: servidor igual, sai com 0 e diz", rc == 0 and "o servidor está igual ao repositório" in saida, saida + erro)
-rc, saida, erro = aplicar("--alvo", alvo)
-confere("aplicar sem --conferir: sai com 2 e diz que só há o --conferir", rc == 2 and "--conferir" in erro, erro)
+rc, saida, erro = aplicar("--alvo", alvo, "--sem-dono")
+confere("aplicar sem --conferir, num servidor igual: nada a aplicar", rc == 0 and "Nada a aplicar" in saida, saida + erro)
 estragos()
 rc, saida, erro = aplicar("--conferir", "--alvo", alvo, "--sem-dono")
 confere("com diferenças, sai com 1 e conta no resumo", rc == 1 and "Resumo: 11 diferenças (4 difere, 2 falta, 5 sobra)" in saida
