@@ -39,11 +39,12 @@ RONDA="Ronda do servidor (e do Claude Code, se houver o lab). O bloco MONITOR CH
 
 # o id da tarefa "ronda" no Hermes, ou nada se ela não existe. Lê o arquivo, e não o "hermes cron list":
 # logo depois de reiniciar, o Hermes ainda não responde.
-ronda_id() {
+cron_id() {   # o id de um job do cron da Atena pelo nome (vazio se não existe)
   python3 -c 'import json, sys
-print(next((j["id"] for j in json.load(open(sys.argv[1])).get("jobs", []) if j.get("name") == "ronda"), ""))' \
-    /srv/agents/hermes/cron/jobs.json 2>/dev/null || true
+print(next((j["id"] for j in json.load(open(sys.argv[1])).get("jobs", []) if j.get("name") == sys.argv[2]), ""))' \
+    /srv/agents/hermes/cron/jobs.json "$1" 2>/dev/null || true
 }
+ronda_id() { cron_id ronda; }
 
 # token do executor para a Atena (/srv/agents/hermes/executor.token). Refaz o token quando ele não
 # existe, quando o do arquivo não vale mais ou quando falta alguma das ações exigidas. Um token refeito

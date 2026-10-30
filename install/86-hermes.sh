@@ -42,8 +42,9 @@ copiar_hermes skills/atena/servidor-atena/SKILL.md skills/atena/servidor-atena/S
 copiar_hermes skills/atena/notas/SKILL.md skills/atena/notas/SKILL.md
 copiar_hermes scripts/ronda.py scripts/ronda.py
 copiar_hermes scripts/acao.py scripts/acao.py
+copiar_hermes scripts/bom_dia.py scripts/bom_dia.py
 copiar_hermes ferramentas.txt ferramentas/requisitos.txt
-ok "personalidade, habilidades servidor-atena e notas, ronda e acao em $D"
+ok "personalidade, habilidades servidor-atena e notas, ronda, acao e bom-dia em $D"
 
 # token do executor: todas as consultas, reiniciar, o PC e as stacks de apps, sem a zona prod e
 # sem pedir o celular. Para exigir o celular em algo, refaça com o 4º campo (veja docs/pt/operacao.md).
@@ -105,3 +106,10 @@ else
     || aviso "não consegui atualizar a ronda (docker exec -u hermes hermes hermes cron list)"
 fi
 ok "ronda de 3 em 3 minutos (só gasta API quando algo muda)"
+
+# o bom-dia: às 8h, sem IA (--no-agent): o script lê o servidor e a saída vai direto para o Telegram
+if [ -z "$(cron_id bom-dia)" ]; then
+  docker exec -u hermes hermes hermes cron create "0 8 * * *" --name bom-dia --script bom_dia.py --no-agent \
+    --deliver telegram >/dev/null || aviso "não consegui criar o bom-dia (docker exec -u hermes hermes hermes cron list)"
+fi
+ok "bom-dia às 8h, sem IA"

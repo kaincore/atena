@@ -1,6 +1,8 @@
-"""O acao.py (a Atena chamando o executor, com o código HTTP), contra um executor de mentira (socket unix
-temporário)."""
+"""O acao.py (a Atena chamando o executor, com o código HTTP) e o bom-dia sem IA, contra um executor de
+mentira (socket unix temporário) e um LiteLLM de mentira."""
+import datetime as dt
 import http.server
+import importlib.util
 import json
 import os
 import socketserver
@@ -13,13 +15,29 @@ RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 tmp = tempfile.mkdtemp(prefix="teste-scripts-")
 SOCK, TOKEN = f"{tmp}/executor.sock", f"{tmp}/executor.token"
 open(TOKEN, "w").write("token-secreto-123\n")
+LITELLM_PRONTO = [True]
 
-# a cópia do script apontando para o executor de mentira
+
+class Litellm(http.server.BaseHTTPRequestHandler):
+    def log_message(self, *a):
+        pass
+
+    def do_GET(self):
+        self.send_response(200 if LITELLM_PRONTO[0] else 503)
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+
+litellm = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Litellm)
+threading.Thread(target=litellm.serve_forever, daemon=True).start()
+
+# cópias dos scripts apontando para o executor e o LiteLLM de mentira, na mesma pasta (o bom-dia importa o acao)
 PASTA = f"{tmp}/scripts"
 os.makedirs(PASTA)
-for nome in ("acao.py",):
+for nome in ("acao.py", "bom_dia.py"):
     fonte = open(os.path.join(RAIZ, "hermes", "scripts", nome)).read()
     fonte = fonte.replace('"/run/atena-executor/executor.sock"', repr(SOCK)).replace('"/opt/data/executor.token"', repr(TOKEN))
+    fonte = fonte.replace('"http://litellm:4000/health/readiness"', repr(f"http://127.0.0.1:{litellm.server_port}/"))
     open(f"{PASTA}/{nome}", "w").write(fonte)
 
 SERVICOS = [{"container": "litellm", "estado": "running", "status": "Up 2 hours (healthy)"},
@@ -123,9 +141,61 @@ confere("acao --pedido: no máximo 170 s", PEDIDOS[0][1] == "/pedido/abcd1234?es
 rc, saida, erro = acao("--pedido", "abcd1234", "logo")
 confere("acao --pedido com espera que não é número: sai com 2", rc == 2 and not PEDIDOS, erro)
 
+# --- bom-dia ---
+spec = importlib.util.spec_from_file_location("bom_dia", f"{PASTA}/bom_dia.py")
+bd = importlib.util.module_from_spec(spec)
+sys.path.insert(0, PASTA)
+spec.loader.exec_module(bd)
+SEXTA = dt.datetime(2026, 10, 30, 8, 0)
+
+cenario()
+texto = bd.montar(SEXTA)
+linhas = texto.split("\n")
+confere("bom-dia: o dia certo", linhas[0] == "Bom dia! Sexta, 30 de outubro.", linhas[0])
+confere("bom-dia: tudo em ordem, com a contagem", "Servidor: tudo em ordem, 3 containers no ar." in linhas, texto)
+confere("bom-dia: as temperaturas arredondadas", "Temperaturas: CPU 41 °C, GPU 33 °C, NVMe 30 °C." in linhas, texto)
+confere("bom-dia: o gasto do mês e o teto do Haiku", "IA em outubro: US$ 1,03, com o Haiku em 2% do teto de US$ 50,00." in linhas, texto)
+confere("bom-dia: sem trabalho do Claude Code, nada sobre ele", not any(l.startswith("Claude Code") for l in linhas), texto)
+confere("bom-dia: tudo calmo, 4 linhas", len(linhas) == 4, texto)
+confere("bom-dia: origem bom-dia nos pedidos", all(p[3]["origem"] == "bom-dia" for p in PEDIDOS if p[0] == "POST"))
+
+doente = [dict(SERVICOS[0], status="Up 1 hour (unhealthy)"), SERVICOS[1], dict(SERVICOS[2], estado="exited")]
+cenario(**{"status.servicos": (200, doente)})
+texto = bd.montar(SEXTA)
+confere("bom-dia: o que pede atenção, doente e parado", "Servidor: 2 de 3 containers pedem atenção: litellm (doente), "
+        "ollama (exited)." in texto, texto)
+
+cenario(**{"sistema.sensores": (200, {"cpu": {"temperatura_c": 91.0}, "avaliacao": "CPU quente (91 °C)"})})
+texto = bd.montar(SEXTA)
+confere("bom-dia: temperatura quente avisa", "Temperaturas: CPU 91 °C. Atenção: CPU quente (91 °C)." in texto, texto)
+
+trabalhos = [{"projeto": "loja", "estado": "executando", "criado": "2026-10-30 07:40"},
+             {"projeto": "site", "estado": "concluido", "criado": "2026-10-29 23:10"},
+             {"projeto": "velho", "estado": "concluido", "criado": "2026-10-28 10:00"}]
+cenario(**{"claude.trabalhos": (200, {"trabalhos": trabalhos})})
+texto = bd.montar(SEXTA)
+confere("bom-dia: o Claude Code rodando e o que terminou de noite (o de dois dias atrás não)",
+        "Claude Code: 1 rodando (loja); da noite: site (concluido)." in texto, texto)
+cenario(**{"claude.trabalhos": (403, None)})
+confere("bom-dia: sem o lab, sem linha do Claude Code", "Claude Code" not in bd.montar(SEXTA))
+
+cenario(**{"gasto.api": (500, None)})
+texto = bd.montar(SEXTA)
+confere("bom-dia: uma parte que falha vira uma linha dizendo qual", "Não consegui ler o gasto de IA (RuntimeError)." in texto
+        and "Temperaturas" in texto, texto)
+
+LITELLM_PRONTO[0] = False
+cenario()
+texto = bd.montar(SEXTA)
+confere("bom-dia: a IA fora avisa logo depois do dia", texto.split("\n")[1].startswith("A IA da Atena (LiteLLM) não está"), texto)
+LITELLM_PRONTO[0] = True
+
 servidor.shutdown()
 servidor.server_close()
 os.unlink(SOCK)
+texto = bd.montar(SEXTA)
+confere("bom-dia: sem o executor, ainda dá bom-dia e diz o que houve", texto.startswith("Bom dia!")
+        and "Não consegui falar com o executor" in texto, texto)
 rc, saida, erro = acao("status.servicos")
 confere("acao: sem o executor, sai com 2 e explica", rc == 2 and "sem resposta do executor" in erro, erro)
 
