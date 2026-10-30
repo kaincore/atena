@@ -1,9 +1,12 @@
 """A Atena no painel (atena.*): as conversas, o chat com a resposta aos pedaços e a agenda dela, contra um
-Hermes de mentira que fala a API de verdade (HTTP e SSE). Também o GET /pedido?versao e o arquivo dos
-trabalhos antigos do Claude Code."""
+Hermes de mentira que fala a API de verdade (HTTP e SSE). Também o GET /pedido?versao, o arquivo dos
+trabalhos antigos do Claude Code e o token-acertar."""
+import contextlib
 import http.server
+import io
 import json
 import os
+import sys
 import threading
 import time
 import urllib.parse
@@ -321,7 +324,7 @@ confere("apagar um lembrete: DELETE", r == {"apagado": "abc123def456"} and "abc1
 confere("id inválido: 400", erro(ex.acao_atena_agendamento, c, {"id": "../x", "fazer": "pausar"})[0] == 400)
 confere("fazer desconhecido: 400", erro(ex.acao_atena_agendamento, c, {"id": "abc123def456", "fazer": "editar"})[0] == 400)
 
-# --- o arquivo dos trabalhos antigos e o executor que reinicia -------------------------
+# --- o arquivo dos trabalhos antigos, o executor que reinicia, o token-acertar -------------------------
 velho = time.time() - 8 * 86400
 ex.ESTADO["pedidos"]["aaaa0001"] = {"id": "aaaa0001", "acao": "claude.tarefa", "cliente": "hermes", "zonas": ["lab"],
                                     "params": {"pedido": "jogo", "projeto": "nave"}, "estado": "concluido",
@@ -341,4 +344,31 @@ ex.pedidos_interrompidos()
 confere("executor reiniciado no meio do chat: o pedido falha e diz para mandar de novo",
         ex.ESTADO["pedidos"]["bbbb0001"]["estado"] == "falhou" and "de novo" in ex.ESTADO["pedidos"]["bbbb0001"]["erro"])
 
+with open(ex.TOKENS, "w") as f:
+    json.dump({}, f)
+t_painel = token(ex, "painel", ["status.servicos"], c["zonas"], aprovar=[])
+t_atena = token(ex, "hermes", ["status.servicos", "atena.falar"], ["apps"])
+token(ex, "outro", ["status.servicos"], ["apps"])
+ex.lab_instalado = lambda: False
+saida = io.StringIO()
+argv, sys.argv = sys.argv, ["atena-executor", "token-acertar"]
+with contextlib.redirect_stdout(saida):
+    ex.principal()
+sys.argv = argv
+tokens = {t["cliente"]: t for t in ex.carregar_tokens().values()}
+confere("token-acertar: o painel ganha as ações do perfil dele, com o mesmo token",
+        set(tokens["painel"]["acoes"]) == set(ex.do_perfil("painel"))
+        and ex.carregar_tokens()[ex.hash_token(t_painel)]["cliente"] == "painel", tokens["painel"]["acoes"])
+confere("a Atena ganha as do perfil atena (sem o lab, sem as do lab), e as que já tinha ficam",
+        set(tokens["hermes"]["acoes"]) == set(ex.do_perfil("atena")) | {"atena.falar"}
+        and ex.carregar_tokens()[ex.hash_token(t_atena)]["zonas"] == ["apps"], tokens["hermes"])
+confere("as aprovações ficam como estavam", tokens["painel"]["aprovar"] == [] and "aprovar" not in tokens["hermes"])
+confere("um cliente sem perfil fica como estava", tokens["outro"]["acoes"] == ["status.servicos"])
+confere("e diz o que acrescentou", "painel: + " in saida.getvalue() and "hermes: + " in saida.getvalue(), saida.getvalue())
+saida = io.StringIO()
+sys.argv = ["atena-executor", "token-acertar"]
+with contextlib.redirect_stdout(saida):
+    ex.principal()
+sys.argv = argv
+confere("de novo: nada a acrescentar", "já têm" in saida.getvalue(), saida.getvalue())
 fim()

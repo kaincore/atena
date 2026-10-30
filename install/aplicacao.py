@@ -125,7 +125,8 @@ def planejar(raiz, alvo="/", conf=None, partes=None, donos=True):
 
 def passos(p):
     """O que roda depois de gravar, na ordem: o systemd relê as unidades, o firewall e o executor reiniciam
-    se mudaram de verdade, o SSH confere a configuração, e cada stack que mudou sobe de novo."""
+    se mudaram de verdade, o SSH confere a configuração, cada stack que mudou sobe de novo e, por último
+    (depois de tudo de pé), os tokens do painel e da Atena ganham as ações novas do catálogo do executor."""
     mudou = [(i.destino, r) for i, r in p.escrever] + [(r.caminho, None) for r in p.guardar if r.estado == "sobra"]
     de_verdade = [c for c, r in mudou if not so_comentario(r)]
     lista = []
@@ -156,6 +157,8 @@ def passos(p):
             lista.append((f"{nome}: reinicia", ["docker", "compose", "restart"], s))
         lista.append((f"{nome}: sobe com o compose e espera ficar saudável",
                       ["docker", "compose", "up", "-d", *construir, "--wait", "--wait-timeout", "300"], s))
+    if any(d == "reinicia atena-executor.service" for d, _, _ in lista):
+        lista.append(("os tokens ganham as ações novas do catálogo", ["atena-executor", "token-acertar"], None))
     return lista
 
 

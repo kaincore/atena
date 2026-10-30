@@ -116,6 +116,8 @@ confere("aplica: sai com 0 e mostra o plano antes", rc == 0 and "grava (" in sai
 anotados = [linha.split("ensaio: ", 1)[1] for linha in saida.split("\n") if "ensaio: " in linha]
 confere("o systemd relê as unidades e o executor reinicia (mudou de verdade)",
         "systemctl daemon-reload" in anotados and "systemctl try-restart atena-executor.service" in anotados, anotados)
+confere("por último, com tudo de pé, os tokens ganham as ações novas do catálogo",
+        anotados[-1:] == ["atena-executor token-acertar"], anotados)
 confere("o que mudou só nos comentários não reinicia (atena-vigia.timer, ollama)",
         not any("atena-vigia.timer" in c for c in anotados) and not any("ollama" in c for c in anotados), anotados)
 confere("o SSH confere a configuração, e não recarrega (só comentário)",
@@ -172,7 +174,8 @@ r = {x.caminho: x for x in estado.conferir(RAIZ, ALVO, donos=False)[0]}
 confere("--parte executor: grava só o executor", rc == 0
         and r["/usr/local/lib/atena-executor/atena_executor/stacks.py"].estado == "igual"
         and r["/usr/local/sbin/atena-telegram"].estado == "falta", saida + erro)
-confere("e reinicia só o executor", "ensaio: systemctl try-restart atena-executor.service" in saida
+confere("e reinicia só o executor (e acerta os tokens)", "ensaio: systemctl try-restart atena-executor.service" in saida
+        and "ensaio: atena-executor token-acertar" in saida
         and "daemon-reload" not in saida and "docker compose" not in saida, saida)
 
 # --- a trava: um aplicar de cada vez

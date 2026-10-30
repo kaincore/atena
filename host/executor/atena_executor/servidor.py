@@ -21,6 +21,9 @@ Administração (como root):
       imprime o token uma única vez; só o hash fica guardado
   atena-executor token-remover <cliente>   revoga o token do cliente
   atena-executor tokens   lista os clientes cadastrados
+  atena-executor token-acertar   põe no token do painel e no da Atena (hermes) as ações do perfil de cada um
+      que faltam, sem trocar o token: o ./aplicar roda depois de o executor mudar, e uma ação nova do
+      catálogo chega ao token
 """
 
 import http.server
@@ -38,7 +41,7 @@ import urllib.parse
 
 from .acoes import ACOES, do_perfil
 from .base import Erro, ZONAS, log
-from .claude import acompanhar
+from .claude import acompanhar, lab_instalado
 from .pedidos import (ESTADO, MUDOU, TERMINADOS, carregar_estado, criar_pedido, executar, mudar,
                       ouvir_respostas, pedidos_interrompidos, pedir_aprovacao, precisa_aprovacao, publico)
 from .tokens import TOKENS, carregar_tokens, cliente_do_token, hash_token
@@ -219,6 +222,27 @@ def token_remover(cliente):
     print(f"token de {cliente} revogado")
 
 
+def token_acertar():
+    """Põe no token de cada cliente conhecido as ações do perfil dele que faltam, sem trocar o token: o
+    painel (perfil painel) e a Atena (hermes: atena e, com o lab, atena-lab). As aprovações ficam como
+    estão (o destrutivo sempre pede o celular). Ação que saiu do catálogo também fica: o executor não a
+    conhece, e pedir dá 404."""
+    perfis = {"painel": ["painel"], "hermes": ["atena"] + (["atena-lab"] if lab_instalado() else [])}
+    tokens = carregar_tokens()
+    novas = {}
+    for c in tokens.values():
+        faltam = [a for perfil in perfis.get(c["cliente"], []) for a in do_perfil(perfil) if a not in c["acoes"]]
+        if faltam:
+            c["acoes"] = c["acoes"] + faltam
+            novas[c["cliente"]] = faltam
+    if novas:
+        gravar_tokens(tokens)
+    for cliente, acoes in novas.items():
+        print(f"{cliente}: + {', '.join(acoes)}")
+    if not novas:
+        print("os tokens já têm todas as ações dos perfis")
+
+
 def principal():
     """A linha de comando: servir ou administrar os tokens."""
     comando = sys.argv[1] if len(sys.argv) > 1 else ""
@@ -226,6 +250,8 @@ def principal():
         servir()
     elif comando == "token-novo" and len(sys.argv) in (5, 6):
         token_novo(*sys.argv[2:])
+    elif comando == "token-acertar" and len(sys.argv) == 2:
+        token_acertar()
     elif comando == "token-remover" and len(sys.argv) == 3:
         token_remover(sys.argv[2])
     elif comando == "acoes" and len(sys.argv) == 3 and sys.argv[2] in ("painel", "atena", "atena-lab"):
