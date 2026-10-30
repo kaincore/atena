@@ -90,8 +90,16 @@ def arquivar(velhos):
 
 def mudar(p, **campos):
     with TRAVA:
-        p.update(campos, atualizado=time.time())
+        p.update(campos, atualizado=time.time(), versao=p.get("versao", 0) + 1)
         salvar_estado()
+        MUDOU.notify_all()
+
+
+def andamento(p, **campos):
+    """Como mudar, sem gravar no disco: o que chega aos pedaços (a resposta da Atena no chat do painel).
+    Quem espera em GET /pedido?versao acorda a cada pedaço; o disco recebe o pedido quando ele termina."""
+    with TRAVA:
+        p.update(campos, atualizado=time.time(), versao=p.get("versao", 0) + 1)
         MUDOU.notify_all()
 
 
@@ -265,11 +273,15 @@ def alcanca(cliente, p):
 
 
 def pedidos_interrompidos():
-    """stack.aplicar e app.publicar rodam numa thread do executor: se ele reiniciou no meio, o pedido
-    não volta sozinho. (O Claude Code roda no runner e continua: o resultado chega depois.)"""
+    """stack.aplicar, app.publicar e atena.falar rodam numa thread do executor: se ele reiniciou no meio, o
+    pedido não volta sozinho. (O Claude Code roda no runner e continua: o resultado chega depois.)"""
     with TRAVA:
         for p in ESTADO["pedidos"].values():
             if p["acao"] in ("stack.aplicar", "app.publicar") and p["estado"] == "executando":
                 p.update(estado="falhou", erro="o executor reiniciou no meio; confira com status.servicos e "
                                                 "aplique de novo se precisar", atualizado=time.time())
+            elif p["acao"] == "atena.falar" and p["estado"] == "executando":
+                # a conversa com o Hermes caiu junto, e ele para a resposta quando quem ouvia some
+                p.update(estado="falhou", erro="o executor reiniciou no meio da resposta, e a Atena parou; "
+                                                "mande a mensagem de novo", atualizado=time.time())
         salvar_estado()

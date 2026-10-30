@@ -4,6 +4,9 @@ Uma ação nova é a entrada aqui e o código dela, com teste; o resto se acerta
 from typing import Callable, NamedTuple
 
 from .arquivos import acao_arquivo_buscar, acao_arquivo_entregar, acao_arquivo_ler, acao_arquivo_procurar
+from .atena import (acao_atena_agenda, acao_atena_agendamento, acao_atena_agendar, acao_atena_aprovar,
+                    acao_atena_conversa, acao_atena_conversas, acao_atena_falar, acao_atena_parar,
+                    preparar_atena_falar)
 from .central import acao_aprovacoes_decidir, acao_aprovacoes_lista, acao_atividade_lista, acao_aviso_celular
 from .claude import (acao_claude_cancelar, acao_claude_historico, acao_claude_perguntas, acao_claude_permissao,
                      acao_claude_registro, acao_claude_responder, acao_claude_tarefa, acao_claude_trabalhos,
@@ -121,6 +124,21 @@ ACOES = {
                               "texto para sh -c ou lista, segundos? 1-120)", None, MUDA, PA, LAB),
     "app.lista":         Acao(acao_app_lista, "projetos do lab: app no ar, endereço, código, dados guardados, o que "
                               "está em andamento e a lixeira", None, CONSULTA, PA, LAB),
+    # a Atena no painel (o chat, as conversas e a agenda dela), pela API interna do Hermes
+    "atena.conversas":   Acao(acao_atena_conversas, "conversas da Atena, da mais recente (quantas? 1-100, pular?, "
+                              "origem? telegram|painel|agenda|terminal|whatsapp)", None, CONSULTA, P),
+    "atena.conversa":    Acao(acao_atena_conversa, "as mensagens de uma conversa da Atena, com os passos e os "
+                              "trabalhos do Claude Code (conversa, quantas? 1-500)", None, CONSULTA, P),
+    "atena.falar":       Acao(acao_atena_falar, "manda uma mensagem à Atena numa conversa do painel, ou numa nova "
+                              "(texto, conversa?); a resposta chega aos pedaços no pedido", preparar_atena_falar, MUDA, P),
+    "atena.parar":       Acao(acao_atena_parar, "para a resposta da Atena no meio (pedido)", None, MUDA, P),
+    "atena.aprovar":     Acao(acao_atena_aprovar, "aprova ou recusa o comando que a Atena quer rodar no meio do chat "
+                              "(pedido, escolha: once|session|always|deny)", None, MUDA, P),
+    "atena.agenda":      Acao(acao_atena_agenda, "os agendamentos da Atena: lembretes, ronda e bom-dia", None, CONSULTA, P),
+    "atena.agendar":     Acao(acao_atena_agendar, "agenda algo para a Atena fazer (nome, quando = 2026-11-03T15:00, "
+                              "0 8 * * * ou every 2h, texto, entrega? telegram|ntfy, vezes?)", None, MUDA, P),
+    "atena.agendamento": Acao(acao_atena_agendamento, "muda um agendamento da Atena (id, fazer: pausar|retomar|rodar|"
+                              "apagar; a ronda e o bom-dia não se apagam)", None, MUDA, P),
 }
 
 # Ações que só o próprio executor cria (ninguém pede por POST /acao).

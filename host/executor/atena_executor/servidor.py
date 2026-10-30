@@ -7,7 +7,8 @@ Protocolo: HTTP no socket /run/atena-executor/executor.sock (permissão 660, gru
                                   responde 202 {"pedido": id} quando a ação fica esperando algo
                                   (aprovação, o Claude Code ou um trabalho em segundo plano)
   GET  /pedido/<id>[?esperar=s]   estado de um pedido (só do cliente que pediu); com esperar, segura
-                                  a resposta até o pedido terminar ou passar s segundos (até 170)
+                                  a resposta até o pedido terminar ou passar s segundos (até 170);
+                                  com versao=n também, até ele mudar depois da versão n (o chat do painel)
   Cabeçalho: Authorization: Bearer <token>
 
 Linha de comando:
@@ -79,13 +80,16 @@ class Pedido(http.server.BaseHTTPRequestHandler):
                         "aprovacao": precisa_aprovacao(cliente, n)}
                     for n in cliente["acoes"] if n in ACOES}})
             elif m:
-                esperar = urllib.parse.parse_qs(url.query).get("esperar", ["0"])[0]
+                consulta = urllib.parse.parse_qs(url.query)
+                esperar = consulta.get("esperar", ["0"])[0]
+                versao = consulta.get("versao", [""])[0]
                 limite = time.monotonic() + min(int(esperar) if esperar.isdigit() else 0, ESPERA_MAXIMA)
                 with MUDOU:
                     p = ESTADO["pedidos"].get(m.group(1))
                     if not p or p["cliente"] != cliente["cliente"]:
                         raise Erro(404, "pedido não encontrado")
-                    while p["estado"] not in TERMINADOS and time.monotonic() < limite:
+                    while (p["estado"] not in TERMINADOS and time.monotonic() < limite
+                           and (not versao.isdigit() or p.get("versao", 0) <= int(versao))):
                         MUDOU.wait(limite - time.monotonic())
                     corpo = {"ok": True, "pedido": publico(p)}
                 self.responder(200, corpo)
