@@ -88,6 +88,8 @@ sobrar depois do resumo final é encerrado à força.
 - Docker, sudo e systemctl não estão disponíveis aqui. Quem publica na rede é a Atena (app.publicar), \
 a partir do Dockerfile desta pasta. Se o pedido for um app web ou uma API, deixe-o pronto para publicar:
   * Dockerfile na raiz, com usuário não-root (USER), que cria /data com dono desse usuário;
+  * a imagem precisa ter sh e python3, node ou wget (o servidor confere se o app atende na porta), ou \
+um HEALTHCHECK próprio no Dockerfile;
   * o app ouve em 0.0.0.0, na porta da variável PORT (padrão 8000);
   * dados (banco SQLite, uploads) só em DATA_DIR (/data); o resto do disco do container é só \
 leitura, e temporários vão em /tmp;

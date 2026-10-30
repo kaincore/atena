@@ -1,9 +1,15 @@
 """Publicar apps do lab com o Docker simulado: validação, porta, compose com as travas, falhas,
-parar, lista, o link do Tailscale (ligado e desligado no atena.conf), uma publicação por projeto e
-app.comando."""
+parar, lista, o link do Tailscale (ligado e desligado no atena.conf), uma publicação por projeto, a
+saúde do app no compose e app.comando."""
+import http.server
 import os
+import shutil
+import socket
 import subprocess
+import tempfile
 import threading
+
+import yaml
 
 from comum import confere, erro as erro_ex, esperar, executor, fim
 
@@ -210,6 +216,89 @@ erro(ex.acao_app_publicar, pedido({"projeto": "lista-compras", "porta": 8001}))
 CENARIO["up"] = 0
 confere("uma publicação que falha também solta o projeto",
         ex.acao_app_publicar(pedido({"projeto": "lista-compras", "porta": 8001})).get("stack") == "lab-lista-compras")
+
+# --- saúde do app: o compose confere a porta TCP (python3, node ou wget), menos com HEALTHCHECK no Dockerfile ---
+pasta, compose = f"{ex.PROJETOS_LAB}/lista-compras", f"{ex.STACKS_LAB}/lab-lista-compras/compose.yaml"
+
+
+def saude(porta, dockerfile="FROM python:3.14-slim\nUSER app\n"):
+    """Publica com esse Dockerfile e devolve o compose gerado, lido como YAML."""
+    with open(f"{pasta}/Dockerfile", "w") as f:
+        f.write(dockerfile)
+    ex.publicar("lista-compras", "lab-lista-compras", pasta, compose, porta)
+    with open(compose) as f:
+        return yaml.safe_load(f)
+
+
+class So404(http.server.BaseHTTPRequestHandler):
+    """Um app que responde 404 em tudo: atender na porta basta, sem rota HTTP certa."""
+    def do_GET(self):
+        self.send_error(404)
+
+    def log_message(self, *args):
+        pass
+
+
+app = http.server.HTTPServer(("127.0.0.1", 0), So404)
+threading.Thread(target=app.serve_forever, daemon=True).start()
+aberta = app.server_address[1]
+fechada = socket.socket()
+fechada.bind(("127.0.0.1", 0))
+porta_fechada = fechada.getsockname()[1]
+fechada.close()
+
+cfg = saude(aberta)
+servico = cfg["services"]["app"]
+confere("o compose gerado é YAML válido, com as travas de sempre", servico["read_only"] is True
+        and servico["cap_drop"] == ["ALL"] and servico["environment"]["PORT"] == str(aberta), servico)
+h = servico.get("healthcheck") or {}
+teste = h.get("test") or []
+confere("healthcheck com CMD-SHELL e intervalo, prazo e tentativas", len(teste) == 2 and teste[0] == "CMD-SHELL"
+        and all(k in h for k in ("interval", "timeout", "retries", "start_period")), h)
+comando = teste[1] if len(teste) == 2 else "exit 2"
+confere("sem $ solto no comando (o compose trocaria pelo valor de uma variável)", "$" not in comando.replace("$$", ""), comando)
+comando = comando.replace("$$", "$")   # o que o compose entrega ao Docker
+confere("o comando confere a porta do app, sem rota HTTP", str(aberta) in comando and "/health" not in comando, comando)
+comando_fechada = saude(porta_fechada)["services"]["app"]["healthcheck"]["test"][1].replace("$$", "$")
+BINS = tempfile.mkdtemp(prefix="teste-saude-")
+
+
+def saude_no_sh(comando, programas=None):
+    """O código de saída do comando no sh do host; com programas, o PATH só tem eles (outra imagem)."""
+    env = dict(os.environ)
+    if programas is not None:
+        pasta_bin = tempfile.mkdtemp(dir=BINS)
+        for nome, alvo in programas.items():
+            os.symlink(alvo, f"{pasta_bin}/{nome}")
+        env["PATH"] = pasta_bin
+    return subprocess.run(["/bin/sh", "-c", comando], env=env, capture_output=True, timeout=30).returncode
+
+
+imagens = {"com python3 (o host inteiro)": None, "sem nenhum dos três": {}}
+if shutil.which("node"):
+    imagens["só com node"] = {"node": shutil.which("node")}
+if shutil.which("wget") and shutil.which("grep"):
+    imagens["só com o wget do GNU"] = {"wget": shutil.which("wget"), "grep": shutil.which("grep")}
+if shutil.which("busybox"):
+    imagens["só com o busybox (Alpine)"] = {"wget": shutil.which("busybox"), "grep": shutil.which("busybox")}
+for imagem, programas in imagens.items():
+    esperado = 0 if programas != {} else 1
+    codigo = saude_no_sh(comando, programas)
+    confere(f"saúde, {imagem}: porta aberta sai {esperado}", codigo == esperado, codigo)
+    codigo = saude_no_sh(comando_fechada, programas)
+    confere(f"saúde, {imagem}: porta fechada sai 1", codigo == 1, codigo)
+app.shutdown()
+
+confere("Dockerfile com HEALTHCHECK próprio: o compose não põe o dele (passaria por cima)",
+        "healthcheck" not in saude(aberta, "FROM python:3.14-slim\nHEALTHCHECK --interval=30s \\\n"
+                                           "    CMD python -c 'print(1)'\nCMD [\"python\", \"app.py\"]\n")["services"]["app"])
+confere("HEALTHCHECK em minúsculas (ou NONE) também é do app",
+        "healthcheck" not in saude(aberta, "from python:3.14-slim\nhealthcheck none\n")["services"]["app"])
+confere("HEALTHCHECK num comentário não conta", "healthcheck" in saude(aberta, "FROM x\n# HEALTHCHECK depois\n")["services"]["app"])
+confere("HEALTHCHECK só num estágio de construção não conta (não vai para a imagem final)",
+        "healthcheck" in saude(aberta, "FROM node AS build\nHEALTHCHECK CMD x\nFROM python:3.14-slim\n")["services"]["app"])
+with open(f"{pasta}/Dockerfile", "w") as f:
+    f.write("FROM python:3.14-slim\n")
 
 # --- app.comando: roda dentro do app no ar ---
 EXEC = []

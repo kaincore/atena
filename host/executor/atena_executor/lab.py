@@ -34,7 +34,8 @@ PUBLICANDO = {}
 TRAVA_PUBLICAR = threading.Lock()
 PORTAS_LAB = range(8000, 9000)
 
-# Mesmo padrão das outras stacks: zona lab, sem capacidades, disco só de leitura (escreve em /data).
+# Mesmo padrão das outras stacks: zona lab, sem capacidades, disco só de leitura (escreve em /data) e
+# saúde do app ({saude}: a SAUDE_LAB ou nada).
 COMPOSE_LAB = """\
 # Gerado pelo executor (app.publicar) a partir de {pasta}.
 # Não edite: publicar de novo regrava. Para tirar do ar: app.parar.
@@ -53,7 +54,7 @@ services:
     mem_limit: 512m
     cpus: 1.0
     pids_limit: 256
-    environment:
+{saude}    environment:
       PORT: "{porta}"
       DATA_DIR: /data
     ports:
@@ -69,6 +70,19 @@ volumes:
 networks:
   zone-lab:
     external: true
+"""
+
+# Saúde do app: só confere se ele atende na porta TCP, sem depender de uma rota HTTP. A imagem é a do
+# projeto, então tenta python3, node e wget, nessa ordem; o wget conta qualquer resposta HTTP (até um 404)
+# e a falta dos três dá 1 (doente). Escapes: \\" no Python vira \" no YAML, que vira " no sh; e nada de $
+# no comando (o compose trocaria pelo valor de uma variável; lá, seria $$).
+SAUDE_LAB = """\
+    healthcheck:   # porta TCP; um HEALTHCHECK no Dockerfile do projeto tira este (o do compose passaria por cima)
+      test: ["CMD-SHELL", "python3 -c \\"import socket; socket.create_connection(('127.0.0.1', {porta}), 3)\\" 2>/dev/null || node -e \\"require('net').connect({porta}, '127.0.0.1').on('connect', () => process.exit(0)).on('error', () => process.exit(1))\\" 2>/dev/null || wget -S -T 3 -t 1 -O /dev/null http://127.0.0.1:{porta}/ 2>&1 | grep -q HTTP/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 """
 
 
@@ -176,6 +190,17 @@ def preparar_app_publicar(cliente, params):
             "(sem acesso ao resto do servidor). Fica ligado até alguém pedir app.parar.")
 
 
+def healthcheck_proprio(pasta):
+    """O Dockerfile do projeto tem HEALTHCHECK (ou HEALTHCHECK NONE)? Só conta o do último estágio (depois
+    do último FROM): é o que vai para a imagem."""
+    try:
+        with open(f"{pasta}/Dockerfile", errors="replace") as f:
+            final = re.split(r"^\s*FROM\b", f.read(), flags=re.M | re.I)[-1]
+    except OSError:
+        return False
+    return bool(re.search(r"^\s*HEALTHCHECK\b", final, re.M | re.I))
+
+
 def atende(porta, projeto, segundos=20):
     """Espera o app atender na porta; para antes se o dono cancelar."""
     for _ in range(segundos):
@@ -214,7 +239,8 @@ def publicar(projeto, nome, pasta, compose, porta):
     os.makedirs(os.path.dirname(compose), mode=0o755, exist_ok=True)
     temporario = os.path.join(os.path.dirname(compose), ".compose.yaml.novo")
     with open(os.open(temporario, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644), "w") as f:
-        f.write(COMPOSE_LAB.format(pasta=pasta, nome=nome, projeto=projeto, porta=porta, ip=ip_casa()))
+        saude = "" if healthcheck_proprio(pasta) else SAUDE_LAB.format(porta=porta)
+        f.write(COMPOSE_LAB.format(pasta=pasta, nome=nome, projeto=projeto, porta=porta, ip=ip_casa(), saude=saude))
     os.replace(temporario, compose)
     base = ["docker", "compose", "-f", compose, "-p", nome]
     codigo, texto = rodar([*base, "up", "-d", "--build", "--remove-orphans"], 900, cancelavel=projeto)

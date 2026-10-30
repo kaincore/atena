@@ -116,6 +116,8 @@ confere("modelo e esforço escolhidos", argv[argv.index("--model") + 1] == "sonn
 regras = argv[argv.index("--append-system-prompt") + 1]
 confere("regras citam a pasta do projeto, sem skills nem atena-tela", f"{projetos}/lista-compras" in regras
         and "atena-tela" not in regras and "impeccable" not in regras)
+confere("regras: a imagem do app precisa de sh e python3, node ou wget, ou de um HEALTHCHECK próprio",
+        "sh e python3, node ou wget" in regras and "HEALTHCHECK" in regras)
 with open(argv[argv.index("--mcp-config") + 1]) as f:
     mcp = json.load(f)
 confere("MCP da ponte com o id do trabalho", mcp["mcpServers"]["dono"]["args"][-2:] == ["--trabalho", "aaaa0001"])
