@@ -1,7 +1,8 @@
 """Atena: executor de ações do servidor (o socket, o protocolo e a linha de comando).
 
 Protocolo: HTTP no socket /run/atena-executor/executor.sock (permissão 660, grupo atena-acoes)
-  GET  /acoes                     ações que o token pode pedir
+  GET  /acoes                     o catálogo do que o token pode pedir: {nome: {ajuda, risco, pedido,
+                                  aprovacao}}; risco é consulta, muda ou destrutivo
   POST /acao/<nome>               corpo JSON {"params": {...}, "origem": "manual|agendamento|..."}
                                   responde 202 {"pedido": id} quando a ação fica esperando algo
                                   (aprovação, o Claude Code ou um trabalho em segundo plano)
@@ -11,9 +12,11 @@ Protocolo: HTTP no socket /run/atena-executor/executor.sock (permissão 660, gru
 
 Linha de comando:
   atena-executor servir           o serviço (atena-executor.service)
+  atena-executor acoes <perfil>   as ações do token de painel, atena ou atena-lab (para o instalador)
 Administração (como root):
   atena-executor token-novo <cliente> <acoes> <zonas> [aprovar]
-      listas separadas por vírgula; aprovar = ações que pedem o celular ("nenhuma" para nenhuma)
+      listas separadas por vírgula; aprovar = ações que pedem o celular, além das destrutivas
+      ("nenhuma": nem as destrutivas; é o painel, onde quem confirma é o dono)
       imprime o token uma única vez; só o hash fica guardado
   atena-executor token-remover <cliente>   revoga o token do cliente
   atena-executor tokens   lista os clientes cadastrados
@@ -32,7 +35,7 @@ import threading
 import time
 import urllib.parse
 
-from .acoes import ACOES
+from .acoes import ACOES, do_perfil
 from .base import Erro, ZONAS, log
 from .claude import acompanhar
 from .pedidos import (ESTADO, MUDOU, TERMINADOS, carregar_estado, criar_pedido, executar, mudar,
@@ -70,8 +73,10 @@ class Pedido(http.server.BaseHTTPRequestHandler):
             url = urllib.parse.urlsplit(self.path)
             m = re.fullmatch(r"/pedido/([0-9a-f]{8})", url.path)
             if url.path == "/acoes":
+                # o catálogo do que este token pode pedir: o painel e a Atena leem daqui
                 self.responder(200, {"cliente": cliente["cliente"], "zonas": cliente["zonas"], "acoes": {
-                    n: ACOES[n][1] + (" [precisa de aprovação no celular]" if precisa_aprovacao(cliente, n) else "")
+                    n: {"ajuda": ACOES[n].ajuda, "risco": ACOES[n].risco, "pedido": ACOES[n].preparar is not None,
+                        "aprovacao": precisa_aprovacao(cliente, n)}
                     for n in cliente["acoes"] if n in ACOES}})
             elif m:
                 esperar = urllib.parse.parse_qs(url.query).get("esperar", ["0"])[0]
@@ -116,7 +121,7 @@ class Pedido(http.server.BaseHTTPRequestHandler):
             origem = str(corpo.get("origem", "manual"))[:32]
             if not isinstance(params, dict):
                 raise Erro(400, "params deve ser um objeto")
-            funcao, _, preparar = ACOES[nome]
+            funcao, preparar = ACOES[nome].funcao, ACOES[nome].preparar
             if not preparar:
                 resultado = funcao(cliente, params)
                 log(cliente=cliente["cliente"], origem=origem, acao=nome, params=params, ok=True,
@@ -219,6 +224,9 @@ def principal():
         token_novo(*sys.argv[2:])
     elif comando == "token-remover" and len(sys.argv) == 3:
         token_remover(sys.argv[2])
+    elif comando == "acoes" and len(sys.argv) == 3 and sys.argv[2] in ("painel", "atena", "atena-lab"):
+        # para o instalador: as ações do token de um perfil, separadas por vírgula
+        print(",".join(do_perfil(sys.argv[2])))
     elif comando == "tokens":
         for c in carregar_tokens().values():
             aprovar = ",".join(c["aprovar"]) or "nenhuma" if "aprovar" in c else "todas que podem"

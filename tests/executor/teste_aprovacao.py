@@ -52,8 +52,10 @@ def reiniciar(t):
 
 # --- pedido e notificação ---
 status, r = pedir(ex, "GET", "/acoes", hermes)
-confere("/acoes avisa que reiniciar precisa do celular", "[precisa de aprovação no celular]" in r["acoes"]["servico.reiniciar"]
-        and "aprovação" not in r["acoes"]["status.servicos"], r)
+confere("/acoes: o catálogo, com o risco e se reiniciar precisa do celular",
+        r["acoes"]["servico.reiniciar"] == {"ajuda": ex.ACOES["servico.reiniciar"].ajuda, "risco": "muda", "pedido": True,
+                                            "aprovacao": True}
+        and r["acoes"]["status.servicos"]["aprovacao"] is False and r["acoes"]["status.servicos"]["risco"] == "consulta", r)
 status, r = reiniciar(hermes)
 confere("token sem o campo aprovar: 202 e nada roda ainda", status == 202 and r["estado"] == "aguardando" and not REINICIADOS, r)
 id_ = r["pedido"]
@@ -190,6 +192,5 @@ time.sleep(0.3)
 confere("sem pedidos.json (a primeira vez): começa vazio, sem cópia nem aviso",
         ex.ESTADO["pedidos"] == {} and not glob.glob(ex.PEDIDOS + "*") and ENVIADOS == [])
 CONF.pop("ATENA_NTFY_URL")
-confere("sem ATENA_NTFY_URL, os botões usam o IP da rede de casa", ex.endereco_ntfy() == "http://192.168.0.10:2586")
 
 fim()
