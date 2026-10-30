@@ -74,10 +74,11 @@ composes() (
   done
 )
 
-# como no runner do GitHub: Ubuntu 24.04, usuário comum, docker e compose do host, python3-yaml e git
+# como no runner do GitHub: Ubuntu 24.04, usuário comum, docker e compose do host, python3-yaml, git e o systemd
+# (o systemd-analyze das unidades)
 testes_python() {
   docker run --rm -v "$copia:/repo:ro" -v /usr/bin/docker:/usr/bin/docker:ro -v "$compose:$compose:ro" ubuntu:24.04 bash -c '
-    apt-get update -qq >/dev/null && apt-get install -y -qq python3-yaml git >/dev/null 2>&1 || exit 1
+    apt-get update -qq >/dev/null && apt-get install -y -qq python3-yaml git systemd >/dev/null 2>&1 || exit 1
     mkdir -p /srv && useradd -m runner && cp -r /repo /home/runner/repo && chown -R runner /home/runner/repo
     su runner -c "cd /home/runner/repo
       for f in host/sbin/atena-executor host/sbin/atena-telegram host/sbin/atena-claude-runner \
