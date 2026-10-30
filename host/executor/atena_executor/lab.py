@@ -12,6 +12,7 @@ import re
 import shutil
 import socket
 import subprocess
+import threading
 import time
 
 from .base import Cancelado, Erro, PROCESSOS, ler_conf, log, rodar
@@ -26,6 +27,11 @@ LIXEIRA_LAB = "/srv/lab/lixeira"   # app.apagar move o código para cá; o atena
 DIAS_LIXEIRA = 30
 PARTES_APAGAR = ("docker", "dados", "codigo")
 CANCELAR = set()   # projetos cuja publicação o dono mandou parar
+# Uma publicação por projeto: projeto → pedido do app.publicar que está construindo. A segunda recebe
+# 409 em vez de esperar numa fila escondida: construiria de novo a mesma pasta, seguraria uma thread por
+# até 15 min e escaparia do app.cancelar (CANCELAR e PROCESSOS valem para uma construção por projeto).
+PUBLICANDO = {}
+TRAVA_PUBLICAR = threading.Lock()
 PORTAS_LAB = range(8000, 9000)
 
 # Mesmo padrão das outras stacks: zona lab, sem capacidades, disco só de leitura (escreve em /data).
@@ -149,6 +155,10 @@ def preparar_app_publicar(cliente, params):
                    and p["estado"] in ("planejando", "executando") and p["params"].get("projeto") == projeto]
     if rodando:
         raise Erro(409, f"o Claude Code ainda está trabalhando nesse projeto ({rodando[0]}); publique quando terminar")
+    with TRAVA_PUBLICAR:
+        publicando = PUBLICANDO.get(projeto)
+    if publicando:
+        raise Erro(409, publicacao_em_andamento(projeto, publicando))
     atual = porta_do_compose(compose)   # publicar de novo mantém a porta
     ocupadas = portas_ocupadas() - {atual}
     porta = params.get("porta", atual)
@@ -180,13 +190,24 @@ def atende(porta, projeto, segundos=20):
     return False
 
 
+def publicacao_em_andamento(projeto, pedido):
+    return (f"já há uma publicação de {projeto} em andamento (pedido {pedido}); espere ela terminar (o celular "
+            "avisa) e publique de novo se ainda precisar, ou pare a construção com app.cancelar")
+
+
 def acao_app_publicar(p):
     projeto, nome, pasta, compose = projeto_lab({"zonas": p["zonas"]}, p["params"])
+    with TRAVA_PUBLICAR:   # dois pedidos aprovados juntos: só um constrói
+        if projeto in PUBLICANDO:
+            raise Erro(409, publicacao_em_andamento(projeto, PUBLICANDO[projeto]))
+        PUBLICANDO[projeto] = p["id"]
     CANCELAR.discard(projeto)
     try:
         return publicar(projeto, nome, pasta, compose, p["params"]["porta"])
     finally:
         CANCELAR.discard(projeto)
+        with TRAVA_PUBLICAR:
+            PUBLICANDO.pop(projeto, None)
 
 
 def publicar(projeto, nome, pasta, compose, porta):

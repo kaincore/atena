@@ -1,9 +1,11 @@
 """Publicar apps do lab com o Docker simulado: validação, porta, compose com as travas, falhas,
-parar, lista, o link do Tailscale (ligado e desligado no atena.conf) e app.comando."""
+parar, lista, o link do Tailscale (ligado e desligado no atena.conf), uma publicação por projeto e
+app.comando."""
 import os
 import subprocess
+import threading
 
-from comum import confere, erro as erro_ex, executor, fim
+from comum import confere, erro as erro_ex, esperar, executor, fim
 
 ex, tmp, _ = executor(contas="pessoal", prontas=("pessoal",))
 ex.log = lambda **campos: None
@@ -157,6 +159,57 @@ ts.rodar = lambda argv, tempo=30, cancelavel=None: (1, "Access denied") if argv[
 r = ts.publicar("app1", "lab-app1", f"{ts.PROJETOS_LAB}/app1", compose_ts, 8002)
 confere("sem o link, o app sobe mesmo assim e diz o motivo", r["endereco"].endswith(":8002")
         and "Access denied" in r["fora_de_casa"], r)
+
+# --- uma publicação por projeto: a segunda espera a primeira terminar (409), outro projeto não ---
+os.makedirs(f"{ex.PROJETOS_LAB}/outro-app")
+with open(f"{ex.PROJETOS_LAB}/outro-app/Dockerfile", "w") as f:
+    f.write("FROM python:3.14-slim\n")
+CENARIO["up"], CENARIO["atende"] = 0, True
+SOLTAR, CONSTRUINDO, FIM = threading.Event(), [], []
+
+
+def rodar_lento(argv, tempo=30, cancelavel=None):
+    if "up" in argv:
+        CONSTRUINDO.append(cancelavel)
+        SOLTAR.wait(10)   # o docker compose up --build demorando
+    return rodar_falso(argv, tempo, cancelavel)
+
+
+def publicar_em_fundo(projeto, id_):
+    def rodar():
+        try:
+            FIM.append(ex.acao_app_publicar({"id": id_, "zonas": hermes["zonas"], "params": {"projeto": projeto, "porta": 8001}}))
+        except ex.Erro as e:
+            FIM.append(e)
+    t = threading.Thread(target=rodar)
+    t.start()
+    return t
+
+
+ex.rodar = rodar_lento
+primeira = publicar_em_fundo("lista-compras", "cccc0001")
+esperar(lambda: CONSTRUINDO == ["lista-compras"])
+status, msg = erro(ex.acao_app_publicar, {"id": "cccc0002", "zonas": hermes["zonas"],
+                                          "params": {"projeto": "lista-compras", "porta": 8001}})
+confere("segunda publicação aprovada do mesmo projeto: 409, com o pedido que está construindo",
+        status == 409 and "cccc0001" in msg and "app.cancelar" in msg, msg)
+confere("... sem rodar outro docker compose up", CONSTRUINDO == ["lista-compras"], CONSTRUINDO)
+status, msg = erro(ex.preparar_app_publicar, hermes, {"projeto": "lista-compras"})
+confere("pedir publicar com a construção em andamento: 409 antes de incomodar o celular", status == 409 and "cccc0001" in msg, msg)
+outra = publicar_em_fundo("outro-app", "cccc0003")
+confere("outro projeto publica ao mesmo tempo", esperar(lambda: "outro-app" in CONSTRUINDO), CONSTRUINDO)
+SOLTAR.set()
+primeira.join(10)
+outra.join(10)
+confere("as duas publicações terminam", len(FIM) == 2 and all(isinstance(x, dict) for x in FIM), FIM)
+ex.rodar = rodar_falso
+r = ex.acao_app_publicar(pedido({"projeto": "lista-compras", "porta": 8001}))
+confere("terminada a primeira, publica de novo", r.get("stack") == "lab-lista-compras", r)
+CENARIO["up"] = 1
+erro(ex.acao_app_publicar, pedido({"projeto": "lista-compras", "porta": 8001}))
+CENARIO["up"] = 0
+confere("uma publicação que falha também solta o projeto",
+        ex.acao_app_publicar(pedido({"projeto": "lista-compras", "porta": 8001})).get("stack") == "lab-lista-compras")
 
 # --- app.comando: roda dentro do app no ar ---
 EXEC = []

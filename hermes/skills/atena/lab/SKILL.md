@@ -199,7 +199,8 @@ Qual usar, conforme o que o dono disser:
   um `claude.tarefa` com `continuar` (o id do último trabalho do projeto), `publicar: true` e o pedido
   "Deixe o projeto pronto para publicar, seguindo as regras do lab (Dockerfile, PORT e DATA_DIR)".
   Erro 409 "ainda está trabalhando": espere o trabalho terminar ou use `claude.tarefa` com
-  `publicar: true`.
+  `publicar: true`. Erro 409 "já há uma publicação ... em andamento": a anterior ainda está
+  construindo; espere o celular avisar (Feito ou Falhou) e publique de novo só se ainda precisar.
 - Mudança pequena e clara num app que já existe (um texto, uma cor, um bug óbvio): faça você no lab,
   faça commit e, se o app estiver no ar, `app.publicar`.
 - "muda", "edita", "corrige", "adiciona X" maior num app que já existe: `claude.tarefa` no mesmo
