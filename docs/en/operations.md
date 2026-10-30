@@ -107,9 +107,12 @@ journalctl -u atena-executor -f                               # every request, w
 - Scheduled tasks: `docker exec -u hermes hermes hermes cron list`. If the patrol is gone, run the installer again (with the same options): it creates the patrol and, on updates, keeps its text and skills identical to the template's (with the lab, `servidor-atena` and `lab`). By hand:
   ```bash
   docker exec -u hermes hermes hermes cron create "every 3m" "Ronda do servidor. Siga a seção Ronda das habilidades servidor-atena e lab." \
-    --name ronda --monitor-script ronda.py --skill servidor-atena --skill lab --deliver telegram
+    --name ronda --monitor-script ronda.py --skill servidor-atena --skill lab --deliver telegram --failure-deliver ntfy
   ```
-  (without the lab, drop `--skill lab`)
+  (without the lab, drop `--skill lab`). When the AI doesn't answer, the round's failure arrives through ntfy, not through Atena's silent Telegram.
+- Good morning: at 8 a.m., with no AI, `bom_dia.py` sends to Telegram how the server woke up (containers, temperatures, the month's spending and Claude Code's night). It arrives even with the AI down. To change the time: `docker exec -u hermes hermes hermes cron edit <id> --schedule "30 7 * * *"`.
+- The executor by hand, the way she calls it: `docker exec -u hermes hermes python3 /opt/data/scripts/acao.py status.servicos` (the first line is the HTTP code).
+- Memory: `/srv/agents/hermes/memories` (USER.md and MEMORY.md) is hers; the installer only puts the seed from `hermes/memoria` there when none exists. To check whether she kept something that no longer holds: `python3 tests/hermes/teste_memoria.py <folder with a copy of the memory>`.
 - Spending: ask her ("how much did we spend this month?").
 - Upgrading Hermes: read the release notes, change the image in the compose file and check the generated `config.yaml`. The docs on GitHub describe the development version, which may be newer than yours.
 
