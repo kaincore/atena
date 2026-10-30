@@ -44,6 +44,11 @@ copiar_hermes scripts/ronda.py scripts/ronda.py
 copiar_hermes scripts/acao.py scripts/acao.py
 copiar_hermes scripts/bom_dia.py scripts/bom_dia.py
 copiar_hermes ferramentas.txt ferramentas/requisitos.txt
+# a memória: a semente só na primeira vez; depois ela é da Atena (ela mesma a mantém)
+install -d -m 755 -o hermes -g atena-acoes "$D/memories"
+for m in USER.md MEMORY.md; do
+  [ -f "$D/memories/$m" ] || install -m 600 -o hermes -g atena-acoes "$RAIZ/hermes/memoria/$m" "$D/memories/$m"
+done
 ok "personalidade, habilidades servidor-atena e notas, ronda, acao e bom-dia em $D"
 
 # token do executor: todas as consultas, reiniciar, o PC e as stacks de apps, sem a zona prod e

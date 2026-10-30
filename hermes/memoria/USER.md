@@ -1,0 +1,1 @@
+Dono da Atena: prefere respostas curtas em português. Quer a Atena com autonomia: consultas e ações reversíveis direto, sem pedir ok; qualquer medida destrutiva só com o ok dele.
