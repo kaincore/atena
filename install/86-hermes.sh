@@ -85,6 +85,16 @@ if ! grep -q '^NTFY_TOKEN=.' "$D/.env"; then
   chmod 600 "$tmp"
   mv "$tmp" "$D/.env"
 fi
+# a chave da API dela: o painel conversa com a Atena e vê a agenda dela pelo executor, que usa esta chave
+# (a API só ouve na rede svc-atena; sem a chave, o Hermes nem a liga). Criada uma vez.
+if ! grep -q '^API_SERVER_KEY=.\{32,\}' "$D/.env"; then
+  tmp=$(mktemp "$D/.env.XXXXXX")
+  grep -v '^API_SERVER_KEY=' "$D/.env" > "$tmp" || true
+  printf 'API_SERVER_KEY=%s\n' "$(segredo)" >> "$tmp"
+  chown --reference="$D/.env" "$tmp"
+  chmod 600 "$tmp"
+  mv "$tmp" "$D/.env"
+fi
 
 sh "$RAIZ/hermes/configurar.sh" >/dev/null
 ok "configuração: LiteLLM (haiku), aprovação smart, ouvir pelo Whisper, ntfy$([ "$ATENA_VOZ" = sim ] && echo ', responder em voz')"

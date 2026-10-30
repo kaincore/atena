@@ -1,5 +1,5 @@
-# Hermes (a Atena): assistente que conversa com você pelo Telegram, pensa pelo LiteLLM e só mexe no
-# servidor pelo executor (lista fechada de ações). Sem Docker, sem sudo, sem rede até a sua casa.
+# Hermes (a Atena): assistente que conversa com você pelo Telegram e pelo painel, pensa pelo LiteLLM e só
+# mexe no servidor pelo executor (lista fechada de ações). Sem Docker, sem sudo, sem rede até a sua casa.
 # Configuração, segredos e memória ficam em /srv/agents/hermes (config.yaml, .env, SOUL.md, skills/).
 services:
   hermes:
@@ -18,6 +18,9 @@ services:
       HERMES_UID: "${HERMES_UID}"     # usuário hermes do servidor (sem sudo, sem Docker)
       HERMES_GID: "${HERMES_GID}"     # grupo atena-acoes: dá acesso ao socket do executor
       TZ: {{ATENA_TZ}}
+      # a API dela (as conversas, o chat e a agenda do painel, pelo executor) ouve só na rede svc-atena,
+      # onde não há outro container; a chave é a API_SERVER_KEY do .env dela, que só o executor lê
+      API_SERVER_HOST: 10.10.252.2
     volumes:
       - /srv/agents/hermes:/opt/data
       # a pasta, e não o arquivo: o socket é recriado sempre que o executor reinicia
@@ -39,7 +42,12 @@ services:
         bind:
           create_host_path: false
     security_opt: ["no-new-privileges:true"]
-    networks: [zone, llm, ntfy]
+    networks:
+      zone: {}
+      llm: {}
+      ntfy: {}
+      api:
+        ipv4_address: 10.10.252.2
 
 networks:
   zone:
@@ -51,3 +59,13 @@ networks:
   ntfy:
     name: svc-ntfy        # só publica no tópico atena do ntfy
     external: true
+  api:
+    # só a Atena, sem saída: o executor chega pela ponte br-svc-atena, do servidor. É desta stack (o
+    # compose cria), e não das zonas, porque ninguém mais entra nela
+    name: svc-atena
+    internal: true
+    driver_opts:
+      com.docker.network.bridge.name: br-svc-atena
+    ipam:
+      config:
+        - subnet: 10.10.252.0/24
