@@ -97,6 +97,17 @@ const DESENHOS = {
   ],
   mais: [["circle", { cx: 6.5, cy: 12, r: 1.35, class: "cheio" }], ["circle", { cx: 12, cy: 12, r: 1.35, class: "cheio" }], ["circle", { cx: 17.5, cy: 12, r: 1.35, class: "cheio" }]],
   buscar: [["circle", { cx: 10.5, cy: 10.5, r: 5.8 }], ["path", { d: "m15 15 4.8 4.8" }]],
+  // o chat da Atena: o estilete na tabuinha (conversa nova), a gaveta das conversas, enviar, parar, descer e
+  // copiar (as duas tabuinhas)
+  escrever: [["path", { d: "M5.5 18.5h3.2l9.6-9.6a2.26 2.26 0 0 0-3.2-3.2L5.5 15.3z", class: "tinta" }],
+    ["path", { d: "M5.5 18.5h3.2l9.6-9.6a2.26 2.26 0 0 0-3.2-3.2L5.5 15.3zM13.6 7.2l3.2 3.2" }], ["path", { d: "M4 21h16", class: "fino" }]],
+  lado: [["rect", { x: 3.6, y: 4.6, width: 5.4, height: 14.8, rx: 1.4, class: "tinta" }],
+    ["rect", { x: 3.6, y: 4.6, width: 16.8, height: 14.8, rx: 2 }], ["path", { d: "M9 4.6v14.8" }]],
+  enviar: [["path", { d: "M12 18.5V5.8M6.6 11.2 12 5.8l5.4 5.4" }]],
+  parar: [["rect", { x: 7.4, y: 7.4, width: 9.2, height: 9.2, rx: 1.6, class: "cheio" }]],
+  descer: [["path", { d: "M12 5.5v12.7M6.6 12.8l5.4 5.4 5.4-5.4" }]],
+  copiar: [["rect", { x: 8.6, y: 8.6, width: 10.8, height: 10.8, rx: 1.8 }],
+    ["path", { d: "M15.4 8.6V6.2a1.6 1.6 0 0 0-1.6-1.6H6.2a1.6 1.6 0 0 0-1.6 1.6v7.6a1.6 1.6 0 0 0 1.6 1.6h2.4" }]],
   fechar: [["path", { d: "m6.5 6.5 11 11M17.5 6.5l-11 11" }]],
   seguir: [["path", { d: "m9.5 6.5 5.5 5.5-5.5 5.5" }]],
   sair: [["path", { d: "M10 4.5H6a1.5 1.5 0 0 0-1.5 1.5v12A1.5 1.5 0 0 0 6 19.5h4" }], ["path", { d: "M14 8.5 17.5 12 14 15.5M17.5 12H9.5" }]],

@@ -1017,45 +1017,203 @@ textarea.codigo { width: 100%; min-height: 40dvh; font: .8rem/1.5 var(--mono); w
 
 /* a tela Atena: a lista das conversas e a conversa aberta lado a lado no PC; no celular, uma de cada vez */
 main[data-tela="atena"] { columns: 1; }
-.tela-atena { display: grid; gap: .9rem; align-items: start; }
-.tela-atena .voltar { margin: -.2rem 0 .8rem; }
+/* --- a tela Atena: o chat, do jeito dos apps de conversa com IA. O nome da tela fica só para o leitor de
+   tela (a conversa é a tela inteira); a lista das conversas é uma coluna presa à esquerda no PC e uma gaveta
+   no celular; a conversa é uma coluna de até 46rem no meio, com o campo de escrever preso embaixo --- */
+
+main[data-tela="atena"] > .cabecalho-tela {
+  position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+.chat { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0 1.6rem; align-items: start; }
+.chat-lado { display: none; }
 @media (min-width: 60rem) {
-  .tela-atena { grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr); }
-  .tela-atena .lista-conversas { position: sticky; top: 1rem; max-height: calc(100dvh - 2rem); overflow: auto; overscroll-behavior: contain; }
-  .tela-atena .voltar { display: none; }
+  .chat { grid-template-columns: minmax(15rem, 17.5rem) minmax(0, 1fr); }
+  .chat-lado {
+    display: block; position: sticky; top: 1rem; max-height: calc(100dvh - 4.5rem); overflow: auto;
+    overscroll-behavior: contain; padding: 0 .3rem 1rem 0; scrollbar-width: thin;
+  }
+  .abrir-gaveta { display: none; }
 }
-@media (max-width: 59.99rem) {
-  .tela-atena.lendo .lista-conversas, .tela-atena:not(.lendo) .conversa-aberta { display: none; }
+
+/* a lista: a conversa nova, a busca, os filtros e as conversas por dia */
+.lado-conversas { display: grid; grid-template-columns: minmax(0, 1fr); gap: .6rem; align-content: start; min-width: 0; }
+.nova-conversa { justify-content: flex-start; gap: .6rem; width: 100%; background: var(--placa); border-color: var(--veio); }
+.busca-conversas { width: 100%; min-height: 2.4rem; padding-block: .4rem; }
+.filtros-conversas { gap: .3rem; }
+.filtros-conversas .trava span { padding: .32rem .6rem; font-size: .76rem; }
+.conversas { display: grid; grid-template-columns: minmax(0, 1fr); gap: .2rem; }
+.grupo-conversas h3 { margin: .8rem .6rem .3rem; font-size: .72rem; font-weight: 600; color: var(--tinta-2); letter-spacing: .02em; }
+.grupo-conversas ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 1px; }
+.item-conversa a {
+  display: flex; align-items: baseline; gap: .5rem; padding: .48rem .6rem; border-radius: 8px; color: var(--tinta);
+  text-decoration: none; font-size: .9rem; transition: background-color .15s var(--suave);
 }
-.lista-conversas .botoes { margin: 0 0 .8rem; }
-.lista-conversas .filtros { margin: 0 0 .6rem; }
-.item.conversa .item-nome a { color: var(--tinta); text-decoration: none; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
-.item.conversa .item-nome a:hover { color: var(--azul); }
-.item.conversa.marcada .item-nome a { color: var(--azul); }
-.item.conversa .item-detalhe .selo { margin-left: 0; }
-/* as falas: as suas numa placa funda à direita, as dela soltas, as da agenda presas por um fio */
-.falas { display: grid; gap: 1.15rem; margin: 0 0 1rem; }
-.fala { display: grid; gap: .3rem; min-width: 0; }
-.fala .quem { font: 550 .78rem var(--letra); color: var(--tinta-2); font-variation-settings: "FLAR" 100, "VOLM" 50; }
-.fala.voce { justify-self: end; max-width: min(36rem, 92%); background: var(--placa-2); border: 1px solid var(--veio); border-radius: 10px; padding: .55rem .8rem .6rem; }
-.fala.agenda { border-left: 1px solid var(--veio-forte); padding-left: .8rem; }
+.item-conversa a:hover { background: var(--placa-2); }
+.item-conversa a:focus-visible { outline: 2px solid var(--foco); outline-offset: -2px; }
+.item-conversa.ativa a { background: var(--azul-claro); color: var(--azul-forte); }
+.titulo-conversa { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.origem-conversa { flex: none; font-size: .7rem; color: var(--tinta-2); }
+.nada-achado { margin: .6rem; font-size: .84rem; }
+
+/* a gaveta do celular: sai da esquerda, da altura da tela */
+dialog.gaveta {
+  margin: 0 auto 0 0; width: min(88vw, 21rem); height: 100dvh; max-height: 100dvh; border-radius: 0 14px 14px 0;
+  border-left: 0; padding: max(1rem, env(safe-area-inset-top)) 1rem calc(1rem + env(safe-area-inset-bottom));
+}
+dialog.gaveta[open] { animation: abrir-gaveta .45s var(--mola); }
+@keyframes abrir-gaveta { from { transform: translateX(-100%); } }
+.gaveta-topo { display: flex; justify-content: space-between; align-items: center; margin-bottom: .8rem; }
+.gaveta-topo strong { font-variation-settings: var(--titulo-letra); font-weight: 500; font-size: 1.05rem; }
+
+/* a conversa: o topo, o fio das falas e o pé com o campo de escrever */
+.chat-principal { display: flex; flex-direction: column; min-width: 0; min-height: calc(100dvh - 9rem); }
+.chat-topo {
+  position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: .4rem; padding: .35rem 0 .7rem;
+  background: linear-gradient(to top, transparent, var(--chao) .9rem);
+}
+.chat-titulo { flex: 1; min-width: 0; display: grid; }
+.chat-titulo h2 {
+  margin: 0; font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-variation-settings: var(--titulo-letra);
+}
+.chat-titulo .fraco { font-size: .76rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.abrir-gaveta { min-height: 2.5rem; width: 2.5rem; padding: 0; justify-content: center; background: transparent; border-color: transparent; }
+@media (max-width: 59.99rem) { .chat-titulo { text-align: center; } }
+.chat-fio { flex: 1; width: 100%; max-width: 46rem; margin: 0 auto; padding: .4rem 0 1.2rem; }
+.aviso-antigas { text-align: center; font-size: .8rem; }
+.chat-pe {
+  position: sticky; bottom: 0; z-index: 2; display: grid; gap: .45rem; width: 100%; max-width: 46rem; margin: 0 auto;
+  padding: 1.1rem 0 .7rem; background: linear-gradient(to bottom, transparent, var(--chao) 1.1rem);
+}
+@media (max-width: 59.99rem) { .chat-pe { bottom: calc(var(--barra-altura) + env(safe-area-inset-bottom)); padding-bottom: .4rem; } }
+.chat-pe .erro { margin: 0; }
+.chat-pe.so-ler { justify-items: center; text-align: center; padding-top: 1.4rem; }
+.chat-pe.so-ler p { margin: 0; font-size: .86rem; color: var(--tinta-2); max-width: 34rem; }
+.chat-aviso { margin: 0; text-align: center; font-size: .72rem; color: var(--tinta-2); }
+.descer {
+  position: absolute; top: -1.6rem; left: 50%; translate: -50% 0; width: 2.3rem; min-height: 2.3rem; padding: 0;
+  justify-content: center; border-radius: 50%; background: var(--placa); box-shadow: var(--sombra);
+}
+
+/* o campo de escrever: uma placa arredondada, que cresce com o texto, e a tecla redonda que envia (azul, a
+   única ação principal) ou, com a resposta chegando, para (na cor da tinta) */
+.compor-chat {
+  position: relative; display: flex; align-items: flex-end; gap: .5rem; padding: .5rem .5rem .5rem 1.15rem;
+  background: var(--placa); border: 1px solid var(--veio-forte); border-radius: 1.6rem; box-shadow: var(--sombra);
+  transition: border-color .2s var(--suave), box-shadow .2s var(--suave);
+}
+.compor-chat:focus-within {
+  border-color: color-mix(in srgb, var(--azul) 55%, var(--veio-forte));
+  box-shadow: var(--sombra), 0 0 0 4px color-mix(in srgb, var(--azul) 12%, transparent);
+}
+.compor-chat textarea, .compor-chat textarea:focus {
+  flex: 1; min-width: 0; min-height: 2.35rem; max-height: 15rem; padding: .45rem 0; border: 0; background: transparent;
+  box-shadow: none; resize: none; font: inherit; line-height: 1.5;
+}
+.enviar {
+  flex: none; width: 2.35rem; min-height: 2.35rem; padding: 0; justify-content: center; border-radius: 50%;
+  background: var(--azul); border-color: var(--azul); color: #fff;
+}
+.enviar:hover { background: var(--azul-forte); border-color: var(--azul-forte); }
+.enviar:disabled { opacity: 1; background: var(--veio); border-color: var(--veio); color: var(--tinta-2); }
+.enviar.parar { background: var(--tinta); border-color: var(--tinta); color: var(--placa); }
+.enviar .picto { width: 1.2rem; height: 1.2rem; stroke-width: 2; }
+
+/* a conversa nova: o convite no meio, o campo e as sugestões */
+.chat-vazio {
+  flex: 1; display: grid; align-content: center; justify-items: center; gap: 1.3rem; width: 100%; max-width: 46rem;
+  margin: 0 auto; padding: 2rem 0 3rem;
+}
+.convite {
+  margin: 0; text-align: center; font-variation-settings: var(--titulo-letra); font-weight: 400; letter-spacing: -.01em;
+  font-size: clamp(1.6rem, 1.2rem + 1.4vw, 2.3rem); text-wrap: balance;
+}
+.chat-vazio .compor-chat { width: 100%; }
+.sugestoes { display: flex; flex-wrap: wrap; justify-content: center; gap: .5rem; }
+.sugestao {
+  min-height: 2.25rem; padding: .4rem .95rem; border-radius: 999px; font-size: .84rem; background: transparent;
+  border-color: var(--veio-forte); color: var(--tinta-2);
+}
+.sugestao:hover { color: var(--tinta); }
+
+/* as falas: as suas num balão à direita; as dela soltas, na largura da coluna, com o copiar embaixo */
+.falas { display: grid; gap: 1.5rem; margin: 0; }
+.fala { display: grid; gap: .35rem; min-width: 0; }
+.fala .quem { display: inline-flex; align-items: center; gap: .35rem; font: 550 .76rem var(--letra); color: var(--tinta-2); font-variation-settings: "FLAR" 100, "VOLM" 50; }
+.fala .quem .picto { width: 1rem; height: 1rem; }
+.fala.voce {
+  justify-self: end; max-width: min(34rem, 85%); background: var(--placa); border: 1px solid var(--veio);
+  border-radius: 1.25rem; padding: .6rem 1rem;
+}
+.fala.agenda { border-left: 1px solid var(--veio-forte); padding-left: .9rem; }
 .fala.sub { border-left: 1px solid var(--veio); padding-left: .8rem; }
 .fala.fim { border-top: 1px solid var(--veio); padding-top: .8rem; }
-.fala .texto { line-height: 1.55; overflow-wrap: anywhere; }
-.fala .texto > * { margin: 0 0 .55rem; }
+.fala .texto { line-height: 1.65; overflow-wrap: anywhere; }
+.fala .texto > * { margin: 0 0 .7rem; }
 .fala .texto > :last-child { margin-bottom: 0; }
-.fala .texto ul, .fala .texto ol { padding-left: 1.2rem; }
-.fala .texto code { font: .84em var(--mono); background: var(--placa-2); border-radius: 4px; padding: .05rem .3rem; }
-.fala.escrevendo .quem { color: var(--azul); }
-.passos > summary { font-size: .82rem; color: var(--tinta-2); }
+.fala .texto h4 { font-size: 1rem; font-weight: 600; margin-top: 1rem; }
+.fala .texto ul, .fala .texto ol { padding-left: 1.3rem; }
+.fala .texto li + li { margin-top: .2rem; }
+.fala .texto code { font: .86em var(--mono); background: var(--placa-2); border: 1px solid var(--veio); border-radius: 5px; padding: .04rem .3rem; }
+.acoes-fala { display: flex; align-items: center; gap: .3rem; min-height: 1.9rem; }
+.acao-fala {
+  min-height: 1.9rem; padding: .2rem .5rem; gap: .35rem; font-size: .76rem; background: transparent; border-color: transparent;
+  color: var(--tinta-2);
+}
+.acao-fala:hover { background: var(--placa-2); border-color: transparent; color: var(--tinta); }
+.acao-fala.copiado { color: var(--malaquita-tinta); }
+.acao-fala .picto { width: 1rem; height: 1rem; }
+.quando-fala { font-size: .72rem; color: var(--tinta-2); }
+@media (hover: hover) {
+  .fala .acoes-fala { opacity: 0; transition: opacity .2s var(--suave); }
+  .fala:hover .acoes-fala, .fala:focus-within .acoes-fala, .falas > .fala:last-child .acoes-fala { opacity: 1; }
+}
+
+/* o código que ela escreve: a placa da noite, com a língua e o copiar em cima */
+.codigo-fala { border-radius: 10px; overflow: hidden; background: var(--noite); margin: .2rem 0 .8rem; }
+.codigo-topo {
+  display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .15rem .3rem .15rem .9rem;
+  font: .72rem var(--mono); color: color-mix(in srgb, var(--noite-tinta) 70%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--noite-tinta) 12%, transparent);
+}
+.codigo-topo .acao-fala { color: inherit; }
+.codigo-topo .acao-fala:hover { background: color-mix(in srgb, var(--noite-tinta) 10%, transparent); color: var(--noite-tinta); }
+.codigo-fala pre { margin: 0; padding: .8rem .95rem; overflow: auto; font: .8rem/1.6 var(--mono); color: var(--noite-tinta); }
+.fala .texto .codigo-fala code { font: inherit; background: none; border: 0; padding: 0; }
+
+/* ela pensando: o texto com um brilho que passa; escrevendo: um ponto no fim, piscando */
+.pensando, .passos.rodando > summary {
+  margin: 0; color: transparent; -webkit-background-clip: text; background-clip: text; background-size: 300% 100%;
+  background-image: linear-gradient(90deg, var(--tinta-2) 0 40%, var(--tinta) 50%, var(--tinta-2) 60% 100%);
+  animation: brilho-pensando 1.8s linear infinite;
+}
+@keyframes brilho-pensando { from { background-position: 100% 0; } to { background-position: 0 0; } }
+.fala.escrevendo .texto > :last-child::after {
+  content: ""; display: inline-block; width: .55em; height: .55em; margin-left: .25em; border-radius: 50%;
+  background: var(--tinta); animation: piscar-cursor 1s steps(2, jump-none) infinite;
+}
+@keyframes piscar-cursor { 50% { opacity: .15; } }
+@media (prefers-reduced-motion: reduce) {
+  .pensando, .passos.rodando > summary, .fala.escrevendo .texto > :last-child::after { animation: none; }
+  .pensando, .passos.rodando > summary { color: var(--tinta-2); background: none; }
+  dialog.gaveta[open] { animation: none; }
+}
+
+/* os passos dela, numa linha que abre; um trabalho do Claude Code que ela mandou, numa placa que leva a ele */
+.passos > summary { width: fit-content; font-size: .84rem; color: var(--tinta-2); cursor: pointer; }
 .passos .ferramenta, .registro-claude .ferramenta { font: 500 .78rem var(--mono); }
 .passos .registro, .registro-claude .registro { max-height: 30dvh; }
 .registro-claude .item.dentro { margin-left: .8rem; } /* o que um subagente fez */
 .registro-claude .fase { margin: .6rem 0 0; }
-.trabalho-claude { border: 1px solid var(--veio); border-radius: var(--raio); padding: 0 .8rem; background: var(--placa-2); }
-.trabalho-claude .item { border: 0; }
-.aprovacao-chat { border: 1px solid var(--ocre); background: var(--ocre-claro); border-radius: var(--raio); padding: .7rem .8rem; }
+.trabalho-claude {
+  display: flex; align-items: center; gap: .75rem; padding: .65rem .85rem; margin: .2rem 0; color: var(--tinta);
+  text-decoration: none; background: var(--placa); border: 1px solid var(--veio); border-radius: 12px;
+  transition: border-color .15s var(--suave);
+}
+.trabalho-claude:hover { border-color: var(--veio-forte); }
+.trabalho-claude > span:nth-child(2) { flex: 1; min-width: 0; display: grid; }
+.trabalho-claude .fraco { font-size: .78rem; }
+.trabalho-claude .picto { width: 1rem; height: 1rem; color: var(--tinta-2); }
+.resumo-trabalho { margin: .2rem 0 1rem; }
+.aprovacao-chat { border: 1px solid var(--ocre); background: var(--ocre-claro); border-radius: 12px; padding: .75rem .85rem; }
 .aprovacao-chat p { margin: 0 0 .5rem; }
-.compor { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; align-items: end; }
-.compor textarea { width: 100%; }
-.so-ler { border-top: 1px solid var(--veio); padding-top: .8rem; margin: 0; }
