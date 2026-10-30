@@ -1,5 +1,23 @@
 # Mudanças
 
+## 0.28.0 (2026-10-30)
+
+A terceira parte da Onda 6: o servidor se atualiza pelo repositório, num comando só, e as regras da Atena ficam só para leitura. É o portão da onda: pela primeira vez, o servidor está igual ao repositório.
+
+- **`sudo ./aplicar`:** deixa o servidor igual ao repositório. Primeiro mostra o plano (o que grava, o que guarda no backup, o que fica como está e o que reinicia) e pede confirmação. Guarda um backup antes de mexer, e o `--desfazer` volta a ele. Reinicia só o que mudou de verdade e desfaz sozinho se um passo falha. Ele substitui os scripts avulsos de cada troca. Ficam de fora o `daemon.json` (reiniciaria todos os containers), a stack que ainda não existe e a memória da Atena, que só ganha a semente quando falta.
+- **O SOUL e as habilidades da Atena só para leitura:** o compose dela os monta assim dentro do container. Um texto que ela leia não consegue reescrever as regras dela, e o "aprendizado" do Hermes também não. O curador já tinha reescrito uma habilidade sozinho, em 17/10. Quem as muda é o `./aplicar`, a partir do repositório.
+- Testado:
+  - 28 verificações novas: `teste_aplicar.py`, num servidor de mentira, cobre aplicar, desfazer byte a byte, a falha que desfaz sozinha, o que reinicia, a trava e o sudo. `teste_compose.py` cobre as montagens só para leitura;
+  - cada commit rodado sozinho;
+  - o CI reproduzido com `tools/ci-local.sh`.
+
+  No servidor de origem:
+  - o primeiro `sudo ./aplicar` de verdade gravou 3 arquivos (o do SSH, só nos comentários, o compose e o SOUL da Atena), conferiu o SSH com `sshd -t` e subiu a Atena de novo, saudável;
+  - de dentro do container, gravar, apagar e mover o SOUL e as habilidades foi recusado, e a memória e as notas continuam graváveis;
+  - a conferência de depois, como root, não achou nenhuma diferença.
+
+  Sem testar ainda: o `--desfazer` no servidor de verdade (testado só no de mentira).
+
 ## 0.27.0 (2026-10-30)
 
 A segunda parte da Onda 6: o instalador serve para o servidor de verdade, e o que era escrito à mão sai do `atena.conf`.
