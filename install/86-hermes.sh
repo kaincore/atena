@@ -51,13 +51,12 @@ for m in USER.md MEMORY.md; do
 done
 ok "personalidade, habilidades servidor-atena e notas, ronda, acao e bom-dia em $D"
 
-# token do executor: todas as consultas, reiniciar, o PC e as stacks de apps, sem a zona prod e
-# sem pedir o celular. Para exigir o celular em algo, refaça com o 4º campo (veja docs/pt/operacao.md).
-novas=sistema.sensores,stack.editar,stack.aplicar,stack.fotos,stack.desfazer
-acoes=status.servicos,status.recursos,status.containers,status.sistema,gasto.api,servico.logs,servico.journal
-acoes=$acoes,arquivo.ler,arquivo.procurar,arquivo.entregar,arquivo.buscar,local.processar,sistema.processos
-acoes=$acoes,sistema.rede,$novas,servico.reiniciar,pc.estado,pc.ligar,pc.desligar,pc.reiniciar,pc.cancelar
-token_atena "$acoes" "$novas"
+# token do executor: as ações do perfil atena no catálogo do executor (todas as consultas, reiniciar, o PC
+# e as stacks de apps), sem a zona prod. O destrutivo sempre pede o celular; para exigir o celular em
+# mais alguma, refaça com o 4º campo (veja docs/pt/operacao.md). Uma ação nova do perfil chega ao token
+# na próxima instalação.
+acoes=$(atena-executor acoes atena)
+token_atena "$acoes" "$acoes"
 
 # o compose usa o UID do hermes e o GID do atena-acoes
 if [ ! -f "$S/.env" ]; then

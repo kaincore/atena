@@ -188,9 +188,9 @@ if [ -d "$D" ] && id hermes >/dev/null 2>&1; then
   install -d -m 755 -o hermes -g atena-acoes "$D/skills/atena/lab"
   install -m 644 -o hermes -g atena-acoes "$RAIZ/hermes/skills/atena/lab/SKILL.md" "$D/skills/atena/lab/SKILL.md"
   install -m 644 -o hermes -g atena-acoes "$RAIZ/host/lab/gitconfig-atena" "$D/.gitconfig"
-  lab=claude.tarefa,claude.trabalhos,claude.perguntas,claude.responder,claude.cancelar
-  lab=$lab,app.publicar,app.parar,app.reiniciar,app.cancelar,app.apagar,app.restaurar,app.comando,app.lista
-  token_atena "" "$lab" app.publicar,app.apagar
+  # as ações do lab para a Atena (o perfil atena-lab no catálogo). Publicar um app pede o celular (ele
+  # fica na rede de casa); apagar também, por ser destrutivo
+  token_atena "" "$(atena-executor acoes atena-lab)" app.publicar
   setfacl -R -m u:hermes:rwX /srv/lab/projetos
   find /srv/lab/projetos -type d -exec setfacl -m d:u:hermes:rwX,d:u:atena-claude:rwX,d:g:atena-lab:rwX {} +
   instalar_arquivo "$RAIZ/host/lab/hermes-compose.override.yaml" "$S/compose.override.yaml"

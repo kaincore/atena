@@ -1,7 +1,8 @@
 # Etapa 85 (só com --painel): o painel do servidor no navegador e no celular (PWA), pelo Tailscale e,
 # com ATENA_PAINEL_CASA=sim, também na rede de casa, em HTTP.
 # O container não tem rede: o tailscale serve entrega as visitas por um socket, e o painel pede as
-# ações ao executor por outro, com um token só dele (38 ações; só apaga apps do lab e só edita stacks de apps, confirmando na tela).
+# ações ao executor por outro, com um token só dele (as ações do perfil painel no catálogo do executor; só apaga apps do lab e só edita
+# stacks de apps, confirmando na tela).
 # O código do painel é atualizado a cada execução. Depois, falta você: sudo atena-painel-senha.
 
 [ "$INSTALAR_PAINEL" = sim ] || return 0
@@ -12,15 +13,8 @@ ADMIN=$ATENA_ADMIN_USER
 P=/opt/atena/stacks/core/painel
 D=/srv/core/painel
 PORTA_PAINEL=3100
-ACOES_PAINEL=status.servicos,status.recursos,status.containers,status.sistema,sistema.sensores,gasto.api
-ACOES_PAINEL=$ACOES_PAINEL,servico.logs,servico.reiniciar,pc.estado,pc.ligar,pc.desligar,pc.reiniciar,pc.cancelar
-ACOES_PAINEL=$ACOES_PAINEL,app.lista,app.reiniciar,app.parar
-ACOES_PAINEL=$ACOES_PAINEL,aprovacoes.lista,aprovacoes.decidir,atividade.lista   # a central
-ACOES_PAINEL=$ACOES_PAINEL,sistema.processos,sistema.rede,servico.journal        # a aba Sistema
-ACOES_PAINEL=$ACOES_PAINEL,app.publicar,app.cancelar,app.apagar,app.restaurar,app.comando   # o lab
-ACOES_PAINEL=$ACOES_PAINEL,claude.tarefa,claude.trabalhos,claude.cancelar                   # o Claude Code
-ACOES_PAINEL=$ACOES_PAINEL,stack.editar,stack.aplicar,stack.fotos,stack.desfazer            # o editor de stacks
-ACOES_PAINEL=$ACOES_PAINEL,arquivo.ler,arquivo.procurar,arquivo.buscar,aviso.celular        # arquivos e os avisos da agenda
+# as ações do painel vêm do catálogo do executor (o perfil painel em host/executor/atena_executor/acoes.py)
+ACOES_PAINEL=$(atena-executor acoes painel)
 ZONAS_PAINEL=core,apps,ai,agents,lab
 
 # atena-painel: sem login, sem sudo, sem Docker; o grupo atena-acoes dá acesso ao socket do executor

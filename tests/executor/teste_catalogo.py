@@ -1,10 +1,12 @@
 """O catálogo das ações: cada uma diz o que faz, o risco e quem a usa. O destrutivo vira pedido (sem isso, o
-celular não teria o que aprovar), e o atena-executor acoes dá a lista de cada perfil."""
+celular não teria o que aprovar), e o atena-executor acoes dá ao instalador a lista de cada perfil."""
 import contextlib
 import io
+import os
+import re
 import sys
 
-from comum import carregar, confere, fim
+from comum import RAIZ, carregar, confere, fim
 
 ex, tmp = carregar()
 erros = {n: a for n, a in ex.ACOES.items() if a.risco not in ex.RISCOS}
@@ -48,4 +50,15 @@ with contextlib.suppress(SystemExit), contextlib.redirect_stderr(io.StringIO()):
         ex.principal()
 confere("perfil desconhecido: não imprime lista", "," not in saida.getvalue())
 
+# o instalador monta os tokens pelo catálogo, sem lista própria
+instalador = {n: open(os.path.join(RAIZ, "install", n)).read() for n in ("85-painel.sh", "86-hermes.sh", "88-lab.sh")}
+confere("o 85-painel.sh pega as ações do painel no catálogo", "atena-executor acoes painel" in instalador["85-painel.sh"])
+confere("o 86-hermes.sh e o 88-lab.sh pegam as da Atena", "atena-executor acoes atena)" in instalador["86-hermes.sh"]
+        and "atena-executor acoes atena-lab" in instalador["88-lab.sh"])
+# fora dos comentários, só o app.publicar, que a Atena pede ao celular por escolha (não é destrutivo)
+listas = {n: [m for linha in t.split("\n") if not linha.lstrip().startswith("#")
+              for m in re.findall(r"\b[a-z]+\.[a-z]+\b", linha.split(" # ")[0]) if m in ex.ACOES]
+          for n, t in instalador.items()}
+confere("e nenhuma etapa tem uma lista de ações à mão (fora o app.publicar, aprovado por escolha)",
+        listas == {"85-painel.sh": [], "86-hermes.sh": [], "88-lab.sh": ["app.publicar"]}, listas)
 fim()
