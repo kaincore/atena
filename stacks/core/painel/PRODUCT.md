@@ -22,7 +22,7 @@ O painel é o servidor no navegador e no celular (PWA): o estado da máquina e d
 
 - Entrada só pelo Tailscale (HTTPS do `tailscale serve`), com senha e sessão de 30 dias; instalado como app no Chrome do Android e aberto no navegador do PC.
 - Avisos chegam ao celular pelo ntfy; a Atena conversa pelo Telegram e pelo WhatsApp. O painel convive com esses canais: o que se aprova no celular também aparece nele.
-- Telas atuais: Início, Aprovações, Serviços (com editor das stacks de apps), Sistema, PC, Lab (apps e Claude Code), Agenda, Arquivos, Atividade, Histórico, Ajustes.
+- Telas atuais: Início, Aprovações, Serviços (com editor das stacks de apps), Sistema, PC, Rede (os aparelhos da rede de casa, só ver), Lab (apps e Claude Code), Agenda, Arquivos, Atividade, Histórico, Ajustes.
 
 ## Capabilities and Constraints
 

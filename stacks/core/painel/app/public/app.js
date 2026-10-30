@@ -13,6 +13,7 @@ import { telaInicio } from "./telas/inicio.js";
 import { telaLab } from "./telas/lab.js";
 import { marcarPcLigado, telaPC } from "./telas/pc.js";
 import { telaReceitas } from "./telas/receitas.js";
+import { telaRede } from "./telas/rede.js";
 import { janelaEditor, telaServicos, verLogs } from "./telas/servicos.js";
 import { telaSistema } from "./telas/sistema.js";
 import { marcarZonas, resumirZonas, stacksVistas } from "./zonas.js";
@@ -23,11 +24,11 @@ import { picto } from "./pictos.js";
 ligarCasca({ atualizar, telaAtual, mostrarEntrada });
 
 const TELAS = {
-  inicio: telaInicio, aprovacoes: telaAprovacoes, servicos: telaServicos, sistema: telaSistema, pc: telaPC, lab: telaLab,
+  inicio: telaInicio, aprovacoes: telaAprovacoes, servicos: telaServicos, sistema: telaSistema, pc: telaPC, rede: telaRede, lab: telaLab,
   receitas: telaReceitas, agenda: telaAgenda, atena: telaAtena, arquivos: telaArquivos, atividade: telaAtividade, historico: telaHistorico, ajustes: telaAjustes,
 };
 // de quantos em quantos tiques (10 s) cada tela se atualiza sozinha
-const ATUALIZAM_SOZINHAS = { aprovacoes: 1, inicio: 3, servicos: 3, pc: 3 };
+const ATUALIZAM_SOZINHAS = { aprovacoes: 1, inicio: 3, servicos: 3, pc: 3, rede: 3 };
 
 // --- navegação: uma lista só para o trilho (PC), a barra e o "Mais" (celular) e a paleta -----------
 
@@ -40,6 +41,7 @@ const NAV = [
   { tela: "sistema", nome: "Sistema", grupo: "servidor" },
   { tela: "arquivos", nome: "Arquivos", grupo: "servidor" },
   { tela: "pc", nome: "PC", grupo: "máquina", barra: true },
+  { tela: "rede", nome: "Rede", grupo: "máquina" },
   { tela: "lab", nome: "Lab", grupo: "máquina" },
   { tela: "receitas", nome: "Receitas", grupo: "máquina" },
   { tela: "atividade", nome: "Atividade", grupo: "registro" },

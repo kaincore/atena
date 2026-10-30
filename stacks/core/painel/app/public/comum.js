@@ -11,6 +11,7 @@ export const NOMES = {
   "pc.desligar": "Desligar o PC",
   "pc.reiniciar": "Reiniciar o PC",
   "pc.cancelar": "Cancelar desligamento do PC",
+  "rede.nomear": "Nomear aparelho",
   "app.reiniciar": "Reiniciar app do lab",
   "app.parar": "Parar app do lab",
   "app.publicar": "Publicar app do lab",

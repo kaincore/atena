@@ -46,6 +46,13 @@ const DESENHOS = {
     ["rect", { x: 5.3, y: 6.3, width: 13.4, height: 7.8, rx: 0.6, class: "tinta" }],
     ["rect", { x: 3.4, y: 4.4, width: 17.2, height: 11.6, rx: 1.6 }], ["path", { d: "M12 16v3.4M8.6 19.6h6.8" }],
   ],
+  // a rede de casa: o servidor no meio, ligado a quatro aparelhos
+  rede: [
+    ["circle", { cx: 12, cy: 12, r: 2.8, class: "tinta" }], ["circle", { cx: 12, cy: 12, r: 2.8 }],
+    ["circle", { cx: 5.2, cy: 6.2, r: 1.7 }], ["circle", { cx: 18.8, cy: 6.2, r: 1.7 }],
+    ["circle", { cx: 5.2, cy: 17.8, r: 1.7 }], ["circle", { cx: 18.8, cy: 17.8, r: 1.7 }],
+    ["path", { d: "M9.87 10.18 6.49 7.3M14.13 10.18l3.38-2.88M9.87 13.82 6.49 16.7M14.13 13.82l3.38 2.88", class: "fino" }],
+  ],
   lab: [
     ["path", { d: "M7.1 14.6h9.8l1.7 3.1a1.4 1.4 0 0 1-1.3 1.9H6.7a1.4 1.4 0 0 1-1.3-1.9z", class: "tinta" }],
     ["path", { d: "M9.4 3.6h5.2M10.3 3.6v5.2L5.3 17.6A1.6 1.6 0 0 0 6.7 20h10.6a1.6 1.6 0 0 0 1.4-2.4l-5-8.8V3.6" }],
