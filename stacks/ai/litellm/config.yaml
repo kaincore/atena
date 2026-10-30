@@ -9,10 +9,14 @@ model_list:
     litellm_params:
       model: anthropic/claude-haiku-5-5
       api_key: os.environ/ANTHROPIC_API_KEY
+      timeout: 90                   # sem resposta nisso, falha (a Atena avisa) em vez de esperar 10 min
+      num_retries: 1
       max_budget: 50            # teto do documento: US$ 50 por mês
       budget_duration: 31d            # o atena-litellm-virada-mes zera todo dia 1º às 00:00 UTC; 31d só garante que não zere antes
       # Haiku/Sonnet/Opus 5.5 recusam (erro 400) temperature/top_p/top_k fora do padrão
       additional_drop_params: ["temperature", "top_p", "top_k"]
+      # o prompt de sistema entra no cache para qualquer cliente; a Atena (Hermes) marca também o fim da
+      # conversa (prompt_caching no hermes/configurar.sh), e o LiteLLM não passa dos 4 pontos da Anthropic
       cache_control_injection_points:
         - location: message
           role: system
@@ -28,6 +32,8 @@ model_list:
     litellm_params:
       model: anthropic/claude-sonnet-5-5
       api_key: os.environ/ANTHROPIC_API_KEY
+      timeout: 180                   # sem resposta nisso, falha (a Atena avisa) em vez de esperar 10 min
+      num_retries: 1
       max_budget: 30            # teto do documento: US$ 30 por mês
       budget_duration: 31d            # o atena-litellm-virada-mes zera todo dia 1º às 00:00 UTC; 31d só garante que não zere antes
       additional_drop_params: ["temperature", "top_p", "top_k"]
@@ -45,6 +51,8 @@ model_list:
     litellm_params:
       model: anthropic/claude-opus-5-5
       api_key: os.environ/ANTHROPIC_API_KEY
+      timeout: 180                   # sem resposta nisso, falha (a Atena avisa) em vez de esperar 10 min
+      num_retries: 1
       max_budget: 20            # teto do documento: US$ 20 por mês
       budget_duration: 31d            # o atena-litellm-virada-mes zera todo dia 1º às 00:00 UTC; 31d só garante que não zere antes
       additional_drop_params: ["temperature", "top_p", "top_k"]
@@ -98,10 +106,8 @@ litellm_settings:
   drop_params: true
   num_retries: 2
   request_timeout: 600
-  # documento: Haiku -> Groq -> local. O Groq ainda não está configurado e, quando estiver,
-  # não pode receber dados da empresa nem do cliente externo.
-  fallbacks:
-    - haiku: ["local"]
+  # Sem plano B para o Haiku: o local (qwen3:4b, 4 mil tokens de contexto) não comporta o prompt da Atena
+  # (~30 mil), e o "plano B" só somava mais uma falha e mais tempo. Fora do ar, ela falha rápido.
 
 router_settings:
   # gasto por modelo guardado no Redis: sobrevive a reinícios
