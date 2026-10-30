@@ -201,8 +201,8 @@ main {
 .trilho { display: none; }
 .barra {
   position: fixed; inset: auto 0 0 0; z-index: 4;
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: .2rem;
-  padding: .35rem .45rem calc(.35rem + env(safe-area-inset-bottom));
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: .15rem;
+  padding: .35rem .35rem calc(.35rem + env(safe-area-inset-bottom));
   background: color-mix(in srgb, var(--placa) 94%, transparent); border-top: 1px solid var(--veio);
   backdrop-filter: blur(14px) saturate(1.1); view-transition-name: barra;
 }
@@ -989,3 +989,48 @@ textarea.codigo { width: 100%; min-height: 40dvh; font: .8rem/1.5 var(--mono); w
   .desenhando .traco, .picto.redesenha * { stroke-dashoffset: 0 !important; }
   .painel:has(#tela[aria-busy]) .ativa .picto { opacity: .6; } /* lendo, sem respirar */
 }
+
+/* a tela Atena: a lista das conversas e a conversa aberta lado a lado no PC; no celular, uma de cada vez */
+main[data-tela="atena"] { columns: 1; }
+.tela-atena { display: grid; gap: .9rem; align-items: start; }
+.tela-atena .voltar { margin: -.2rem 0 .8rem; }
+@media (min-width: 60rem) {
+  .tela-atena { grid-template-columns: minmax(17rem, 22rem) minmax(0, 1fr); }
+  .tela-atena .lista-conversas { position: sticky; top: 1rem; max-height: calc(100dvh - 2rem); overflow: auto; overscroll-behavior: contain; }
+  .tela-atena .voltar { display: none; }
+}
+@media (max-width: 59.99rem) {
+  .tela-atena.lendo .lista-conversas, .tela-atena:not(.lendo) .conversa-aberta { display: none; }
+}
+.lista-conversas .botoes { margin: 0 0 .8rem; }
+.lista-conversas .filtros { margin: 0 0 .6rem; }
+.item.conversa .item-nome a { color: var(--tinta); text-decoration: none; font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.item.conversa .item-nome a:hover { color: var(--azul); }
+.item.conversa.marcada .item-nome a { color: var(--azul); }
+.item.conversa .item-detalhe .selo { margin-left: 0; }
+/* as falas: as suas numa placa funda à direita, as dela soltas, as da agenda presas por um fio */
+.falas { display: grid; gap: 1.15rem; margin: 0 0 1rem; }
+.fala { display: grid; gap: .3rem; min-width: 0; }
+.fala .quem { font: 550 .78rem var(--letra); color: var(--tinta-2); font-variation-settings: "FLAR" 100, "VOLM" 50; }
+.fala.voce { justify-self: end; max-width: min(36rem, 92%); background: var(--placa-2); border: 1px solid var(--veio); border-radius: 10px; padding: .55rem .8rem .6rem; }
+.fala.agenda { border-left: 1px solid var(--veio-forte); padding-left: .8rem; }
+.fala.sub { border-left: 1px solid var(--veio); padding-left: .8rem; }
+.fala.fim { border-top: 1px solid var(--veio); padding-top: .8rem; }
+.fala .texto { line-height: 1.55; overflow-wrap: anywhere; }
+.fala .texto > * { margin: 0 0 .55rem; }
+.fala .texto > :last-child { margin-bottom: 0; }
+.fala .texto ul, .fala .texto ol { padding-left: 1.2rem; }
+.fala .texto code { font: .84em var(--mono); background: var(--placa-2); border-radius: 4px; padding: .05rem .3rem; }
+.fala.escrevendo .quem { color: var(--azul); }
+.passos > summary { font-size: .82rem; color: var(--tinta-2); }
+.passos .ferramenta, .registro-claude .ferramenta { font: 500 .78rem var(--mono); }
+.passos .registro, .registro-claude .registro { max-height: 30dvh; }
+.registro-claude .item.dentro { margin-left: .8rem; } /* o que um subagente fez */
+.registro-claude .fase { margin: .6rem 0 0; }
+.trabalho-claude { border: 1px solid var(--veio); border-radius: var(--raio); padding: 0 .8rem; background: var(--placa-2); }
+.trabalho-claude .item { border: 0; }
+.aprovacao-chat { border: 1px solid var(--ocre); background: var(--ocre-claro); border-radius: var(--raio); padding: .7rem .8rem; }
+.aprovacao-chat p { margin: 0 0 .5rem; }
+.compor { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .5rem; align-items: end; }
+.compor textarea { width: 100%; }
+.so-ler { border-top: 1px solid var(--veio); padding-top: .8rem; margin: 0; }

@@ -52,6 +52,14 @@ const DESENHOS = {
     ["path", { d: "M7.1 14.6h9.8", class: "fino" }],
     ["circle", { cx: 11, cy: 12.1, r: 0.75, class: "cheio" }], ["circle", { cx: 13.3, cy: 10.6, r: 0.55, class: "cheio" }],
   ],
+  // o elmo coríntio de Atena, de frente: a crista é a tinta; as fendas dos olhos e o vão da boca
+  atena: [
+    ["path", { d: "M8.4 5.3c1-1.9 6.2-1.9 7.2 0L12 6.1z", class: "tinta" }],
+    ["path", { d: "M8.4 5.3c1-1.9 6.2-1.9 7.2 0" }],
+    ["path", { d: "M5.9 11.4C5.9 7.9 8.6 5.5 12 5.5s6.1 2.4 6.1 5.9v4.5c0 2-1.1 3.6-2.9 4.5M5.9 11.4v4.5c0 2 1.1 3.6 2.9 4.5" }],
+    ["path", { d: "M7.6 11.9c1-.6 2.3-.7 3.4-.2M16.4 11.9c-1-.6-2.3-.7-3.4-.2" }],
+    ["path", { d: "M12 10.4v3.4M10.5 15v5.4M13.5 15v5.4", class: "fino" }],
+  ],
   agenda: [
     ["path", { d: "M12 12V4.4a7.6 7.6 0 0 1 6.6 3.8z", class: "tinta" }],
     ["circle", { cx: 12, cy: 12, r: 8.4 }], ["path", { d: "M12 4.6v1.2M19.4 12h-1.2M12 19.4v-1.2M4.6 12h1.2", class: "fino" }],

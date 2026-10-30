@@ -6,6 +6,7 @@ import { telaAgenda } from "./telas/agenda.js";
 import { telaAjustes } from "./telas/ajustes.js";
 import { contarPendentes, faixaAprovacoes, telaAprovacoes } from "./telas/aprovacoes.js";
 import { telaArquivos } from "./telas/arquivos.js";
+import { telaAtena } from "./telas/atena.js";
 import { telaAtividade } from "./telas/atividade.js";
 import { telaHistorico } from "./telas/historico.js";
 import { telaInicio } from "./telas/inicio.js";
@@ -22,7 +23,7 @@ ligarCasca({ atualizar, telaAtual, mostrarEntrada });
 
 const TELAS = {
   inicio: telaInicio, aprovacoes: telaAprovacoes, servicos: telaServicos, sistema: telaSistema, pc: telaPC, lab: telaLab,
-  agenda: telaAgenda, arquivos: telaArquivos, atividade: telaAtividade, historico: telaHistorico, ajustes: telaAjustes,
+  agenda: telaAgenda, atena: telaAtena, arquivos: telaArquivos, atividade: telaAtividade, historico: telaHistorico, ajustes: telaAjustes,
 };
 // de quantos em quantos tiques (10 s) cada tela se atualiza sozinha
 const ATUALIZAM_SOZINHAS = { aprovacoes: 1, inicio: 3, servicos: 3, pc: 3 };
@@ -31,6 +32,7 @@ const ATUALIZAM_SOZINHAS = { aprovacoes: 1, inicio: 3, servicos: 3, pc: 3 };
 
 const NAV = [
   { tela: "inicio", nome: "Início", grupo: "hoje", barra: true },
+  { tela: "atena", nome: "Atena", grupo: "hoje", barra: true },
   { tela: "aprovacoes", nome: "Aprovações", grupo: "hoje" },
   { tela: "agenda", nome: "Agenda", grupo: "hoje", barra: true },
   { tela: "servicos", nome: "Serviços", grupo: "servidor", barra: true },
@@ -42,7 +44,7 @@ const NAV = [
   { tela: "historico", nome: "Histórico", grupo: "registro" },
   { tela: "ajustes", nome: "Ajustes", grupo: "conta" },
 ];
-const ORDEM_BARRA = ["inicio", "pc", "agenda", "servicos"];
+const ORDEM_BARRA = ["inicio", "atena", "pc", "agenda", "servicos"];
 
 const tecla = (n, classe) => h("a", { href: `#${n.tela}`, "data-tela": n.tela, class: classe }, picto(n.tela), h("span", null, n.nome));
 const reduzido = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
