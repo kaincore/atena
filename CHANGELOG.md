@@ -1,5 +1,45 @@
 # Mudanças
 
+## 0.33.0 (2026-10-30)
+
+A Onda 8 e a rede de casa: receitas de estilo (o visual de um site ou de um programa que você gostou, estudado pelo Claude Code com o REA e guardado para os seus projetos), a tela Atena como um app de conversa e, no painel, quem está na rede de casa.
+
+**Receitas de estilo** (com `ATENA_CLAUDE_SKILLS=sim`):
+- **`receita.estudar`**, pela Atena ou pela tela Receitas:
+  - um site: o executor confere o endereço (só `http(s)`, sem usuário e senha, e todos os IPs na internet) e roda o coletor, a imagem `atena/coletor` (um Chromium sem tela, sem IA). Ele roda num container de uma vez, na rede `lab-coletor`, que alcança a internet e não a rede de casa, o Tailscale nem o servidor, e grava prints, HTML, CSS, scripts, o registro da rede e os estilos computados;
+  - um programa (`arquivo`: um APK, um .exe, um AppImage, um app Electron que você mandou à Atena): vai para o lab, das pastas de entrega, sem segredos nem bancos, até 1 GB, e nunca roda;
+  - nos dois casos, até 6 prints seus (`imagens`).
+- **O Claude Code escreve a receita** com a skill `receita`: o `RECEITA.md` (ingredientes, modo de preparo, o segredo, faça e não faça, um ponto de partida em CSS, fontes e licenças, limites) e o `receita.json`. Ele usa o `impeccable document` e o REA 6.8.0 pela linha de comando, dentro do sandbox, sem rede, e prova a receita com o `atena-tela`. A receita descreve; não copia código, logos, imagens nem fontes pagas.
+- **O executor guarda a receita sem seguir links** em `/srv/lab/receitas/<nome>`, com um índice SQLite com busca por texto que se refaz das pastas. Ações novas: `receita.estudar`, `receita.lista`, `receita.ver`, `receita.procurar`, `receita.print` e `receita.apagar` (destrutiva). O `claude.tarefa` ganha `receitas=[...]`: o projeto recebe a receita em `.atena/receitas` e segue o estilo dela.
+- **O lab ganha um Node próprio** (24.22.1, fixo e conferido pelo checksum, na frente do Node do sistema) e os **descompiladores livres do REA**: o Ghidra 12.1.4 com o JDK 21, a ponte do JADX (`jadx-headless-mcp` 0.7.1) e o Apktool, todos conferidos. Os pagos (IDA, Hopper, JEB) ficam de fora. A skill do REA vai para as contas.
+- Chave nova: `ATENA_RECEITAS_CONTA`, a conta que escreve as receitas quando o pedido não diz.
+
+**No painel:**
+- **A tela Receitas** (no grupo máquina): o pedido de estudo (site ou programa), a lista com a busca, a paleta em amostras, as fontes, as tags e os prints; Usar num projeto, Refazer e Apagar. No Lab, o campo Estilo põe uma receita no trabalho novo.
+- **A tela Atena como um app de conversa:** a lista das conversas por dia com a busca (no celular, numa gaveta); a conversa numa coluna, com as suas falas em balões, o Copiar, os blocos de código e os passos; o campo preso embaixo, com a tecla redonda que envia e vira Parar; a conversa nova com sugestões.
+
+**A rede de casa no painel, só para ver:**
+- **A tela Rede** (no grupo máquina, depois do PC): Na rede agora, pela ordem do IP, e Já vistos, do mais recente. Cada aparelho mostra o IP, o MAC, o fabricante, o nome que ele diz, se usa MAC privado, o papel (o roteador, este servidor, o PC) e o selo de novo na rede (chegou no último dia). A tecla Nomear dá um nome ao MAC, que fica só no servidor. A tela se atualiza sozinha a cada 30 s, e Procurar agora espera uma varredura nova.
+- **No executor, `rede.aparelhos` e `rede.nomear`**, para o painel e para a Atena. Sem privilégio nenhum: um UDP vazio para cada endereço de `ATENA_LAN_CIDR` (até /22) faz o kernel perguntar pelo ARP, e a tabela de vizinhos diz quem respondeu e há quanto tempo. O nome vem do DNS do roteador, do mDNS e do NetBIOS; o fabricante, da lista do IEEE (o pacote `ieee-data`, que o instalador passa a pôr). Nada muda no roteador nem na rede. Os aparelhos ficam em `/var/lib/atena-executor/rede.json`; sem nome e sumido há 30 dias, o aparelho sai da lista (o MAC privado dos celulares muda).
+- **A Atena vê a rede** pela habilidade servidor-atena: chama cada aparelho pelo nome que você deu e não toma um MAC privado por estranho.
+- Painel 0.19.0.
+- Testado:
+  - `tests/lab/teste_receitas.py`, com 103 verificações: o endereço, a coleta com um Docker de mentira, o trabalho, a receita guardada sem seguir links, o índice e a busca, refazer, continuar, apagar, o programa e os prints. Também os casos novos do runner (as receitas no projeto, o Node do lab);
+  - o coletor de verdade em dois sites (38 s e 549 arquivos num). A rede `lab-coletor` alcança a internet e barra o roteador, o servidor, a zona lab e o Tailscale. Um site com verificação anti-robô (Cloudflare) devolve 403: o coletor não a contorna, e a receita sai dos prints;
+  - o REA 6.8.0 no Node 24.22.1: o registro da rede em 3 s e scripts poucos de cada vez (a pasta inteira passa dos 5 min dele). Com o Ghidra 12.1.4, um ELF em 15 s; com o JADX, um APK do F-Droid em 4 s;
+  - `tests/executor/teste_rede.py`, com 40 verificações: a tabela de vizinhos simulada (a pergunta sem resposta, o IP que mudou, a faixa de casa sem as redes dos containers), a varredura em segundo plano, o nome do dono, quem sai da lista e os pacotes de mDNS e NetBIOS montados no teste, também cortados;
+  - uma varredura de verdade na rede de casa do servidor de origem, como usuário comum: 6,6 s, o roteador com o fabricante e o nome, e o próprio servidor;
+  - a tela no ensaio, com aparelhos de exemplo: as duas listas, a janela do nome e o nome gravado voltando na lista, no PC e no celular, nos temas claro e escuro;
+  - as telas Receitas e Atena no ensaio, no PC e no celular, nos temas claro e escuro, sem erros no console;
+  - cada commit rodado sozinho;
+  - o CI reproduzido com `tools/ci-local.sh`.
+
+  No servidor de origem:
+  - a Onda 8 e a 8.1 foram aplicadas pelos scripts com sudo (o Node do lab, o REA, o Ghidra, o JDK, a ponte do JADX e o `./aplicar`). O `rea doctor` deu o Ghidra, o Java e o JADX como saudáveis;
+  - o painel 0.19.0 está no ar com a tela Atena nova e igual ao repositório.
+
+  Sem testar ainda: uma receita de ponta a ponta com o Claude Code de verdade (de site e de programa), e a rede de casa no servidor (falta o `sudo ./aplicar` com o executor dela) e cheia de aparelhos. Na varredura de teste, só o roteador respondeu ao ARP.
+
 ## 0.32.0 (2026-10-30)
 
 A última parte da Onda 7: a tela Atena. O painel tem o histórico da Atena e do Claude Code que ela comanda, e um chat com ela. Com ela, a Onda 7 termina.
