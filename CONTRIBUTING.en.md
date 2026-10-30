@@ -41,7 +41,7 @@ The jobs are in `.github/workflows/verificar.yml`; the Python tests live in `tes
 - **One module per topic, bottom to top:** a module only imports from the ones before it (the map is in `__init__.py`). When a lower one needs a higher one, the import goes inside the function, with the reason next to it.
 - **Closed list:** each action goes into `acoes.py` (function, help and, if it changes something, the `preparar` that validates and writes the approval text). Parameters are checked against what really exists, and every command is an argument list for `rodar`, never a string for the shell.
 - **The error says what to do:** `Erro(status, message)` becomes the HTTP response, and the message gives the next step ("rode sudo atena-claude-conta entrar trabalho").
-- **New action:** a test in `tests/executor` (or `tests/lab`), the line in Atena's skill (`hermes/skills/atena/*/SKILL.md`: `teste_habilidade.py` checks every action is there) and, if the panel uses it, the action in `ACOES_PAINEL` in `install/85-painel.sh`.
+- **New action:** the entry in the catalog (`acoes.py`), with the risk (`consulta`, `muda` or `destrutivo`; a destructive one always asks the phone and needs a `preparar`) and the profiles (`painel`, `atena`), and a test in `tests/executor` (or `tests/lab`). The installer's tokens and the panel read the catalog. If Atena uses it, the line in her skill (`hermes/skills/atena/*/SKILL.md`) is the one thing left, and `teste_habilidade.py` flags it.
 - Python's standard library only, plus PyYAML; ruff (rules in `ruff.toml`) checks names and imports.
 
 ## Panel (`stacks/core/painel`)

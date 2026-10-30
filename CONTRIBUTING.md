@@ -41,7 +41,7 @@ Os jobs estão em `.github/workflows/verificar.yml`; os testes de Python ficam e
 - **Um módulo por assunto, de baixo para cima:** um módulo só importa dos que vêm antes dele (o mapa está no `__init__.py`). Quando um de baixo precisa de um de cima, o import fica dentro da função, com o motivo ao lado.
 - **Lista fechada:** cada ação entra em `acoes.py` (função, ajuda e, se ela muda algo, o `preparar` que valida e escreve o texto da aprovação). Os parâmetros são conferidos contra o que existe de verdade, e todo comando é uma lista de argumentos para o `rodar`, nunca um texto para o shell.
 - **O erro diz o que fazer:** `Erro(status, mensagem)` vira a resposta HTTP, e a mensagem dá o próximo passo ("rode sudo atena-claude-conta entrar trabalho").
-- **Ação nova:** um teste em `tests/executor` (ou `tests/lab`), a linha na habilidade da Atena (`hermes/skills/atena/*/SKILL.md`: o `teste_habilidade.py` confere que toda ação está lá) e, se o painel usa, a ação no `ACOES_PAINEL` de `install/85-painel.sh`.
+- **Ação nova:** a entrada no catálogo (`acoes.py`), com o risco (`consulta`, `muda` ou `destrutivo`; a destrutiva sempre pede o celular e precisa de `preparar`) e os perfis (`painel`, `atena`), e um teste em `tests/executor` (ou `tests/lab`). Os tokens do instalador e o painel leem o catálogo. Se a Atena usa, falta a linha na habilidade dela (`hermes/skills/atena/*/SKILL.md`), e o `teste_habilidade.py` avisa.
 - Só a biblioteca padrão do Python, mais o PyYAML; o ruff (regras no `ruff.toml`) confere nomes e imports.
 
 ## Painel (`stacks/core/painel`)

@@ -79,7 +79,8 @@ sudo atena-executor token-remover <client>
 journalctl -u atena-executor -f                               # every request, with its result
 ```
 
-- Lists are comma-separated. `approve` says which actions need the phone: `nenhuma` (none), or a list. Without that field, every action that can ask for approval does.
+- Lists are comma-separated. `approve` says which actions need the phone, on top of the destructive ones, which always do. `nenhuma` (none) is only for the panel: there, you confirm on screen, so not even a destructive one asks the phone. Without that field, every action that can ask for approval does.
+- The installer builds the panel's and Atena's tokens from the executor's catalog (`atena-executor acoes painel`, `atena` or `atena-lab`). Each action states its risk there, and `GET /acoes` shows the catalog to whoever holds the token.
 - The token is shown only once. Creating it again for the same client revokes the old one.
 - Example: Atena starts asking your phone before restarting anything (her token lives in `/srv/agents/hermes/executor.token`):
   ```bash
