@@ -45,9 +45,13 @@ MENSAGENS = [
     {"id": 5, "role": "tool", "tool_call_id": "t2", "tool_name": "skill_view", "content": "{\"success\": true}", "timestamp": 13.5},
     {"id": 6, "role": "session_meta", "content": None, "timestamp": 13.9},
     {"id": 7, "role": "assistant", "content": "Mandei ao Claude Code: trabalho e4d647e7.", "timestamp": 14.0},
+    {"id": 8, "role": "assistant", "content": "", "timestamp": 15.0, "tool_calls": [
+        {"id": "t3", "function": {"name": "terminal", "arguments": json.dumps(
+            {"command": "T=$(cat /opt/data/executor.token); S=/run/atena-executor/executor.sock; "
+                        "for a in status.servicos sistema.rede; do curl --unix-socket $S http://x/acao/$a; done"})}}]},
 ]
 JOBS = {
-    "461a4cd4d149": {"id": "461a4cd4d149", "name": "ronda", "prompt": "Ronda do servidor", "schedule": {"kind": "interval"},
+    "461a4cd4d149": {"id": "461a4cd4d149", "name": "ronda", "prompt": "Ronda do servidor", "schedule": {"kind": "interval", "minutes": 3},
                      "schedule_display": "every 3m", "enabled": True, "state": "scheduled",
                      "next_run_at": "2026-10-30T10:19:58-03:00", "last_run_at": "2026-10-30T10:16:58-03:00",
                      "last_status": "ok", "deliver": "telegram", "monitor_script": "ronda.py", "repeat": {"times": None, "completed": 3107}},
@@ -218,8 +222,11 @@ confere("o passo do terminal diz a ação do executor", passos[0]["detalhe"] == 
 confere("o resultado sem o envelope do terminal", passos[0]["resultado"].startswith("{\"ok\": true"), passos[0])
 confere("o trabalho do Claude Code que ela mandou vira um cartão", passos[0].get("trabalhos") == ["e4d647e7"], passos[0])
 confere("outra ferramenta mostra os argumentos", passos[1]["ferramenta"] == "skill_view" and "lab" in passos[1]["detalhe"], passos[1])
-confere("o resto: a resposta final, sem session_meta", [x["papel"] for x in m] == ["agenda", "voce", "atena", "atena"], m)
-confere("das mais antigas para as mais novas", m[-1]["texto"].startswith("Mandei"))
+confere("o resto: a resposta final, sem session_meta", [x["papel"] for x in m] == ["agenda", "voce", "atena", "atena", "atena"], m)
+confere("das mais antigas para as mais novas", m[-2]["texto"].startswith("Mandei"))
+confere("um comando que percorre uma lista de ações também diz quais",
+        m[-1]["passos"][0]["detalhe"] == "executor: status.servicos, sistema.rede", m[-1]["passos"])
+confere("o argumento sozinho aparece sem o JSON em volta", passos[1]["detalhe"] == "lab", passos[1])
 confere("conversa inválida: 400", erro(ex.acao_atena_conversa, c, {"conversa": "../x"})[0] == 400)
 status, msg = erro(ex.acao_atena_conversa, c, {"conversa": "nao_existe"})
 confere("conversa que não existe: 404 com o motivo do Hermes", status == 404 and "Session not found" in msg, (status, msg))
@@ -296,7 +303,8 @@ confere("o pedido de outro cliente não se para: 404", status == 404, (status, r
 r = {a["nome"]: a for a in ex.acao_atena_agenda(c, {})["agendamentos"]}
 ronda, remedio = r["ronda"], r["lembrete remédio"]
 confere("agenda: a ronda com quando, próxima em segundos e o script",
-        ronda["quando"] == "every 3m" and abs(ronda["proxima"] - 1793366398.0) < 1 and ronda["script"] == "ronda.py"
+        ronda["quando"] == "every 3m" and ronda["intervalo"] == 3 and abs(ronda["proxima"] - 1793366398.0) < 1
+        and ronda["script"] == "ronda.py"
         and ronda["feitas"] == 3107 and ronda["protegido"], ronda)
 confere("um lembrete pausado aparece pausado, sem segredo no erro",
         not remedio["ativo"] and remedio["tipo"] == "once" and "abc123" not in remedio["erro"] and not remedio["protegido"], remedio)

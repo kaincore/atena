@@ -35,7 +35,6 @@ PROTEGIDOS = {"ronda", "bom-dia"}   # os agendamentos do instalador: pausar pode
 ESCOLHAS = ("once", "session", "always", "deny")   # aprovar um comando: só agora, na conversa, sempre, não
 ID_CONVERSA = re.compile(r"[A-Za-z0-9_.:-]{1,128}")
 ID_AGENDAMENTO = re.compile(r"[0-9a-f]{6,32}")
-ACAO_NO_COMANDO = re.compile(r"(?:/acao/|acao\.py\s+)([a-z]+(?:\.[a-z]+)+)")
 ACAO_NA_RESPOSTA = re.compile(r'\\*"acao\\*":\s*\\*"([a-z]+(?:\.[a-z]+)+)\\*"(?:,\s*\\*"pedido\\*":\s*\\*"([0-9a-f]{8}))?')
 CONVERSANDO = set()       # conversas com uma resposta em andamento: uma por vez em cada
 
@@ -131,16 +130,21 @@ def acao_atena_conversas(cliente, params):
 
 
 def detalhe_ferramenta(nome, args):
-    """Uma linha sobre o que a ferramenta fez: a ação do executor, se for uma; senão os argumentos."""
+    """Uma linha sobre o que a ferramenta fez: as ações do executor que o comando pede (pelo acao.py, pelo
+    curl, ou numa lista que ele percorre); senão o argumento, ou os argumentos."""
+    from .acoes import ACOES  # aqui: a lista de ações importa este módulo
     if isinstance(args, str):
         try:
             args = json.loads(args)
         except ValueError:
             pass
     texto = args.get("command", "") if isinstance(args, dict) and nome == "terminal" else ""
-    acoes = ACAO_NO_COMANDO.findall(texto)
-    if acoes:
-        return "executor: " + ", ".join(dict.fromkeys(acoes))
+    if re.search(r"executor\.sock|acao\.py|/acao/", texto):
+        acoes = [a for a in re.findall(r"[a-z]+(?:\.[a-z]+)+", texto) if a in ACOES]
+        if acoes:
+            return "executor: " + ", ".join(dict.fromkeys(acoes))
+    if isinstance(args, dict) and len(args) == 1 and isinstance(next(iter(args.values())), str):
+        return curto(next(iter(args.values())), 160)
     return curto(args if args not in (None, "", {}) else "", 160)
 
 
@@ -367,7 +371,8 @@ def instante(iso):
 def agendamento(j):
     repetir = j.get("repeat") or {}
     return {"id": j.get("id"), "nome": j.get("name") or "", "quando": j.get("schedule_display") or "",
-            "tipo": (j.get("schedule") or {}).get("kind"), "proxima": instante(j.get("next_run_at")),
+            "tipo": (j.get("schedule") or {}).get("kind"), "intervalo": (j.get("schedule") or {}).get("minutes"),
+            "proxima": instante(j.get("next_run_at")),
             "ultima": instante(j.get("last_run_at")), "resultado": j.get("last_status"),
             "erro": curto(j["last_error"], 300) if j.get("last_error") else None,
             "ativo": bool(j.get("enabled")) and j.get("state") != "paused", "estado": j.get("state"),
