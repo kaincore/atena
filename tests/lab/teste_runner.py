@@ -1,19 +1,22 @@
 """O atena-claude-runner com um Claude Code de mentira: trabalho normal, plano, recusas, cancelar,
 contas do atena.conf, limite de uso (com e sem troca automática), continuar em outra conta, as
-travas de git, o fechamento depois do resumo final, os trabalhos em paralelo e as skills."""
+travas de git, o fechamento depois do resumo final, os trabalhos em paralelo, as skills e o runner que
+morre no meio de um trabalho."""
 import json
 import os
+import signal
 import subprocess
+import sys
 import threading
 import time
 
-from comum import RAIZ, SESSAO, confere, fim, runner
+from comum import RAIZ, SESSAO, confere, esperar, executor, fim, runner, uma_volta
 
 rn, tmp = runner()
 base, projetos = rn.BASE, rn.PROJETOS
 
 # Claude Code de mentira: anota como foi chamado e responde em stream-json. O pedido escolhe o caso:
-# COMMIT faz um commit; DEMORA espera 60 s; PRESO manda o resumo e fica aberto (com um filho);
+# COMMIT faz um commit (antes de tudo); DEMORA espera 60 s; PRESO manda o resumo e fica aberto (com um filho);
 # PARALELO anota início e fim. Uma conta listada em <tmp>/limitadas bate o limite de uso.
 FALSO = f"{tmp}/claude-falso"
 with open(FALSO, "w") as f:
@@ -23,22 +26,23 @@ T, SESSAO = {tmp!r}, {SESSAO!r}
 conta = os.path.basename(os.environ["CLAUDE_CONFIG_DIR"])
 pedido = sys.argv[-1]
 with open(T + "/chamadas.jsonl", "a") as f:
-    f.write(json.dumps({{"conta": conta, "argv": sys.argv[1:], "cwd": os.getcwd(), "env": dict(os.environ)}}) + "\\n")
+    f.write(json.dumps({{"conta": conta, "argv": sys.argv[1:], "cwd": os.getcwd(), "env": dict(os.environ),
+                        "pid": os.getpid()}}) + "\\n")
 proj = os.path.join(os.environ["CLAUDE_CONFIG_DIR"], "projects", "-proj")
 os.makedirs(proj, exist_ok=True)
 sessao_aqui = os.path.exists(os.path.join(proj, SESSAO + ".jsonl"))
 print(json.dumps({{"type": "system", "subtype": "init", "session_id": SESSAO}}), flush=True)
+if "COMMIT" in pedido:
+    subprocess.run(["git", "init", "-q"], check=True)
+    open("app.py", "w").write("print('oi')\\n")
+    subprocess.run(["git", "add", "."], check=True)
+    subprocess.run(["git", "commit", "-q", "-m", "primeiro commit"], check=True)
 if "DEMORA" in pedido:
     time.sleep(60)
 if "PARALELO" in pedido:
     open(T + "/eventos.log", "a").write(f"inicio {{time.time()}}\\n")
     time.sleep(3)
     open(T + "/eventos.log", "a").write(f"fim {{time.time()}}\\n")
-if "COMMIT" in pedido:
-    subprocess.run(["git", "init", "-q"], check=True)
-    open("app.py", "w").write("print('oi')\\n")
-    subprocess.run(["git", "add", "."], check=True)
-    subprocess.run(["git", "commit", "-q", "-m", "primeiro commit"], check=True)
 limitadas = open(T + "/limitadas").read().split() if os.path.exists(T + "/limitadas") else []
 if conta in limitadas:
     open(os.path.join(proj, SESSAO + ".jsonl"), "a").write('{{"conversa": "metade"}}\\n')
@@ -316,5 +320,72 @@ argv = chamadas()[-1]["argv"]
 confere("sem skill no pedido, o pedido começa normal", r["ok"] and argv[-1].startswith("Pedido do dono:"), argv[-1][:40])
 r, _ = trabalho("abab0004", projeto="site", skill="impeccable rm", pedido="faz")
 confere("skill fora do catálogo: falha", not r["ok"] and "impeccable rm" in r["texto"], r)
+
+# --- o runner morreu no meio (queda de energia): o próximo que sobe fecha o trabalho como interrompido ---
+# O executor de verdade põe o trabalho na fila; um runner de verdade (outro processo) pega e morre com SIGKILL.
+ex, _, avisos = executor()
+ex.CLAUDE, ex.PROJETOS_LAB = base, projetos
+atena = {"cliente": "hermes", "zonas": ["lab"], "acoes": ["claude.tarefa"], "aprovar": []}
+params = {"pedido": "COMMIT DEMORA faz um app grande", "conta": "pessoal", "projeto": "orfao"}
+titulo, _ = ex.preparar_claude_tarefa(atena, params)
+p = ex.criar_pedido(atena, "claude.tarefa", params, "chat", titulo)
+ex.mudar(p, estado="executando")
+ex.executar(p)
+nome = f"{p['id']}.executar"
+marca, resultado = f"{base}/registros/{nome}.andamento", f"{base}/resultados/{nome}.json"
+if os.path.exists(f"{tmp}/chamadas.jsonl"):
+    os.remove(f"{tmp}/chamadas.jsonl")
+filho = subprocess.Popen([sys.executable, "-c", f"""
+import importlib.machinery, sys
+sys.dont_write_bytecode = True
+rn = importlib.machinery.SourceFileLoader("runner", {os.path.join(RAIZ, "host", "sbin", "atena-claude-runner")!r}).load_module()
+rn.BASE, rn.PROJETOS, rn.CONF, rn.CLAUDE, rn.SKILLS = {base!r}, {projetos!r}, {rn.CONF!r}, {FALSO!r}, {rn.SKILLS!r}
+rn.principal()
+"""])
+comecou = esperar(lambda: rn.git(f"{projetos}/orfao", "log", "--oneline"), 20)
+confere("runner pega o trabalho e o Claude Code faz um commit", comecou)
+if comecou:
+    falso = chamadas()[-1]["pid"]
+    rn.principal()   # um segundo runner (à mão) com o primeiro no ar
+    confere("com outro runner no ar, não mexe no trabalho que está rodando", os.path.exists(marca)
+            and not os.path.exists(resultado))
+    filho.kill()
+    filho.wait()
+    os.killpg(falso, signal.SIGKILL)   # o Claude Code está numa sessão própria
+    confere("morreu no meio: fica a marca de andamento, sem resultado", os.path.exists(marca) and not os.path.exists(resultado))
+    uma_volta(ex)
+    confere("o executor segue esperando (o runner tinha pegado)", p["estado"] == "executando")
+    rn.principal()   # o runner sobe de novo (o atena-claude.path vê a marca)
+    with open(resultado) as f:
+        r = json.load(f)
+    confere("ao subir, fecha o trabalho como interrompido, com a conversa e os commits", r["ok"] is False
+            and r.get("interrompido") and "interrompido" in r["texto"] and r.get("sessao") == SESSAO
+            and r.get("commits", [""])[0].endswith("primeiro commit"), r)
+    confere("a marca de andamento sai", not os.path.exists(marca))
+    avisos.clear()
+    uma_volta(ex)
+    confere("o executor fica sabendo: falhou, com a conversa guardada", p["estado"] == "falhou" and p.get("sessao") == SESSAO
+            and "interrompido" in p.get("resumo", ""), p)
+    confere("o celular fica sabendo, com os commits", any(p["id"] in a["titulo"] and "(1 commits)" in a["texto"] for a in avisos))
+    titulo, _ = ex.preparar_claude_tarefa(atena, {"pedido": "continue de onde parou", "continuar": p["id"]})
+    confere("o projeto fica livre e dá para continuar de onde parou", "orfao" in titulo, titulo)
+else:
+    filho.kill()
+filho.wait()
+for id_ in ("abcd0001", "abcd0002"):   # um com o cancelar pedido; o outro já tinha o resultado
+    with open(f"{base}/registros/{id_}.executar.andamento", "w") as f:
+        json.dump({"id": id_, "fase": "executar", "conta": "pessoal", "projeto": "orfao"}, f)
+open(f"{base}/fila/abcd0001.cancelar", "w").close()
+with open(f"{base}/resultados/abcd0002.executar.json", "w") as f:
+    json.dump({"id": "abcd0002", "fase": "executar", "ok": True, "texto": "terminou antes de o runner morrer"}, f)
+rn.principal()
+with open(f"{base}/resultados/abcd0001.executar.json") as f:
+    r = json.load(f)
+confere("interrompido com o cancelar pedido: vira cancelado, e o sinal sai", r.get("cancelado")
+        and not os.path.exists(f"{base}/fila/abcd0001.cancelar"), r)
+with open(f"{base}/resultados/abcd0002.executar.json") as f:
+    r = json.load(f)
+confere("morreu depois de gravar o resultado: o resultado fica como estava", r["ok"] and r["texto"].startswith("terminou"))
+confere("nenhuma marca de andamento sobra", not [n for n in os.listdir(f"{base}/registros") if n.endswith(".andamento")])
 
 fim()

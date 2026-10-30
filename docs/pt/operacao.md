@@ -128,6 +128,7 @@ sudo atena-claude-conta estado            # quais contas estão prontas
 - O seu Claude Code no lab: `cd /srv/lab && claude`. Vale o sandbox de `/srv/lab/.claude/settings.json`, mais o guarda de escopo.
 - Apps publicados: `http://<ip-do-servidor>:<porta>` (8000-8999) e, com Tailscale, `https://<servidor>.<tailnet>.ts.net:<porta>`. Viram stacks `lab-<projeto>` no Dockge.
 - Limite de uso: o trabalho para e a Atena pergunta se continua depois ou em outra conta. Para a troca automática, `ATENA_CLAUDE_TROCA=sim` no `/etc/atena/atena.conf`.
+- Queda de energia no meio de um trabalho: ao voltar, o runner sobe sozinho e fecha o trabalho como interrompido (dá para continuar). Se nem o runner subir, o executor fecha no prazo (os minutos do trabalho mais 15 min) e libera o projeto.
 - Skills: com `ATENA_CLAUDE_SKILLS=sim` no `atena.conf` e o instalador de novo, o login de cada conta já põe os plugins e o Impeccable. Para conferir ou refazer: `sudo atena-claude-conta skills` (com `nao`, o mesmo comando tira).
 - Lixeira: `app.apagar` com `codigo` move a pasta para `/srv/lab/lixeira`; o `atena-lab-lixeira.timer` apaga de vez depois de 30 dias.
 - Trocar a versão do Claude Code: `ATENA_CLAUDE_VERSAO` no `atena.conf` e o instalador de novo (ele baixa e confere o checksum oficial). Leia as notas da versão antes.

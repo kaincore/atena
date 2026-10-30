@@ -77,6 +77,10 @@ Continuar e trocar:
   conta, ou já em outra (`claude.tarefa` com `continuar` e a `conta` nova; a conversa vai junto).
   Se o servidor estiver com a troca automática ligada, ele passa sozinho para outra conta e o
   resultado traz `trocas`.
+- Servidor caiu no meio (queda de energia, reinício): o trabalho termina `falhou`, com o resumo
+  começando por "interrompido"; com `sessao`, dá para continuar de onde parou (`claude.tarefa` com
+  `continuar`): conte ao dono e pergunte se segue. Sem resultado nenhum, o executor fecha o trabalho
+  no prazo (os minutos dele mais 15 min), com o motivo em `erro`: aí só dá para pedir de novo.
 - `somente_plano: true` faz só um plano, sem mudar nada.
 - Até 3 trabalhos rodam ao mesmo tempo (e mais 2 esperam na fila), um por projeto.
 - Erro 409 "ainda não tem login": diga ao dono para rodar no servidor

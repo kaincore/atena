@@ -22,7 +22,11 @@ O resultado vai para resultados/<id>.<fase>.json; o executor lê e avisa o celul
 acorda a Atena para mandar o resumo no Telegram.
 Roda como atena-claude, até PARALELOS trabalhos ao mesmo tempo (um por projeto, o executor garante),
 disparado pelo atena-claude.path; enquanto houver trabalho rodando, continua olhando a fila.
+O trabalho que sai da fila ganha a marca registros/<id>.<fase>.andamento, que só sai depois do
+resultado. Se o runner morre no meio (queda de energia, reinício), a marca fica: o atena-claude.path
+sobe o runner de novo, e ele fecha o trabalho como interrompido (fechar_orfaos).
 """
+import fcntl
 import glob
 import json
 import os
@@ -355,17 +359,48 @@ def claude(id_, fase, conta, pasta, argv, segundos, anexar=False, com_skills=Fal
     return plano, final, limite
 
 
+def marca_de(job):
+    """A marca de andamento do trabalho (registros/<id>.<fase>.andamento), ou None se ele nem roda."""
+    id_, fase = job.get("id"), job.get("fase")
+    if not isinstance(id_, str) or not re.fullmatch(r"[0-9a-f]{8}", id_) or fase not in TEMPO:
+        return None
+    return f"{BASE}/registros/{id_}.{fase}.andamento"
+
+
+def marcar(job, **extra):
+    """Marca o trabalho em andamento, com o que fechar_orfaos precisa se o runner morrer no meio."""
+    marca = marca_de(job)
+    if marca:
+        gravar(marca, {"id": job["id"], "fase": job["fase"], "conta": job.get("conta"),
+                       "projeto": job.get("projeto"), **extra})
+
+
+def desmarcar(job):
+    """Tira a marca de andamento, só com o resultado já gravado: sem ele, a marca fica para fechar_orfaos."""
+    marca = marca_de(job)
+    if marca and os.path.exists(f"{BASE}/resultados/{job['id']}.{job['fase']}.json"):
+        try:
+            os.unlink(marca)
+        except FileNotFoundError:
+            pass
+
+
 def pegar(caminho):
-    """Tira o trabalho da fila (antes de rodar, para um trabalho com defeito não repetir) e devolve os dados."""
+    """Tira o trabalho da fila (antes de rodar, para um trabalho com defeito não repetir), marca em
+    andamento e devolve os dados. Se o runner morrer exatamente entre tirar e marcar, o executor fecha o
+    pedido no prazo dele."""
     try:
         with open(caminho) as f:
-            return json.load(f)
+            job = json.load(f)
     finally:
         os.unlink(caminho)
+    if isinstance(job, dict):
+        marcar(job)
+    return job
 
 
 def processar(caminho):
-    executar_trabalho(pegar(caminho))
+    executar_protegido(pegar(caminho))
 
 
 def executar_trabalho(job):
@@ -388,6 +423,7 @@ def executar_trabalho(job):
             raise RuntimeError("o .git/config do projeto tem configuração que roda comandos ("
                                + ", ".join(perigosas[:5]) + "); o dono precisa conferir e tirar antes")
         antes = git(pasta, "rev-parse", "HEAD")
+        marcar(job, antes=antes)   # se o runner morrer, os commits do trabalho saem a partir daqui
         base = ["--permission-mode", "plan" if fase == "plano" else "acceptEdits"]
         if job.get("modelo") in MODELOS:
             base += ["--model", job["modelo"]]
@@ -472,6 +508,47 @@ def executar_protegido(job):
         if re.fullmatch(r"[0-9a-f]{8}", id_) and fase in TEMPO:
             gravar(f"{BASE}/resultados/{id_}.{fase}.json",
                    {"id": id_, "fase": fase, "ok": False, "texto": f"erro inesperado no trabalhador: {e}"})
+    desmarcar(job)
+
+
+def fechar_orfaos():
+    """Ao subir: o trabalho com a marca de andamento e sem resultado é de um runner que morreu no meio
+    (queda de energia, reinício). Ele ganha o resultado "interrompido", com a conversa até onde foi e os
+    commits; o executor lê como o de qualquer trabalho, avisa o dono e libera o projeto."""
+    for marca in sorted(glob.glob(f"{BASE}/registros/*.andamento")):
+        nome = os.path.basename(marca)[:-len(".andamento")]
+        try:
+            with open(marca) as f:
+                job = json.load(f)
+            if marca_de(job) != marca or os.path.exists(f"{BASE}/resultados/{nome}.json"):
+                continue   # marca com defeito, ou o runner morreu depois de gravar o resultado
+            sessao = sessao_do_registro(f"{BASE}/registros/{nome}.jsonl")
+            resultado = {"id": job["id"], "fase": job["fase"], "conta": job.get("conta"), "projeto": job.get("projeto"),
+                         "ok": False, "interrompido": True, "sessao": sessao,
+                         "texto": "interrompido: o runner parou no meio do trabalho (queda de energia ou reinício "
+                                  "do servidor). " + ("Dá para continuar de onde parou (continuar)." if sessao else
+                                                      "O Claude Code nem chegou a começar; peça de novo.")}
+            sinal = f"{BASE}/fila/{job['id']}.cancelar"
+            if os.path.exists(sinal):   # o dono tinha mandado parar: fica como cancelado
+                os.unlink(sinal)
+                resultado.update(cancelado=True, texto="interrompido pelo dono (o runner parou no meio)")
+            projeto = job.get("projeto")
+            if (job["fase"] == "executar" and "antes" in job and isinstance(projeto, str)
+                    and re.fullmatch(r"[a-z0-9][a-z0-9-]{0,39}", projeto)):
+                log = git(os.path.join(PROJETOS, projeto), "log", "--format=%h %s", "-n", "50",
+                          f"{job['antes']}..HEAD" if job["antes"] else "HEAD")
+                resultado["commits"] = log.splitlines() if log else []
+            gravar(f"{BASE}/resultados/{nome}.json", resultado)
+            print(f"trabalho {nome} fechado como interrompido: o runner anterior parou no meio", flush=True)
+        except Exception as e:
+            print(f"marca de andamento {nome} com defeito: {e!r}", flush=True)
+        finally:
+            # sai de qualquer jeito, para o atena-claude.path não subir o runner em volta; sem o
+            # resultado, o executor fecha o pedido no prazo dele
+            try:
+                os.unlink(marca)
+            except OSError as e:   # não impede a fila de andar
+                print(f"não consegui apagar a marca {marca}: {e}", flush=True)
 
 
 def atender_fila():
@@ -498,5 +575,18 @@ def atender_fila():
         time.sleep(2)
 
 
+def principal():
+    """Um runner por vez: o systemd já garante (o serviço é oneshot), e a trava cobre quem rodar à mão.
+    Só com ela uma marca de andamento sem resultado é, com certeza, de um runner que morreu."""
+    with open(f"{BASE}/registros/.trava", "a") as trava:
+        try:
+            fcntl.flock(trava, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            print("outro runner já está atendendo a fila; este sai sem mexer em nada", flush=True)
+            return
+        fechar_orfaos()
+        atender_fila()
+
+
 if __name__ == "__main__":
-    atender_fila()
+    principal()

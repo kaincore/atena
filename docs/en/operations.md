@@ -128,6 +128,7 @@ sudo atena-claude-conta estado            # which accounts are ready
 - Your own Claude Code in the lab: `cd /srv/lab && claude`. The sandbox in `/srv/lab/.claude/settings.json` applies, plus the scope guard.
 - Published apps: `http://<server-ip>:<port>` (8000-8999) and, with Tailscale, `https://<server>.<tailnet>.ts.net:<port>`. They show up as `lab-<project>` stacks in Dockge.
 - Usage limit: the job stops and Atena asks whether to continue later or on another account. For automatic switching, set `ATENA_CLAUDE_TROCA=sim` in `/etc/atena/atena.conf`.
+- Power cut in the middle of a job: when the server comes back, the runner starts on its own and closes the job as interrupted (it can be continued). If not even the runner starts, the executor closes it at the deadline (the job's minutes plus 15 min) and frees the project.
 - Skills: with `ATENA_CLAUDE_SKILLS=sim` in `atena.conf` and the installer run again, each account's login also installs the plugins and Impeccable. To check or redo it: `sudo atena-claude-conta skills` (with `nao`, the same command removes them).
 - Trash: `app.apagar` with `codigo` moves the folder to `/srv/lab/lixeira`; `atena-lab-lixeira.timer` deletes it for good after 30 days.
 - Changing the Claude Code version: `ATENA_CLAUDE_VERSAO` in `atena.conf` and run the installer again (it downloads and checks the official checksum). Read the release notes first.
