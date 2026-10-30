@@ -178,7 +178,8 @@ Regras que o executor confere (erro 422 diz qual): pastas só da própria stack 
 `/srv/apps/<stack>`; redes só `zone-apps` e `svc-llm`; portas com IP na frente (o IP do servidor
 na rede de casa, como nas outras portas do compose, ou `127.0.0.1` só no servidor);
 `cgroup_parent: atena-apps.slice`; nada de `privileged`, `cap_add`, `devices`, rede/PID do host,
-socket do Docker. `.env` e arquivos de senha só o dono edita (403). Esses limites são de propósito:
+socket do Docker; com `build`, a imagem se chama `atena-apps/<stack>` ou `atena-apps/<stack>-<algo>`
+(o nome da imagem de outra stack trocaria a dela), sem `tags` no `build`. `.env` e arquivos de senha só o dono edita (403). Esses limites são de propósito:
 não tente contornar; explique ao dono o que precisaria e por quê.
 Faça quando o dono pedir. Por iniciativa própria (ex.: na ronda), sugira em vez de editar.
 

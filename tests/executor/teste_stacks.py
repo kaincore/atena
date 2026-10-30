@@ -40,7 +40,7 @@ escreve(f"{pasta}/compose.yaml", f"""\
 services:
   loja:
     build: ./app
-    image: teste-atena/loja:1
+    image: atena-apps/loja:1
     container_name: teste-loja
     cgroup_parent: atena-apps.slice
     security_opt: ["no-new-privileges:true"]
@@ -92,12 +92,31 @@ RUINS = {
     "devices": ("    cgroup_parent: atena-apps.slice\n", "    cgroup_parent: atena-apps.slice\n    devices: [/dev/sda]\n"),
     "use_api_socket": ("    cgroup_parent: atena-apps.slice\n", "    cgroup_parent: atena-apps.slice\n    use_api_socket: true\n"),
     "YAML quebrado": ("services:\n", "services:\n  - [\n"),
+    # construir com o nome da imagem de outra stack troca a imagem dela na próxima recriação
+    "build com a imagem do LiteLLM": ("    image: atena-apps/loja:1\n", "    image: ghcr.io/berriai/litellm:v1.101.6\n"),
+    "build com a imagem do painel": ("    image: atena-apps/loja:1\n", "    image: atena/painel:0.14.1\n"),
+    "build com a imagem de outra stack de apps": ("    image: atena-apps/loja:1\n", "    image: atena-apps/lojinha:1\n"),
+    "build sem image": ("    image: atena-apps/loja:1\n", ""),
+    "build.tags": ("    build: ./app\n", '    build:\n      context: ./app\n      tags: ["ghcr.io/berriai/litellm:v1.101.6"]\n'),
+    "build.cache_to": ("    build: ./app\n", '    build:\n      context: ./app\n      cache_to: ["type=local,dest=/etc/x"]\n'),
+    "sem build, com a imagem local do painel": ("    build: ./app\n    image: atena-apps/loja:1\n",
+                                                "    image: docker.io/atena/painel:0.14.1\n"),
 }
 for nome, (de, para) in RUINS.items():
     fotos_antes = len(ex.fotos_da_stack("loja"))
     status, msg = erro(ex.acao_stack_editar, c, {"stack": "loja", "arquivo": "compose.yaml", "trocar": [{"de": de, "para": para}]})
     confere(f"compose com {nome}: 422 e o arquivo fica como estava", status == 422 and le(f"{pasta}/compose.yaml") == BOM
             and len(ex.fotos_da_stack("loja")) == fotos_antes, f"{status} {msg}")
+
+BONS = {
+    "build com atena-apps/loja-<algo>": ("    image: atena-apps/loja:1\n", "    image: atena-apps/loja-web:2\n"),
+    "sem build, imagem de registro": ("    build: ./app\n    image: atena-apps/loja:1\n", "    image: nginx:1.29-alpine\n"),
+}
+for nome, (de, para) in BONS.items():
+    r = ex.acao_stack_editar(c, {"stack": "loja", "arquivo": "compose.yaml", "trocar": [{"de": de, "para": para}]})
+    confere(f"compose com {nome}: passa", r["mudou"], r)
+    ex.acao_stack_desfazer(c, {"stack": "loja"})
+confere("e o desfazer deixa o compose como era", le(f"{pasta}/compose.yaml") == BOM)
 
 VOLUME = BOM + "volumes:\n  dados:\n    driver: local\n    driver_opts: {type: none, o: bind, device: /etc}\n"
 VOLUME = VOLUME.replace(f"      - {tmp}/srv/apps/loja:/data\n", f"      - {tmp}/srv/apps/loja:/data\n      - dados:/dados\n")

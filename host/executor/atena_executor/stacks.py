@@ -3,8 +3,8 @@ inode e dono, para bind mounts de arquivo único), e antes guarda uma foto do co
 /var/lib/atena-executor/fotos/<stack>; stack.desfazer volta a última foto. Mudança no compose só fica
 se o compose inteiro (docker compose config, já com includes e overrides) passar nas regras da zona:
 nada de privileged, cap_add, devices, rede ou PID do host, socket do Docker, pastas fora da stack e
-de /srv/<zona>/<stack>, redes de outras zonas, portas sem IP. stack.aplicar confere de novo e roda
-docker compose up -d --build em segundo plano."""
+de /srv/<zona>/<stack>, redes de outras zonas, portas sem IP, nem imagem com o nome da de outra stack.
+stack.aplicar confere de novo e roda docker compose up -d --build em segundo plano."""
 
 import glob
 import json
@@ -32,6 +32,8 @@ APLICANDO = set()           # stacks com stack.aplicar em andamento
 PROIBIDAS = ("privileged", "cap_add", "devices", "device_cgroup_rules", "network_mode", "pid", "ipc", "uts",
              "userns_mode", "cgroup", "volumes_from", "runtime", "isolation", "external_links",
              "use_api_socket", "provider")
+# o que só existe construído neste servidor: com esse nome, o Docker usa a imagem local e nunca baixa
+IMAGENS_LOCAIS = ("atena/", "atena-lab/", "atena-apps/")
 
 
 def stack_editavel(cliente, params):
@@ -186,6 +188,33 @@ def compose_da_stack(pasta, projeto):
     return cfg, None
 
 
+def repositorio_da_imagem(imagem):
+    """docker.io/atena/painel:0.14.1@sha256:... → atena/painel (o nome que outra stack usaria)."""
+    nome = imagem.split("@", 1)[0].lower()
+    for registro in ("docker.io/", "index.docker.io/", "registry-1.docker.io/"):
+        if nome.startswith(registro):
+            nome = nome[len(registro):]
+            break
+    if ":" in nome.rsplit("/", 1)[-1]:
+        nome = nome.rsplit(":", 1)[0]
+    return nome
+
+
+def problemas_imagem(s, onde, zona, stack):
+    """Uma stack constrói só com o nome dela. Construir com o nome da imagem do LiteLLM, do Hermes ou
+    do painel trocaria a imagem deles: na próxima vez que fossem recriados, subiriam com a cópia."""
+    imagem, b = s.get("image"), s.get("build")
+    propria = re.compile(rf"atena-{re.escape(zona)}/{re.escape(stack)}(-[a-z0-9._-]+)?")
+    repositorio = repositorio_da_imagem(imagem) if isinstance(imagem, str) else ""
+    if b and not propria.fullmatch(repositorio):
+        return [f"{onde}: com build, a imagem tem que se chamar atena-{zona}/{stack} ou atena-{zona}/{stack}-<algo> "
+                f"(ex.: image: atena-{zona}/{stack}:1), para não tomar o nome da imagem de outra stack"]
+    if not b and repositorio.startswith(IMAGENS_LOCAIS) and not propria.fullmatch(repositorio):
+        return [f"{onde}: a imagem {imagem} é construída neste servidor por outra stack; use uma de registro "
+                f"ou a sua (atena-{zona}/{stack}...)"]
+    return []
+
+
 def problemas_compose(cfg, zona, stack, pasta, projeto):
     """O que impede de aplicar o compose (lista vazia = pode). Regras da zona: o container fica com
     o que a stack já tem (a pasta dela, /srv/<zona>/<stack>, as redes da zona) e nada do host."""
@@ -254,6 +283,7 @@ def problemas_compose(cfg, zona, stack, pasta, projeto):
             caminho = e.get("path") if isinstance(e, dict) else e
             if not dentro(caminho):
                 achados.append(f"{onde}: env_file/label_file {caminho} {fora}")
+        achados += problemas_imagem(s, onde, zona, stack)
         b = s.get("build")
         if b:
             b = {"context": b} if isinstance(b, str) else b
@@ -261,7 +291,9 @@ def problemas_compose(cfg, zona, stack, pasta, projeto):
                 achados.append(f"{onde}: build {b.get('context')} {fora}")
             elif b.get("dockerfile") and not dentro(os.path.join(b["context"], b["dockerfile"])):
                 achados.append(f"{onde}: Dockerfile {b['dockerfile']} {fora}")
-            for chave in ("network", "additional_contexts", "privileged", "entitlements", "ssh", "secrets"):
+            # tags: outros nomes para a mesma imagem; cache_from/cache_to: o cache pode ler e gravar pastas do host
+            for chave in ("network", "additional_contexts", "privileged", "entitlements", "ssh", "secrets", "tags",
+                          "cache_from", "cache_to"):
                 if b.get(chave):
                     achados.append(f"{onde}: build.{chave} não pode")
         for gancho in (s.get("post_start") or []) + (s.get("pre_stop") or []):
