@@ -68,4 +68,4 @@ The jobs are in `.github/workflows/verificar.yml`; the Python tests live in `tes
 
 ## On a real server
 
-Change the repository first, with a test; then install (`sudo ./install.sh` with the same options as before updates what changed). A change made by hand on a server comes with a backup and a way to undo it, and the same change goes back to the repository, so the server stays identical to the template. `sudo ./aplicar --conferir` shows how the server differs from the repository.
+Change the repository first, with a test; then apply it: `sudo ./aplicar` shows the plan and applies it, with a backup and `--desfazer` (`sudo ./install.sh`, with the same options as before, is for installing what doesn't exist yet). A change made by hand on a server comes with a backup and a way to undo it, and the same change goes back to the repository, so the server stays identical to the template. `sudo ./aplicar --conferir` shows how the server differs from the repository.

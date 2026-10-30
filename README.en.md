@@ -163,7 +163,7 @@ Commands, file names and on-screen messages are in Portuguese, the project's ori
 ```text
 atena/
 ├── install.sh, install/   installer (one step per file) and the server's desired state
-├── aplicar                checks the server against the repository (--conferir)
+├── aplicar                makes the server match the repository (--conferir only compares)
 ├── host/                  system files: Docker, systemd, firewall, SSH, executor, alerts, lab
 │   ├── lab/               the lab's Claude Code bridge, sandbox and scope guard
 │   └── windows/           script and guide for the optional home PC

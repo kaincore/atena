@@ -193,6 +193,29 @@ O driver da NVIDIA atualiza junto com o sistema, sempre dentro da mesma série. 
 
 Depois, `/new` no Telegram.
 
+## Atualizar o servidor pelo repositório
+
+Depois de um `git pull`, `sudo ./aplicar`, na pasta do repositório, deixa o servidor igual a ele. Primeiro ele mostra o plano:
+- **grava:** os arquivos que diferem ou faltam;
+- **guarda no backup:** as sobras e as cópias antigas;
+- **fica como está:** o que ele não mexe, com o motivo;
+- **depois:** o que vai reiniciar.
+
+Então ele pede confirmação (`--sim` pula a pergunta). Antes de mexer, guarda tudo o que vai mudar em `/var/backups/atena-aplicar/<quando>`. `sudo ./aplicar --desfazer` volta ao último backup, e `--backups` lista os que existem. Se um passo falha, ele desfaz sozinho.
+
+Ele reinicia só o que mudou de verdade, e uma mudança só de comentário não reinicia nada:
+- o systemd relê as unidades;
+- o firewall e o executor reiniciam;
+- o SSH confere a configuração nova antes de relê-la;
+- cada stack que mudou sobe de novo e espera ficar saudável. Uma stack parada continua parada.
+
+`--parte executor` aplica só uma parte. Ele não começa com o Claude Code trabalhando quando o executor precisaria reiniciar. Ficam de fora, só avisados:
+- o `/etc/docker/daemon.json`, porque aplicar reiniciaria todos os containers;
+- uma stack que ainda não existe, que o instalador cria junto com os segredos dela;
+- a memória da Atena, que só ganha a semente quando falta.
+
+Uma stack de apps que a Atena editou com `stack.editar` volta à do repositório; o plano mostra isso antes.
+
 ## Conferir o servidor contra o repositório
 
 `sudo ./aplicar --conferir`, na pasta do repositório, compara o servidor com o que o instalador poria nele, sem mudar nada. Os valores vêm do `/etc/atena/atena.conf`, e as opções (`--hermes`, `--lab`, `--painel`, `--ssh`) são descobertas pelo que já está instalado. Para cada parte (`host`, `executor`, `stacks`, `painel`, `hermes` e `lab`), ele lista:
@@ -209,5 +232,5 @@ Fica de fora o que é do servidor: os `.env`, os dados em `/srv`, as stacks que 
 
 `sudo ./install.sh` pode rodar quantas vezes quiser:
 - **Os valores** vêm do `atena.conf` da pasta do repositório, quando há um: ele passa a ser o do servidor, e uma cópia do anterior fica ao lado. Sem ele, o instalador lê o `/etc/atena/atena.conf`, e para mudar um valor basta editar esse arquivo.
-- **Stacks que já existem** não são sobrescritas. A exceção é o painel: com `--painel`, o código dele vem sempre do repositório, e o compose anterior fica guardado se mudou.
+- **Stacks que já existem** não são sobrescritas. A exceção é o painel: com `--painel`, o código dele vem sempre do repositório, e o compose anterior fica guardado se mudou. Para trazer as outras ao repositório, use o `sudo ./aplicar`.
 - **Arquivos do sistema diferentes do modelo** são substituídos, e uma cópia do anterior fica ao lado (`*.antes-atena-<data>`).

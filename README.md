@@ -159,7 +159,7 @@ As versões são fixas de propósito. Antes de atualizar, leia os avisos de segu
 ```text
 atena/
 ├── install.sh, install/   instalador (uma etapa por arquivo) e o estado desejado do servidor
-├── aplicar                confere o servidor contra o repositório (--conferir)
+├── aplicar                deixa o servidor igual ao repositório (--conferir só compara)
 ├── host/                  arquivos do sistema: Docker, systemd, firewall, SSH, executor, avisos, lab
 │   ├── lab/               ponte, sandbox e guarda de escopo do Claude Code do lab
 │   └── windows/           script e passo a passo do PC da rede de casa (opcional)

@@ -68,4 +68,4 @@ Os jobs estão em `.github/workflows/verificar.yml`; os testes de Python ficam e
 
 ## Num servidor de verdade
 
-Mude primeiro o repositório, com teste; depois instale (`sudo ./install.sh` com as mesmas opções de antes atualiza o que mudou). Uma troca feita à mão num servidor leva backup e um jeito de desfazer, e a mesma mudança volta para o repositório, para o servidor continuar igual ao modelo. O `sudo ./aplicar --conferir` mostra o que o servidor tem de diferente do repositório.
+Mude primeiro o repositório, com teste; depois aplique: `sudo ./aplicar` mostra o plano e aplica, com backup e `--desfazer` (o `sudo ./install.sh`, com as mesmas opções de antes, serve para instalar o que ainda não existe). Uma troca feita à mão num servidor leva backup e um jeito de desfazer, e a mesma mudança volta para o repositório, para o servidor continuar igual ao modelo. O `sudo ./aplicar --conferir` mostra o que o servidor tem de diferente do repositório.

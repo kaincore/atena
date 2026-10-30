@@ -193,6 +193,29 @@ The NVIDIA driver updates with the system, always within the same series. **Don'
 
 Then send `/new` on Telegram.
 
+## Update the server from the repository
+
+After a `git pull`, `sudo ./aplicar`, in the repository folder, makes the server match it. First it shows the plan:
+- **grava (writes):** the files that differ or are missing;
+- **guarda no backup (keeps in the backup):** the leftovers and the old copies;
+- **fica como está (stays as is):** what it won't touch, and why;
+- **depois (then):** what will restart.
+
+Then it asks for confirmation (`--sim` skips the question). Before changing anything, it saves everything it will change in `/var/backups/atena-aplicar/<when>`. `sudo ./aplicar --desfazer` goes back to the latest backup, and `--backups` lists them. If a step fails, it undoes everything on its own.
+
+It restarts only what really changed, and a comment-only change restarts nothing:
+- systemd reloads the units;
+- the firewall and the executor restart;
+- SSH checks the new configuration before reloading it;
+- each stack that changed comes back up and waits to be healthy. A stopped stack stays stopped.
+
+`--parte executor` applies a single part. It won't start while Claude Code is working if the executor would have to restart. Left out, with a warning:
+- `/etc/docker/daemon.json`, because applying it would restart every container;
+- a stack that doesn't exist yet, which the installer creates along with its secrets;
+- Atena's memory, which only gets the seed when it's missing.
+
+An apps stack that Atena edited with `stack.editar` goes back to the repository's version; the plan shows this beforehand.
+
 ## Compare the server with the repository
 
 `sudo ./aplicar --conferir`, in the repository folder, compares the server with what the installer would put on it, without changing anything. The values come from `/etc/atena/atena.conf`, and the options (`--hermes`, `--lab`, `--painel`, `--ssh`) are worked out from what is already installed. For each part (`host`, `executor`, `stacks`, `painel`, `hermes` and `lab`), it lists:
@@ -209,5 +232,5 @@ What belongs to the server is left out: the `.env` files, the data in `/srv`, th
 
 `sudo ./install.sh` can run as many times as you like:
 - **The values** come from the `atena.conf` in the repository folder, when there is one: it becomes the server's, and a copy of the previous one is kept next to it. Without it, the installer reads `/etc/atena/atena.conf`, and to change a value you just edit that file.
-- **Existing stacks** aren't overwritten. The panel is the exception: with `--painel`, its code always comes from the repository, and the previous compose is kept if it changed.
+- **Existing stacks** aren't overwritten. The panel is the exception: with `--painel`, its code always comes from the repository, and the previous compose is kept if it changed. To bring the others in line with the repository, use `sudo ./aplicar`.
 - **System files that differ from the template** are replaced, and a copy of the previous one is kept next to it (`*.antes-atena-<date>`).
