@@ -323,6 +323,32 @@ confere("sem skill no pedido, o pedido começa normal", r["ok"] and argv[-1].sta
 r, _ = trabalho("abab0004", projeto="site", skill="impeccable rm", pedido="faz")
 confere("skill fora do catálogo: falha", not r["ok"] and "impeccable rm" in r["texto"], r)
 
+# --- receitas de estilo e o Node do lab ---
+rn.RECEITAS, rn.NODE = f"{tmp}/receitas", f"{tmp}/node"
+os.makedirs(f"{rn.RECEITAS}/linear-app/prints")
+for nome, conteudo in (("RECEITA.md", "# Linear\n"), ("receita.json", "{}"), ("prints/pc.jpg", "jpeg")):
+    with open(f"{rn.RECEITAS}/linear-app/{nome}", "w") as f:
+        f.write(conteudo)
+os.symlink("/etc/hostname", f"{rn.RECEITAS}/linear-app/DESIGN.md")   # link na biblioteca: não vai junto
+r, _ = trabalho("abab0005", projeto="loja", skill="frontend-design", receitas=["linear-app"], pedido="faz a loja")
+c = chamadas()[-1]
+destino = f"{projetos}/loja/.atena/receitas/linear-app"
+confere("receitas: copiadas para .atena/receitas no projeto (sem links)",
+        r["ok"] and os.path.isfile(f"{destino}/RECEITA.md") and os.path.isfile(f"{destino}/prints/pc.jpg")
+        and not os.path.exists(f"{destino}/DESIGN.md"), r)
+confere("receitas: a skill segue na primeira linha, e o pedido diz para seguir o estilo",
+        c["argv"][-1].startswith("/frontend-design:frontend-design\n\nReceitas de estilo")
+        and ".atena/receitas/linear-app/" in c["argv"][-1] and "não copie" in c["argv"][-1], c["argv"][-1][:120])
+confere("sem o Node do lab instalado, o PATH fica como era", not c["env"]["PATH"].startswith(rn.NODE))
+os.makedirs(f"{rn.NODE}/bin")
+with open(f"{rn.NODE}/bin/node", "w") as f:
+    f.write("")
+r, _ = trabalho("abab0006", projeto="loja", receitas=["nao-existe"], pedido="faz")
+confere("receita que sumiu da biblioteca: falha sem chamar o Claude Code", not r["ok"] and "nao-existe" in r["texto"], r)
+r, _ = trabalho("abab0007", projeto="loja", pedido="faz")
+caminho = chamadas()[-1]["env"]["PATH"]
+confere("com o Node do lab: ele vem antes do Node do sistema", f"{rn.NODE}/bin:/usr/local/bin:/usr/bin" in caminho and r["ok"], caminho)
+
 # --- o runner morreu no meio (queda de energia): o próximo que sobe fecha o trabalho como interrompido ---
 # O executor de verdade põe o trabalho na fila; um runner de verdade (outro processo) pega e morre com SIGKILL.
 ex, _, avisos = executor()

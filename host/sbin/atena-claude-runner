@@ -17,6 +17,10 @@ Skills (ATENA_CLAUDE_SKILLS=sim): o pedido pode trazer "skill", uma do catálogo
 o comando dela vai na primeira linha do pedido. Com as skills ligadas, o Claude Code também ganha as
 ferramentas do lab (atena-tela, para conferir telas com prints, e os servidores de linguagem dos
 plugins) e as regras de quando usar cada skill.
+Receitas: o pedido pode trazer "receitas" (nomes de /srv/lab/receitas, conferidos pelo executor); elas
+são copiadas para .atena/receitas no projeto e o pedido diz para seguir o estilo delas.
+O Claude Code usa o Node do lab (/usr/local/lib/atena-claude/node, numa versão fixa), na frente do
+Node do sistema.
 Se aparecer fila/<id>.cancelar, o trabalho é interrompido.
 O resultado vai para resultados/<id>.<fase>.json; o executor lê e avisa o celular, e a ronda
 acorda a Atena para mandar o resumo no Telegram.
@@ -45,8 +49,11 @@ DONO = "/usr/local/lib/atena-claude/dono.py"
 CONFIG = "/usr/local/lib/atena-claude/lab.json"
 CONF = "/etc/atena/atena.conf"
 SKILLS = "/usr/local/lib/atena-claude/skills.json"   # catálogo das skills: nome → comando
-FERRAMENTAS = "/usr/local/lib/atena-claude/ferramentas"   # atena-tela e servidores de linguagem
+FERRAMENTAS = "/usr/local/lib/atena-claude/ferramentas"   # atena-tela, rea e servidores de linguagem
+NODE = "/usr/local/lib/atena-claude/node"   # o Node do lab, numa versão fixa (o do sistema fica atrás no PATH)
 PROJETOS = "/srv/lab/projetos"
+RECEITAS = "/srv/lab/receitas"   # receitas de estilo prontas (o executor escreve; o trabalhador só lê)
+ARQUIVOS_RECEITA = ("RECEITA.md", "DESIGN.md", "receita.json")
 NOME_CONTA = re.compile(r"[a-z0-9][a-z0-9-]{0,19}")
 MODELOS = {"fable", "opus", "sonnet", "haiku"}
 ESFORCOS = ("low", "medium", "high", "xhigh", "max")
@@ -294,6 +301,8 @@ def claude(id_, fase, conta, pasta, argv, segundos, anexar=False, com_skills=Fal
     """Roda o Claude Code sem tela; devolve (plano do ExitPlanMode ou None, evento final ou None,
     último aviso de limite de uso ou None). Com as skills, ganha as ferramentas do lab e as regras delas."""
     caminho = "/usr/local/bin:/usr/bin:/bin"
+    if os.path.isfile(f"{NODE}/bin/node"):
+        caminho = f"{NODE}/bin:{caminho}"
     if com_skills:
         caminho = f"{FERRAMENTAS}/bin:{FERRAMENTAS}/node_modules/.bin:{caminho}"
     env = {"HOME": BASE, "PATH": caminho,
@@ -359,6 +368,35 @@ def claude(id_, fase, conta, pasta, argv, segundos, anexar=False, com_skills=Fal
             elif evento.get("type") == "rate_limit_event":
                 limite = evento.get("rate_limit_info") or limite
     return plano, final, limite
+
+
+RECEITAS_NO_PEDIDO = """\
+Receitas de estilo para seguir (o dono escolheu): {lista}. Leia antes de começar: cada uma tem o \
+RECEITA.md (como reproduzir o estilo), o receita.json e os prints do site de origem em prints/. Siga o \
+estilo e o jeito de fazer; não copie código, logos, imagens nem textos do site de origem."""
+
+
+def levar_receitas(pasta, nomes):
+    """Copia as receitas para .atena/receitas/<nome> no projeto (o projeto fica com o estilo que seguiu, e
+    o Claude Code lê dentro da pasta dele). Devolve o texto que vai antes do pedido."""
+    if not isinstance(nomes, list) or not nomes:
+        return ""
+    levadas = []
+    for nome in nomes[:3]:
+        origem = os.path.join(RECEITAS, nome) if isinstance(nome, str) and re.fullmatch(r"[a-z0-9][a-z0-9-]{0,30}", nome) else None
+        if not origem or os.path.islink(origem) or not os.path.isdir(origem):
+            raise RuntimeError(f"a receita {nome} não está em {RECEITAS}")
+        destino = os.path.join(pasta, ".atena", "receitas", nome)
+        shutil.rmtree(destino, ignore_errors=True)
+        os.makedirs(os.path.join(destino, "prints"), exist_ok=True)
+        for arquivo in ARQUIVOS_RECEITA:
+            if os.path.isfile(os.path.join(origem, arquivo)) and not os.path.islink(os.path.join(origem, arquivo)):
+                shutil.copyfile(os.path.join(origem, arquivo), os.path.join(destino, arquivo))
+        for imagem in glob.glob(os.path.join(origem, "prints", "*.jpg")):
+            if not os.path.islink(imagem):
+                shutil.copyfile(imagem, os.path.join(destino, "prints", os.path.basename(imagem)))
+        levadas.append(f".atena/receitas/{nome}/")
+    return RECEITAS_NO_PEDIDO.format(lista=", ".join(levadas)) + "\n\n"
 
 
 def marca_de(job):
@@ -446,7 +484,8 @@ def executar_trabalho(job):
         comando = catalogo.get(job["skill"]) if isinstance(job.get("skill"), str) else None
         if job.get("skill") and not comando:
             raise RuntimeError(f"a skill {job['skill']} não está no catálogo do lab (ou as skills estão desligadas)")
-        argv.append((f"{comando}\n\n" if comando else "") + PEDIDO[fase].format(pedido=job["pedido"]))
+        receitas = levar_receitas(pasta, job.get("receitas"))
+        argv.append((f"{comando}\n\n" if comando else "") + receitas + PEDIDO[fase].format(pedido=job["pedido"]))
         minutos = job.get("minutos")
         segundos = min(minutos, 600) * 60 if isinstance(minutos, int) and minutos > 0 else TEMPO[fase]
         fim, trocas = time.monotonic() + segundos, []
