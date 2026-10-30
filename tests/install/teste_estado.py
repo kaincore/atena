@@ -202,6 +202,7 @@ for pasta in ("host/sbin", "host/systemd", "host/executor/atena_executor", "host
               "host/docker", "hermes", "stacks"):
     for rel in estado.arquivos(RAIZ, pasta):
         if (rel in FORA or rel.endswith(".env.example") or "/.impeccable/" in rel
+                or rel.startswith("host/lab/coletor/")   # vira a imagem do coletor (docker build), não é copiado
                 or any(o == rel or o.startswith((rel + " ", rel + ",")) for o in origens)):
             continue
         esquecidos.append(rel)

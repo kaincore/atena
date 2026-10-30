@@ -1,0 +1,7 @@
+{
+  "private": true,
+  "description": "Coletor das receitas do lab: um Chromium sem tela que grava o estilo de um site",
+  "dependencies": {
+    "playwright-core": "1.64.1"
+  }
+}
