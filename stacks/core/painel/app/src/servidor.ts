@@ -323,10 +323,14 @@ export function criarServidor(config: Config, banco: Banco, agendador?: Agendado
         if (e instanceof EntradaInvalida) throw new ErroHttp(400, e.message);
         throw e;
       }
-      if (entrada.id && !banco.agendamento(entrada.id)) throw new ErroHttp(404, "agendamento não encontrado");
+      const atual = entrada.id ? banco.agendamento(entrada.id) : null;
+      if (entrada.id && !atual) throw new ErroHttp(404, "agendamento não encontrado");
       const seguinte = proxima(entrada.quando, Date.now());
       if (seguinte === null) throw new ErroHttp(400, "essa data e hora já passaram");
-      const id = banco.salvarAgendamento({ ...entrada, ativo: true, proxima: seguinte });
+      // editar não mexe na pausa (o Retomar recalcula a próxima vez); só o de uma vez que já rodou, sem
+      // próxima, volta a valer: editar é como se remarca
+      const pausado = atual !== null && atual.ativo === 0 && atual.proxima !== null;
+      const id = banco.salvarAgendamento({ ...entrada, ativo: !pausado, proxima: seguinte });
       return responder(res, 200, { ok: true, agendamento: ler(banco.agendamento(id)!) });
     }
     const operacao = rota.match(/^\/api\/agendamentos\/(ativar|apagar|rodar)$/);

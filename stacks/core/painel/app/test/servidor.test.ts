@@ -348,6 +348,29 @@ test("agendamentos: salvar, listar, pausar, retomar, rodar agora e apagar", asyn
   assert.equal((await pedir("POST", "/api/agendamentos/apagar", { id }, cookie)).status, 404);
 });
 
+test("agendamentos: editar não mexe na pausa; o de uma vez que já rodou volta a valer com a data nova", async () => {
+  const cookie = await entrar();
+  const salvar = (corpo: Record<string, unknown>) => pedir("POST", "/api/agendamentos/salvar", corpo, cookie);
+  const semanal = { acao: "pc.ligar", quando: { tipo: "semana", dias: [1, 3], hora: "07:00" } };
+  const id = (await salvar(semanal)).corpo.agendamento.id;
+  await pedir("POST", "/api/agendamentos/ativar", { id, ativo: false }, cookie);
+  const editado = await salvar({ ...semanal, id, quando: { ...semanal.quando, hora: "07:30" } });
+  assert.equal(editado.status, 200);
+  assert.equal(editado.corpo.agendamento.quando.hora, "07:30");
+  assert.equal(editado.corpo.agendamento.ativo, false, "pausado continua pausado");
+  assert.equal(banco.agendamento(id)!.ativo, 0);
+  await pedir("POST", "/api/agendamentos/ativar", { id, ativo: true }, cookie);
+  assert.equal((await salvar({ ...semanal, id, nome: "Ligar cedo" })).corpo.agendamento.ativo, true, "ativo continua ativo");
+
+  const daquiAUmDia = Date.now() + 24 * 3600_000;
+  const umaVez = (await salvar({ acao: "pc.ligar", quando: { tipo: "uma_vez", em: daquiAUmDia } })).corpo.agendamento.id;
+  banco.marcarAgendamento(umaVez, { ativo: false, proxima: null }); // como o agendador deixa depois de rodar
+  const remarcado = await salvar({ id: umaVez, acao: "pc.ligar", quando: { tipo: "uma_vez", em: daquiAUmDia + 3600_000 } });
+  assert.equal(remarcado.corpo.agendamento.ativo, true);
+  assert.equal(remarcado.corpo.agendamento.proxima, daquiAUmDia + 3600_000);
+  for (const a of [id, umaVez]) await pedir("POST", "/api/agendamentos/apagar", { id: a }, cookie);
+});
+
 test("pendências: as do README entram, as suas também; a que sai do README fica resolvida", async () => {
   assert.deepEqual(pendenciasDoReadme(README), ["**Backup:** não existe.", "**Diun:** não instalado, falta a regra 4."]);
   const cookie = await entrar();
