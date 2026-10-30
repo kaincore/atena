@@ -206,5 +206,6 @@ What belongs to the server is left out: the `.env` files, the data in `/srv`, th
 ## Run the installer again
 
 `sudo ./install.sh` can run as many times as you like:
+- **The values** come from the `atena.conf` in the repository folder, when there is one: it becomes the server's, and a copy of the previous one is kept next to it. Without it, the installer reads `/etc/atena/atena.conf`, and to change a value you just edit that file.
 - **Existing stacks** aren't overwritten. The panel is the exception: with `--painel`, its code always comes from the repository, and the previous compose is kept if it changed.
 - **System files that differ from the template** are replaced, and a copy of the previous one is kept next to it (`*.antes-atena-<date>`).

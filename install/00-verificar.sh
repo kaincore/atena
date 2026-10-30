@@ -58,4 +58,4 @@ if [ "$ATENA_GPU" = nvidia ]; then
   lspci | grep -qi nvidia || erro "ATENA_GPU=nvidia, mas nenhuma placa NVIDIA foi encontrada"
 fi
 
-ok "atena.conf válido"
+ok "atena.conf válido ($CONF)"

@@ -3,7 +3,8 @@
 
 msg "Criando as zonas (pastas, limites de CPU/RAM e redes)"
 
-instalar_arquivo "$CONF" /etc/atena/atena.conf 644
+# o atena.conf desta pasta passa a ser o do servidor (sem ele, o instalador já leu o do servidor)
+[ "$CONF" = /etc/atena/atena.conf ] || instalar_arquivo "$CONF" /etc/atena/atena.conf 644
 
 ADMIN=$ATENA_ADMIN_USER
 install -d -m 755 /opt/atena /opt/atena/bin /opt/atena/docs

@@ -206,5 +206,6 @@ Fica de fora o que é do servidor: os `.env`, os dados em `/srv`, as stacks que 
 ## Rodar o instalador de novo
 
 `sudo ./install.sh` pode rodar quantas vezes quiser:
+- **Os valores** vêm do `atena.conf` da pasta do repositório, quando há um: ele passa a ser o do servidor, e uma cópia do anterior fica ao lado. Sem ele, o instalador lê o `/etc/atena/atena.conf`, e para mudar um valor basta editar esse arquivo.
 - **Stacks que já existem** não são sobrescritas. A exceção é o painel: com `--painel`, o código dele vem sempre do repositório, e o compose anterior fica guardado se mudou.
 - **Arquivos do sistema diferentes do modelo** são substituídos, e uma cópia do anterior fica ao lado (`*.antes-atena-<data>`).

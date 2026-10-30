@@ -10,11 +10,14 @@
 #   sudo ./install.sh --painel         # o painel do servidor no navegador e no celular (Tailscale;
 #                                      # na rede de casa também, com ATENA_PAINEL_CASA=sim)
 #
-# Pode rodar de novo quando quiser: o que já existe é mantido ou atualizado.
+# Pode rodar de novo quando quiser: o que já existe é mantido ou atualizado. Os valores vêm do
+# atena.conf desta pasta, quando há um (ele é copiado para /etc/atena/atena.conf), ou, sem ele, do
+# /etc/atena/atena.conf do servidor.
 set -euo pipefail
 
 RAIZ=$(cd "$(dirname "$0")" && pwd)
 CONF=$RAIZ/atena.conf
+[ -f "$CONF" ] || [ ! -f /etc/atena/atena.conf ] || CONF=/etc/atena/atena.conf
 . "$RAIZ/install/lib.sh"
 
 ENDURECER_SSH=nao
@@ -27,7 +30,7 @@ for arg in "$@"; do
     --hermes) INSTALAR_HERMES=sim ;;
     --lab) INSTALAR_LAB=sim ;;
     --painel) INSTALAR_PAINEL=sim ;;
-    -h|--help) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) erro "opção desconhecida: $arg (veja: ./install.sh --help)" ;;
   esac
 done
