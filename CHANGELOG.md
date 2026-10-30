@@ -1,5 +1,27 @@
 # Mudanças
 
+## 0.31.0 (2026-10-30)
+
+A segunda parte da Onda 7: uma agenda só. O que você pede à Atena pelo Telegram aparece no painel, e o que você marca no painel para ela chega pelo Telegram.
+
+- **A tela Agenda junta as duas:** a do painel (as ações na hora marcada) e a da Atena (os lembretes e pedidos dela, a ronda e o bom-dia), no relógio e numa lista só, cada uma com o selo de quem faz. Os da Atena mostram quando, a última vez e como você recebe, e pausam, retomam, rodam agora e se apagam. A ronda e o bom-dia, que são do instalador, só pausam.
+- **"A Atena faz" no formulário:** lembrar você de algo ou um pedido a ela, uma vez, toda semana ou todo mês, entregue pelo Telegram ou no celular (ntfy). Um lembrete de uma vez some da lista uma hora depois de avisar; os de toda semana e todo mês continuam.
+- **O Início** mostra os próximos das duas agendas. A ronda, de 3 em 3 minutos, fica fora do relógio e dos próximos, para não ser sempre a próxima.
+- **Os passos da Atena** dizem as ações do executor também quando ela as pede numa lista ("for a in status.servicos sistema.rede"), e uma ferramenta de um argumento só mostra o argumento.
+- Painel 0.17.0.
+- Testado:
+  - 2 verificações novas no `teste_atena.py` (as ações numa lista e o argumento sozinho), e o intervalo na da agenda;
+  - a tela no ensaio, com a agenda de verdade da Atena: os dois modos do formulário (o lembrete vira uma data, o pedido vira um cron dos dias marcados), no PC e no celular, nos temas claro e escuro;
+  - cada commit rodado sozinho;
+  - o CI reproduzido com `tools/ci-local.sh`.
+
+  No servidor de origem:
+  - o `sudo ./aplicar` gravou os 6 arquivos, reiniciou o executor e subiu o painel 0.17.0, saudável;
+  - o painel serve a tela nova, e a agenda da Atena chega pelo executor com a ronda (de 3 em 3 minutos) e o bom-dia;
+  - uma conversa do Telegram mostra os passos com as ações que ela pediu em lista.
+
+  Sem testar ainda no servidor: um lembrete criado pelo painel chegando no Telegram (testado no ensaio, contra o executor de mentira).
+
 ## 0.30.0 (2026-10-30)
 
 A primeira parte da Onda 7, que junta o painel e a Atena: a ponte. O painel passa a ver as conversas da Atena, a agenda dela e o histórico inteiro do Claude Code, e pode conversar com ela. As telas vêm nas próximas versões.
