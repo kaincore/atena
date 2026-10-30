@@ -1,5 +1,26 @@
 # Mudanças
 
+## 0.27.0 (2026-10-30)
+
+A segunda parte da Onda 6: o instalador serve para o servidor de verdade, e o que era escrito à mão sai do `atena.conf`.
+
+- **O instalador lê o `/etc/atena/atena.conf`** quando a pasta do repositório não tem um `atena.conf`. Antes, num servidor já instalado, ele não rodava sem uma cópia.
+- **O PC da rede de casa sai do `atena.conf`:** com `ATENA_PC_IP`, ele entra em cinco lugares, e todos vêm do arquivo. São o modelo `pc` no LiteLLM, a exceção do firewall dos containers (só a porta do LM Studio), a lista e a chave da Atena, e o plano B. O plano B é uma chave nova, `ATENA_PC_RESERVA`, vazia por padrão: com um modelo da nuvem, o texto privado sai de casa.
+- **Blocos que só entram com uma chave:** num modelo, as linhas entre `{{SE ATENA_X}}` e `{{FIM}}` só ficam quando `ATENA_X` tem valor. O instalador e o `./aplicar` preenchem os modelos pelo mesmo código (`install/estado.py`).
+- **Lembrete de uma vez só some 1 hora depois de rodar.** Antes, o Hermes guardava o agendamento por 7 dias. Os diários, semanais e mensais continuam.
+- Testado:
+  - 24 verificações novas: `teste_estado.py` (os blocos e o LiteLLM sem PC, com PC e com plano B), `teste_instalador.py` (qual `atena.conf` o `install.sh` lê), `teste_firewall.py` e `teste_configurar.py` (contra um iptables e um docker de mentira);
+  - cada commit rodado sozinho;
+  - o CI reproduzido com `tools/ci-local.sh`.
+
+  No servidor de origem:
+  - um script com backup e `--desfazer`, ensaiado antes numa cópia dos arquivos, pôs os scripts e as unidades do repositório e trocou os 5 complementos do executor feitos à mão por 1. As 22 regras do firewall e as permissões do executor saíram iguais às de antes, menos as pastas do Arca;
+  - o compose da Atena passou a ser o do repositório com o mesmo hash, e ela não foi recriada;
+  - o LiteLLM e a Atena reiniciaram saudáveis com o modelo `pc`, e as chaves trocaram o nome antigo por ele;
+  - o `./aplicar --conferir` foi de 31 diferenças para 1: o `sshd_config.d`, só nos comentários.
+
+  Sem testar ainda: uma chamada ao `pc` com o PC ligado, o plano B com ele desligado e o instalador num servidor novo.
+
 ## 0.26.0 (2026-10-30)
 
 O começo da Onda 6, o estado desejado: dá para saber, sem mudar nada, o quanto o servidor se afastou do repositório.
