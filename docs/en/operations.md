@@ -111,6 +111,7 @@ journalctl -u atena-executor -f                               # every request, w
   ```
   (without the lab, drop `--skill lab`). When the AI doesn't answer, the round's failure arrives through ntfy, not through Atena's silent Telegram.
 - Good morning: at 8 a.m., with no AI, `bom_dia.py` sends to Telegram how the server woke up (containers, temperatures, the month's spending and Claude Code's night). It arrives even with the AI down. To change the time: `docker exec -u hermes hermes hermes cron edit <id> --schedule "30 7 * * *"`.
+- One-time reminders disappear 1 hour after they run (`cron.completed_retention_days`); daily, weekly and monthly ones carry on.
 - The executor by hand, the way she calls it: `docker exec -u hermes hermes python3 /opt/data/scripts/acao.py status.servicos` (the first line is the HTTP code).
 - Memory: `/srv/agents/hermes/memories` (USER.md and MEMORY.md) is hers; the installer only puts the seed from `hermes/memoria` there when none exists. To check whether she kept something that no longer holds: `python3 tests/hermes/teste_memoria.py <folder with a copy of the memory>`.
 - Spending: ask her ("how much did we spend this month?").

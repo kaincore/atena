@@ -79,6 +79,10 @@ cfg telegram.unauthorized_dm_behavior ignore
 
 # Agendamentos: o que a ronda entrega entra na conversa do Telegram (a Atena lembra depois).
 cfg cron.mirror_delivery true
+# Agendamento de uma vez só (um lembrete): depois de rodar, o Hermes guarda o registro por 7 dias. Com
+# 1 hora (0,0417 dia), ele some logo, e os diários, semanais e mensais continuam. O "hermes config set"
+# diz que não conhece a chave, mas o agendador a lê (cron/jobs.py, _sweep_completed_oneshots).
+cfg cron.completed_retention_days 0.0417
 
 # Avisos da Atena no celular pelo ntfy (tópico atena). O token vem do instalador.
 cfg NTFY_SERVER_URL http://ntfy:2586
