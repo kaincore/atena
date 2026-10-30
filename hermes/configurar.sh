@@ -15,11 +15,15 @@ cfg() {
 }
 
 # Modelos: tudo pelo LiteLLM (chave própria, com teto). Haiku por padrão; local roda em casa.
+# prompt_caching: o Hermes marca o cache da Anthropic ao longo da conversa (o começo do prompt e as
+# últimas mensagens). Pelo nome do modelo ("haiku", sem "claude") ele não sabe que é Claude, e sem
+# isto só o prompt de sistema entrava no cache (o ponto que o LiteLLM põe): o histórico e os
+# resultados das ferramentas eram cobrados cheios a cada volta.
 cfg providers.atena '{"api": "http://litellm:4000/v1", "key_env": "ATENA_LITELLM_KEY", "transport": "openai_chat",
   "session_affinity_header": "x-litellm-session-id", "discover_models": false,
-  "models": {"haiku": {"context_length": 100000, "supports_vision": true},
-             "sonnet": {"context_length": 200000, "supports_vision": true},
-             "opus": {"context_length": 200000, "supports_vision": true},
+  "models": {"haiku": {"context_length": 100000, "supports_vision": true, "prompt_caching": true},
+             "sonnet": {"context_length": 200000, "supports_vision": true, "prompt_caching": true},
+             "opus": {"context_length": 200000, "supports_vision": true, "prompt_caching": true},
              "local": {"context_length": 8192}}}'
 cfg model.provider atena
 cfg model.default haiku
