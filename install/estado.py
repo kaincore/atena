@@ -4,7 +4,8 @@ compara esse estado com um servidor, sem mudar nada (./aplicar --conferir).
 
 As regras são as das etapas do instalador (install/*.sh): os caminhos, os modos, o que é preenchido e o
 que depende de uma opção (--hermes, --lab, --painel, --ssh). O tests/install/teste_estado.py confere que
-as duas descrições andam juntas.
+as duas descrições andam juntas. O instalador preenche os modelos por aqui também:
+  python3 install/estado.py preencher <atena.conf> <modelo> <destino>
 """
 import difflib
 import fnmatch
@@ -14,9 +15,10 @@ import os
 import pwd
 import re
 import subprocess
+import sys
 from dataclasses import dataclass, field
 
-# os {{ATENA_*}} que o renderizar do install/lib.sh preenche
+# os {{ATENA_*}} que os modelos podem pedir
 RENDERIZADAS = ("ATENA_LAN_IP", "ATENA_LAN_CIDR", "ATENA_LAN_IF", "ATENA_ROUTER_IP", "ATENA_ADMIN_USER",
                 "ATENA_TZ", "ATENA_NTFY_URL", "ATENA_PAINEL_CASA")
 # as chaves que chegaram depois da primeira versão: um atena.conf mais antigo fica com o padrão
@@ -98,7 +100,8 @@ def ler_conf(caminho):
 
 
 def renderizar(texto, conf, origem):
-    """Como o renderizar do install/lib.sh: preenche os {{ATENA_*}} e recusa o que sobrar."""
+    """Preenche os {{ATENA_*}} de um modelo com os valores do atena.conf e recusa o que sobrar. É o
+    renderizar do instalador (install/lib.sh) e o do ./aplicar."""
     for v in RENDERIZADAS:
         texto = texto.replace(("{{" + v + "}}").encode(), conf.get(v, "").encode())
     sobrou = re.search(rb"\{\{ATENA_[A-Z_]*\}\}", texto)
@@ -412,3 +415,24 @@ def diff(r, linhas=60):
     if len(saida) > linhas:
         saida = saida[:linhas] + [f"... mais {len(saida) - linhas} linhas"]
     return ["    " + s for s in saida]
+
+
+def principal(argv):
+    """estado.py preencher <atena.conf> <modelo> <destino>: o renderizar do instalador."""
+    if len(argv) != 4 or argv[0] != "preencher":
+        print("uso: python3 install/estado.py preencher <atena.conf> <modelo> <destino>", file=sys.stderr)
+        return 2
+    _, conf, origem, destino = argv
+    try:
+        with open(origem, "rb") as f:
+            texto = renderizar(f.read(), ler_conf(conf), origem)
+        with open(destino, "wb") as f:
+            f.write(texto)
+    except (OSError, ConfInvalida) as e:
+        print(e, file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(principal(sys.argv[1:]))

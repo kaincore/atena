@@ -7,21 +7,10 @@ ok()    { printf '    \033[32mok\033[0m %s\n' "$*"; }
 aviso() { printf '    \033[33maviso:\033[0m %s\n' "$*" >&2; }
 erro()  { printf '\n\033[1;31merro:\033[0m %s\n' "$*" >&2; exit 1; }
 
-# preenche os {{ATENA_*}} de um arquivo modelo com os valores do atena.conf
+# preenche os {{ATENA_*}} de um arquivo modelo com os valores do atena.conf: o mesmo preenchimento do
+# ./aplicar (install/estado.py), que também recusa um {{ATENA_...}} sem valor
 renderizar() {
-  src=$1; dst=$2
-  sed -e "s|{{ATENA_LAN_IP}}|$ATENA_LAN_IP|g" \
-      -e "s|{{ATENA_LAN_CIDR}}|$ATENA_LAN_CIDR|g" \
-      -e "s|{{ATENA_LAN_IF}}|$ATENA_LAN_IF|g" \
-      -e "s|{{ATENA_ROUTER_IP}}|$ATENA_ROUTER_IP|g" \
-      -e "s|{{ATENA_ADMIN_USER}}|$ATENA_ADMIN_USER|g" \
-      -e "s|{{ATENA_TZ}}|$ATENA_TZ|g" \
-      -e "s|{{ATENA_NTFY_URL}}|$ATENA_NTFY_URL|g" \
-      -e "s|{{ATENA_PAINEL_CASA}}|$ATENA_PAINEL_CASA|g" \
-      "$src" > "$dst"
-  if grep -q '{{ATENA_' "$dst"; then
-    erro "sobrou um {{ATENA_...}} sem valor em $dst"
-  fi
+  python3 "$RAIZ/install/estado.py" preencher "$CONF" "$1" "$2" || erro "não consegui preencher $1"
 }
 
 # instala um arquivo, guardando uma cópia do anterior se ele já existir e for diferente

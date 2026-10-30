@@ -64,11 +64,6 @@ def resultados(alvo, **kw):
 
 
 # --- o estado anda junto com o instalador
-lib = INSTALADOR["lib.sh"]
-corpo = lib[lib.index("renderizar() {"):lib.index("instalar_arquivo() {")]
-confere("o estado preenche os mesmos {{ATENA_*}} que o renderizar do lib.sh",
-        set(re.findall(r"\{\{(ATENA_\w+)\}\}", corpo)) == set(estado.RENDERIZADAS))
-
 conf_exemplo = f"{tmp}/exemplo.conf"
 escrever_conf(conf_exemplo, ATENA_PAINEL_CASA="sim")
 c = estado.ler_conf(conf_exemplo)
@@ -76,14 +71,25 @@ modelos = [rel for rel in estado.arquivos(RAIZ, ".") if os.path.isfile(os.path.j
            and b"{{ATENA_" in open(os.path.join(RAIZ, rel), "rb").read()
            and rel.split("/")[0] in ("stacks", "host") and not rel.endswith((".md", ".sh"))]
 confere("há modelos com {{ATENA_*}} para comparar", len(modelos) >= 3, modelos)
+pedidas = {v.decode() for rel in modelos for v in re.findall(rb"\{\{(ATENA_\w+)\}\}", open(os.path.join(RAIZ, rel), "rb").read())}
+confere("todo {{ATENA_*}} dos modelos é uma chave que o estado preenche", pedidas <= set(estado.RENDERIZADAS),
+        pedidas - set(estado.RENDERIZADAS))
 diferentes = []
 for rel in modelos:
     saida = f"{tmp}/renderizado"
-    r = subprocess.run(["bash", "-c", 'set -a; . "$1"; set +a; . "$2"; renderizar "$3" "$4"', "_", conf_exemplo,
-                        os.path.join(RAIZ, "install", "lib.sh"), os.path.join(RAIZ, rel), saida], capture_output=True)
+    r = subprocess.run(["bash", "-c", 'RAIZ=$1; CONF=$2; . "$RAIZ/install/lib.sh"; renderizar "$3" "$4"', "_", RAIZ,
+                        conf_exemplo, os.path.join(RAIZ, rel), saida], capture_output=True)
     if r.returncode != 0 or open(saida, "rb").read() != estado.renderizar(open(os.path.join(RAIZ, rel), "rb").read(), c, rel):
         diferentes.append(rel)
-confere(f"o estado preenche os {len(modelos)} modelos como o renderizar do lib.sh", not diferentes, diferentes)
+confere(f"o renderizar do instalador preenche os {len(modelos)} modelos pelo estado", not diferentes, diferentes)
+open(f"{tmp}/modelo", "w").write("ip={{ATENA_LAN_IP}} x={{ATENA_NAO_EXISTE}}\n")
+r = subprocess.run(["bash", "-c", 'RAIZ=$1; CONF=$2; . "$RAIZ/install/lib.sh"; renderizar "$3" "$4"', "_", RAIZ,
+                    conf_exemplo, f"{tmp}/modelo", f"{tmp}/saida"], capture_output=True, text=True)
+confere("um {{ATENA_*}} sem valor faz o instalador parar, dizendo qual",
+        r.returncode != 0 and "{{ATENA_NAO_EXISTE}}" in r.stderr and "não consegui preencher" in r.stderr, r.stderr)
+r = subprocess.run([sys.executable, os.path.join(RAIZ, "install", "estado.py"), "preencher", conf_exemplo],
+                   capture_output=True, text=True)
+confere("estado.py preencher sem os três caminhos: sai com 2 e diz o uso", r.returncode == 2 and "uso:" in r.stderr, r.stderr)
 
 etapa80 = INSTALADOR["80-stacks.sh"]
 bloco = etapa80[etapa80.index('if [ "$ATENA_GPU" = none ]; then'):]
