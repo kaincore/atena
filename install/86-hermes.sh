@@ -99,10 +99,11 @@ if [ -f "$D/skills/atena/lab/SKILL.md" ]; then skills_ronda+=(--skill lab); fi
 id=$(ronda_id)
 if [ -z "$id" ]; then
   docker exec -u hermes hermes hermes cron create "every 3m" "$RONDA" \
-    --name ronda --monitor-script ronda.py "${skills_ronda[@]}" --deliver telegram >/dev/null \
+    --name ronda --monitor-script ronda.py "${skills_ronda[@]}" --deliver telegram --failure-deliver ntfy >/dev/null \
     || aviso "não consegui criar a ronda; crie depois (veja docs/pt/operacao.md)"
 else
-  docker exec -u hermes hermes hermes cron edit "$id" --prompt "$RONDA" "${skills_ronda[@]}" >/dev/null \
+  # --failure-deliver ntfy: quando a IA não responde, a falha da ronda chega ao celular pelo ntfy
+  docker exec -u hermes hermes hermes cron edit "$id" --prompt "$RONDA" "${skills_ronda[@]}" --failure-deliver ntfy >/dev/null \
     || aviso "não consegui atualizar a ronda (docker exec -u hermes hermes hermes cron list)"
 fi
 ok "ronda de 3 em 3 minutos (só gasta API quando algo muda)"
