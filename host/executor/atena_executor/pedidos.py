@@ -22,6 +22,8 @@ PEDIDOS = "/var/lib/atena-executor/pedidos.json"
 VALIDADE = 10 * 60          # um pedido espera a aprovação por 10 min
 MAX_AGUARDANDO = 5          # por cliente: um cliente enganado não enche o celular de pedidos
 TERMINADOS = {"concluido", "falhou", "recusado", "expirado", "cancelado"}
+ARQUIVO = "claude-arquivo.jsonl"   # ao lado do PEDIDOS: os trabalhos do Claude Code de mais de uma semana
+ARQUIVAR = {"claude.tarefa"}
 TRAVA = threading.RLock()
 MUDOU = threading.Condition(TRAVA)   # acorda quem espera em GET /pedido?esperar
 ESTADO = {"pedidos": {}, "ultima_resposta": None}
@@ -62,11 +64,28 @@ def guardar_ilegivel(erro):
 def salvar_estado():
     with TRAVA:
         limite = time.time() - 7 * 86400   # guarda uma semana de histórico
+        arquivar([p for p in ESTADO["pedidos"].values() if p["criado"] <= limite])
         ESTADO["pedidos"] = {i: p for i, p in ESTADO["pedidos"].items() if p["criado"] > limite}
         temporario = PEDIDOS + ".novo"
         with open(os.open(temporario, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600), "w") as f:
             json.dump(ESTADO, f, ensure_ascii=False)
         os.replace(temporario, PEDIDOS)
+
+
+def arquivar(velhos):
+    """Os trabalhos do Claude Code que saem da semana do histórico vão para o arquivo (uma linha cada), que
+    o claude.historico lê; os outros pedidos só somem. Sem o arquivo, o histórico continua: só avisa."""
+    guardar = [p for p in velhos if p["acao"] in ARQUIVAR]
+    if not guardar:
+        return
+    try:
+        with open(os.open(os.path.join(os.path.dirname(PEDIDOS), ARQUIVO), os.O_WRONLY | os.O_CREAT | os.O_APPEND,
+                          0o600), "a") as f:
+            for p in guardar:
+                f.write(json.dumps({k: v for k, v in p.items() if k not in ("segredo", "nonce")},
+                                   ensure_ascii=False) + "\n")
+    except OSError as e:
+        log(evento="não consegui arquivar trabalhos antigos", erro=str(e))
 
 
 def mudar(p, **campos):

@@ -5,8 +5,9 @@ from typing import Callable, NamedTuple
 
 from .arquivos import acao_arquivo_buscar, acao_arquivo_entregar, acao_arquivo_ler, acao_arquivo_procurar
 from .central import acao_aprovacoes_decidir, acao_aprovacoes_lista, acao_atividade_lista, acao_aviso_celular
-from .claude import (acao_claude_cancelar, acao_claude_perguntas, acao_claude_permissao,
-                     acao_claude_responder, acao_claude_tarefa, acao_claude_trabalhos, preparar_claude_tarefa)
+from .claude import (acao_claude_cancelar, acao_claude_historico, acao_claude_perguntas, acao_claude_permissao,
+                     acao_claude_registro, acao_claude_responder, acao_claude_tarefa, acao_claude_trabalhos,
+                     preparar_claude_tarefa)
 from .lab import (acao_app_apagar, acao_app_cancelar, acao_app_comando, acao_app_lista, acao_app_parar,
                   acao_app_publicar, acao_app_reiniciar, acao_app_restaurar, preparar_app_apagar,
                   preparar_app_publicar)
@@ -102,6 +103,10 @@ ACOES = {
     "claude.perguntas":  Acao(acao_claude_perguntas, "perguntas do Claude Code esperando resposta do dono", None, CONSULTA, A, LAB),
     "claude.responder":  Acao(acao_claude_responder, "responde uma pergunta do Claude Code (pergunta, resposta, quem: dono|atena)", None, MUDA, A, LAB),
     "claude.cancelar":   Acao(acao_claude_cancelar, "interrompe um trabalho do Claude Code (pedido)", None, MUDA, PA, LAB),
+    "claude.historico":  Acao(acao_claude_historico, "todos os trabalhos do Claude Code, do mais novo ao mais velho, "
+                              "também os de mais de uma semana (quantos? 1-50, antes? = criado do último)", None, CONSULTA, P, LAB),
+    "claude.registro":   Acao(acao_claude_registro, "a conversa inteira de um trabalho do Claude Code, resumida para "
+                              "ler (trabalho, de?, quantos? 1-500)", None, CONSULTA, P, LAB),
     "app.publicar":      Acao(acao_app_publicar, "publica um projeto do lab na rede de casa: constrói pelo Dockerfile "
                               "e roda na zona lab (projeto, porta? 8000-8999)", preparar_app_publicar, MUDA, PA, LAB),
     "app.parar":         Acao(acao_app_parar, "tira do ar um app publicado do lab; dados e imagem ficam (projeto)", None, MUDA, PA, LAB),

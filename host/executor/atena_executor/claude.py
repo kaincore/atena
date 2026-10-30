@@ -21,8 +21,8 @@ import time
 from .base import Erro, ler_conf, log
 from .celular import avisar, botao
 from .lab import PROJETOS_LAB, lixeira, preparar_app_publicar
-from .pedidos import (ESTADO, TERMINADOS, TRAVA, alcanca, criar_pedido, executar_aprovado, mudar,
-                      pedir_aprovacao, pelo_dono, precisa_aprovacao)
+from .pedidos import (ARQUIVO, ESTADO, PEDIDOS, TERMINADOS, TRAVA, alcanca, criar_pedido, executar_aprovado,
+                      mudar, pedir_aprovacao, pelo_dono, precisa_aprovacao)
 from .segredos import curto, ocultar
 from .tokens import carregar_tokens
 
@@ -512,6 +512,124 @@ def acao_claude_trabalhos(cliente, params):
          "criado": time.strftime("%Y-%m-%d %H:%M", time.localtime(p["criado"])),
          "esperando_permissao_no_celular": p["id"] in esperando}
         for p in meus]}
+
+
+def acao_claude_historico(cliente, params):
+    """Os trabalhos do Claude Code, do mais novo ao mais velho: os da última semana (no executor) e os do
+    arquivo, de quantos em quantos (antes = o criado do último da página anterior)."""
+    quantos, antes = params.get("quantos", 20), params.get("antes")
+    if not isinstance(quantos, int) or not 1 <= quantos <= 50:
+        raise Erro(400, "quantos deve ser um número de 1 a 50")
+    if antes is not None and (not isinstance(antes, (int, float)) or isinstance(antes, bool)):
+        raise Erro(400, "antes deve ser o criado de um trabalho (segundos)")
+    with TRAVA:
+        trabalhos = [dict(p) for p in ESTADO["pedidos"].values() if p["acao"] == "claude.tarefa" and alcanca(cliente, p)]
+    na_semana = {p["id"] for p in trabalhos}   # só estes dão para continuar
+    vistos = set(na_semana)
+    try:
+        with open(os.path.join(os.path.dirname(PEDIDOS), ARQUIVO)) as f:
+            for linha in f:
+                try:
+                    p = json.loads(linha)
+                except ValueError:   # uma linha cortada numa queda de energia
+                    continue
+                if (isinstance(p, dict) and p.get("acao") == "claude.tarefa" and p.get("id") not in vistos
+                        and isinstance(p.get("params"), dict) and isinstance(p.get("criado"), (int, float))
+                        and alcanca(cliente, p)):
+                    vistos.add(p["id"])
+                    trabalhos.append(p)
+    except FileNotFoundError:
+        pass
+    trabalhos = sorted((p for p in trabalhos if antes is None or p["criado"] < antes),
+                       key=lambda p: p["criado"], reverse=True)
+    return {"mais": len(trabalhos) > quantos, "trabalhos": [
+        {"id": p["id"], "estado": p["estado"], "projeto": p["params"].get("projeto"), "cliente": p["cliente"],
+         "conta": p.get("conta_final") or p["params"].get("conta"), "modelo": p["params"].get("modelo"),
+         "esforco": p["params"].get("esforco"), "skill": p["params"].get("skill"),
+         "plano": bool(p["params"].get("somente_plano")), "pedido": curto(p["params"].get("pedido") or "", 300),
+         "resumo": curto(p["resumo"], 600) if p.get("resumo") else None, "commits": len(p.get("commits") or []),
+         "segundos": p.get("segundos"), "criado": p["criado"], "atualizado": p.get("atualizado"),
+         "registro": bool(p.get("fase")) and os.path.exists(f"{CLAUDE}/registros/{p['id']}.{p['fase']}.jsonl"),
+         "continuavel": p["id"] in na_semana and bool(p.get("sessao")) and p["estado"] in TERMINADOS}
+        for p in trabalhos[:quantos]]}
+
+
+def descrever_entrada(entrada):
+    """Uma linha sobre a chamada de uma ferramenta do Claude Code: o comando, o arquivo, o padrão..."""
+    if isinstance(entrada, dict):
+        for chave in ("command", "file_path", "path", "pattern", "url", "query", "description", "prompt"):
+            if isinstance(entrada.get(chave), str) and entrada[chave].strip():
+                return curto(entrada[chave], 200)
+    return curto(entrada if entrada not in (None, {}) else "", 200)
+
+
+def texto_do_resultado(conteudo):
+    if isinstance(conteudo, list):
+        return "\n".join(p.get("text", "") for p in conteudo if isinstance(p, dict) and p.get("type") == "text")
+    return conteudo if isinstance(conteudo, str) else json.dumps(conteudo, ensure_ascii=False)
+
+
+def ler_registro_claude(caminho):
+    """O registro de um trabalho (a saída stream-json do Claude Code) resumido para ler: o que ele escreveu,
+    cada ferramenta com um pedaço do resultado, as notas da Atena e o fim. Os subagentes vêm marcados."""
+    itens, ferramentas = [], {}
+    with open(caminho, errors="replace") as f:
+        for linha in f:
+            try:
+                e = json.loads(linha)
+            except ValueError:   # o stderr do Claude Code também vai para o registro
+                continue
+            if not isinstance(e, dict):
+                continue
+            tipo, sub = e.get("type"), bool(e.get("parent_tool_use_id"))
+            conteudo = (e.get("message") or {}).get("content") if isinstance(e.get("message"), dict) else None
+            partes = [x for x in conteudo if isinstance(x, dict)] if isinstance(conteudo, list) else []
+            if tipo == "system" and e.get("subtype") == "init":
+                itens.append({"tipo": "inicio", "modelo": e.get("model")})
+            elif tipo == "assistant":
+                for parte in partes:
+                    if parte.get("type") == "text" and str(parte.get("text", "")).strip():
+                        itens.append({"tipo": "texto", "texto": curto(parte["text"], 4000), "sub": sub})
+                    elif parte.get("type") == "tool_use":
+                        item = {"tipo": "ferramenta", "nome": parte.get("name"),
+                                "detalhe": descrever_entrada(parte.get("input")), "sub": sub}
+                        ferramentas[parte.get("id")] = item
+                        itens.append(item)
+            elif tipo == "user":
+                for parte in partes:
+                    item = ferramentas.get(parte.get("tool_use_id")) if parte.get("type") == "tool_result" else None
+                    if item is not None:
+                        item["resultado"] = curto(texto_do_resultado(parte.get("content")), 600)
+                        item["erro"] = bool(parte.get("is_error"))
+            elif tipo == "result":
+                itens.append({"tipo": "fim", "ok": not e.get("is_error"), "texto": curto(e.get("result") or "", 4000),
+                              "custo": e.get("total_cost_usd"), "turnos": e.get("num_turns"),
+                              "segundos": round((e.get("duration_ms") or 0) / 1000)})
+            elif tipo == "atena":
+                itens.append({"tipo": "nota", "texto": curto(e.get("nota") or "", 300)})
+            elif tipo == "rate_limit_event" and (e.get("rate_limit_info") or {}).get("status") == "rejected":
+                itens.append({"tipo": "nota", "texto": "a conta bateu o limite de uso"})
+    return itens
+
+
+def acao_claude_registro(cliente, params):
+    """A conversa inteira de um trabalho do Claude Code (trabalho), resumida para ler, de quantos em quantos
+    itens (de = o primeiro). Só para quem fala pelo dono (o painel)."""
+    id_, de, quantos = params.get("trabalho"), params.get("de", 0), params.get("quantos", 300)
+    if not isinstance(id_, str) or not re.fullmatch(r"[0-9a-f]{8}", id_):
+        raise Erro(400, "trabalho deve ser o id de um trabalho (8 letras e números)")
+    if not isinstance(de, int) or de < 0 or not isinstance(quantos, int) or not 1 <= quantos <= 500:
+        raise Erro(400, "de deve ser 0 ou mais, e quantos, de 1 a 500")
+    if not pelo_dono(cliente):
+        raise Erro(403, "só o painel lê os registros do Claude Code")
+    caminhos = [(f, f"{CLAUDE}/registros/{id_}.{f}.jsonl") for f in ("plano", "executar")]
+    caminhos = [(f, c) for f, c in caminhos if os.path.exists(c)]
+    if not caminhos:
+        raise Erro(404, "esse trabalho não tem registro (ainda está na fila, ou o registro foi apagado)")
+    itens = []
+    for fase, caminho in caminhos:
+        itens += [{"tipo": "fase", "fase": fase}] + ler_registro_claude(caminho)
+    return {"trabalho": id_, "total": len(itens), "itens": itens[de:de + quantos]}
 
 
 def acao_claude_cancelar(cliente, params):
