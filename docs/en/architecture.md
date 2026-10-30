@@ -15,7 +15,7 @@ The server is split into **zones by trust level**. Each zone has four things of 
 |---|---|---|---|
 | `prod` | `zone-prod-<client>` (10.10.101.0/24 onward) | Client systems, one network per client | Admin only |
 | `core` | `zone-core` (10.10.0.0/24) | Dockge, Beszel, ntfy, the panel, monitoring and backup | Admin only |
-| `apps` | `zone-apps` (10.10.10.0/24) | Personal apps (Arca, Open WebUI) | Admin, and Atena through the executor (with a snapshot before each change) |
+| `apps` | `zone-apps` (10.10.10.0/24) | Personal apps (Open WebUI) | Admin, and Atena through the executor (with a snapshot before each change) |
 | `ai` | `zone-ai` (10.10.20.0/24) | Ollama, Whisper, voice, LiteLLM | Admin |
 | `agents` | `zone-agents` (10.10.30.0/24) | Atena (Hermes), AI agents and workers | Admin, and agents through scripts |
 | `lab` | `zone-lab` (10.10.40.0/24) | Claude Code projects and apps (lab module) and disposable tests | Admin, Claude Code and Atena (through the executor and her terminal) |
@@ -53,7 +53,7 @@ Phone (ntfy app) <── alerts and approval requests ── executor
 - **One token per client.** The token says which actions and which zones the client may request. Only the hash is stored (`/etc/atena/executor/tokens.json`).
 - **Stack zone.** It comes from the compose folder (`/opt/atena/stacks/<zone>/...`) or from the `zone-*` networks. When in doubt, the most restricted one wins.
 - **Approval on your phone.** An action that changes something can become a request: the executor sends a notification with Approve and Reject, and only runs after the tap. The request code exists only inside the notification, so the client can't approve itself. Each token says which actions need the phone.
-- **Reading without secrets.** The service has a single capability, `CAP_DAC_READ_SEARCH`: it reads any file and only writes to its own folders, Atena's deliveries, Arca and the `apps` zone stacks (the last two through ACLs, without taking ownership of anything). System areas and key, token and password files are refused, and lines with a password, token or key come out as `***`.
+- **Reading without secrets.** The service has a single capability, `CAP_DAC_READ_SEARCH`: it reads any file and only writes to its own folders, Atena's deliveries and the `apps` zone stacks (these through ACLs, without taking ownership of anything). System areas and key, token and password files are refused, and lines with a password, token or key come out as `***`.
 - **Audit log.** Every request goes to the journal (`journalctl -u atena-executor`) with client, action, parameters and result.
 - **App stacks with snapshots.** `stack.editar` saves the previous content before writing, and `stack.desfazer` brings it back. A compose change only sticks if the whole compose (`docker compose config`, with includes and overrides) fits the zone rules: nothing from the host (`privileged`, `cap_add`, `devices`, host network or PID, the Docker socket), folders only from the stack itself and `/srv/apps/<stack>`, networks only `zone-apps` and `svc-llm`, ports always with an IP in front. `stack.aplicar` checks again and brings the stack up in the background.
 
@@ -62,7 +62,6 @@ Phone (ntfy app) <── alerts and approval requests ── executor
 | Look at the server | `status.servicos`, `status.recursos`, `status.containers`, `status.sistema`, `gasto.api`, `servico.logs`, `servico.journal`, `sistema.processos`, `sistema.rede`, `sistema.sensores` (temperatures and fans) |
 | Files | `arquivo.ler`, `arquivo.buscar`, `arquivo.procurar`, `arquivo.entregar` |
 | Private text | `local.processar` (the server's Ollama or the PC's LM Studio, no cloud) |
-| Arca | `arca.lista`, `arca.pegar`, `arca.guardar` (by the original name; saving never replaces anything) |
 | App stacks | `stack.editar`, `stack.aplicar`, `stack.fotos`, `stack.desfazer` |
 | Claude Code (lab module) | `claude.tarefa`, `claude.trabalhos`, `claude.perguntas`, `claude.responder`, `claude.cancelar` |
 | Lab apps (lab module) | `app.publicar`, `app.parar`, `app.reiniciar`, `app.cancelar`, `app.apagar`, `app.restaurar`, `app.comando`, `app.lista` |

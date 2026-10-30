@@ -15,7 +15,7 @@ O servidor é dividido em **zonas por nível de confiança**. Cada zona tem quat
 |---|---|---|---|
 | `prod` | `zone-prod-<cliente>` (10.10.101.0/24 em diante) | Sistemas de clientes, uma rede por cliente | Só o administrador |
 | `core` | `zone-core` (10.10.0.0/24) | Dockge, Beszel, ntfy, o painel, monitoramento e backup | Só o administrador |
-| `apps` | `zone-apps` (10.10.10.0/24) | Apps pessoais (Arca, Open WebUI) | Administrador e a Atena, pelo executor (com foto antes de cada mudança) |
+| `apps` | `zone-apps` (10.10.10.0/24) | Apps pessoais (Open WebUI) | Administrador e a Atena, pelo executor (com foto antes de cada mudança) |
 | `ai` | `zone-ai` (10.10.20.0/24) | Ollama, Whisper, voz, LiteLLM | Administrador |
 | `agents` | `zone-agents` (10.10.30.0/24) | A Atena (Hermes), agentes de IA e workers | Administrador e agentes, por scripts |
 | `lab` | `zone-lab` (10.10.40.0/24) | Projetos e apps do Claude Code (módulo lab) e testes descartáveis | Administrador, o Claude Code e a Atena (pelo executor e pelo terminal dela) |
@@ -53,7 +53,7 @@ Celular (app ntfy) <── alertas e pedidos de aprovação ── executor
 - **Um token por cliente.** O token diz quais ações e quais zonas o cliente pode pedir. Só o hash fica guardado (`/etc/atena/executor/tokens.json`).
 - **Zona da stack.** Vem da pasta do compose (`/opt/atena/stacks/<zona>/...`) ou das redes `zone-*`. Na dúvida, vale a mais restrita.
 - **Aprovação no celular.** Uma ação que muda algo pode virar um pedido: o executor manda uma notificação com Aprovar e Recusar, e só roda depois do toque. O código do pedido só existe na notificação, então o cliente não consegue se aprovar. Cada token diz quais ações pedem o celular.
-- **Leitura sem segredos.** O serviço tem só a capacidade `CAP_DAC_READ_SEARCH`: lê qualquer arquivo e só escreve nas pastas dele, nas entregas da Atena, no Arca e nas stacks da zona `apps` (estas duas por ACL, sem tirar o dono de nada). Áreas do sistema e arquivos de chave, token e senha são recusados, e linhas com senha, token ou chave saem com `***`.
+- **Leitura sem segredos.** O serviço tem só a capacidade `CAP_DAC_READ_SEARCH`: lê qualquer arquivo e só escreve nas pastas dele, nas entregas da Atena e nas stacks da zona `apps` (estas por ACL, sem tirar o dono de nada). Áreas do sistema e arquivos de chave, token e senha são recusados, e linhas com senha, token ou chave saem com `***`.
 - **Registro.** Cada pedido vai para o journal (`journalctl -u atena-executor`), com cliente, ação, parâmetros e resultado.
 - **Stacks de apps com foto.** `stack.editar` guarda o conteúdo anterior antes de gravar, e `stack.desfazer` volta. Uma mudança no compose só fica se o compose inteiro (`docker compose config`, com includes e overrides) caber nas regras da zona: nada do host (`privileged`, `cap_add`, `devices`, rede ou PID do host, socket do Docker), pastas só da própria stack e de `/srv/apps/<stack>`, redes só `zone-apps` e `svc-llm`, portas sempre com IP na frente. `stack.aplicar` confere de novo e sobe em segundo plano.
 
@@ -62,7 +62,6 @@ Celular (app ntfy) <── alertas e pedidos de aprovação ── executor
 | Ver o servidor | `status.servicos`, `status.recursos`, `status.containers`, `status.sistema`, `gasto.api`, `servico.logs`, `servico.journal`, `sistema.processos`, `sistema.rede`, `sistema.sensores` (temperaturas e ventoinhas) |
 | Arquivos | `arquivo.ler`, `arquivo.buscar`, `arquivo.procurar`, `arquivo.entregar` |
 | Texto privado | `local.processar` (Ollama do servidor ou LM Studio do PC, sem nuvem) |
-| Arca | `arca.lista`, `arca.pegar`, `arca.guardar` (pelo nome original; guardar não substitui nada) |
 | Stacks de apps | `stack.editar`, `stack.aplicar`, `stack.fotos`, `stack.desfazer` |
 | Claude Code (módulo lab) | `claude.tarefa`, `claude.trabalhos`, `claude.perguntas`, `claude.responder`, `claude.cancelar` |
 | Apps do lab (módulo lab) | `app.publicar`, `app.parar`, `app.reiniciar`, `app.cancelar`, `app.apagar`, `app.restaurar`, `app.comando`, `app.lista` |

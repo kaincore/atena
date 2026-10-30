@@ -1,6 +1,6 @@
 ---
 name: servidor-atena
-description: "Enxergar e operar o servidor Atena pelo executor de ações: qualquer arquivo, pasta, log ou serviço (menos segredos), busca em arquivos, achar e trazer fotos e arquivos do servidor (para olhar, ler ou mandar ao dono), arquivos do Arca (listar, pegar, guardar), processos, portas, estado dos containers, CPU/RAM/disco/GPU, temperaturas e ventoinhas, gasto de API do mês, reiniciar serviços, editar e aplicar stacks de apps (Arca, Open WebUI) com foto e desfazer, ligar/desligar o PC da rede de casa e processar texto privado num modelo de casa. Use sempre que o dono perguntar do servidor, de temperatura, de gastos, de erros, de arquivos ou pedir algo que mexa no servidor, e na ronda."
+description: "Enxergar e operar o servidor Atena pelo executor de ações: qualquer arquivo, pasta, log ou serviço (menos segredos), busca em arquivos, achar e trazer fotos e arquivos do servidor (para olhar, ler ou mandar ao dono), processos, portas, estado dos containers, CPU/RAM/disco/GPU, temperaturas e ventoinhas, gasto de API do mês, reiniciar serviços, editar e aplicar stacks de apps (Open WebUI) com foto e desfazer, ligar/desligar o PC da rede de casa e processar texto privado num modelo de casa. Use sempre que o dono perguntar do servidor, de temperatura, de gastos, de erros, de arquivos ou pedir algo que mexa no servidor, e na ronda."
 version: 1.6.1
 author: Atena
 license: MIT
@@ -80,8 +80,6 @@ conteúdo, traga uma cópia com `arquivo.entregar` e:
 
 ## Fotos e arquivos do servidor, a pedido do dono
 
-- "Me manda as fotos de ontem do Arca": `arca.lista` (veja "Arca"), escolha pela `data` e pelo `tipo`
-  (`image/...`), depois `arca.pegar` em cada uma e um `MEDIA:` por foto.
 - "Me manda o contrato": `arquivo.procurar` pelo `nome`, em pastas certeiras primeiro
   (`/srv/apps`, `/opt/atena/docs`, `/srv/lab/projetos` se o servidor tiver o lab,
   `/opt/data/notas/anexos`). Se achar mais de um, mande a lista
@@ -92,28 +90,7 @@ conteúdo, traga uma cópia com `arquivo.entregar` e:
 - Arquivos de clientes (zona prod) e segredos respondem 403: diga que estão fora do seu alcance.
 
 Onde ficam documentos e anexos: `/opt/atena/docs` (documentos que o dono guarda no servidor, em
-markdown e PDF) e o Arca (arquivos que o dono sobe pelo navegador, inclusive PDFs).
-
-## Arca: os arquivos do dono
-
-O Arca (porta 3002, na rede de casa; o endereço vem em `arca.lista`) é onde o dono sobe e baixa
-arquivos pelo navegador. Nos uploads, os arquivos têm um número na frente do nome; use sempre as ações
-abaixo, que mostram o nome original.
-
-| Ação | Params | O que faz |
-|---|---|---|
-| `arca.lista` | `nome?` (pedaço do nome) | Arquivos do Arca, os mais novos primeiro: `id`, `nome`, `tamanho_kb`, `data` (UTC), `tipo`, `caminho` |
-| `arca.pegar` | `id` | Traz uma cópia para `/opt/data/entregas` (como `arquivo.entregar`): para olhar, ler ou mandar com `MEDIA:` |
-| `arca.guardar` | `arquivo` (caminho; `/opt/data/...` vale), `nome?` | Guarda um arquivo no Arca, e ele aparece na lista do navegador. Até 50 MB; texto vai com segredos ocultos |
-
-- "Te mandei um PDF pelo Arca, lê pra mim": `arca.lista` (o mais novo, ou pelo `nome`), `arca.pegar` e
-  leia a cópia (habilidade notas: pdfplumber). Dado privado: `local.processar` com o `caminho` do item.
-- "Me deixa isso no Arca", "salva no Arca", ou quando você gerar algo que o dono vai baixar no
-  computador (relatório, planilha, PDF, zip): crie o arquivo no seu espaço (`/opt/data/...`) e use
-  `arca.guardar`. Diga o nome e o endereço do Arca. Arquivo para o celular: `MEDIA:` no Telegram basta.
-- Guardar não apaga nem substitui nada (mesmo nome vira outro arquivo): faça direto. Para apagar do
-  Arca, o dono usa o navegador; você não apaga.
-- HTTP 503 em `arca.lista`: o Arca ainda não recebeu nenhum arquivo pelo navegador.
+markdown e PDF), os projetos do lab e o seu espaço (as notas e o que o dono manda pelo Telegram).
 
 ## Dados privados: modelo de casa
 
@@ -177,10 +154,10 @@ são ações só do painel: você não as tem, e nenhum cliente decide os própr
 também vê os trabalhos do Claude Code que você mandou, pode cancelá-los e continuá-los: um trabalho
 cancelado ou continuado sem você pedir foi ele.
 
-## Stacks de apps (Arca, Open WebUI): editar com foto
+## Stacks de apps (Open WebUI): editar com foto
 
 As stacks da zona apps (`/opt/atena/stacks/apps/<stack>`) você pode editar: compose, Dockerfile,
-código do Arca (`app/...`) e outras configurações. Leia antes com `arquivo.ler`.
+código do app (`app/...`) e outras configurações. Leia antes com `arquivo.ler`.
 
 | Ação | Params | O que faz |
 |---|---|---|
@@ -225,7 +202,7 @@ está fora do normal. Você só é acordada quando essa lista muda. Quando for a
 ## Limites conhecidos
 
 - O executor só faz o que está em `/acoes`. Escrever, você escreve nas stacks de apps
-  (`stack.editar`), no Arca (`arca.guardar`), no seu espaço e, se o servidor tiver o lab, nos projetos
+  (`stack.editar`), no seu espaço e, se o servidor tiver o lab, nos projetos
   do lab (habilidade lab). Fora disso (stacks de core, ai, agents;
   `/etc`; instalar pacotes no servidor), não está ao seu alcance: explique ao dono o que precisa ser
   feito.

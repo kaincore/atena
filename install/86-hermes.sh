@@ -44,9 +44,9 @@ copiar_hermes scripts/ronda.py scripts/ronda.py
 copiar_hermes ferramentas.txt ferramentas/requisitos.txt
 ok "personalidade, habilidades servidor-atena e notas, e ronda em $D"
 
-# token do executor: todas as consultas, reiniciar, o PC, o Arca e as stacks de apps, sem a zona prod e
+# token do executor: todas as consultas, reiniciar, o PC e as stacks de apps, sem a zona prod e
 # sem pedir o celular. Para exigir o celular em algo, refaça com o 4º campo (veja docs/pt/operacao.md).
-novas=sistema.sensores,arca.lista,arca.guardar,arca.pegar,stack.editar,stack.aplicar,stack.fotos,stack.desfazer
+novas=sistema.sensores,stack.editar,stack.aplicar,stack.fotos,stack.desfazer
 acoes=status.servicos,status.recursos,status.containers,status.sistema,gasto.api,servico.logs,servico.journal
 acoes=$acoes,arquivo.ler,arquivo.procurar,arquivo.entregar,arquivo.buscar,local.processar,sistema.processos
 acoes=$acoes,sistema.rede,$novas,servico.reiniciar,pc.estado,pc.ligar,pc.desligar,pc.reiniciar,pc.cancelar

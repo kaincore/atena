@@ -1,7 +1,6 @@
 """A lista fechada de ações: nome → (função, ajuda, preparar). Com preparar, a ação é um pedido: o
 preparar valida e devolve o texto da aprovação, e a função roda depois (aprovada ou sem aprovação)."""
 
-from .arca import acao_arca_guardar, acao_arca_lista, acao_arca_pegar
 from .arquivos import acao_arquivo_buscar, acao_arquivo_entregar, acao_arquivo_ler, acao_arquivo_procurar
 from .central import acao_aprovacoes_decidir, acao_aprovacoes_lista, acao_atividade_lista, acao_aviso_celular
 from .claude import (acao_claude_cancelar, acao_claude_perguntas, acao_claude_permissao,
@@ -51,10 +50,6 @@ ACOES = {
     "sistema.processos": (acao_sistema_processos, "processos que mais usam CPU ou RAM (ordem?, quantos?)", None),
     "sistema.rede":      (acao_sistema_rede, "endereços e portas abertas do servidor", None),
     "sistema.sensores":  (acao_sistema_sensores, "temperaturas da CPU, NVMe, GPU e placa, e as ventoinhas", None),
-    "arca.lista":        (acao_arca_lista, "arquivos do Arca, os mais novos primeiro (nome? = pedaço do nome)", None),
-    "arca.guardar":      (acao_arca_guardar, "guarda um arquivo no Arca, onde o dono baixa pelo navegador (arquivo, "
-                          "nome?); /opt/data/... vale; texto vai com segredos ocultos; até 50 MB", None),
-    "arca.pegar":        (acao_arca_pegar, "traz uma cópia de um arquivo do Arca para /opt/data/entregas (id)", None),
     "stack.editar":      (acao_stack_editar, "edita um arquivo de uma stack da zona apps, com foto antes (stack, "
                           "arquivo relativo à pasta, conteudo ou trocar=[{de, para}]); não aplica sozinho", None),
     "stack.aplicar":     (acao_stack_aplicar, "confere as regras e sobe a stack com docker compose up -d --build, "

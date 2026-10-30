@@ -20,9 +20,9 @@ Environment=HOME=/run/atena-executor
 # Quem filtra os segredos é o próprio executor (NUNCA_LER, SEGREDO, ocultar).
 AmbientCapabilities=CAP_DAC_READ_SEARCH
 CapabilityBoundingSet=CAP_DAC_READ_SEARCH
-# onde ele escreve (e só aqui): arquivo.entregar copia arquivos para o Hermes; arca.guardar põe arquivos
-# no Arca; stack.editar mexe nas stacks da zona apps. "-": a pasta pode não existir (Hermes não instalado)
-ReadWritePaths=-/srv/agents/hermes/entregas -/srv/apps/arca/uploads -/srv/apps/arca/data
+# onde ele escreve (e só aqui): arquivo.entregar copia arquivos para o Hermes; stack.editar mexe nas
+# stacks da zona apps. "-": a pasta pode não existir (Hermes não instalado)
+ReadWritePaths=-/srv/agents/hermes/entregas
 ReadWritePaths=-/opt/atena/stacks/apps
 # isolamento: acesso ao Docker já equivale a root, então a lista fechada é a proteção
 # e o resto do sistema fica fechado para ele

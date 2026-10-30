@@ -78,8 +78,8 @@ Antes de responder qualquer pergunta que possa estar nas notas, procure, nesta o
 4. Se ele quiser ver o original: `MEDIA:<caminho do anexo>` na resposta.
 Não achou: diga que não está nas notas. Não invente nem complete de memória.
 
-Para cruzar com o servidor (ex.: "essa peça serve no PC?", "compara com o contrato que está na
-Arca"), use também a habilidade servidor-atena: `arquivo.procurar`, `arquivo.ler` e `arquivo.entregar`.
+Para cruzar com o servidor (ex.: "essa peça serve no PC?", "compara com o contrato que está nos
+documentos"), use também a habilidade servidor-atena: `arquivo.procurar`, `arquivo.ler` e `arquivo.entregar`.
 
 ## Atualizar e apagar
 

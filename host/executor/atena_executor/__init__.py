@@ -17,7 +17,6 @@ baixo para cima (um módulo só importa dos que vêm antes dele):
   arquivos    ler, procurar e entregar arquivos
   pc          o PC da rede de casa
   local       texto privado num modelo que roda em casa
-  arca        os arquivos do Arca
   stacks      as stacks de apps que a Atena edita
   lab         os apps do lab
   claude      o Claude Code no lab
