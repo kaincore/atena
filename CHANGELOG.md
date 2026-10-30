@@ -1,5 +1,32 @@
 # Mudanças
 
+## 0.29.0 (2026-10-30)
+
+A última parte da Onda 6: as ações se descrevem, e o CI confere o que antes só se via no servidor. Com ela, a Onda 6 termina.
+
+- **O catálogo das ações:** cada ação do executor diz o que faz, o risco dela (consulta, muda ou destrutivo) e quem a usa (o painel e a Atena). O `GET /acoes` devolve o catálogo, e:
+  - o painel 0.16.0 lê de lá o que entra no histórico, sem a lista própria;
+  - o instalador monta os tokens por ele (`atena-executor acoes painel`, `atena` ou `atena-lab`);
+  - o teste da habilidade da Atena exige as ações que o catálogo dá a ela.
+
+  Uma ação nova passa a ser a entrada no catálogo, o código e um teste, e não mais 8 arquivos em 4 linguagens.
+- **O destrutivo sempre pede o celular**, mesmo que ninguém ponha a ação na lista do token. Antes, uma ação nova destrutiva rodaria direto. A exceção é o painel, onde quem confirma, na tela, é o dono.
+- **O CI confere as regras das zonas em todos os composes** (a fatia, o IP nas portas, as redes, a versão fixa, o healthcheck) e passa as unidades do systemd pelo `systemd-analyze verify`.
+- **Correção:** o `./aplicar` deixava os arquivos de stack que gravava só para o root. Na primeira tentativa desta versão, o painel novo não leu o próprio código e caiu, e o aplicar desfez tudo sozinho. Agora o arquivo trocado mantém o modo e o dono que tinha.
+- Testado:
+  - 29 verificações novas: `teste_catalogo.py`, a aprovação pelo risco, `teste_composes.py` e `teste_unidades.py` (estragados de propósito, acusam), o modo dos arquivos no `teste_aplicar.py` e o catálogo no painel;
+  - cada commit rodado sozinho;
+  - o CI reproduzido com `tools/ci-local.sh`, num container Ubuntu 24.04.
+
+  No servidor de origem:
+  - o primeiro `sudo ./aplicar` desta versão falhou no painel e desfez sozinho: os arquivos voltaram com o dono e o conteúdo de antes, e o executor e o painel 0.15.0 voltaram saudáveis. É o `--desfazer` provado no servidor de verdade;
+  - com a correção, o segundo gravou os 9 arquivos, reiniciou o executor e subiu o painel 0.16.0, saudável;
+  - a Atena vê as suas 38 ações com o risco, e pedem o celular as mesmas de antes (`app.apagar`, agora pelo risco, e `app.publicar`);
+  - de dentro do painel, o catálogo chega com as 38 ações dele;
+  - a conferência final, como root, não achou nenhuma diferença.
+
+  Sem testar ainda: uma ação nova de verdade passando pelo catálogo até a tela do painel (testado com uma ação de mentira).
+
 ## 0.28.0 (2026-10-30)
 
 A terceira parte da Onda 6: o servidor se atualiza pelo repositório, num comando só, e as regras da Atena ficam só para leitura. É o portão da onda: pela primeira vez, o servidor está igual ao repositório.
