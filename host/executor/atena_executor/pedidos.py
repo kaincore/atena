@@ -77,9 +77,18 @@ def mudar(p, **campos):
 
 
 def precisa_aprovacao(cliente, nome):
-    from .acoes import ACOES  # aqui: a lista de ações usa este módulo
-    padrao = [n for n, acao in ACOES.items() if acao[2]]   # sem o campo, tudo que pode pedir
-    return nome in cliente.get("aprovar", padrao)
+    """Se o pedido vai ao celular do dono: o que o token manda aprovar e, sempre, o que é destrutivo (uma
+    ação nova destrutiva pede o celular mesmo que ninguém a ponha no token). Sem o campo aprovar no token,
+    tudo o que vira pedido. Com aprovar vazio ("nenhuma"), nada: é o painel, onde quem confirma, na
+    tela, é o próprio dono."""
+    from .acoes import ACOES, DESTRUTIVO  # aqui: a lista de ações usa este módulo
+    acao = ACOES.get(nome)
+    if acao is None or acao.preparar is None:   # só um pedido espera o celular
+        return False
+    aprovar = cliente.get("aprovar")
+    if aprovar is None:
+        return True
+    return aprovar != [] and (nome in aprovar or acao.risco == DESTRUTIVO)
 
 
 def criar_pedido(cliente, nome, params, origem, titulo):

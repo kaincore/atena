@@ -193,4 +193,18 @@ confere("sem pedidos.json (a primeira vez): começa vazio, sem cópia nem aviso"
         ex.ESTADO["pedidos"] == {} and not glob.glob(ex.PEDIDOS + "*") and ENVIADOS == [])
 CONF.pop("ATENA_NTFY_URL")
 
+# --- a aprovação segue o risco: o destrutivo pede o celular mesmo fora da lista do token
+so_reiniciar = {"cliente": "x", "acoes": ["app.apagar", "servico.reiniciar"], "zonas": ["apps"], "aprovar": ["servico.reiniciar"]}
+confere("destrutivo (app.apagar) fora da lista aprovar do token: pede o celular assim mesmo",
+        ex.precisa_aprovacao(so_reiniciar, "app.apagar") and ex.precisa_aprovacao(so_reiniciar, "servico.reiniciar"))
+confere("o que muda e está fora da lista: roda direto", not ex.precisa_aprovacao(dict(so_reiniciar, aprovar=[]), "servico.reiniciar")
+        and not ex.precisa_aprovacao(dict(so_reiniciar, aprovar=["app.apagar"]), "servico.reiniciar"))
+confere("aprovar vazio (o painel, onde o dono confirma na tela): nem o destrutivo pede o celular",
+        not ex.precisa_aprovacao(dict(so_reiniciar, aprovar=[]), "app.apagar"))
+sem_campo = {k: v for k, v in so_reiniciar.items() if k != "aprovar"}
+confere("token sem o campo aprovar: todo pedido vai ao celular, e consulta nunca",
+        ex.precisa_aprovacao(sem_campo, "app.apagar") and ex.precisa_aprovacao(sem_campo, "servico.reiniciar")
+        and not ex.precisa_aprovacao(sem_campo, "status.servicos") and not ex.precisa_aprovacao(sem_campo, "não.existe"))
+confere("sem ATENA_NTFY_URL, os botões usam o IP da rede de casa", ex.endereco_ntfy() == "http://192.168.0.10:2586")
+
 fim()

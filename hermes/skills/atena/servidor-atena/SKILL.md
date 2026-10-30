@@ -22,7 +22,7 @@ terminal (habilidade lab).
 
 ```bash
 A=/opt/data/scripts/acao.py
-python3 $A --acoes                                      # o que você pode pedir agora (a lista muda)
+python3 $A --acoes                                      # o que você pode pedir agora, com o risco (a lista muda)
 python3 $A status.servicos                              # uma ação sem parâmetros
 python3 $A servico.logs '{"stack": "litellm", "linhas": 50}'   # com parâmetros, num objeto JSON
 python3 $A --pedido <id>                                # acompanha um pedido (volta quando ele termina, ou em 170 s)
@@ -146,9 +146,9 @@ Fluxo do PC (pedidos do dono sobre ligar, desligar ou reiniciar):
    `pc.desligar`, `pc.reiniciar` e `pc.cancelar` dizem que o controle ainda não foi configurado no
    Windows. Diga isso ao dono e não tente de novo.
 
-Reiniciar e ligar/desligar o PC são reversíveis: faça direto. Se `/acoes` marcar uma ação com
-"[precisa de aprovação no celular]", ela responde HTTP 202 com `{"pedido": "<id>"}` e só roda
-quando o dono tocar em Aprovar: não peça outro ok no chat, diga que a aprovação está no celular
+Reiniciar e ligar/desligar o PC são reversíveis: faça direto. Em `/acoes`, cada ação diz o `risco`
+(`consulta`, `muda` ou `destrutivo`) e se ela pede `aprovacao`. Uma que pede responde HTTP 202 com
+`{"pedido": "<id>"}` e só roda quando o dono tocar em Aprovar (toda destrutiva pede): não peça outro ok no chat, diga que a aprovação está no celular
 (vale 10 min) e acompanhe com `GET /pedido/<id>`.
 
 O dono também decide pelo painel (aba Aprovações): ele pode aprovar, recusar ou responder ali em vez

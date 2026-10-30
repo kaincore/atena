@@ -1,7 +1,7 @@
 """Chama o executor de ações pelo socket, com o token da Atena, e diz o código HTTP.
 
   python3 /opt/data/scripts/acao.py <ação> ['{"param": "valor"}']   pede uma ação
-  python3 /opt/data/scripts/acao.py --acoes                         o que este token pode pedir
+  python3 /opt/data/scripts/acao.py --acoes                         o que este token pode pedir, com o risco
   python3 /opt/data/scripts/acao.py --pedido <id> [segundos]        acompanha um pedido (espera até 170 s)
 
 A primeira linha é "HTTP <código>"; depois vem a resposta em JSON. Sai com 0 em 2xx, 1 numa recusa ou
