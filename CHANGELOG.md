@@ -1,5 +1,28 @@
 # Mudanças
 
+## 0.32.0 (2026-10-30)
+
+A última parte da Onda 7: a tela Atena. O painel tem o histórico da Atena e do Claude Code que ela comanda, e um chat com ela. Com ela, a Onda 7 termina.
+
+- **A tela Atena** (na barra de baixo, com o elmo coríntio dela):
+  - à esquerda, as conversas dela, com filtros: Todas, Painel, Telegram, Agenda e Claude Code;
+  - à direita, a conversa aberta, com as suas falas, as dela (listas, negrito, `código`) e as entregas da agenda. Os passos dela vêm junto: cada ação no servidor, com o resultado. Um trabalho do Claude Code que ela mandou vira um cartão, que abre a conversa inteira dele: o pedido, cada ferramenta com o resultado, o texto e o fim, com o tempo e o custo;
+  - no celular, uma coisa de cada vez: a lista e, ao tocar, a conversa.
+- **O chat:** numa conversa nova ou numa do painel, você escreve, e a resposta chega enquanto ela escreve, com os passos ao vivo e um botão Parar. Se ela quiser rodar um comando que pede o seu ok, a aprovação aparece ali mesmo (só desta vez, nesta conversa ou não). As conversas do Telegram e da agenda ficam só para ler, e a memória dela é uma só.
+- **O painel acompanha o pedido pela versão** (`GET /api/pedido/<id>?versao=n`) e deixa o chat fora do Histórico: a conversa fica na Atena.
+- Painel 0.18.0.
+- Testado:
+  - 2 verificações novas no painel (a versão passada ao executor, só se for um número; o chat fora do Histórico);
+  - a tela no ensaio, com as conversas e um trabalho de verdade do Claude Code, e um executor de mentira que responde aos pedaços: a conversa nova, o passo, o pedido de aprovação, aprovar, o texto chegando, o fim, o cartão do Claude Code e o registro dele, no PC e no celular (360 px, a barra com seis itens cabendo), nos temas claro e escuro;
+  - cada commit rodado sozinho;
+  - o CI reproduzido com `tools/ci-local.sh`.
+
+  No servidor de origem:
+  - o `sudo ./aplicar` gravou os 8 arquivos e subiu o painel 0.18.0, saudável, sem reiniciar o executor;
+  - o chat com a Atena de verdade, pelo executor com o token do painel: a pergunta "quantos containers estão no ar agora?" teve os passos ao vivo (a habilidade aos 2,5 s, a consulta ao servidor aos 3,6 s), o texto chegando em 23 versões e a resposta certa (17 containers) em 5,5 s. A conversa ficou na Atena como do painel, aberta para continuar.
+
+  Sem testar ainda no servidor: o pedido de aprovação de um comando no meio do chat com a Atena de verdade (testado contra o Hermes de mentira e no ensaio).
+
 ## 0.31.0 (2026-10-30)
 
 A segunda parte da Onda 7: uma agenda só. O que você pede à Atena pelo Telegram aparece no painel, e o que você marca no painel para ela chega pelo Telegram.
