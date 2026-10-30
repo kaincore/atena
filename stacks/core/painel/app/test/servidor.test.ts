@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { Agendador } from "../src/agendador.ts";
 import { Banco } from "../src/banco.ts";
 import { pedirExecutor } from "../src/executor.ts";
-import { criarServidor, pendenciasDoReadme } from "../src/servidor.ts";
+import { type Config, criarServidor, pendenciasDoReadme } from "../src/servidor.ts";
 import { gerar } from "../src/senha.ts";
 
 const pasta = mkdtempSync(join(tmpdir(), "painel-"));
@@ -42,6 +42,7 @@ before(async () => {
         res.end(JSON.stringify(dados));
       };
       if (req.headers.authorization !== `Bearer ${TOKEN}`) return responder(401, { ok: false, erro: "token inválido" });
+      if (corpo?.params?.demorar) return; // não responde: o painel desiste quando o prazo acaba
       if (req.url === "/acao/servico.reiniciar") return responder(202, { ok: true, pedido: "abcd1234", estado: "executando" });
       if (req.url?.startsWith("/pedido/abcd1234"))
         return responder(200, { ok: true, pedido: { id: "abcd1234", estado: "concluido", resultado: { reiniciados: ["arca"] } } });
@@ -260,6 +261,49 @@ test("ação que muda algo entra no histórico, com o pedido acompanhado até o 
   await pedir("POST", "/api/acao/pc.ligar", { params: {} }, cookie);
   assert.equal(banco.historico()[0].estado, "falhou");
   assert.equal(banco.historico()[0].resumo, "falhou de propósito");
+});
+
+test("ação que muda algo entra no histórico antes de ir ao executor; prazo esgotado e erro ficam lá", async () => {
+  const cookie = await entrar();
+  const abrir = async (outra: Config) => {
+    const s = criarServidor(outra, banco);
+    await new Promise<void>((r) => s.listen(0, "127.0.0.1", r));
+    return { s, base: `http://127.0.0.1:${(s.address() as AddressInfo).port}` };
+  };
+  const acao = (base: string, nome: string, params: unknown) => fetch(`${base}/api/acao/${nome}`, {
+    method: "POST", headers: { "Content-Type": "application/json", "X-Atena": "1", Cookie: cookie }, body: JSON.stringify({ params }),
+  });
+
+  const lento = await abrir({ ...config, prazoExecutor: 0.3 });
+  try {
+    recebidos.length = 0;
+    const resposta = acao(lento.base, "app.reiniciar", { projeto: "loja", demorar: true });
+    for (let i = 0; i < 100 && !recebidos.length; i++) await new Promise((p) => setTimeout(p, 10));
+    assert.equal(recebidos[0]?.caminho, "/acao/app.reiniciar");
+    const [rodando] = banco.historico();
+    assert.equal(rodando.acao, "app.reiniciar");
+    assert.equal(rodando.estado, "executando", "já está no histórico enquanto o executor trabalha");
+    const r = await resposta;
+    assert.equal(r.status, 504);
+    assert.match(((await r.json()) as { erro: string }).erro, /demorou demais/);
+    const [registro] = banco.historico();
+    assert.equal(registro.id, rodando.id, "o mesmo registro, atualizado");
+    assert.equal(registro.estado, "falhou");
+    assert.match(registro.resumo, /demorou demais.*pode ter acontecido/);
+  } finally {
+    lento.s.close();
+  }
+
+  const semExecutor = await abrir({ ...config, socketExecutor: join(pasta, "nao-existe.sock") });
+  try {
+    assert.equal((await acao(semExecutor.base, "pc.ligar", {})).status, 502);
+    const [registro] = banco.historico();
+    assert.equal(registro.acao, "pc.ligar");
+    assert.equal(registro.estado, "falhou");
+    assert.match(registro.resumo, /executor não respondeu/);
+  } finally {
+    semExecutor.s.close();
+  }
 });
 
 test("a central: consultas não entram no histórico, a decisão entra", async () => {

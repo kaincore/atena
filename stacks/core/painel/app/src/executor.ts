@@ -6,6 +6,8 @@ import { readFileSync } from "node:fs";
 export type RespostaExecutor = { status: number; corpo: Record<string, unknown> };
 
 export class SemToken extends Error {}
+// o executor não respondeu no prazo: a ação pode ter acontecido mesmo assim
+export class PrazoEsgotado extends Error {}
 
 export function pedirExecutor(
   socket: string,
@@ -48,7 +50,7 @@ export function pedirExecutor(
         });
       },
     );
-    pedido.on("timeout", () => pedido.destroy(new Error("o executor demorou demais para responder")));
+    pedido.on("timeout", () => pedido.destroy(new PrazoEsgotado("o executor demorou demais para responder")));
     pedido.on("error", reject);
     if (dados) pedido.write(dados);
     pedido.end();

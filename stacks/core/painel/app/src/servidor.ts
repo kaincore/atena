@@ -8,7 +8,7 @@ import { gzipSync } from "node:zlib";
 import { AGENDAVEIS, Agendador, EntradaInvalida, ler, proxima, validar } from "./agendador.ts";
 import type { Banco } from "./banco.ts";
 import { DURACAO_SESSAO } from "./banco.ts";
-import { pedirExecutor, SemToken } from "./executor.ts";
+import { pedirExecutor, PrazoEsgotado, SemToken } from "./executor.ts";
 import { conferir, lerSenha } from "./senha.ts";
 
 export type Config = {
@@ -16,6 +16,7 @@ export type Config = {
   arquivoSenha: string;
   arquivoToken: string;
   socketExecutor: string;
+  prazoExecutor?: number; // segundos que uma ação espera o executor (180; os testes usam menos)
 };
 
 // a entrada por onde a visita chegou: cada uma tem o seu socket (veja principal.ts), e nenhum cabeçalho
@@ -235,9 +236,10 @@ export function criarServidor(config: Config, banco: Banco, agendador?: Agendado
 
   async function executor(metodo: "GET" | "POST", caminho: string, corpo?: unknown) {
     try {
-      return await pedirExecutor(config.socketExecutor, config.arquivoToken, metodo, caminho, corpo);
+      return await pedirExecutor(config.socketExecutor, config.arquivoToken, metodo, caminho, corpo, config.prazoExecutor);
     } catch (e) {
       if (e instanceof SemToken) throw new ErroHttp(503, `${e.message} (rode o instalador do painel)`);
+      if (e instanceof PrazoEsgotado) throw new ErroHttp(504, `${e.message}; a ação pode ter acontecido mesmo assim, confira antes de pedir de novo`);
       throw new ErroHttp(502, "o executor não respondeu (sudo systemctl status atena-executor)");
     }
   }
@@ -394,11 +396,19 @@ export function criarServidor(config: Config, banco: Banco, agendador?: Agendado
       const { params = {} } = await lerCorpo(req);
       if (typeof params !== "object" || params === null || Array.isArray(params))
         throw new ErroHttp(400, "params deve ser um objeto");
-      const r = await executor("POST", `/acao/${nome}`, { params, origem: "painel" });
-      if (ACOES[nome].muda) {
+      // o que muda algo entra no histórico antes de ir ao executor: um prazo esgotado ou um erro ficam lá
+      const registro = ACOES[nome].muda ? banco.registrar(nome, params, "executando", "") : null;
+      let r;
+      try {
+        r = await executor("POST", `/acao/${nome}`, { params, origem: "painel" });
+      } catch (e) {
+        if (registro !== null) banco.atualizarRegistro(registro, { estado: "falhou", resumo: (e as Error).message });
+        throw e;
+      }
+      if (registro !== null) {
         const pedido = r.status === 202 ? String(r.corpo.pedido) : null;
         const estado = pedido ? String(r.corpo.estado ?? "executando") : r.corpo.ok ? "concluido" : "falhou";
-        banco.registrar(nome, params, estado, resumir(r.corpo), pedido);
+        banco.atualizarRegistro(registro, { estado, resumo: resumir(r.corpo), ...(pedido ? { pedido } : {}) });
       }
       return responder(res, r.status, r.corpo);
     }
