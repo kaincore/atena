@@ -6,7 +6,7 @@ import json
 import os
 import sqlite3
 
-from comum import SESSAO, confere, erro, esperar, executor, fim, uma_volta
+from comum import RAIZ, SESSAO, confere, erro, esperar, executor, fim, uma_volta
 
 ex, tmp, avisos = executor(conf="ATENA_CLAUDE_SKILLS=sim\n")
 ex.RECEITAS, ex.INDICE_RECEITAS = f"{tmp}/receitas", f"{tmp}/receitas.db"
@@ -284,5 +284,10 @@ confere("pasta sem receita.json não entra no índice", ex.acao_receita_lista(cl
 con = sqlite3.connect(ex.INDICE_RECEITAS)
 confere("o índice tem a busca por texto (FTS5)", con.execute("SELECT 1 FROM sqlite_master WHERE name = 'busca'").fetchone())
 con.close()
+
+# --- a imagem do coletor: a mesma no executor, no instalador e no Dockerfile do repositório ---------------
+with open(os.path.join(RAIZ, "install", "88-lab.sh")) as f:
+    confere("o instalador constrói a mesma imagem que o executor roda", f"COLETOR={ex.COLETOR} " in f.read())
+confere("o Dockerfile do coletor está no repositório", os.path.isfile(os.path.join(RAIZ, "host", "lab", "coletor", "Dockerfile")))
 
 fim()

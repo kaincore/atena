@@ -26,7 +26,7 @@ RENDERIZADAS = ("ATENA_LAN_IP", "ATENA_LAN_CIDR", "ATENA_LAN_IF", "ATENA_ROUTER_
 # (os mesmos do install/00-verificar.sh)
 PADROES = {"ATENA_TZ": "America/Sao_Paulo", "ATENA_SENSORES_MODULO": "", "ATENA_VOZ": "nao",
            "ATENA_CLAUDE_CONTAS": "principal", "ATENA_CLAUDE_TROCA": "nao", "ATENA_CLAUDE_VERSAO": "2.1.302",
-           "ATENA_CLAUDE_SKILLS": "nao", "ATENA_PAINEL_CASA": "nao",
+           "ATENA_CLAUDE_SKILLS": "nao", "ATENA_RECEITAS_CONTA": "", "ATENA_PAINEL_CASA": "nao",
            "ATENA_PC_IP": "", "ATENA_PC_PORTA": "1234", "ATENA_PC_MODELO": "qwen3-14b", "ATENA_PC_RESERVA": ""}
 # sem GPU, o 80-stacks.sh tira o pedido de GPU dos composes e troca as imagens pelas de CPU
 SEM_GPU = ((r"^ *gpus: all", None),
@@ -308,6 +308,8 @@ def desejado(raiz, conf, tem):
                 item("lab", f"host/lab/ferramentas/{nome}", f"{L}/ferramentas/{nome}")
             item("lab", "host/lab/tela.js", f"{L}/ferramentas/tela.js")
             item("lab", "host/lab/atena-tela", f"{L}/ferramentas/bin/atena-tela", 0o755)
+            item("lab", "host/lab/rea", f"{L}/ferramentas/bin/rea", 0o755)
+            item("lab", "host/lab/skills/receita/SKILL.md", f"{L}/skills/receita/SKILL.md")
         vigias += [Vigia("lab", L, "*.py"), Vigia("lab", L, "*.json")]
         item("lab", "host/lab/gitconfig", "/var/lib/atena-claude/.gitconfig")
         item("lab", "host/lab/lab-interativo.json", "/srv/lab/.claude/settings.json", 0o644, admin, admin)

@@ -1,0 +1,11 @@
+#!/bin/sh
+# rea: o REA (Reverse Engineer Anything, rea-agents) pela linha de comando, para o Claude Code do lab
+# analisar sem rede o que o coletor das receitas gravou (o registro da rede, scripts). Roda dentro do
+# sandbox, no Node do lab (o REA pede Node 22.23.4+, 24.22.1+ ou 26.12.1+), com o que ele guarda na
+# pasta de cache do trabalhador (ATENA_CLAUDE_SKILLS=sim).
+#   rea inspect-web-network-capture coleta/rede.har har --detail summary --evidence_output <arquivo> --format md
+#   rea analyze-javascript-application <pasta absoluta> --format md --token-limit 6000
+D=/usr/local/lib/atena-claude
+C="${HOME:-/var/lib/atena-claude}/.cache/rea"
+export XDG_CONFIG_HOME="$C/config" XDG_DATA_HOME="$C/data" XDG_STATE_HOME="$C/state" XDG_CACHE_HOME="$C/cache"
+exec "$D/node/bin/node" "$D/ferramentas/node_modules/rea-agents/scripts/rea.mjs" "$@"

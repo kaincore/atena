@@ -1,6 +1,8 @@
 # Etapa 88 (só com --lab): o lab do Claude Code. O usuário atena-claude (sem sudo, sem Docker) roda os
 # trabalhos que a Atena pede ao executor, em /srv/lab/projetos, no sandbox do Claude Code; os pedidos
-# de permissão e as perguntas vão ao celular. Os apps prontos vão para a zona lab (app.publicar).
+# de permissão e as perguntas vão ao celular. Os apps prontos vão para a zona lab (app.publicar). Com as
+# skills, também as receitas de estilo: o coletor (um container sem IA, na rede lab-coletor) abre o site
+# e o Claude Code escreve a receita em /srv/lab/receitas.
 # Depois, falta você: sudo atena-claude-conta entrar <conta>, para cada conta de ATENA_CLAUDE_CONTAS
 # (com ATENA_CLAUDE_SKILLS=sim, o login já põe os plugins e o Impeccable na conta).
 
@@ -67,6 +69,32 @@ if [ "$("$L/claude" --version 2>/dev/null | cut -d' ' -f1)" != "$ATENA_CLAUDE_VE
 fi
 ok "Claude Code $ATENA_CLAUDE_VERSAO em $L/claude"
 
+# o Node do lab, numa versão fixa, do nodejs.org e conferido pelo checksum guardado aqui. O Claude Code do
+# lab usa ele na frente do Node do sistema (o do Ubuntu fica como está), e o REA das receitas pede
+# 22.23.4+ ou 24.22.1+. Para trocar, mude a versão e as duas somas (SHASUMS256.txt da versão nova).
+NODE_LAB=24.22.1
+case "$(uname -m)" in
+  x86_64) node_plataforma=linux-x64; node_soma=6c172a9ab6718f7b801fb5a7bd486af2ee5e32758086a04b84fcce2aa77095e6 ;;
+  aarch64) node_plataforma=linux-arm64; node_soma=dbabf7a1cbf947e6059ffad2c27b80041db97dea1e553b62afdee7f13fca336e ;;
+  *) erro "o Node do lab não tem versão para $(uname -m)" ;;
+esac
+if [ "$("$L/node/bin/node" --version 2>/dev/null)" != "v$NODE_LAB" ]; then
+  baixado=$(mktemp -d)
+  curl -fsSL -o "$baixado/node.tar.xz" "https://nodejs.org/dist/v$NODE_LAB/node-v$NODE_LAB-$node_plataforma.tar.xz" \
+    || erro "não consegui baixar o Node $NODE_LAB do nodejs.org"
+  echo "$node_soma  $baixado/node.tar.xz" | sha256sum -c --quiet - \
+    || erro "o Node baixado não confere com o checksum oficial da versão $NODE_LAB"
+  install -d -m 755 "$baixado/node"
+  tar -xJf "$baixado/node.tar.xz" -C "$baixado/node" --strip-components=1 --no-same-owner
+  chown -R root:root "$baixado/node"
+  chmod -R u=rwX,go=rX "$baixado/node"
+  rm -rf "$L/node.antes"
+  if [ -d "$L/node" ]; then mv "$L/node" "$L/node.antes"; fi
+  mv "$baixado/node" "$L/node"
+  rm -rf "$L/node.antes" "$baixado"
+fi
+ok "Node $NODE_LAB do lab em $L/node"
+
 # runner, ponte, contas, lixeira e a configuração do trabalhador. O lab.json esconde do sandbox a
 # credencial de cada conta do atena.conf.
 for s in atena-claude-runner atena-claude-conta atena-lab-lixeira atena-lab-tailscale; do
@@ -97,6 +125,7 @@ ok "runner, ponte, lixeira e o sandbox do trabalhador (contas: $ATENA_CLAUDE_CON
 # linguagem dos plugins pyright-lsp e typescript-lsp, nas versões do package-lock.json. Os plugins entram
 # em cada conta pelo atena-claude-conta, porque precisam do login.
 IMPECCABLE_COMMIT=08d5b470495d242ca0470f4aeae1956c3a074f83   # versão 4.6.0
+COLETOR=atena/coletor:1.0.0   # a imagem do coletor das receitas (a mesma do receitas.py do executor)
 IMPECCABLE_SOMA=7f33df64049dad1a20160305b5b9e5dc15d45dbdcc689a56cc89440f6c22ac1a   # dos arquivos copiados
 soma_impeccable() (   # o sha256 da lista de sha256 dos arquivos que vão para as contas
   cd "$1" && find SKILL.md reference LICENSE NOTICE.md -type f -print0 | LC_ALL=C sort -z \
@@ -107,14 +136,15 @@ if [ "$ATENA_CLAUDE_SKILLS" = sim ]; then
   F=$L/ferramentas
   install -d -m 755 "$F" "$F/bin"
   install -m 644 "$RAIZ/host/lab/ferramentas/package.json" "$RAIZ/host/lab/ferramentas/package-lock.json" "$F/"
-  ( cd "$F" && npm ci --ignore-scripts --no-audit --no-fund --loglevel=error >/dev/null ) \
+  ( cd "$F" && PATH="$L/node/bin:$PATH" npm ci --ignore-scripts --no-audit --no-fund --loglevel=error >/dev/null ) \
     || erro "não consegui instalar as ferramentas do lab (cd $F && npm ci)"
   # o Chromium sem tela e as bibliotecas do Ubuntu que ele usa
   NEEDRESTART_SUSPEND=1 DEBIAN_FRONTEND=noninteractive PLAYWRIGHT_BROWSERS_PATH="$F/navegadores" \
-    node "$F/node_modules/playwright-core/cli.js" install --with-deps --only-shell chromium >/dev/null 2>&1 \
+    "$L/node/bin/node" "$F/node_modules/playwright-core/cli.js" install --with-deps --only-shell chromium >/dev/null 2>&1 \
     || erro "não consegui instalar o Chromium sem tela do atena-tela"
   install -m 644 "$RAIZ/host/lab/tela.js" "$F/tela.js"
   install -m 755 "$RAIZ/host/lab/atena-tela" "$F/bin/atena-tela"
+  install -m 755 "$RAIZ/host/lab/rea" "$F/bin/rea"
   chmod -R a+rX "$F"
   imp=$L/skills/impeccable
   if [ ! -d "$imp" ] || [ "$(soma_impeccable "$imp")" != "$IMPECCABLE_SOMA" ]; then
@@ -144,6 +174,24 @@ EOF
     rm -rf "$baixado"
   fi
   ok "skills do Claude Code: catálogo, Impeccable, atena-tela e servidores de linguagem"
+
+  # receitas de estilo: a skill receita (vai para as contas com as outras), o REA (nas ferramentas, acima),
+  # a pasta das receitas prontas (só o executor escreve; o trabalhador lê pelo grupo) e o coletor: a
+  # imagem e a rede dele, que alcança a internet e não a rede de casa nem o servidor (atena-docker-firewall
+  # barra as redes privadas de toda ponte br-*), sem conversa entre containers
+  install -d -m 755 "$L/skills/receita"
+  install -m 644 "$RAIZ/host/lab/skills/receita/SKILL.md" "$L/skills/receita/SKILL.md"
+  install -d -m 2750 -o atena-exec -g atena-lab /srv/lab/receitas
+  if ! docker network inspect lab-coletor >/dev/null 2>&1; then
+    docker network create --driver bridge --subnet 10.10.41.0/24 -o com.docker.network.bridge.name=br-coletor \
+      -o com.docker.network.bridge.enable_icc=false -o com.docker.network.bridge.host_binding_ipv4=127.0.0.1 \
+      lab-coletor >/dev/null || erro "não consegui criar a rede lab-coletor"
+  fi
+  if ! docker image inspect "$COLETOR" >/dev/null 2>&1; then
+    docker build -q -t "$COLETOR" "$RAIZ/host/lab/coletor" >/dev/null \
+      || erro "não consegui construir o coletor das receitas (docker build -t $COLETOR $RAIZ/host/lab/coletor)"
+  fi
+  ok "receitas de estilo: skill receita, REA, $COLETOR na rede lab-coletor e /srv/lab/receitas"
 fi
 
 # com Tailscale, os apps publicados ganham o link de fora de casa. O polkit deixa o executor iniciar só

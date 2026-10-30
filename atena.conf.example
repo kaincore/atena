@@ -64,7 +64,13 @@ ATENA_CLAUDE_VERSAO=2.1.302
 # mattpocock-skills, pyright-lsp e typescript-lsp e a skill Impeccable (só o texto, numa versão
 # fixa); a Atena escolhe a skill de cada trabalho, e o Claude Code confere as telas com prints
 # (atena-tela, com um Chromium sem tela). Baixa cerca de 400 MB.
+# Com as skills vêm as receitas de estilo: a Atena estuda um site que você gostou (um coletor abre a
+# página, só pela internet, e o Claude Code escreve a receita com o REA e o Impeccable) e usa nos seus
+# projetos. Baixa mais cerca de 1,5 GB (o Node do lab, o REA e a imagem do coletor).
 ATENA_CLAUDE_SKILLS=nao
+# A conta que escreve as receitas quando o pedido não diz (vazio: a primeira de ATENA_CLAUDE_CONTAS
+# com login)
+ATENA_RECEITAS_CONTA=
 
 # --- Painel (opcional, ./install.sh --painel) -----------------------------------
 # Fora de casa o painel abre só pelo Tailscale, em HTTPS. Com "sim", ele também abre na rede de casa,
