@@ -24,6 +24,8 @@ export const NOMES = {
   "stack.aplicar": "Aplicar stack",
   "stack.desfazer": "Desfazer edição da stack",
   "aprovacoes.decidir": "Decisão",
+  "atena.agendar": "Agendar para a Atena",
+  "atena.agendamento": "Agenda da Atena",
 };
 export const ORDEM_ZONAS = ["core", "ai", "agents", "apps", "lab", "prod"];
 export const TERMINADOS = new Set(["concluido", "falhou", "recusado", "expirado", "cancelado"]);

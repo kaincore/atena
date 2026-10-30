@@ -6,7 +6,7 @@
 // fora do limite.
 import { api, atualizar, avisar, cartao, consultar, containerOk, dinheiro, falha, gb, h, item, itens, linha, medidor,
   modulo, num, plural, statusDocker } from "../comum.js";
-import { quandoTexto } from "./agenda.js";
+import { daAtena, proximosDeTodos, quandoTexto } from "./agenda.js";
 import { abrirPedido, quem, relativo } from "./aprovacoes.js";
 import { abrirZona, marcarZonas, resumirZonas } from "../zonas.js";
 import { crepidoma, prancha, s, tom } from "../desenhos.js";
@@ -305,11 +305,13 @@ async function cartaoPendencias(r) {
   return c;
 }
 
-function cartaoProximos(r) {
-  if (r.ok === false) return null;
-  const proximos = r.agendamentos.filter((a) => a.ativo && a.proxima).slice(0, 3);
+// os três próximos das duas agendas, a do painel e a da Atena
+function cartaoProximos(r, atena) {
+  if (r.ok === false && !atena.length) return null;
+  const proximos = proximosDeTodos(r, atena).slice(0, 3);
   return cartao("Próximos agendamentos",
-    itens(proximos.map((a) => item({ led: "info", nome: a.nome, detalhe: quandoTexto(a.proxima) })), "Nada agendado."),
+    itens(proximos.map((a) => item({ led: "info", nome: a.nome,
+      detalhe: `${quandoTexto(a.proxima)}${a.de === "atena" ? " · a Atena" : ""}` })), "Nada agendado."),
     h("p", null, h("a", { href: "#agenda", class: "ir" }, "Ver a agenda")));
 }
 
@@ -332,10 +334,11 @@ function notaGasto(g) {
 }
 
 export async function telaInicio() {
-  const [recursos, servicos, gasto, sistema, aprovacoes, pendencias, agenda] = await Promise.all([
+  const [recursos, servicos, gasto, sistema, aprovacoes, pendencias, agenda, agendaAtena] = await Promise.all([
     consultar("status.recursos"), consultar("status.servicos"), consultar("gasto.api"), consultar("status.sistema"),
-    consultar("aprovacoes.lista"), api("GET", "/api/pendencias"), api("GET", "/api/agendamentos"),
+    consultar("aprovacoes.lista"), api("GET", "/api/pendencias"), api("GET", "/api/agendamentos"), consultar("atena.agenda"),
   ]);
+  const atena = daAtena(agendaAtena);
   // o que não deu para ler não vira "nada": sem nenhuma das quatro, o servidor não respondeu; sem uma ou
   // outra, a frase diz qual. Sem a central de aprovações (403 ou 404: o executor antigo ou o token sem a
   // ação), não há o que ler, e isso não é falha
@@ -350,7 +353,7 @@ export async function telaInicio() {
   const lista = servicos.ok === false ? [] : servicos.resultado;
   const falhas = sistema.ok === false ? [] : sistema.resultado.falhas;
   const listaPedidos = aprovacoes.ok === false ? [] : aprovacoes.resultado.pendentes;
-  const proximo = agenda.ok === false ? null : agenda.agendamentos.filter((a) => a.ativo && a.proxima).sort((a, b) => a.proxima - b.proxima)[0];
+  const proximo = proximosDeTodos(agenda, atena)[0] ?? null;
   const r = recursos.ok === false ? null : recursos.resultado;
   const ls = r ? leituras(r) : [];
   const dados = {
@@ -379,7 +382,7 @@ export async function telaInicio() {
     h("div", { class: "lamina-corpo" },
       h("div", { class: "centro" }, servidor,
         servicos.ok === false ? nota(cartao("Zonas", semLeitura(servicos)), "zonas") : pranchaZonas(lista)),
-      h("div", { class: "margem esquerda" }, nota(cartaoProximos(agenda), "agenda"), await cartaoPendencias(pendencias)),
+      h("div", { class: "margem esquerda" }, nota(cartaoProximos(agenda, atena), "agenda"), await cartaoPendencias(pendencias)),
       h("div", { class: "margem direita" },
         nota(gasto.ok === false ? cartao("Gasto de IA", semLeitura(gasto)) : notaGasto(gasto.resultado), "gasto"), nota(notaSistema, "sistema"))),
     colofao(fora))];
