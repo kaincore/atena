@@ -1,5 +1,5 @@
-"""Segredos: o que as consultas nunca leem (áreas do sistema e arquivos de chave, token e senha) e as
-linhas com senha, token ou chave, que saem ocultas (***)."""
+"""Segredos: o que as consultas nunca leem (áreas do sistema, arquivos de chave, token e senha, e o
+conteúdo dos bancos de dados) e as linhas com senha, token ou chave, que saem ocultas (***)."""
 
 import json
 import os
@@ -33,6 +33,11 @@ OCULTAR = [
 ]
 # o começo de um bloco PEM de verdade (só "PRIVATE KEY-----" pegava o próprio código do executor)
 CHAVE_PRIVADA = re.compile(r"-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----")
+# Bancos de dados: o conteúdo não sai nem lido nem copiado (os usuários e tokens do ntfy, os gastos do
+# LiteLLM, as conversas). SQLite pelo nome e pelo começo do arquivo; Redis pelo nome (o AOF é texto);
+# Postgres pela pasta de dados, que tem um PG_VERSION na raiz.
+BANCO = re.compile(r"(^|/)([^/]*\.(db|sqlite3?|db3|rdb|aof)(-(wal|shm|journal))?|appendonlydir)(/|$)", re.I)
+CABECA_SQLITE = b"SQLite format 3\0"
 
 
 def ocultar(texto):
@@ -50,6 +55,31 @@ def caminho_legivel(caminho):
     if PASTA_SEGREDO.search(real) or SEGREDO.search(real):
         raise Erro(403, "esse arquivo guarda segredos e não sai do servidor")
     return real
+
+
+def pasta_do_postgres(pasta):
+    while pasta not in ("/", ""):
+        if os.path.isfile(os.path.join(pasta, "PG_VERSION")):
+            return True
+        pasta = os.path.dirname(pasta)
+    return False
+
+
+def e_banco(real):
+    """real: um caminho já resolvido (caminho_legivel). Pastas valem pelo nome e pelo Postgres."""
+    if BANCO.search(real) or pasta_do_postgres(real if os.path.isdir(real) else os.path.dirname(real)):
+        return True
+    try:
+        with open(real, "rb") as f:
+            return f.read(16) == CABECA_SQLITE
+    except OSError:
+        return False
+
+
+def recusar_banco(real):
+    if e_banco(real):
+        raise Erro(403, "é um banco de dados: o conteúdo não sai do executor (para gastos, serviços e "
+                        "pedidos, use as consultas próprias)")
 
 
 def permitido(caminho):

@@ -1,8 +1,10 @@
 """Leitura: as consultas enxergam o servidor inteiro (o serviço tem só CAP_DAC_READ_SEARCH, que lê
-qualquer arquivo e não escreve nada), menos segredos (veja segredos.py).
+qualquer arquivo e não escreve nada), menos segredos e o conteúdo dos bancos de dados (segredos.py).
 
 arquivo.entregar copia um arquivo do servidor para /srv/agents/hermes/entregas (o Hermes vê em
-/opt/data/entregas), com segredos ocultos se for texto; a cópia some em 24 h."""
+/opt/data/entregas); a cópia some em 24 h. Texto sai de qualquer lugar, com os segredos ocultos, como
+em arquivo.ler. Binário (foto, PDF, planilha) sai inteiro, e por isso só das pastas de entrega: um
+binário qualquer do servidor podia ser um banco ou um cache com tokens."""
 
 import fnmatch
 import glob
@@ -12,8 +14,8 @@ import secrets
 import shutil
 import time
 
-from .base import Erro, log
-from .segredos import CHAVE_PRIVADA, caminho_legivel, ocultar, permitido
+from .base import Erro, ler_conf, log
+from .segredos import BANCO, CHAVE_PRIVADA, caminho_legivel, ocultar, permitido, recusar_banco
 
 
 def ler_texto(real, limite):
@@ -43,6 +45,7 @@ def acao_arquivo_ler(cliente, params):
             raise Erro(404, "não existe")
         if not os.path.isfile(real):
             raise Erro(400, "não é arquivo nem pasta comum")
+        recusar_banco(real)
         texto, cortado = ler_texto(real, 64 * 1024)
     except FileNotFoundError:
         raise Erro(404, "não existe")
@@ -62,18 +65,20 @@ def acao_arquivo_buscar(cliente, params):
         raise Erro(400, "a pasta não existe")
     if fora_da_zona(cliente, raiz):
         raise Erro(403, "arquivos de clientes (zona prod) estão fora do seu alcance")
+    recusar_banco(raiz)
     alvo, achados, vistos, prazo = texto.lower(), [], 0, time.time() + 20
     for pasta, subpastas, arquivos in os.walk(raiz):
         subpastas[:] = sorted(p for p in subpastas if permitido(os.path.join(pasta, p))
-                              and not fora_da_zona(cliente, os.path.join(pasta, p)))
+                              and not fora_da_zona(cliente, os.path.join(pasta, p))
+                              and not BANCO.search(p) and not os.path.isfile(os.path.join(pasta, p, "PG_VERSION")))
         for nome in sorted(arquivos):
             vistos += 1
             if vistos > 20000 or time.time() > prazo or len(achados) >= 100:
                 return {"achados": achados, "incompleta": True}
             caminho = os.path.join(pasta, nome)
-            if (not permitido(caminho) or os.path.islink(caminho) or not os.path.isfile(caminho)
+            if (not permitido(caminho) or BANCO.search(nome) or os.path.islink(caminho) or not os.path.isfile(caminho)
                     or os.path.getsize(caminho) > 2 * 1024 * 1024):
-                continue
+                continue   # SQLite e Postgres são binários e já ficam de fora; o AOF do Redis é texto
             try:
                 conteudo, _ = ler_texto(caminho, 2 * 1024 * 1024)
             except (OSError, Erro):
@@ -97,6 +102,9 @@ TIPOS_ARQUIVO = {
     "audio": (".mp3", ".ogg", ".oga", ".opus", ".m4a", ".wav"),
 }
 PASTAS_PROD = ("/srv/prod", "/opt/atena/stacks/prod")
+# de onde um binário sai inteiro: os documentos do dono, os projetos do lab e o espaço da Atena (notas,
+# o que o dono mandou pelo Telegram); o dono acrescenta outras em ATENA_PASTAS_ENTREGA no atena.conf
+PASTAS_ENTREGA = ("/opt/atena/docs", "/srv/lab/projetos", "/srv/agents/hermes")
 
 
 def caminho_do_cliente(caminho):
@@ -105,6 +113,14 @@ def caminho_do_cliente(caminho):
     if isinstance(caminho, str) and (caminho == origem or caminho.startswith(origem + "/")):
         return real + caminho[len(origem):]
     return caminho
+
+
+def pastas_de_entrega():
+    try:
+        extras = [p for p in ler_conf().get("ATENA_PASTAS_ENTREGA", "").split() if p.startswith("/")]
+    except OSError:
+        extras = []
+    return [os.path.realpath(p) for p in (*PASTAS_ENTREGA, *extras)]
 
 
 def fora_da_zona(cliente, real):
@@ -178,12 +194,18 @@ def acao_arquivo_entregar(cliente, params):
             raise Erro(404, "não existe")
         if not os.path.isfile(real):
             raise Erro(400, "não é um arquivo comum (para pastas, use arquivo.procurar)")
+        recusar_banco(real)
         tamanho = os.path.getsize(real)
         if tamanho > LIMITE_ENTREGA:
             raise Erro(413, f"o arquivo tem {tamanho // (1024 * 1024)} MB; o Telegram só aceita até 45 MB")
         texto = None
         if tamanho <= 5 * 1024 * 1024:
             texto, _ = ler_texto(real, 5 * 1024 * 1024)   # None se for binário; 403 se for chave privada
+        pastas = pastas_de_entrega()
+        if texto is None and not any(real == p or real.startswith(p + "/") for p in pastas):
+            raise Erro(403, "binário (ou texto com mais de 5 MB) fora das pastas de entrega: "
+                            + ", ".join(pastas) + ". O dono pode acrescentar a pasta em ATENA_PASTAS_ENTREGA, no "
+                            "/etc/atena/atena.conf; texto pequeno sai de qualquer lugar")
         limpar_entregas()
         nome = re.sub(r"[^\w.-]", "_", os.path.basename(real))[-120:] or "arquivo"
         copia = f"{time.strftime('%Y%m%d-%H%M%S')}-{secrets.token_hex(2)}-{nome}"

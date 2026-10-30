@@ -1,4 +1,5 @@
-"""Procurar e entregar arquivos: tipos, datas, zona prod, segredos e a validade das cópias."""
+"""Procurar e entregar arquivos: tipos, datas, zona prod, segredos, bancos de dados, as pastas de entrega
+e a validade das cópias."""
 import os
 import time
 
@@ -8,7 +9,7 @@ ex, tmp = carregar()
 fotos, docs, prod = f"{tmp}/fotos", f"{tmp}/docs", f"{tmp}/prod"
 for d in (fotos, f"{fotos}/viagem", docs, f"{docs}/.ssh", prod, f"{tmp}/entregas"):
     os.makedirs(d)
-ex.ENTREGAS, ex.PASTAS_PROD = f"{tmp}/entregas", (prod,)
+ex.ENTREGAS, ex.PASTAS_PROD, ex.PASTAS_ENTREGA = f"{tmp}/entregas", (prod,), (fotos, docs)
 open(f"{fotos}/praia.jpg", "wb").write(b"\xff\xd8\xff" + b"\0" * 2000)
 open(f"{fotos}/viagem/montanha.PNG", "wb").write(b"\x89PNG\r\n\x1a\n" + b"\0" * 100)
 open(f"{fotos}/antiga.jpg", "wb").write(b"\xff\xd8\xff\0")
@@ -73,6 +74,38 @@ for n in antigas:
     os.utime(os.path.join(ex.ENTREGAS, n), (velho, velho))
 ex.acao_arquivo_entregar(c, {"caminho": f"{fotos}/praia.jpg"})
 confere("cópias com mais de 24 h somem", not set(antigas) & set(os.listdir(ex.ENTREGAS)) and len(os.listdir(ex.ENTREGAS)) == 1)
+
+# binário só sai inteiro das pastas de entrega; texto sai de qualquer lugar, com os segredos ocultos
+outra = f"{tmp}/outra"
+os.makedirs(outra)
+open(f"{outra}/foto.jpg", "wb").write(b"\xff\xd8\xff\0")
+open(f"{outra}/notas.txt", "w").write("token: tk_abc\nlista de compras\n")
+status, msg = erro(ex.acao_arquivo_entregar, c, {"caminho": f"{outra}/foto.jpg"})
+confere("binário fora das pastas de entrega: 403, dizendo como liberar", status == 403 and "ATENA_PASTAS_ENTREGA" in msg, msg)
+r = ex.acao_arquivo_entregar(c, {"caminho": f"{outra}/notas.txt"})
+texto = open(os.path.join(ex.ENTREGAS, os.path.basename(r["copia"]))).read()
+confere("texto fora das pastas de entrega: sai, com os segredos ocultos", "tk_abc" not in texto and "compras" in texto, texto)
+open(ex.CONF, "w").write(f"ATENA_PASTAS_ENTREGA={outra} relativa/nao\n")
+confere("pasta acrescentada no atena.conf: o binário sai", ex.acao_arquivo_entregar(c, {"caminho": f"{outra}/foto.jpg"})["tamanho_kb"] == 0)
+os.unlink(ex.CONF)
+
+# bancos de dados: nem lidos, nem copiados, nem na busca (os tokens do ntfy, os gastos do LiteLLM)
+bancos = f"{docs}/bancos"
+os.makedirs(f"{bancos}/pg/base/1")
+open(f"{bancos}/user.db", "wb").write(b"SQLite format 3\0" + b"\0" * 100)
+open(f"{bancos}/sem-extensao", "wb").write(b"SQLite format 3\0" + b"\0" * 100)
+open(f"{bancos}/cache.db-wal", "wb").write(b"\x37\x7f\x06\x82")
+open(f"{bancos}/appendonly.aof", "w").write("*3\r\n$3\r\nSET\r\n$5\r\nchave\r\n$8\r\nmaracujá\r\n")
+open(f"{bancos}/pg/PG_VERSION", "w").write("17\n")
+open(f"{bancos}/pg/base/1/1259", "w").write("maracujá no postgres\n")
+for nome in ("user.db", "sem-extensao", "cache.db-wal", "appendonly.aof", "pg/base/1/1259"):
+    status, msg = erro(ex.acao_arquivo_entregar, c, {"caminho": f"{bancos}/{nome}"})
+    confere(f"entregar o banco {nome}: 403", status == 403 and "banco de dados" in msg, f"{status} {msg}")
+    confere(f"ler o banco {nome}: 403", erro(ex.acao_arquivo_ler, c, {"caminho": f"{bancos}/{nome}"})[0] == 403)
+r = ex.acao_arquivo_buscar(c, {"pasta": bancos, "texto": "maracujá"})
+confere("buscar não entra no AOF do Redis nem na pasta do Postgres", r["achados"] == [], r)
+confere("buscar dentro da pasta do Postgres: 403", erro(ex.acao_arquivo_buscar, c, {"pasta": f"{bancos}/pg/base", "texto": "maracujá"})[0] == 403)
+confere("a pasta dos bancos ainda se lista (só os nomes)", "user.db" in ex.acao_arquivo_ler(c, {"caminho": bancos})["itens"])
 
 # buscar texto também não entra na pasta de clientes
 open(f"{prod}/pedido.txt", "w").write("maracujá do cliente\n")

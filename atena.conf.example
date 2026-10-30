@@ -38,6 +38,12 @@ ATENA_TZ=America/Sao_Paulo
 #   Com Tailscale: https://<nome-do-servidor>.<sua-tailnet>.ts.net:2586 (com tailscale serve)
 ATENA_NTFY_URL=http://192.168.0.10:2586
 
+# --- Arquivos que a Atena traz -----------------------------------------------
+# Foto, PDF e outros binários a Atena só copia (arquivo.entregar) de /opt/atena/docs, dos projetos do
+# lab e do espaço dela; texto ela traz de qualquer lugar, com os segredos ocultos. Outras pastas de onde
+# ela pode trazer binários, separadas por espaço (ex.: /srv/fotos /home/atena/documentos):
+ATENA_PASTAS_ENTREGA=
+
 # --- Modelos de casa (texto privado sem nuvem) --------------------------------
 # Modelo do Ollama no servidor para o executor (local.processar). Baixe uma vez com:
 #   docker exec ollama ollama pull qwen3:4b-instruct-2507-q4_K_M

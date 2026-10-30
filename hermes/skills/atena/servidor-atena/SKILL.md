@@ -92,6 +92,11 @@ conteúdo, traga uma cópia com `arquivo.entregar` e:
 Onde ficam documentos e anexos: `/opt/atena/docs` (documentos que o dono guarda no servidor, em
 markdown e PDF), os projetos do lab e o seu espaço (as notas e o que o dono manda pelo Telegram).
 
+`arquivo.entregar` traz texto de qualquer lugar (com os segredos ocultos), mas binário (foto, PDF,
+planilha) só dessas pastas e das que o dono acrescentou: fora delas, 403 com a lista. Banco de dados
+(SQLite, Postgres, Redis) não sai nem lido nem copiado, em lugar nenhum: para gastos, serviços e
+pedidos, use as consultas próprias.
+
 ## Dados privados: modelo de casa
 
 Documento de cliente, contrato, exame, extrato, qualquer dado privado de terceiros ou que o dono
