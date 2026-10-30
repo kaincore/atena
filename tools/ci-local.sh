@@ -54,7 +54,7 @@ shellcheck_sh() (
 ruff() (
   cd "$copia"
   docker run --rm -v "$copia:/repo:ro" -w /repo ghcr.io/astral-sh/ruff:0.16.10 check --no-cache \
-    $(grep -l '^#!.*python' host/sbin/*) host/executor host/lab hermes/scripts tests
+    $(grep -l '^#!.*python' host/sbin/*) aplicar install/estado.py host/executor host/lab hermes/scripts tests
 )
 
 composes() (
@@ -82,11 +82,11 @@ testes_python() {
     su runner -c "cd /home/runner/repo
       for f in host/sbin/atena-executor host/sbin/atena-telegram host/sbin/atena-claude-runner \
                host/sbin/atena-painel-senha host/lab/dono.py host/lab/guarda_escopo.py hermes/scripts/ronda.py \
-               host/executor/atena_executor/*.py; do
+               host/executor/atena_executor/*.py aplicar install/estado.py; do
         python3 -c \"import ast, sys; ast.parse(open(sys.argv[1]).read(), sys.argv[1])\" \$f || exit 1
       done
       falharam=
-      for t in tests/executor/teste_*.py tests/hermes/teste_*.py tests/host/teste_*.py tests/lab/teste_*.py; do
+      for t in tests/executor/teste_*.py tests/hermes/teste_*.py tests/host/teste_*.py tests/install/teste_*.py tests/lab/teste_*.py; do
         (cd \$(dirname \$t) && /usr/bin/python3 \$(basename \$t)) > /tmp/saida 2>&1 || { falharam=\"\$falharam \$t\"; cat /tmp/saida; }
       done
       [ -z \"\$falharam\" ] || { echo \"falharam:\$falharam\"; exit 1; }"'
