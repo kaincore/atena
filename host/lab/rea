@@ -1,11 +1,19 @@
 #!/bin/sh
 # rea: o REA (Reverse Engineer Anything, rea-agents) pela linha de comando, para o Claude Code do lab
-# analisar sem rede o que o coletor das receitas gravou (o registro da rede, scripts). Roda dentro do
-# sandbox, no Node do lab (o REA pede Node 22.23.4+, 24.22.1+ ou 26.12.1+), com o que ele guarda na
-# pasta de cache do trabalhador (ATENA_CLAUDE_SKILLS=sim).
+# analisar sem rede e sem rodar nada o que as receitas trazem (a coleta de um site, um programa em alvo/).
+# Roda dentro do sandbox, no Node do lab (o REA pede Node 22.23.4+, 24.22.1+ ou 26.12.1+), com o que ele
+# guarda na pasta de cache do trabalhador (ATENA_CLAUDE_SKILLS=sim). Os descompiladores que o instalador
+# põe no lab: o Ghidra (com o JDK 21) e o JADX (pela ponte jadx-headless-mcp); o Apktool é o do sistema.
 #   rea inspect-web-network-capture coleta/rede.har har --detail summary --evidence_output <arquivo> --format md
-#   rea analyze-javascript-application <pasta absoluta> --format md --token-limit 6000
+#   rea analyze <arquivo> --format md --token-limit 6000          (programa: o Ghidra descompila)
+#   rea decode-android-resources <apk> --format md                (cores, temas e textos de um APK)
 D=/usr/local/lib/atena-claude
 C="${HOME:-/var/lib/atena-claude}/.cache/rea"
 export XDG_CONFIG_HOME="$C/config" XDG_DATA_HOME="$C/data" XDG_STATE_HOME="$C/state" XDG_CACHE_HOME="$C/cache"
+if [ -d "$D/ghidra" ] && [ -d "$D/java" ]; then
+  export GHIDRA_INSTALL_DIR="$D/ghidra" JAVA_HOME="$D/java" PATH="$D/java/bin:$PATH"
+fi
+J="$D/ferramentas/jadx/jadx-headless-mcp-0.7.1-all.jar"
+if [ -f "$J" ]; then export REA_JADX_MCP_JAR="$J"; fi
+if [ -x /usr/bin/apktool ]; then export REA_APKTOOL_COMMAND=/usr/bin/apktool; fi
 exec "$D/node/bin/node" "$D/ferramentas/node_modules/rea-agents/scripts/rea.mjs" "$@"

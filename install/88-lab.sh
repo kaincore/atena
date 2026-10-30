@@ -126,6 +126,13 @@ ok "runner, ponte, lixeira e o sandbox do trabalhador (contas: $ATENA_CLAUDE_CON
 # em cada conta pelo atena-claude-conta, porque precisam do login.
 IMPECCABLE_COMMIT=08d5b470495d242ca0470f4aeae1956c3a074f83   # versão 4.6.0
 COLETOR=atena/coletor:1.0.0   # a imagem do coletor das receitas (a mesma do receitas.py do executor)
+# os descompiladores do REA, nas versões que o rea-agents 6.8.0 espera (o Ghidra pelo SHA-256 da página da
+# versão no GitHub da NSA; a ponte do JADX pelo SHA-256 que o próprio REA fixa)
+GHIDRA_VERSAO=12.1.4
+GHIDRA_ZIP=ghidra_12.1.4_PUBLIC_20260921.zip
+GHIDRA_SOMA=ddac49f903da9d5bac833e5cc79395098b9c33cfd3279be5f31bd00387d2d4db
+JADX_PONTE=0.7.1
+JADX_SOMA=6e5eacf500b64292bfb73c49797c1958f6ee44646e43e868039ae7feb573ff75
 IMPECCABLE_SOMA=7f33df64049dad1a20160305b5b9e5dc15d45dbdcc689a56cc89440f6c22ac1a   # dos arquivos copiados
 soma_impeccable() (   # o sha256 da lista de sha256 dos arquivos que vão para as contas
   cd "$1" && find SKILL.md reference LICENSE NOTICE.md -type f -print0 | LC_ALL=C sort -z \
@@ -192,6 +199,46 @@ EOF
       || erro "não consegui construir o coletor das receitas (docker build -t $COLETOR $RAIZ/host/lab/coletor)"
   fi
   ok "receitas de estilo: skill receita, REA, $COLETOR na rede lab-coletor e /srv/lab/receitas"
+
+  # receitas de programas: os descompiladores do REA. O JDK 21 e o Apktool vêm do Ubuntu (atualizações de
+  # segurança com o resto); o Ghidra e a ponte do JADX, em versões fixas e conferidas. O rea do lab aponta
+  # para eles (GHIDRA_INSTALL_DIR, JAVA_HOME, REA_JADX_MCP_JAR, REA_APKTOOL_COMMAND). Os pagos (IDA,
+  # Hopper, JEB) ficam de fora. A skill do REA (reverse-engineer-anything, só o texto, do próprio pacote)
+  # vai para as contas com as outras.
+  NEEDRESTART_SUSPEND=1 apt-get install -y -qq openjdk-21-jdk-headless apktool unzip >/dev/null
+  ln -sfn "/usr/lib/jvm/java-21-openjdk-$(dpkg --print-architecture)" "$L/java"
+  [ -x "$L/java/bin/javac" ] || erro "o JDK 21 não ficou em $L/java (apt-get install openjdk-21-jdk-headless)"
+  if ! grep -qx "application.version=$GHIDRA_VERSAO" "$L/ghidra/Ghidra/application.properties" 2>/dev/null; then
+    baixado=$(mktemp -d)
+    curl -fsSL -o "$baixado/ghidra.zip" \
+      "https://github.com/NationalSecurityAgency/ghidra/releases/download/Ghidra_${GHIDRA_VERSAO}_build/$GHIDRA_ZIP" \
+      || erro "não consegui baixar o Ghidra $GHIDRA_VERSAO do GitHub"
+    echo "$GHIDRA_SOMA  $baixado/ghidra.zip" | sha256sum -c --quiet - \
+      || erro "o Ghidra baixado não confere com o SHA-256 da versão $GHIDRA_VERSAO"
+    unzip -q "$baixado/ghidra.zip" -d "$baixado"
+    chown -R root:root "$baixado/ghidra_${GHIDRA_VERSAO}_PUBLIC"
+    chmod -R u=rwX,go=rX "$baixado/ghidra_${GHIDRA_VERSAO}_PUBLIC"
+    rm -rf "$L/ghidra.antes"
+    if [ -d "$L/ghidra" ]; then mv "$L/ghidra" "$L/ghidra.antes"; fi
+    mv "$baixado/ghidra_${GHIDRA_VERSAO}_PUBLIC" "$L/ghidra"
+    rm -rf "$L/ghidra.antes" "$baixado"
+  fi
+  install -d -m 755 "$F/jadx"
+  jadx=$F/jadx/jadx-headless-mcp-$JADX_PONTE-all.jar
+  if ! echo "$JADX_SOMA  $jadx" | sha256sum -c --quiet - 2>/dev/null; then
+    curl -fsSL -o "$jadx.novo" \
+      "https://github.com/1013503897/jadx-headless-mcp/releases/download/v$JADX_PONTE/jadx-headless-mcp-$JADX_PONTE-all.jar" \
+      || erro "não consegui baixar a ponte do JADX ($JADX_PONTE) do GitHub"
+    echo "$JADX_SOMA  $jadx.novo" | sha256sum -c --quiet - \
+      || { rm -f "$jadx.novo"; erro "a ponte do JADX baixada não confere com o SHA-256 que o REA fixa"; }
+    chmod 644 "$jadx.novo"
+    mv "$jadx.novo" "$jadx"
+  fi
+  rm -rf "$L/skills/reverse-engineer-anything"
+  cp -r "$F/node_modules/rea-agents/skills/reverse-engineer-anything" "$L/skills/reverse-engineer-anything"
+  chown -R root:root "$L/skills/reverse-engineer-anything"
+  chmod -R u=rwX,go=rX "$L/skills/reverse-engineer-anything"
+  ok "descompiladores do REA: Ghidra $GHIDRA_VERSAO (JDK 21), JADX (ponte $JADX_PONTE), Apktool e a skill do REA"
 fi
 
 # com Tailscale, os apps publicados ganham o link de fora de casa. O polkit deixa o executor iniciar só

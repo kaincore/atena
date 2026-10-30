@@ -6,7 +6,7 @@
 #   sudo atena-claude-conta sair <conta>     desconecta a conta deste servidor
 #   sudo atena-claude-conta estado           quais contas estão prontas
 #   sudo atena-claude-conta skills           põe (ou, com ATENA_CLAUDE_SKILLS=nao, tira) os plugins, o
-#                                            Impeccable e a receita nas contas com login
+#                                            Impeccable, a receita e a do REA nas contas com login
 set -euo pipefail
 BASE=/var/lib/atena-claude
 LIB=/usr/local/lib/atena-claude
@@ -48,13 +48,13 @@ atualizar() {  # contas.json: o executor lê para recusar pedidos de conta sem l
 
 skills_na_conta() {  # com ATENA_CLAUDE_SKILLS=sim, os plugins e as skills do lab: o Impeccable e a receita
   local conta=$1 dir=$BASE/contas/$1 p s ok=0
-  rm -rf "$dir/skills/impeccable" "$dir/skills/receita"
+  rm -rf "$dir/skills/impeccable" "$dir/skills/receita" "$dir/skills/reverse-engineer-anything"
   if [ "$SKILLS" != sim ]; then
     for p in "${PLUGINS[@]}"; do como_claude "$conta" plugin uninstall "$p@claude-plugins-official" >/dev/null 2>&1 || true; done
     echo "$conta: sem skills"
     return
   fi
-  for s in impeccable receita; do   # só leitura para o trabalhador
+  for s in impeccable receita reverse-engineer-anything; do   # só leitura para o trabalhador
     if [ -d "$LIB/skills/$s" ]; then
       install -d -m 755 -o atena-claude -g atena-claude "$dir/skills"
       cp -r "$LIB/skills/$s" "$dir/skills/$s"
@@ -69,7 +69,7 @@ skills_na_conta() {  # com ATENA_CLAUDE_SKILLS=sim, os plugins e as skills do la
       echo "$conta: não consegui instalar o plugin $p (sem rede?); tente de novo: sudo atena-claude-conta skills" >&2
     fi
   done
-  echo "$conta: $ok de ${#PLUGINS[@]} plugins$([ -d "$dir/skills/impeccable" ] && echo ", o Impeccable")$([ -d "$dir/skills/receita" ] && echo " e a receita")"
+  echo "$conta: $ok de ${#PLUGINS[@]} plugins$([ -d "$dir/skills/impeccable" ] && echo ", o Impeccable")$([ -d "$dir/skills/receita" ] && echo ", a receita")$([ -d "$dir/skills/reverse-engineer-anything" ] && echo " e a do REA")"
 }
 
 conta_valida() {
