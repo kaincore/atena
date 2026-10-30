@@ -106,7 +106,7 @@ The executor treats "no route to host" over SSH as "off" instead of an error.
 Refusing any text containing "PRIVATE KEY-----" blocked files that merely mention it, such as the executor itself. What identifies a key is `-----BEGIN ... PRIVATE KEY-----`.
 
 **The executor writes in place, without replacing the file.**
-Arca rewrites its `metadata.json` on every upload, and a stack may mount a single file. Writing a new file and renaming it would change the owner and the inode; `stack.editar` and `arca.guardar` write to the same file.
+A stack may mount a single file, and the app may rewrite its own files while it runs. Writing a new file and renaming it would change the owner and the inode; `stack.editar` writes to the same file.
 
 **Speaches doesn't produce opus.**
 Hermes asks for the voice in opus (Telegram's voice message format) and Speaches answers 422. A LiteLLM hook switches the request to mp3, and Hermes converts it back with ffmpeg. Hermes sends the voice before the text, so the text waits for the speech to be ready.

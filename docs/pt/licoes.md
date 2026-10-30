@@ -106,7 +106,7 @@ O executor trata o SSH sem rota como "desligado", em vez de dar erro.
 Recusar qualquer texto com "PRIVATE KEY-----" barrava arquivos que só citam o trecho, como o próprio executor. O que identifica uma chave é `-----BEGIN ... PRIVATE KEY-----`.
 
 **O executor escreve no lugar, sem trocar o arquivo.**
-O Arca reescreve o `metadata.json` a cada envio, e uma stack pode montar um arquivo sozinho. Gravar um arquivo novo e renomear trocaria o dono e o inode; `stack.editar` e `arca.guardar` escrevem no mesmo arquivo.
+Uma stack pode montar um arquivo sozinho, e o app pode reescrever os arquivos dele enquanto roda. Gravar um arquivo novo e renomear trocaria o dono e o inode; `stack.editar` escreve no mesmo arquivo.
 
 **O Speaches não gera opus.**
 O Hermes pede a voz em opus (formato das mensagens de voz do Telegram) e o Speaches responde 422. Um gancho no LiteLLM troca o pedido para mp3, e o Hermes converte de volta com o ffmpeg. O Hermes manda a voz antes do texto, então o texto espera a fala ficar pronta.

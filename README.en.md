@@ -47,7 +47,7 @@ atena@server:~$ █
 - **Local AI:** Ollama (language models), Whisper (speech-to-text) and Kokoro (voice replies) on the GPU, including older cards like the GTX 1060.
 - **LiteLLM** as a single gateway to Claude (Haiku, Sonnet, Opus) and to the local models, with spending caps per model and per key, reset on the 1st of every month.
 - **Dashboards:** Dockge (manage stacks), Beszel (monitoring, GPU included) and Open WebUI (chat in the browser).
-- **Atena** (optional): a personal assistant on Telegram, built on [Hermes Agent](https://github.com/NousResearch/hermes-agent). She watches the server (temperature included), answers questions about it, keeps your notes, uses Arca, edits the app stacks with snapshots and undo, and acts only through a closed list of actions, asking for your OK before anything destructive. She speaks Brazilian Portuguese.
+- **Atena** (optional): a personal assistant on Telegram, built on [Hermes Agent](https://github.com/NousResearch/hermes-agent). She watches the server (temperature included), answers questions about it, keeps your notes, edits the app stacks with snapshots and undo, and acts only through a closed list of actions, asking for your OK before anything destructive. She speaks Brazilian Portuguese.
 - **The lab** (optional): Atena sends programming jobs to Claude Code, which works on its own in a sandbox, asks through your phone when it needs to, and leaves the app ready for her to publish on the home network.
 - **The panel** (optional): the server in your browser and on your phone, installable as an app. It shows status, services, sensors, processes, the network, the systemd journal, AI spending and the lab apps; it restarts services and turns the home PC on or off; it sends jobs to Claude Code and publishes, deletes and restores lab apps; it schedules tasks (turn the PC on at 7 pm, restart a service overnight), edits the app stacks and shows the files; it approves or refuses what Atena and Claude Code ask for and shows everything the executor did. Through Tailscale (and, if you want, on the home network), with a password, in a container with no network at all.
 - **An action executor** with approval on your phone: the only path from agents to the server, no shell, one token per client.
@@ -70,8 +70,8 @@ atena@server:~$ █
  ╔═══════════════════════ ATENA SERVER ══════════════════════════╗
  ║                                                               ║
  ║  ┌─ prod ──────────┐  ┌─ core ──────────┐  ┌─ apps ────────┐  ║
- ║  │ clients         │  │ dockge · beszel │  │ arca          │  ║
- ║  │ top priority    │  │ ntfy · panel    │  │ open webui    │  ║
+ ║  │ clients         │  │ dockge · beszel │  │ open webui    │  ║
+ ║  │ top priority    │  │ ntfy · panel    │  │               │  ║
  ║  └─────────────────┘  └──┬─────^────────┘  └───────┬───────┘  ║
  ║ ┌────────────────────────┘     │ svc-ntfy          │ svc-llm  ║
  ║ │┌─ agents ────────────────────┴───┐       ┌───────v───────┐  ║
@@ -141,7 +141,6 @@ Then:
 | Voice (Speaches 0.8.3 + Kokoro) | ai | server only | Atena's voice replies (`ATENA_VOZ=sim`), fp32 on the GPU |
 | LiteLLM 1.101.6 | ai | 4000 | Requires a key. Spending caps per model and per key |
 | Open WebUI 0.12.5 | apps | 3000 | Talks only to LiteLLM |
-| Arca | apps | 3002 | Browser file uploads, no password |
 | Hermes Agent 0.22.2 | agents | none | Atena (with `--hermes`). Talks over Telegram |
 | Panel 0.14.1 | core | 3100, through Tailscale (home network optional) | The panel (with `--painel`). No network, no root, no npm packages, with a password |
 | Claude Code 2.1.302 | lab | apps on 8000-8999 | The lab (with `--lab`). Runs in a sandbox, with no sudo and no Docker; uses your Claude subscription |

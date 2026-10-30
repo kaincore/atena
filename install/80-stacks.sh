@@ -40,7 +40,7 @@ systemctl start atena-stacks-sync.service
 # pastas de dados usadas pelos composes
 for d in core/dockge core/beszel/data core/beszel/agent core/beszel/socket core/beszel/disco-srv \
          ai/models/ollama ai/models/huggingface ai/ollama ai/litellm/db ai/litellm/redis \
-         apps/arca/uploads apps/arca/data apps/open-webui; do
+         apps/open-webui; do
   install -d -m 750 -o "$ADMIN" -g "$ADMIN" "/srv/$d"
 done
 

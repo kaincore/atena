@@ -89,7 +89,7 @@ The automated tests for the executor, the patrol and the lab live in `tests/`, t
 ## What Atena does NOT protect
 
 - **The admin and Dockge have full access.** Dockge and the Beszel agent use the Docker socket, which is equivalent to root. Whoever gets into Dockge controls the server. Use a strong password.
-- **Services without a password are open to the whole home network.** Arca, for example, has no login: any device on the Wi-Fi can see and delete files.
+- **Services without a password are open to the whole home network.** Lab apps, for example, have no login: any device on the Wi-Fi can open them.
 - **Zones share the same kernel.** A serious container-escape bug would cross zones. For strong isolation, use virtual machines.
 - **IPv6 inside containers** isn't used. If you enable IPv6 on Docker networks, review the firewall, which today only has IPv4 rules.
 - **Whoever has the panel password** can restart services and shut down the PC, without going through the phone. Use a password you don't use anywhere else.
