@@ -6,7 +6,7 @@ decisão em fila/<trabalho>-<n>.resposta. Perguntas do Claude Code chegam como
 fila/<trabalho>-q<n>.pergunta: o celular é avisado na hora (com botões, se houver opções) e a
 resposta volta por claude.responder (do dono, ou da Atena se ele não responder em 10 min).
 Com ATENA_CLAUDE_SKILLS=sim, claude.tarefa aceita uma skill do catálogo do lab (skills.json), que o
-runner chama no começo do pedido.
+runner chama no começo do pedido, e receitas de estilo (receitas.py), que o runner leva para o projeto.
 O resultado tem prazo (prazo_claude): se o runner morrer no meio (queda de energia), o trabalho não
 fica "executando" para sempre, travando o projeto."""
 
@@ -355,6 +355,10 @@ def concluir_claude(p, r):
     mudar(p, estado="concluido" if r["ok"] else "falhou", segredo=None, resumo=texto,
           sessao=r.get("sessao") or p.get("sessao"), uso=r.get("uso"), segundos=r.get("segundos"),
           commits=r.get("commits", []))
+    if p["params"].get("receita"):   # o estudo de uma receita: ela guarda o resultado e avisa do jeito dela
+        from .receitas import receita_terminou  # aqui: as receitas usam este módulo
+        receita_terminou(p, r)
+        return
     if p["fase"] == "plano":
         avisar(f"Plano pronto (trabalho {p['id']})", texto[:3500], tags=["memo"])
         return
@@ -400,6 +404,7 @@ def preparar_claude_tarefa(cliente, params):
     if not lab_instalado():
         raise Erro(503, "o lab não está instalado neste servidor (sudo ./install.sh --lab)")
     pedido, continuar = params.get("pedido"), params.get("continuar")
+    params.pop("receita", None)   # só receita.estudar marca o trabalho que escreve uma receita
     if not isinstance(pedido, str) or not 3 <= len(pedido.strip()) <= 4000:
         raise Erro(400, "pedido deve ter de 3 a 4000 caracteres")
     params["pedido"] = pedido.strip()
@@ -426,6 +431,8 @@ def preparar_claude_tarefa(cliente, params):
         params["conta"] = params.get("conta") or params["sessao_conta"]
         params["sessao"] = anterior["sessao"]
         params["projeto"] = anterior["params"].get("projeto")
+        if anterior["params"].get("receita"):   # continuar o estudo de uma receita: ela é guardada no fim
+            params["receita"] = anterior["params"]["receita"]
         params.setdefault("modelo", anterior["params"].get("modelo"))
         params.setdefault("esforco", anterior["params"].get("esforco"))
     projeto = params.get("projeto")
@@ -445,6 +452,9 @@ def preparar_claude_tarefa(cliente, params):
             raise Erro(400, "as skills do Claude Code não estão ligadas neste servidor (ATENA_CLAUDE_SKILLS)")
         if params["skill"] not in skills:
             raise Erro(400, f"skill deve ser {descrever_skills(skills)} (ou ficar de fora)")
+    if params.get("receitas") is not None:   # não vem do continuar: cada trabalho escolhe as suas
+        from .receitas import receitas_prontas  # aqui: as receitas usam este módulo
+        params["receitas"] = receitas_prontas(params["receitas"])
     contas = contas_claude()
     if not params.get("conta") and len(contas) == 1:
         params["conta"] = contas[0]
@@ -464,6 +474,8 @@ def preparar_claude_tarefa(cliente, params):
     tipo = "plano" if params["somente_plano"] else "trabalho"
     if params.get("skill"):
         tipo += f" com a skill {params['skill']}"
+    if params.get("receitas"):
+        tipo += " no estilo de " + ", ".join(params["receitas"])
     if params["publicar"]:
         tipo += " e publicar"
     return f"Claude Code ({params['conta']}) em {projeto}: {tipo}", f"Pedido: {params['pedido']}"
@@ -480,7 +492,11 @@ def acao_claude_tarefa(p):
                **({"modelo": params["modelo"]} if params.get("modelo") else {}),
                **({"esforco": params["esforco"]} if params.get("esforco") else {}),
                **({"skill": params["skill"]} if params.get("skill") else {}),
+               **({"receitas": params["receitas"]} if params.get("receitas") else {}),
                **({"sessao": params["sessao"], "sessao_conta": params["sessao_conta"]} if params.get("sessao") else {}))
+    if params.get("receita"):   # o índice das receitas acompanha o trabalho que a escreve
+        from .receitas import receita_comecou  # aqui: as receitas usam este módulo
+        receita_comecou(params["receita"], p["id"])
     segredo = secrets.token_urlsafe(18)
     mudar(p, segredo=segredo)
     avisar(f"Claude Code ({params['conta']}) começou: trabalho {p['id']}",

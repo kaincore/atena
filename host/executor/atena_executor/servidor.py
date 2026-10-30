@@ -42,6 +42,7 @@ import urllib.parse
 from .acoes import ACOES, do_perfil
 from .base import Erro, ZONAS, log
 from .claude import acompanhar, lab_instalado
+from .receitas import indexar
 from .pedidos import (ESTADO, MUDOU, TERMINADOS, carregar_estado, criar_pedido, executar, mudar,
                       ouvir_respostas, pedidos_interrompidos, pedir_aprovacao, precisa_aprovacao, publico)
 from .tokens import TOKENS, carregar_tokens, cliente_do_token, hash_token
@@ -172,6 +173,11 @@ class Servidor(socketserver.ThreadingMixIn, socketserver.UnixStreamServer):
 def servir():
     carregar_estado()
     pedidos_interrompidos()
+    if lab_instalado():
+        try:
+            indexar()   # o índice das receitas segue as pastas (um índice perdido se refaz)
+        except Exception as e:   # o índice não segura o executor
+            log(evento="receitas: não consegui indexar", erro=repr(e))
     if os.path.exists(SOCKET):
         os.unlink(SOCKET)
     servidor = Servidor(SOCKET, Pedido)

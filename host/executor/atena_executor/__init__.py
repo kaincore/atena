@@ -20,6 +20,7 @@ baixo para cima (um módulo só importa dos que vêm antes dele):
   stacks      as stacks de apps que a Atena edita
   lab         os apps do lab
   claude      o Claude Code no lab
+  receitas    o estilo de um site, estudado pelo Claude Code e guardado para os projetos
   atena       a Atena no painel: as conversas, a agenda e o chat (a API do Hermes)
   central     a central do painel: aprovações e atividade
   acoes       a lista fechada de ações

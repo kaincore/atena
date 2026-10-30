@@ -273,13 +273,17 @@ def alcanca(cliente, p):
 
 
 def pedidos_interrompidos():
-    """stack.aplicar, app.publicar e atena.falar rodam numa thread do executor: se ele reiniciou no meio, o
-    pedido não volta sozinho. (O Claude Code roda no runner e continua: o resultado chega depois.)"""
+    """stack.aplicar, app.publicar, receita.estudar e atena.falar rodam numa thread do executor: se ele
+    reiniciou no meio, o pedido não volta sozinho. (O Claude Code roda no runner e continua: o resultado
+    chega depois.)"""
     with TRAVA:
         for p in ESTADO["pedidos"].values():
             if p["acao"] in ("stack.aplicar", "app.publicar") and p["estado"] == "executando":
                 p.update(estado="falhou", erro="o executor reiniciou no meio; confira com status.servicos e "
                                                 "aplique de novo se precisar", atualizado=time.time())
+            elif p["acao"] == "receita.estudar" and p["estado"] == "executando":
+                p.update(estado="falhou", erro="o executor reiniciou no meio da coleta; peça a receita de novo",
+                         atualizado=time.time())
             elif p["acao"] == "atena.falar" and p["estado"] == "executando":
                 # a conversa com o Hermes caiu junto, e ele para a resposta quando quem ouvia some
                 p.update(estado="falhou", erro="o executor reiniciou no meio da resposta, e a Atena parou; "

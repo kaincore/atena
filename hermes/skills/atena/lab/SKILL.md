@@ -1,7 +1,7 @@
 ---
 name: lab
-description: "Programar no lab do servidor Atena: mandar trabalhos de programação ao Claude Code (apps, scripts, sites), repassar as perguntas dele ao dono, programar você mesma nos projetos do lab pelo terminal e cuidar dos apps do lab (publicar na rede de casa, rodar comandos dentro deles, reiniciar, parar, cancelar, apagar e restaurar). Use sempre que o dono pedir um programa, app, script ou site, falar de um projeto do lab ou de um app publicado, e quando a ronda trouxer uma linha do Claude Code."
-version: 1.2.1
+description: "Programar no lab do servidor Atena: mandar trabalhos de programação ao Claude Code (apps, scripts, sites), repassar as perguntas dele ao dono, programar você mesma nos projetos do lab pelo terminal, cuidar dos apps do lab (publicar na rede de casa, rodar comandos dentro deles, reiniciar, parar, cancelar, apagar e restaurar) e as receitas de estilo (estudar o visual de um site que o dono gostou e usar nos projetos). Use sempre que o dono pedir um programa, app, script ou site, falar de um projeto do lab ou de um app publicado, disser que gostou do estilo de um site, e quando a ronda trouxer uma linha do Claude Code."
+version: 1.3.0
 author: Atena
 license: MIT
 platforms: [linux]
@@ -33,7 +33,7 @@ recebe pedido de permissão para `git push`, páginas web e edição de arquivo 
 | Ação | Params | O que faz |
 |---|---|---|
 | `claude.trabalhos` | — | As contas do Claude Code (`contas`), as que têm login (`contas_com_login`), as `skills` (só se o dono ligou as skills no servidor) e os 10 últimos trabalhos, com estado |
-| `claude.tarefa` | `pedido`, `projeto`, `conta?` (uma de `contas`; com uma conta só, ela vale sozinha), `modelo?` (`fable`, `opus`, `sonnet`, `haiku`), `esforco?` (`low`, `medium`, `high`, `xhigh`, `max`), `minutos?` (5 a 600, padrão 60), `skill?` (uma de `skills`; veja Skills do Claude Code), `somente_plano?`, `continuar?`, `publicar?` | Começa um trabalho; responde 202 com o id. Com `publicar: true`, publica a versão nova sozinho quando terminar bem |
+| `claude.tarefa` | `pedido`, `projeto`, `conta?` (uma de `contas`; com uma conta só, ela vale sozinha), `modelo?` (`fable`, `opus`, `sonnet`, `haiku`), `esforco?` (`low`, `medium`, `high`, `xhigh`, `max`), `minutos?` (5 a 600, padrão 60), `skill?` (uma de `skills`; veja Skills do Claude Code), `receitas?` (até 3 nomes de receitas prontas; veja Receitas de estilo), `somente_plano?`, `continuar?`, `publicar?` | Começa um trabalho; responde 202 com o id. Com `publicar: true`, publica a versão nova sozinho quando terminar bem |
 | `claude.cancelar` | `pedido` (id do trabalho) | Interrompe um trabalho em andamento (a conversa fica guardada) |
 | `claude.perguntas` | — | Perguntas do Claude Code esperando resposta: `id`, `projeto`, `pergunta`, `opcoes`, `por_que`, `esperando_min` |
 | `claude.responder` | `pergunta` (id), `resposta`, `quem` (`dono` ou `atena`) | Manda a resposta ao Claude Code, que estava parado esperando |
@@ -122,6 +122,33 @@ Projeto grande (várias telas ou funções, mais de uma noite de trabalho):
 Depois de um trabalho longo que deu problemas, `skill: "retro"` com `continuar` faz uma retrospectiva
 curta do que aprender (só se o dono pedir ou se o trabalho falhou mais de uma vez).
 
+## Receitas de estilo (só se `claude.trabalhos` trouxer a skill `receita`)
+
+Quando o dono gostar do visual de um site ("gostei do estilo desse site", "guarda o jeito desse
+site"), estude e guarde a receita: o coletor abre o site (sem IA, só internet) e o Claude Code
+escreve como reproduzir aquele estilo (cores, fontes, espaços, componentes, movimento) sem copiar.
+Depois, qualquer projeto pode seguir a receita.
+
+| Ação | Params | O que faz |
+|---|---|---|
+| `receita.estudar` | `url`, `nome?` (sem ele, vem do site: linear.app vira `linear-app`), `foco?` (o que olhar com mais atenção: "o menu", "as animações do topo"), `refazer?`, `conta?`, `modelo?`, `esforco?` | Coleta o site (de 30 s a 2 min) e põe o Claude Code para escrever a receita (até 45 min). Responde 202; o pedido termina quando o trabalho entra na fila, e o celular avisa quando a receita fica pronta |
+| `receita.lista` | — | Cada receita: `estado` (`pronta`, `estudando`, `falhou`, `parou`), `titulo`, `origem`, `resumo`, `tags`, `paleta`, `fontes`, `trabalho` e `erro` |
+| `receita.ver` | `nome` | A receita inteira (`texto` = o RECEITA.md, `design` = o DESIGN.md) e os prints |
+| `receita.procurar` | `texto` (palavras do estilo: "escuro minimalista", "serifa") | As receitas que combinam, com um trecho |
+| `receita.apagar` | `nome` | Apaga a receita, sem volta (pede o celular); o estudo no lab fica |
+
+- "Gostei do estilo de X": `receita.estudar` com a `url`. Responda que começou e quanto leva; não
+  espere: o celular avisa. Erro 409 "já existe": pergunte se ele quer refazer (`refazer: true`) ou
+  usar a que já existe. Erro 400 de endereço: peça o endereço certo (o coletor só abre sites da
+  internet, nunca da rede de casa).
+- "Faz o projeto Y no estilo de X" ou "com aquela receita": ache a receita (`receita.procurar` ou
+  `receita.lista`) e mande `claude.tarefa` com `receitas: ["<nome>"]`. O Claude Code recebe a receita
+  dentro do projeto e segue o estilo. Se não houver receita de X, ofereça estudar antes.
+- "Que receitas eu tenho?", "tem alguma escura?": `receita.lista` ou `receita.procurar`, e responda
+  com o título e o resumo de cada uma, em poucas linhas.
+- Uma receita estudando que parou ou falhou: o estudo ficou em `/srv/lab/projetos/receita-<nome>`;
+  `claude.tarefa` com `continuar` (o `trabalho` da receita) e o pedido "termine a receita" retoma.
+
 ## Perguntas do Claude Code
 
 Quando ele precisa de uma decisão do dono, faz uma pergunta e fica parado esperando. O celular do
@@ -178,7 +205,7 @@ Cuidados:
 | `app.publicar` | `projeto`, `porta?` (8000 a 8999; sem ela, a primeira livre) | Constrói pelo Dockerfile do projeto e põe no ar na zona lab |
 | `app.reiniciar` | `projeto` | Reinicia o app. Se estava parado, sobe de novo com a imagem que já existe (sem reconstruir) |
 | `app.parar` | `projeto` | Tira do ar (dados e imagem ficam) |
-| `app.cancelar` | `projeto` | Para tudo o que está EM ANDAMENTO no projeto: trabalho do Claude Code, construção de uma publicação e pedidos esperando o celular |
+| `app.cancelar` | `projeto` | Para tudo o que está EM ANDAMENTO no projeto: trabalho do Claude Code, construção de uma publicação, coleta de uma receita (`receita-<nome>`) e pedidos esperando o celular |
 | `app.apagar` | `projeto`, `partes` (lista com `docker`, `dados`, `codigo`) | Apaga partes do projeto |
 | `app.restaurar` | `projeto` | Traz da lixeira o código de um projeto apagado |
 | `app.comando` | `projeto`, `comando` (texto, roda com `sh -c`; ou lista `["ls", "/data"]`), `segundos?` (1 a 120, padrão 30) | Roda um comando dentro do app no ar (como o usuário do app): ver arquivos em `/data`, consultar o banco, testar uma rota com `wget -qO- localhost:$PORT/...`. Devolve `codigo` e `saida` |

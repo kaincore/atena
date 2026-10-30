@@ -15,6 +15,8 @@ from .lab import (acao_app_apagar, acao_app_cancelar, acao_app_comando, acao_app
                   acao_app_publicar, acao_app_reiniciar, acao_app_restaurar, preparar_app_apagar,
                   preparar_app_publicar)
 from .local import acao_local_processar
+from .receitas import (acao_receita_apagar, acao_receita_estudar, acao_receita_lista, acao_receita_print,
+                       acao_receita_procurar, acao_receita_ver, preparar_receita_apagar, preparar_receita_estudar)
 from .pc import acao_pc_cancelar, acao_pc_desligar, acao_pc_estado, acao_pc_ligar, acao_pc_reiniciar
 from .sistema import (acao_gasto_api, acao_servico_journal, acao_servico_logs, acao_servico_reiniciar,
                       acao_sistema_processos, acao_sistema_rede, acao_sistema_sensores,
@@ -101,7 +103,8 @@ ACOES = {
                               "Claude Code trabalha sozinho numa pasta do lab (pedido, projeto, conta? = uma de "
                               "claude.trabalhos, modelo? fable|opus|sonnet|haiku, esforco? low|medium|high|xhigh|max, "
                               "minutos? 5-600, skill? = uma de claude.trabalhos, somente_plano?, continuar?, "
-                              "publicar? = publica quando terminar bem)", preparar_claude_tarefa, MUDA, PA, LAB),
+                              "publicar? = publica quando terminar bem, receitas? = até 3 nomes de receita.lista, "
+                              "para seguir o estilo delas)", preparar_claude_tarefa, MUDA, PA, LAB),
     "claude.trabalhos":  Acao(acao_claude_trabalhos, "trabalhos do Claude Code (10 últimos), as contas e as que têm login", None, CONSULTA, PA, LAB),
     "claude.perguntas":  Acao(acao_claude_perguntas, "perguntas do Claude Code esperando resposta do dono", None, CONSULTA, A, LAB),
     "claude.responder":  Acao(acao_claude_responder, "responde uma pergunta do Claude Code (pergunta, resposta, quem: dono|atena)", None, MUDA, A, LAB),
@@ -116,7 +119,8 @@ ACOES = {
     "app.reiniciar":     Acao(acao_app_reiniciar, "reinicia um app do lab; se estava parado, sobe de novo com a imagem "
                               "que já existe (projeto)", None, MUDA, PA, LAB),
     "app.cancelar":      Acao(acao_app_cancelar, "para tudo o que está em andamento num projeto do lab: trabalho do "
-                              "Claude Code, construção e pedidos esperando o celular (projeto)", None, MUDA, PA, LAB),
+                              "Claude Code, construção, coleta de receita e pedidos esperando o celular (projeto)",
+                              None, MUDA, PA, LAB),
     "app.apagar":        Acao(acao_app_apagar, "apaga partes de um projeto do lab (projeto, partes: docker = container "
                               "e imagem; dados = volume, sem volta; codigo = pasta vai para a lixeira por 30 dias)", preparar_app_apagar, DESTRUTIVO, PA, LAB),
     "app.restaurar":     Acao(acao_app_restaurar, "traz da lixeira o código de um projeto apagado (projeto)", None, MUDA, PA, LAB),
@@ -124,6 +128,21 @@ ACOES = {
                               "texto para sh -c ou lista, segundos? 1-120)", None, MUDA, PA, LAB),
     "app.lista":         Acao(acao_app_lista, "projetos do lab: app no ar, endereço, código, dados guardados, o que "
                               "está em andamento e a lixeira", None, CONSULTA, PA, LAB),
+    # receitas (módulo lab): o estilo de um site, estudado pelo Claude Code, para usar nos projetos
+    "receita.estudar":   Acao(acao_receita_estudar, "estuda o estilo de um site: o coletor abre a página (só internet, "
+                              "sem IA) e o Claude Code escreve a receita (url, nome?, foco? = o que olhar com mais "
+                              "atenção, refazer?, conta?, modelo?, esforco?)", preparar_receita_estudar, MUDA, PA, LAB),
+    "receita.lista":     Acao(acao_receita_lista, "as receitas de estilo: prontas, em estudo e as que falharam, com "
+                              "paleta, fontes e resumo", None, CONSULTA, PA, LAB),
+    "receita.ver":       Acao(acao_receita_ver, "uma receita inteira: o RECEITA.md, o DESIGN.md e os prints (nome)",
+                              None, CONSULTA, PA, LAB),
+    "receita.procurar":  Acao(acao_receita_procurar, "procura receitas por palavras do estilo (texto; ex.: escuro "
+                              "minimalista, serifa)", None, CONSULTA, PA, LAB),
+    "receita.print":     Acao(acao_receita_print, "um print do site de uma receita, em base64 (nome, print: pc.jpg, "
+                              "pc-escuro.jpg, tablet.jpg, celular.jpg, pc-inteira.jpg ou celular-inteira.jpg)",
+                              None, CONSULTA, P, LAB),
+    "receita.apagar":    Acao(acao_receita_apagar, "apaga uma receita do índice e da pasta, sem volta; o estudo no lab "
+                              "fica (nome)", preparar_receita_apagar, DESTRUTIVO, PA, LAB),
     # a Atena no painel (o chat, as conversas e a agenda dela), pela API interna do Hermes
     "atena.conversas":   Acao(acao_atena_conversas, "conversas da Atena, da mais recente (quantas? 1-100, pular?, "
                               "origem? telegram|painel|agenda|terminal|whatsapp)", None, CONSULTA, P),

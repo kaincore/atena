@@ -356,12 +356,13 @@ def acao_app_cancelar(cliente, params):
             elif p["estado"] == "aguardando":
                 mudar(p, estado="cancelado", segredo=None)
                 feito.append(f"pedido {p['id']} que esperava o celular ({p['titulo']})")
-            elif p["acao"] == "app.publicar" and p["estado"] == "executando":
+            elif p["acao"] in ("app.publicar", "receita.estudar") and p["estado"] == "executando":
                 CANCELAR.add(projeto)
                 processo = PROCESSOS.get(projeto)
                 if processo:
                     processo.terminate()
-                feito.append(f"publicação {p['id']} (o celular avisa quando parar)")
+                o_que = "publicação" if p["acao"] == "app.publicar" else "coleta da receita"
+                feito.append(f"{o_que} {p['id']} (o celular avisa quando parar)")
     if not feito:
         raise Erro(404, f"não há nada em andamento no projeto {projeto}")
     log(evento="projeto cancelado", projeto=projeto, cancelado=feito)

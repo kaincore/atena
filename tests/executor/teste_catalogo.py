@@ -16,8 +16,8 @@ confere("toda ação tem ajuda e um perfil (painel ou atena)",
 sem_pedido = [n for n, a in ex.ACOES.items() if a.risco == ex.DESTRUTIVO and a.preparar is None]
 confere("toda ação destrutiva vira pedido (o celular tem o que aprovar)", not sem_pedido, sem_pedido)
 confere("há ação destrutiva (o app.apagar)", ex.ACOES["app.apagar"].risco == ex.DESTRUTIVO)
-lab_errado = [n for n, a in ex.ACOES.items() if (a.modulo == ex.LAB) != n.startswith(("claude.", "app."))]
-confere("o módulo lab é o das ações claude.* e app.*", not lab_errado, lab_errado)
+lab_errado = [n for n, a in ex.ACOES.items() if (a.modulo == ex.LAB) != n.startswith(("claude.", "app.", "receita."))]
+confere("o módulo lab é o das ações claude.*, app.* e receita.*", not lab_errado, lab_errado)
 confere("as internas não estão no catálogo (ninguém as pede)", not set(ex.INTERNAS) & set(ex.ACOES))
 
 
