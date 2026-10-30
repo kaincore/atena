@@ -1,5 +1,29 @@
 # Mudanças
 
+## 0.30.0 (2026-10-30)
+
+A primeira parte da Onda 7, que junta o painel e a Atena: a ponte. O painel passa a ver as conversas da Atena, a agenda dela e o histórico inteiro do Claude Code, e pode conversar com ela. As telas vêm nas próximas versões.
+
+- **A API da Atena só para o executor:** o Hermes já tinha uma API interna (conversas, chat com a resposta aos pedaços, agenda), fechada dentro do container. Ela passa a ouvir numa rede só dela (`svc-atena`, interna, criada pelo compose do Hermes), onde nenhum outro container entra. O executor chega nela do servidor, com a chave do `.env` da Atena, que só ele lê; o painel pede ao executor, e a chave nunca chega a ele. O instalador cria a chave quando falta.
+- **As ações da Atena no painel** (10 novas, só do painel, que passa a ter 48):
+  - `atena.conversas` e `atena.conversa`: as conversas do Telegram, do painel, da agenda e do terminal, com o que ela consultou no servidor e os trabalhos do Claude Code que ela mandou, sem segredos;
+  - `atena.falar`, `atena.parar` e `atena.aprovar`: o chat. A resposta chega aos pedaços, com cada ferramenta que ela usa, e o pedido de aprovação de um comando perigoso aparece ali mesmo. As conversas do Telegram e da agenda ficam só para ler;
+  - `atena.agenda`, `atena.agendar` e `atena.agendamento`: os agendamentos dela (lembretes, ronda, bom-dia), criar, pausar, retomar, rodar agora e apagar. A ronda e o bom-dia não se apagam;
+  - `claude.historico` e `claude.registro`: todos os trabalhos do Claude Code, também os de mais de uma semana (que agora vão para um arquivo em vez de sumir), e a conversa inteira de cada um, resumida para ler.
+- **O pedido ganha versão:** `GET /pedido/<id>?esperar=s&versao=n` volta assim que o pedido muda. É o que deixa o painel mostrar a resposta da Atena enquanto ela escreve.
+- **Uma ação nova chega ao token no `./aplicar`:** `atena-executor token-acertar` acrescenta aos tokens do painel e da Atena as ações do perfil de cada um que faltam, sem trocar o token nem as aprovações, e o `./aplicar` o roda por último sempre que o executor muda.
+- Testado:
+  - 84 verificações novas: `teste_atena.py`, contra um Hermes de mentira que fala HTTP e SSE de verdade (o chat inteiro com aprovação e parada, a agenda, o arquivo, o `token-acertar`), `teste_historico.py` e os tokens no `teste_aplicar.py`;
+  - cada commit rodado sozinho;
+  - o CI reproduzido com `tools/ci-local.sh`.
+
+  No servidor de origem:
+  - o `sudo ./aplicar` gravou os 7 arquivos, reiniciou o executor, subiu a Atena com a rede nova (saudável, o Telegram de volta) e deu ao token do painel as 10 ações novas, com o mesmo token;
+  - do servidor, a API responde na rede `svc-atena` e recusa quem chega sem a chave (401);
+  - de dentro do painel, pelo executor: 48 ações no catálogo, 50 conversas (Telegram, agenda e terminal), uma conversa do Telegram com os dois trabalhos do Claude Code que a Atena mandou nela, a ronda e o bom-dia na agenda, e a conversa inteira de um trabalho do Claude Code (6 ferramentas, 35 s, US$ 0,76).
+
+  Sem testar ainda no servidor: o chat (`atena.falar`), testado só contra o Hermes de mentira. Ele chega ao servidor junto com a tela, na 7d.
+
 ## 0.29.0 (2026-10-30)
 
 A última parte da Onda 6: as ações se descrevem, e o CI confere o que antes só se via no servidor. Com ela, a Onda 6 termina.
