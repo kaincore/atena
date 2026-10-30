@@ -28,7 +28,7 @@ const CONSULTAS = ["status.servicos", "status.recursos", "status.containers", "s
   "arquivo.procurar", "arquivo.buscar", "pc.estado", "app.lista", "claude.trabalhos", "aprovacoes.lista", "atividade.lista"];
 const MUDAM = ["aprovacoes.decidir", "servico.reiniciar", "pc.ligar", "pc.desligar", "pc.reiniciar", "pc.cancelar",
   "app.reiniciar", "app.parar", "app.publicar", "app.cancelar", "app.restaurar", "app.comando", "claude.tarefa",
-  "claude.cancelar", "stack.editar", "stack.aplicar", "stack.desfazer", "aviso.celular", "app.novidade"];
+  "claude.cancelar", "stack.editar", "stack.aplicar", "stack.desfazer", "aviso.celular", "app.novidade", "atena.falar"];
 const CATALOGO: Record<string, { ajuda: string; risco: string; pedido: boolean; aprovacao: boolean }> = Object.fromEntries([
   ...CONSULTAS.map((n) => [n, { ajuda: n, risco: "consulta", pedido: false, aprovacao: false }]),
   ...MUDAM.map((n) => [n, { ajuda: n, risco: "muda", pedido: false, aprovacao: false }]),
@@ -469,6 +469,23 @@ test("esperar do pedido tem teto de 60 s", async () => {
   const cookie = await entrar();
   await pedir("GET", "/api/pedido/abcd1234?esperar=999", undefined, cookie);
   assert.equal(recebidos.at(-1)!.caminho, "/pedido/abcd1234?esperar=60");
+});
+
+test("o pedido com versao: o painel passa a versão ao executor, e só se for um número", async () => {
+  const cookie = await entrar();
+  await pedir("GET", "/api/pedido/abcd1234?esperar=25&versao=7", undefined, cookie);
+  assert.equal(recebidos.at(-1)!.caminho, "/pedido/abcd1234?esperar=25&versao=7");
+  await pedir("GET", "/api/pedido/abcd1234?esperar=25&versao=7%26x%3D1", undefined, cookie);
+  assert.equal(recebidos.at(-1)!.caminho, "/pedido/abcd1234?esperar=25");
+});
+
+test("o chat com a Atena vai ao executor, mas não entra no histórico", async () => {
+  const cookie = await entrar();
+  const antes = banco.historico().length;
+  const r = await pedir("POST", "/api/acao/atena.falar", { params: { texto: "oi, Atena" } }, cookie);
+  assert.equal(r.status, 200);
+  assert.deepEqual(recebidos.at(-1)!.corpo, { params: { texto: "oi, Atena" }, origem: "painel" });
+  assert.equal(banco.historico().length, antes);
 });
 
 test("sessões: lista e desconecta outro aparelho", async () => {

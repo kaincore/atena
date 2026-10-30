@@ -29,6 +29,9 @@ export type Catalogo = Record<string, { ajuda: string; risco: string; pedido: bo
 const CATALOGO_VALE = 60_000;
 // as que só o agendador usa, nunca a tela: o aviso no celular
 const SO_AGENDADOR = new Set(["aviso.celular"]);
+// a conversa com a Atena fica na própria Atena (a tela Atena lê de lá): no Histórico, que é o que você mandou
+// fazer, cada mensagem do chat seria barulho
+const FORA_DO_HISTORICO = new Set(["atena.falar"]);
 
 const COOKIE = "atena_sessao";
 const LIMITE_CORPO = 512 * 1024; // o editor de stacks manda o trecho antes e depois da troca
@@ -380,7 +383,7 @@ export function criarServidor(config: Config, banco: Banco, agendador?: Agendado
         throw new ErroHttp(400, "params deve ser um objeto");
       // o que muda algo entra no histórico antes de ir ao executor: um prazo esgotado ou um erro ficam lá.
       // Sem o catálogo (o executor fora do ar), na dúvida, entra também
-      const muda = acoes ? acoes[nome].risco !== "consulta" : true;
+      const muda = !FORA_DO_HISTORICO.has(nome) && (acoes ? acoes[nome].risco !== "consulta" : true);
       const registro = muda ? banco.registrar(nome, params, "executando", "") : null;
       let r;
       try {
@@ -400,7 +403,10 @@ export function criarServidor(config: Config, banco: Banco, agendador?: Agendado
     const pedido = rota.match(/^\/api\/pedido\/([0-9a-f]{8})$/);
     if (pedido && req.method === "GET") {
       const esperar = Math.min(Math.max(Number(url.searchParams.get("esperar")) || 0, 0), 60);
-      const r = await executor("GET", `/pedido/${pedido[1]}?esperar=${Math.floor(esperar)}`);
+      // com versao, o executor responde assim que o pedido muda (a resposta da Atena chegando aos pedaços)
+      const versao = url.searchParams.get("versao");
+      const r = await executor("GET", `/pedido/${pedido[1]}?esperar=${Math.floor(esperar)}`
+        + (versao && /^\d{1,9}$/.test(versao) ? `&versao=${versao}` : ""));
       const p = r.corpo.pedido as Record<string, unknown> | undefined;
       if (p && TERMINADOS.has(String(p.estado)))
         // o trabalho do Claude Code termina com um resumo em vez de resultado
